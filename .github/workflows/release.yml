@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+# Go modules are distributed via the public proxy at proxy.golang.org, which
+# resolves directly from GitHub tags. There's nothing to push — once this
+# tag exists, `go get github.com/ivannikolovbg/repull-go@v0.1.0` works.
+# This workflow just guards against shipping a tag that doesn't build/test.
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.x"
+          cache: true
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go build
+        run: go build ./...
+
+      - name: go test
+        run: go test ./...
+
+      - name: Warm proxy.golang.org cache
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "Tag: $TAG"
+          # Hitting the proxy URL warms the cache so the new version is
+          # immediately discoverable.
+          curl -sS -o /dev/null -w '%{http_code}\n' \
+            "https://proxy.golang.org/github.com/ivannikolovbg/repull-go/@v/${TAG}.info" || true
