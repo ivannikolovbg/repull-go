@@ -1,0 +1,8 @@
+package: repull
+output: client.gen.go
+generate:
+  client: true
+  client-with-responses: true
+output-options:
+  skip-prune: true
+import-mapping: {}
