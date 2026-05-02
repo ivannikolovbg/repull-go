@@ -272,7 +272,7 @@ type ClientInterface interface {
 	ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetConversation request
-	GetConversation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetConversation(ctx context.Context, id int, params *GetConversationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListConversationMessages request
 	ListConversationMessages(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -281,7 +281,7 @@ type ClientInterface interface {
 	ListGuests(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetGuest request
-	GetGuest(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetGuest(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetHealth request
 	GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -370,7 +370,7 @@ type ClientInterface interface {
 	CancelReservation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetReservation request
-	GetReservation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetReservation(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateReservationWithBody request with any body
 	UpdateReservationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -381,7 +381,26 @@ type ClientInterface interface {
 	ListReviews(ctx context.Context, params *ListReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetReview request
-	GetReview(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetReview(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListCustomSchemas request
+	ListCustomSchemas(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateCustomSchemaWithBody request with any body
+	CreateCustomSchemaWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateCustomSchema(ctx context.Context, body CreateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCustomSchema request
+	DeleteCustomSchema(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCustomSchema request
+	GetCustomSchema(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateCustomSchemaWithBody request with any body
+	UpdateCustomSchemaWithBody(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateCustomSchema(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListWebhooks request
 	ListWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1185,8 +1204,8 @@ func (c *Client) ListConversations(ctx context.Context, params *ListConversation
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetConversation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetConversationRequest(c.Server, id)
+func (c *Client) GetConversation(ctx context.Context, id int, params *GetConversationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConversationRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1221,8 +1240,8 @@ func (c *Client) ListGuests(ctx context.Context, params *ListGuestsParams, reqEd
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetGuest(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetGuestRequest(c.Server, id)
+func (c *Client) GetGuest(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetGuestRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1605,8 +1624,8 @@ func (c *Client) CancelReservation(ctx context.Context, id int, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetReservation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetReservationRequest(c.Server, id)
+func (c *Client) GetReservation(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetReservationRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1653,8 +1672,92 @@ func (c *Client) ListReviews(ctx context.Context, params *ListReviewsParams, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetReview(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetReviewRequest(c.Server, id)
+func (c *Client) GetReview(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetReviewRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCustomSchemas(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCustomSchemasRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCustomSchemaWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCustomSchemaRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCustomSchema(ctx context.Context, body CreateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCustomSchemaRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCustomSchema(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCustomSchemaRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCustomSchema(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCustomSchemaRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCustomSchemaWithBody(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCustomSchemaRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCustomSchema(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCustomSchemaRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3771,11 +3874,26 @@ func NewListConversationsRequest(server string, params *ListConversationsParams)
 		return nil, err
 	}
 
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
 	return req, nil
 }
 
 // NewGetConversationRequest generates requests for GetConversation
-func NewGetConversationRequest(server string, id int) (*http.Request, error) {
+func NewGetConversationRequest(server string, id int, params *GetConversationParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3803,6 +3921,21 @@ func NewGetConversationRequest(server string, id int) (*http.Request, error) {
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
 	}
 
 	return req, nil
@@ -3891,6 +4024,21 @@ func NewListConversationMessagesRequest(server string, id int, params *ListConve
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
 	}
 
 	return req, nil
@@ -4006,11 +4154,26 @@ func NewListGuestsRequest(server string, params *ListGuestsParams) (*http.Reques
 		return nil, err
 	}
 
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
 	return req, nil
 }
 
 // NewGetGuestRequest generates requests for GetGuest
-func NewGetGuestRequest(server string, id int) (*http.Request, error) {
+func NewGetGuestRequest(server string, id int, params *GetGuestParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -4038,6 +4201,21 @@ func NewGetGuestRequest(server string, id int) (*http.Request, error) {
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
 	}
 
 	return req, nil
@@ -4178,6 +4356,21 @@ func NewListListingsRequest(server string, params *ListListingsParams) (*http.Re
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
 	}
 
 	return req, nil
@@ -5510,6 +5703,21 @@ func NewListReservationsRequest(server string, params *ListReservationsParams) (
 		return nil, err
 	}
 
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
 	return req, nil
 }
 
@@ -5588,7 +5796,7 @@ func NewCancelReservationRequest(server string, id int) (*http.Request, error) {
 }
 
 // NewGetReservationRequest generates requests for GetReservation
-func NewGetReservationRequest(server string, id int) (*http.Request, error) {
+func NewGetReservationRequest(server string, id int, params *GetReservationParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5616,6 +5824,21 @@ func NewGetReservationRequest(server string, id int) (*http.Request, error) {
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
 	}
 
 	return req, nil
@@ -5826,11 +6049,26 @@ func NewListReviewsRequest(server string, params *ListReviewsParams) (*http.Requ
 		return nil, err
 	}
 
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
 	return req, nil
 }
 
 // NewGetReviewRequest generates requests for GetReview
-func NewGetReviewRequest(server string, id int) (*http.Request, error) {
+func NewGetReviewRequest(server string, id int, params *GetReviewParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5859,6 +6097,203 @@ func NewGetReviewRequest(server string, id int) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewListCustomSchemasRequest generates requests for ListCustomSchemas
+func NewListCustomSchemasRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/schema/custom")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateCustomSchemaRequest calls the generic CreateCustomSchema builder with application/json body
+func NewCreateCustomSchemaRequest(server string, body CreateCustomSchemaJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateCustomSchemaRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateCustomSchemaRequestWithBody generates requests for CreateCustomSchema with any type of body
+func NewCreateCustomSchemaRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/schema/custom")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteCustomSchemaRequest generates requests for DeleteCustomSchema
+func NewDeleteCustomSchemaRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/schema/custom/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCustomSchemaRequest generates requests for GetCustomSchema
+func NewGetCustomSchemaRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/schema/custom/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateCustomSchemaRequest calls the generic UpdateCustomSchema builder with application/json body
+func NewUpdateCustomSchemaRequest(server string, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateCustomSchemaRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateCustomSchemaRequestWithBody generates requests for UpdateCustomSchema with any type of body
+func NewUpdateCustomSchemaRequestWithBody(server string, id openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/schema/custom/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -6615,7 +7050,7 @@ type ClientWithResponsesInterface interface {
 	ListConversationsWithResponse(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*ListConversationsClientResponse, error)
 
 	// GetConversationWithResponse request
-	GetConversationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetConversationClientResponse, error)
+	GetConversationWithResponse(ctx context.Context, id int, params *GetConversationParams, reqEditors ...RequestEditorFn) (*GetConversationClientResponse, error)
 
 	// ListConversationMessagesWithResponse request
 	ListConversationMessagesWithResponse(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*ListConversationMessagesClientResponse, error)
@@ -6624,7 +7059,7 @@ type ClientWithResponsesInterface interface {
 	ListGuestsWithResponse(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*ListGuestsClientResponse, error)
 
 	// GetGuestWithResponse request
-	GetGuestWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetGuestClientResponse, error)
+	GetGuestWithResponse(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*GetGuestClientResponse, error)
 
 	// GetHealthWithResponse request
 	GetHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthClientResponse, error)
@@ -6713,7 +7148,7 @@ type ClientWithResponsesInterface interface {
 	CancelReservationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error)
 
 	// GetReservationWithResponse request
-	GetReservationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetReservationClientResponse, error)
+	GetReservationWithResponse(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*GetReservationClientResponse, error)
 
 	// UpdateReservationWithBodyWithResponse request with any body
 	UpdateReservationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error)
@@ -6724,7 +7159,26 @@ type ClientWithResponsesInterface interface {
 	ListReviewsWithResponse(ctx context.Context, params *ListReviewsParams, reqEditors ...RequestEditorFn) (*ListReviewsClientResponse, error)
 
 	// GetReviewWithResponse request
-	GetReviewWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetReviewClientResponse, error)
+	GetReviewWithResponse(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*GetReviewClientResponse, error)
+
+	// ListCustomSchemasWithResponse request
+	ListCustomSchemasWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListCustomSchemasClientResponse, error)
+
+	// CreateCustomSchemaWithBodyWithResponse request with any body
+	CreateCustomSchemaWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCustomSchemaClientResponse, error)
+
+	CreateCustomSchemaWithResponse(ctx context.Context, body CreateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCustomSchemaClientResponse, error)
+
+	// DeleteCustomSchemaWithResponse request
+	DeleteCustomSchemaWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteCustomSchemaClientResponse, error)
+
+	// GetCustomSchemaWithResponse request
+	GetCustomSchemaWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetCustomSchemaClientResponse, error)
+
+	// UpdateCustomSchemaWithBodyWithResponse request with any body
+	UpdateCustomSchemaWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCustomSchemaClientResponse, error)
+
+	UpdateCustomSchemaWithResponse(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomSchemaClientResponse, error)
 
 	// ListWebhooksWithResponse request
 	ListWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListWebhooksClientResponse, error)
@@ -8636,6 +9090,10 @@ type GetReservationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Reservation
+	JSON401      *Error
+	JSON404      *Error
+	JSON422      *Error
+	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -8721,6 +9179,133 @@ func (r GetReviewClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetReviewClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCustomSchemasClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomSchemaListResponse
+	JSON401      *Error
+	JSON403      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCustomSchemasClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCustomSchemasClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateCustomSchemaClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *CustomSchemaCreateResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON422      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCustomSchemaClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCustomSchemaClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCustomSchemaClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomSchemaDeleteResponse
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCustomSchemaClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCustomSchemaClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCustomSchemaClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomSchema
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCustomSchemaClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCustomSchemaClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateCustomSchemaClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomSchema
+	JSON400      *Error
+	JSON401      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON422      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateCustomSchemaClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateCustomSchemaClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -9571,8 +10156,8 @@ func (c *ClientWithResponses) ListConversationsWithResponse(ctx context.Context,
 }
 
 // GetConversationWithResponse request returning *GetConversationClientResponse
-func (c *ClientWithResponses) GetConversationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetConversationClientResponse, error) {
-	rsp, err := c.GetConversation(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetConversationWithResponse(ctx context.Context, id int, params *GetConversationParams, reqEditors ...RequestEditorFn) (*GetConversationClientResponse, error) {
+	rsp, err := c.GetConversation(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -9598,8 +10183,8 @@ func (c *ClientWithResponses) ListGuestsWithResponse(ctx context.Context, params
 }
 
 // GetGuestWithResponse request returning *GetGuestClientResponse
-func (c *ClientWithResponses) GetGuestWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetGuestClientResponse, error) {
-	rsp, err := c.GetGuest(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetGuestWithResponse(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*GetGuestClientResponse, error) {
+	rsp, err := c.GetGuest(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -9879,8 +10464,8 @@ func (c *ClientWithResponses) CancelReservationWithResponse(ctx context.Context,
 }
 
 // GetReservationWithResponse request returning *GetReservationClientResponse
-func (c *ClientWithResponses) GetReservationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetReservationClientResponse, error) {
-	rsp, err := c.GetReservation(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetReservationWithResponse(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*GetReservationClientResponse, error) {
+	rsp, err := c.GetReservation(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -9914,12 +10499,73 @@ func (c *ClientWithResponses) ListReviewsWithResponse(ctx context.Context, param
 }
 
 // GetReviewWithResponse request returning *GetReviewClientResponse
-func (c *ClientWithResponses) GetReviewWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetReviewClientResponse, error) {
-	rsp, err := c.GetReview(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetReviewWithResponse(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*GetReviewClientResponse, error) {
+	rsp, err := c.GetReview(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseGetReviewClientResponse(rsp)
+}
+
+// ListCustomSchemasWithResponse request returning *ListCustomSchemasClientResponse
+func (c *ClientWithResponses) ListCustomSchemasWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListCustomSchemasClientResponse, error) {
+	rsp, err := c.ListCustomSchemas(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCustomSchemasClientResponse(rsp)
+}
+
+// CreateCustomSchemaWithBodyWithResponse request with arbitrary body returning *CreateCustomSchemaClientResponse
+func (c *ClientWithResponses) CreateCustomSchemaWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCustomSchemaClientResponse, error) {
+	rsp, err := c.CreateCustomSchemaWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCustomSchemaClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateCustomSchemaWithResponse(ctx context.Context, body CreateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCustomSchemaClientResponse, error) {
+	rsp, err := c.CreateCustomSchema(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCustomSchemaClientResponse(rsp)
+}
+
+// DeleteCustomSchemaWithResponse request returning *DeleteCustomSchemaClientResponse
+func (c *ClientWithResponses) DeleteCustomSchemaWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteCustomSchemaClientResponse, error) {
+	rsp, err := c.DeleteCustomSchema(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCustomSchemaClientResponse(rsp)
+}
+
+// GetCustomSchemaWithResponse request returning *GetCustomSchemaClientResponse
+func (c *ClientWithResponses) GetCustomSchemaWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetCustomSchemaClientResponse, error) {
+	rsp, err := c.GetCustomSchema(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCustomSchemaClientResponse(rsp)
+}
+
+// UpdateCustomSchemaWithBodyWithResponse request with arbitrary body returning *UpdateCustomSchemaClientResponse
+func (c *ClientWithResponses) UpdateCustomSchemaWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCustomSchemaClientResponse, error) {
+	rsp, err := c.UpdateCustomSchemaWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCustomSchemaClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateCustomSchemaWithResponse(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomSchemaClientResponse, error) {
+	rsp, err := c.UpdateCustomSchema(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCustomSchemaClientResponse(rsp)
 }
 
 // ListWebhooksWithResponse request returning *ListWebhooksClientResponse
@@ -12485,6 +13131,34 @@ func ParseGetReservationClientResponse(rsp *http.Response) (*GetReservationClien
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -12608,6 +13282,255 @@ func ParseGetReviewClientResponse(rsp *http.Response) (*GetReviewClientResponse,
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCustomSchemasClientResponse parses an HTTP response from a ListCustomSchemasWithResponse call
+func ParseListCustomSchemasClientResponse(rsp *http.Response) (*ListCustomSchemasClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCustomSchemasClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomSchemaListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateCustomSchemaClientResponse parses an HTTP response from a CreateCustomSchemaWithResponse call
+func ParseCreateCustomSchemaClientResponse(rsp *http.Response) (*CreateCustomSchemaClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCustomSchemaClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CustomSchemaCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCustomSchemaClientResponse parses an HTTP response from a DeleteCustomSchemaWithResponse call
+func ParseDeleteCustomSchemaClientResponse(rsp *http.Response) (*DeleteCustomSchemaClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCustomSchemaClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomSchemaDeleteResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCustomSchemaClientResponse parses an HTTP response from a GetCustomSchemaWithResponse call
+func ParseGetCustomSchemaClientResponse(rsp *http.Response) (*GetCustomSchemaClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCustomSchemaClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateCustomSchemaClientResponse parses an HTTP response from a UpdateCustomSchemaWithResponse call
+func ParseUpdateCustomSchemaClientResponse(rsp *http.Response) (*UpdateCustomSchemaClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateCustomSchemaClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 

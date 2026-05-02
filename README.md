@@ -6,7 +6,7 @@ The official Go SDK for [api.repull.dev](https://api.repull.dev) — the unified
 API for vacation-rental tech (50+ PMS platforms, Airbnb / Booking.com / VRBO /
 Plumguide channels, AI ops, white-label OAuth).
 
-> **Status:** v0.1.1 — alpha. `pkg.go.dev` listing pending (auto-publishes on
+> **Status:** v0.1.2 — alpha. `pkg.go.dev` listing pending (auto-publishes on
 > first import).
 
 ## Install
@@ -130,9 +130,24 @@ Full API reference and guides: [repull.dev/docs](https://repull.dev/docs).
 
 MIT — see [LICENSE](./LICENSE).
 
+## Custom schemas
+
+`X-Schema` lets you reshape any read response into your own field names. Built-in
+schemas: `native` (default), `calry`, `calry-v1`. Manage workspace-scoped custom
+schemas via `CreateCustomSchema` / `ListCustomSchemas` / `GetCustomSchema` /
+`UpdateCustomSchema` / `DeleteCustomSchema`, then pass the name on any read:
+
+```go
+schema := repull.XSchemaHeader("calry")
+resp, err := client.ListReservationsWithResponse(ctx, &repull.ListReservationsParams{
+    XSchema: &schema,
+    Limit:   &limit,
+})
+```
+
 ## Status
 
-v0.1.1 — alpha. The API surface tracks `https://api.repull.dev/openapi.json`
+v0.1.2 — alpha. The API surface tracks `https://api.repull.dev/openapi.json`
 1:1 and may break before 1.0. Open an issue if you hit drift between the
 generated client and the live API — both are still settling.
 

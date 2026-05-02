@@ -740,13 +740,14 @@ func (e MessageDirection) Valid() bool {
 
 // Defines values for ReservationPlatform.
 const (
-	ReservationPlatformAirbnb     ReservationPlatform = "airbnb"
-	ReservationPlatformBookingCom ReservationPlatform = "booking.com"
-	ReservationPlatformDirect     ReservationPlatform = "direct"
-	ReservationPlatformOther      ReservationPlatform = "other"
-	ReservationPlatformOwner      ReservationPlatform = "owner"
-	ReservationPlatformVrbo       ReservationPlatform = "vrbo"
-	ReservationPlatformWebsite    ReservationPlatform = "website"
+	ReservationPlatformAirbnb      ReservationPlatform = "airbnb"
+	ReservationPlatformBookingCom  ReservationPlatform = "booking.com"
+	ReservationPlatformDirect      ReservationPlatform = "direct"
+	ReservationPlatformLessThannil ReservationPlatform = "<nil>"
+	ReservationPlatformOther       ReservationPlatform = "other"
+	ReservationPlatformOwner       ReservationPlatform = "owner"
+	ReservationPlatformVrbo        ReservationPlatform = "vrbo"
+	ReservationPlatformWebsite     ReservationPlatform = "website"
 )
 
 // Valid indicates whether the value is a known member of the ReservationPlatform enum.
@@ -757,6 +758,8 @@ func (e ReservationPlatform) Valid() bool {
 	case ReservationPlatformBookingCom:
 		return true
 	case ReservationPlatformDirect:
+		return true
+	case ReservationPlatformLessThannil:
 		return true
 	case ReservationPlatformOther:
 		return true
@@ -1678,6 +1681,82 @@ type CursorPagination struct {
 
 	// NextCursor Opaque base64-encoded cursor — pass back as `?cursor=<value>`. `null` when there are no more pages.
 	NextCursor *string `json:"next_cursor,omitempty"`
+}
+
+// CustomSchema A custom field-mapping schema owned by the workspace. Reshapes the `native` response into the workspace's preferred field names. Apply one per request via the `X-Schema: <name>` header on any read endpoint.
+type CustomSchema struct {
+	// Active When `false`, requests carrying this schema name in `X-Schema` fall back to `native`.
+	Active      bool      `json:"active"`
+	CreatedAt   time.Time `json:"createdAt"`
+	Description *string   `json:"description,omitempty"`
+
+	// Id Stable workspace-scoped identifier.
+	Id openapi_types.UUID `json:"id"`
+
+	// Mappings Field-mapping table. Keys are the output field names emitted in the response payload; values are simple expressions referenced against the source `native` payload (dot paths, basic arithmetic, string concatenation). Min 1 entry, max 50 entries. Each key must be <= 100 chars; each expression must be <= 500 chars and pass the safety check (no `eval`, no `function`, no `process`, etc.).
+	Mappings CustomSchemaMappings `json:"mappings"`
+
+	// Name 3-100 lowercase chars, hyphens allowed (`^[a-z0-9][a-z0-9-]{1,98}[a-z0-9]$`). Must be unique within the workspace. Cannot collide with reserved names (`calry`, `calry-v1`, `native`).
+	Name string `json:"name"`
+}
+
+// CustomSchemaCreate Request body for `POST /v1/schema/custom`.
+type CustomSchemaCreate struct {
+	// Description Optional human-readable note shown in the dashboard.
+	Description *string `json:"description,omitempty"`
+
+	// Mappings Field-mapping table. Keys are the output field names emitted in the response payload; values are simple expressions referenced against the source `native` payload (dot paths, basic arithmetic, string concatenation). Min 1 entry, max 50 entries. Each key must be <= 100 chars; each expression must be <= 500 chars and pass the safety check (no `eval`, no `function`, no `process`, etc.).
+	Mappings CustomSchemaMappings `json:"mappings"`
+
+	// Name 3-100 lowercase chars + hyphens. Must be unique within the workspace and cannot collide with reserved names (`calry`, `calry-v1`, `native`).
+	Name string `json:"name"`
+}
+
+// CustomSchemaCreateResponse Returned by `POST /v1/schema/custom` (201). Includes a `usage` hint telling the caller exactly which header value to set on subsequent requests.
+type CustomSchemaCreateResponse struct {
+	CreatedAt   time.Time          `json:"createdAt"`
+	Description *string            `json:"description,omitempty"`
+	Id          openapi_types.UUID `json:"id"`
+
+	// Mappings Field-mapping table. Keys are the output field names emitted in the response payload; values are simple expressions referenced against the source `native` payload (dot paths, basic arithmetic, string concatenation). Min 1 entry, max 50 entries. Each key must be <= 100 chars; each expression must be <= 500 chars and pass the safety check (no `eval`, no `function`, no `process`, etc.).
+	Mappings CustomSchemaMappings `json:"mappings"`
+	Name     string               `json:"name"`
+	Usage    string               `json:"usage"`
+}
+
+// CustomSchemaDeleteResponse defines model for CustomSchemaDeleteResponse.
+type CustomSchemaDeleteResponse struct {
+	Deleted bool `json:"deleted"`
+}
+
+// CustomSchemaListResponse Returned by `GET /v1/schema/custom`. Returns every custom schema owned by the workspace.
+type CustomSchemaListResponse struct {
+	Data *[]CustomSchemaSummary `json:"data,omitempty"`
+}
+
+// CustomSchemaMappings Field-mapping table. Keys are the output field names emitted in the response payload; values are simple expressions referenced against the source `native` payload (dot paths, basic arithmetic, string concatenation). Min 1 entry, max 50 entries. Each key must be <= 100 chars; each expression must be <= 500 chars and pass the safety check (no `eval`, no `function`, no `process`, etc.).
+type CustomSchemaMappings map[string]string
+
+// CustomSchemaSummary List-row shape returned by `GET /v1/schema/custom`. Same fields as `CustomSchema` minus heavy nested data — kept identical today; reserved as a separate schema so the list shape can shrink without breaking the detail call.
+type CustomSchemaSummary struct {
+	Active      bool               `json:"active"`
+	CreatedAt   time.Time          `json:"createdAt"`
+	Description *string            `json:"description,omitempty"`
+	Id          openapi_types.UUID `json:"id"`
+
+	// Mappings Field-mapping table. Keys are the output field names emitted in the response payload; values are simple expressions referenced against the source `native` payload (dot paths, basic arithmetic, string concatenation). Min 1 entry, max 50 entries. Each key must be <= 100 chars; each expression must be <= 500 chars and pass the safety check (no `eval`, no `function`, no `process`, etc.).
+	Mappings CustomSchemaMappings `json:"mappings"`
+	Name     string               `json:"name"`
+}
+
+// CustomSchemaUpdate Request body for `PATCH /v1/schema/custom/{id}`. All fields optional; omitted fields are left unchanged. `name` is intentionally NOT patchable — create a new schema and migrate consumers if you need to rename.
+type CustomSchemaUpdate struct {
+	// Active Toggle the schema on/off. When `false`, requests carrying this schema name in `X-Schema` fall back to `native`.
+	Active      *bool   `json:"active,omitempty"`
+	Description *string `json:"description,omitempty"`
+
+	// Mappings Field-mapping table. Keys are the output field names emitted in the response payload; values are simple expressions referenced against the source `native` payload (dot paths, basic arithmetic, string concatenation). Min 1 entry, max 50 entries. Each key must be <= 100 chars; each expression must be <= 500 chars and pass the safety check (no `eval`, no `function`, no `process`, etc.).
+	Mappings *CustomSchemaMappings `json:"mappings,omitempty"`
 }
 
 // Error defines model for Error.
@@ -2608,34 +2687,44 @@ type PropertyListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
-// Reservation A booking/reservation from a connected PMS
+// Reservation A booking/reservation from a connected PMS. Identical shape between list-row (`GET /v1/reservations`) and detail (`GET /v1/reservations/{id}`) — SDK consumers can use the same type for both.
 type Reservation struct {
-	CheckIn  *openapi_types.Date `json:"checkIn,omitempty"`
-	CheckOut *openapi_types.Date `json:"checkOut,omitempty"`
+	CheckIn  openapi_types.Date `json:"checkIn"`
+	CheckOut openapi_types.Date `json:"checkOut"`
 
-	// ConfirmationCode PMS confirmation code
-	ConfirmationCode *string              `json:"confirmationCode,omitempty"`
-	Currency         *string              `json:"currency,omitempty"`
-	GuestCount       *int                 `json:"guestCount,omitempty"`
-	GuestEmail       *openapi_types.Email `json:"guestEmail,omitempty"`
-	GuestFirstName   *string              `json:"guestFirstName,omitempty"`
-	GuestLastName    *string              `json:"guestLastName,omitempty"`
-	GuestPhone       *string              `json:"guestPhone,omitempty"`
+	// ConfirmationCode Channel-side confirmation code (Airbnb HMxxx, Booking.com numeric, etc.).
+	ConfirmationCode string `json:"confirmationCode"`
+
+	// CreatedAt When the reservation row was created in Repull (not the booking-on-channel timestamp).
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Currency ISO 4217 currency code.
+	Currency string `json:"currency"`
+
+	// GuestDetails Raw guest details from the source channel (firstName, lastName, email, phone, count, etc.). Shape varies by platform — use the dedicated guest endpoint for a normalized profile.
+	GuestDetails map[string]interface{} `json:"guestDetails"`
+
+	// GuestId Internal Repull guest ID. Use `GET /v1/guests/{id}` for the full profile.
+	GuestId int `json:"guestId"`
+
+	// GuestName Pre-resolved display name (`firstName lastName`) extracted from `guestDetails`. Null when no first name is available.
+	GuestName *string `json:"guestName,omitempty"`
 
 	// Id Internal Repull reservation ID
-	Id *int `json:"id,omitempty"`
+	Id int `json:"id"`
 
-	// Platform Booking source
+	// ListingId Internal Repull listing ID this reservation is on.
+	ListingId int `json:"listingId"`
+
+	// Platform Booking source. Lowercase. May be null on legacy rows.
 	Platform *ReservationPlatform `json:"platform,omitempty"`
+	Status   ReservationStatus    `json:"status"`
 
-	// PropertyId Property ID
-	PropertyId *int               `json:"propertyId,omitempty"`
-	Provider   *string            `json:"provider,omitempty"`
-	Status     *ReservationStatus `json:"status,omitempty"`
-	TotalPrice *float32           `json:"totalPrice,omitempty"`
+	// TotalPrice Decimal-as-string (precision 10, scale 2) to preserve precision across mixed-currency totals.
+	TotalPrice string `json:"totalPrice"`
 }
 
-// ReservationPlatform Booking source
+// ReservationPlatform Booking source. Lowercase. May be null on legacy rows.
 type ReservationPlatform string
 
 // ReservationStatus defines model for Reservation.Status.
@@ -2880,6 +2969,9 @@ type WebhookSubscription struct {
 // WebhookSubscriptionStatus defines model for WebhookSubscription.Status.
 type WebhookSubscriptionStatus string
 
+// XSchemaHeader defines model for XSchemaHeader.
+type XSchemaHeader = string
+
 // Limit defines model for limit.
 type Limit = int
 
@@ -2976,6 +3068,9 @@ type ListConversationsParams struct {
 
 	// Status Filter by archive status. `archived` currently always returns an empty page — kept for forward-compat.
 	Status *ListConversationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
 // ListConversationsParamsPlatform defines parameters for ListConversations.
@@ -2983,6 +3078,12 @@ type ListConversationsParamsPlatform string
 
 // ListConversationsParamsStatus defines parameters for ListConversations.
 type ListConversationsParamsStatus string
+
+// GetConversationParams defines parameters for GetConversation.
+type GetConversationParams struct {
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
 
 // ListConversationMessagesParams defines parameters for ListConversationMessages.
 type ListConversationMessagesParams struct {
@@ -2992,6 +3093,9 @@ type ListConversationMessagesParams struct {
 
 	// Order `desc` (default) returns newest first. `asc` returns chronological replay.
 	Order *ListConversationMessagesParamsOrder `form:"order,omitempty" json:"order,omitempty"`
+
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
 // ListConversationMessagesParamsOrder defines parameters for ListConversationMessages.
@@ -3013,6 +3117,15 @@ type ListGuestsParams struct {
 
 	// ListingId Restrict to guests with at least one reservation on the given internal Repull listing id.
 	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
+
+// GetGuestParams defines parameters for GetGuest.
+type GetGuestParams struct {
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
 // ListListingsParams defines parameters for ListListings.
@@ -3031,6 +3144,9 @@ type ListListingsParams struct {
 
 	// Channel Restrict to listings published on the given channel (`airbnb`, `booking`, `vrbo`, etc.). Joins through `listing_platform_links` and matches active links only.
 	Channel *string `form:"channel,omitempty" json:"channel,omitempty"`
+
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
 // ListListingsParamsStatus defines parameters for ListListings.
@@ -3164,6 +3280,9 @@ type ListReservationsParams struct {
 
 	// CheckInTo Deprecated alias for `check_in_before`.
 	CheckInTo *openapi_types.Date `form:"checkInTo,omitempty" json:"checkInTo,omitempty"`
+
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
 // ListReservationsParamsStatus defines parameters for ListReservations.
@@ -3181,6 +3300,12 @@ type CreateReservationJSONBody struct {
 	GuestPhone     *string            `json:"guestPhone,omitempty"`
 	PropertyId     int                `json:"propertyId"`
 	TotalPrice     *float32           `json:"totalPrice,omitempty"`
+}
+
+// GetReservationParams defines parameters for GetReservation.
+type GetReservationParams struct {
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
 // UpdateReservationJSONBody defines parameters for UpdateReservation.
@@ -3208,6 +3333,9 @@ type ListReviewsParams struct {
 
 	// ReviewerRole `guest` (default) — reviews written by guests about the host/property. `host` — reviews written by the host about guests. `all` — both.
 	ReviewerRole *ListReviewsParamsReviewerRole `form:"reviewer_role,omitempty" json:"reviewer_role,omitempty"`
+
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
 // ListReviewsParamsPlatform defines parameters for ListReviews.
@@ -3218,6 +3346,12 @@ type ListReviewsParamsStatus string
 
 // ListReviewsParamsReviewerRole defines parameters for ListReviews.
 type ListReviewsParamsReviewerRole string
+
+// GetReviewParams defines parameters for GetReview.
+type GetReviewParams struct {
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
 
 // CreateWebhookJSONBody defines parameters for CreateWebhook.
 type CreateWebhookJSONBody struct {
@@ -3305,6 +3439,12 @@ type CreateReservationJSONRequestBody CreateReservationJSONBody
 
 // UpdateReservationJSONRequestBody defines body for UpdateReservation for application/json ContentType.
 type UpdateReservationJSONRequestBody UpdateReservationJSONBody
+
+// CreateCustomSchemaJSONRequestBody defines body for CreateCustomSchema for application/json ContentType.
+type CreateCustomSchemaJSONRequestBody = CustomSchemaCreate
+
+// UpdateCustomSchemaJSONRequestBody defines body for UpdateCustomSchema for application/json ContentType.
+type UpdateCustomSchemaJSONRequestBody = CustomSchemaUpdate
 
 // CreateWebhookJSONRequestBody defines body for CreateWebhook for application/json ContentType.
 type CreateWebhookJSONRequestBody CreateWebhookJSONBody
