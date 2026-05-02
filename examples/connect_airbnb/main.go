@@ -33,10 +33,10 @@ func main() {
 
 	ctx := context.Background()
 	provider := repull.Provider("airbnb")
-	access := repull.PostV1ConnectProviderJSONBodyAccessType("full_access")
+	access := repull.FullAccess
 	redirect := "https://example.com/airbnb/return"
 
-	mint, err := client.PostV1ConnectProviderWithResponse(ctx, provider, repull.PostV1ConnectProviderJSONRequestBody{
+	mint, err := client.CreateConnectionWithResponse(ctx, provider, repull.CreateConnectionJSONRequestBody{
 		AccessType:  &access,
 		RedirectUrl: &redirect,
 	})
@@ -55,7 +55,7 @@ func main() {
 	fmt.Println("Polling connection status every 5s. Ctrl-C to exit.")
 
 	for {
-		st, err := client.GetV1ConnectProviderWithResponse(ctx, provider)
+		st, err := client.GetConnectStatusWithResponse(ctx, provider)
 		if err != nil {
 			log.Printf("status check: %v", err)
 		} else {

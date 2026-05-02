@@ -4,6 +4,8 @@
 package repull
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -15,25 +17,178 @@ const (
 
 // Defines values for AIOperationOperation.
 const (
-	ClassifyIntent  AIOperationOperation = "classify-intent"
-	GenerateListing AIOperationOperation = "generate-listing"
-	PriceSuggestion AIOperationOperation = "price-suggestion"
-	RespondToGuest  AIOperationOperation = "respond-to-guest"
-	ReviewResponse  AIOperationOperation = "review-response"
+	AIOperationOperationClassifyIntent  AIOperationOperation = "classify-intent"
+	AIOperationOperationGenerateListing AIOperationOperation = "generate-listing"
+	AIOperationOperationPriceSuggestion AIOperationOperation = "price-suggestion"
+	AIOperationOperationRespondToGuest  AIOperationOperation = "respond-to-guest"
+	AIOperationOperationReviewResponse  AIOperationOperation = "review-response"
 )
 
 // Valid indicates whether the value is a known member of the AIOperationOperation enum.
 func (e AIOperationOperation) Valid() bool {
 	switch e {
-	case ClassifyIntent:
+	case AIOperationOperationClassifyIntent:
 		return true
-	case GenerateListing:
+	case AIOperationOperationGenerateListing:
 		return true
-	case PriceSuggestion:
+	case AIOperationOperationPriceSuggestion:
 		return true
-	case RespondToGuest:
+	case AIOperationOperationRespondToGuest:
 		return true
-	case ReviewResponse:
+	case AIOperationOperationReviewResponse:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbReservationStatus.
+const (
+	AirbnbReservationStatusAccepted  AirbnbReservationStatus = "accepted"
+	AirbnbReservationStatusCancelled AirbnbReservationStatus = "cancelled"
+	AirbnbReservationStatusDenied    AirbnbReservationStatus = "denied"
+	AirbnbReservationStatusInquiry   AirbnbReservationStatus = "inquiry"
+	AirbnbReservationStatusPending   AirbnbReservationStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbReservationStatus enum.
+func (e AirbnbReservationStatus) Valid() bool {
+	switch e {
+	case AirbnbReservationStatusAccepted:
+		return true
+	case AirbnbReservationStatusCancelled:
+		return true
+	case AirbnbReservationStatusDenied:
+		return true
+	case AirbnbReservationStatusInquiry:
+		return true
+	case AirbnbReservationStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingConnectRoomsResponseStatus.
+const (
+	BookingConnectRoomsResponseStatusCompleted BookingConnectRoomsResponseStatus = "completed"
+	BookingConnectRoomsResponseStatusImporting BookingConnectRoomsResponseStatus = "importing"
+	BookingConnectRoomsResponseStatusReady     BookingConnectRoomsResponseStatus = "ready"
+)
+
+// Valid indicates whether the value is a known member of the BookingConnectRoomsResponseStatus enum.
+func (e BookingConnectRoomsResponseStatus) Valid() bool {
+	switch e {
+	case BookingConnectRoomsResponseStatusCompleted:
+		return true
+	case BookingConnectRoomsResponseStatusImporting:
+		return true
+	case BookingConnectRoomsResponseStatusReady:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BulkPricingFailureErrorCode.
+const (
+	CalendarUpdateFailed     BulkPricingFailureErrorCode = "calendar_update_failed"
+	InternalError            BulkPricingFailureErrorCode = "internal_error"
+	NoPendingRecommendations BulkPricingFailureErrorCode = "no_pending_recommendations"
+	NotOwned                 BulkPricingFailureErrorCode = "not_owned"
+)
+
+// Valid indicates whether the value is a known member of the BulkPricingFailureErrorCode enum.
+func (e BulkPricingFailureErrorCode) Valid() bool {
+	switch e {
+	case CalendarUpdateFailed:
+		return true
+	case InternalError:
+		return true
+	case NoPendingRecommendations:
+		return true
+	case NotOwned:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BulkPricingRequestAction.
+const (
+	BulkPricingRequestActionApply   BulkPricingRequestAction = "apply"
+	BulkPricingRequestActionDecline BulkPricingRequestAction = "decline"
+)
+
+// Valid indicates whether the value is a known member of the BulkPricingRequestAction enum.
+func (e BulkPricingRequestAction) Valid() bool {
+	switch e {
+	case BulkPricingRequestActionApply:
+		return true
+	case BulkPricingRequestActionDecline:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectProviderCategory.
+const (
+	Ota ConnectProviderCategory = "ota"
+	Pms ConnectProviderCategory = "pms"
+)
+
+// Valid indicates whether the value is a known member of the ConnectProviderCategory enum.
+func (e ConnectProviderCategory) Valid() bool {
+	switch e {
+	case Ota:
+		return true
+	case Pms:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectProviderConnectPattern.
+const (
+	ConnectProviderConnectPatternActivation  ConnectProviderConnectPattern = "activation"
+	ConnectProviderConnectPatternClaim       ConnectProviderConnectPattern = "claim"
+	ConnectProviderConnectPatternCredentials ConnectProviderConnectPattern = "credentials"
+	ConnectProviderConnectPatternOauth       ConnectProviderConnectPattern = "oauth"
+)
+
+// Valid indicates whether the value is a known member of the ConnectProviderConnectPattern enum.
+func (e ConnectProviderConnectPattern) Valid() bool {
+	switch e {
+	case ConnectProviderConnectPatternActivation:
+		return true
+	case ConnectProviderConnectPatternClaim:
+		return true
+	case ConnectProviderConnectPatternCredentials:
+		return true
+	case ConnectProviderConnectPatternOauth:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectProviderStatus.
+const (
+	Beta       ConnectProviderStatus = "beta"
+	ComingSoon ConnectProviderStatus = "coming-soon"
+	Live       ConnectProviderStatus = "live"
+)
+
+// Valid indicates whether the value is a known member of the ConnectProviderStatus enum.
+func (e ConnectProviderStatus) Valid() bool {
+	switch e {
+	case Beta:
+		return true
+	case ComingSoon:
+		return true
+	case Live:
 		return true
 	default:
 		return false
@@ -82,21 +237,501 @@ func (e ConnectionStatus) Valid() bool {
 	}
 }
 
-// Defines values for MessageSenderType.
+// Defines values for ConversationPlatform.
 const (
-	MessageSenderTypeGuest  MessageSenderType = "guest"
-	MessageSenderTypeHost   MessageSenderType = "host"
-	MessageSenderTypeSystem MessageSenderType = "system"
+	ConversationPlatformAirbnb  ConversationPlatform = "airbnb"
+	ConversationPlatformBooking ConversationPlatform = "booking"
+	ConversationPlatformEmail   ConversationPlatform = "email"
+	ConversationPlatformVrbo    ConversationPlatform = "vrbo"
+	ConversationPlatformWebsite ConversationPlatform = "website"
 )
 
-// Valid indicates whether the value is a known member of the MessageSenderType enum.
-func (e MessageSenderType) Valid() bool {
+// Valid indicates whether the value is a known member of the ConversationPlatform enum.
+func (e ConversationPlatform) Valid() bool {
 	switch e {
-	case MessageSenderTypeGuest:
+	case ConversationPlatformAirbnb:
 		return true
-	case MessageSenderTypeHost:
+	case ConversationPlatformBooking:
 		return true
-	case MessageSenderTypeSystem:
+	case ConversationPlatformEmail:
+		return true
+	case ConversationPlatformVrbo:
+		return true
+	case ConversationPlatformWebsite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConversationStatus.
+const (
+	ConversationStatusArchived ConversationStatus = "archived"
+	ConversationStatusOpen     ConversationStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the ConversationStatus enum.
+func (e ConversationStatus) Valid() bool {
+	switch e {
+	case ConversationStatusArchived:
+		return true
+	case ConversationStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConversationDetailPlatform.
+const (
+	ConversationDetailPlatformAirbnb  ConversationDetailPlatform = "airbnb"
+	ConversationDetailPlatformBooking ConversationDetailPlatform = "booking"
+	ConversationDetailPlatformEmail   ConversationDetailPlatform = "email"
+	ConversationDetailPlatformVrbo    ConversationDetailPlatform = "vrbo"
+	ConversationDetailPlatformWebsite ConversationDetailPlatform = "website"
+)
+
+// Valid indicates whether the value is a known member of the ConversationDetailPlatform enum.
+func (e ConversationDetailPlatform) Valid() bool {
+	switch e {
+	case ConversationDetailPlatformAirbnb:
+		return true
+	case ConversationDetailPlatformBooking:
+		return true
+	case ConversationDetailPlatformEmail:
+		return true
+	case ConversationDetailPlatformVrbo:
+		return true
+	case ConversationDetailPlatformWebsite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConversationDetailStatus.
+const (
+	ConversationDetailStatusArchived ConversationDetailStatus = "archived"
+	ConversationDetailStatusOpen     ConversationDetailStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the ConversationDetailStatus enum.
+func (e ConversationDetailStatus) Valid() bool {
+	switch e {
+	case ConversationDetailStatusArchived:
+		return true
+	case ConversationDetailStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingStatus.
+const (
+	ListingStatusActive   ListingStatus = "active"
+	ListingStatusArchived ListingStatus = "archived"
+	ListingStatusInactive ListingStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the ListingStatus enum.
+func (e ListingStatus) Valid() bool {
+	switch e {
+	case ListingStatusActive:
+		return true
+	case ListingStatusArchived:
+		return true
+	case ListingStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingCreateRequestCancellationPolicy.
+const (
+	Flexible    ListingCreateRequestCancellationPolicy = "flexible"
+	Moderate    ListingCreateRequestCancellationPolicy = "moderate"
+	Strict      ListingCreateRequestCancellationPolicy = "strict"
+	SuperStrict ListingCreateRequestCancellationPolicy = "super_strict"
+)
+
+// Valid indicates whether the value is a known member of the ListingCreateRequestCancellationPolicy enum.
+func (e ListingCreateRequestCancellationPolicy) Valid() bool {
+	switch e {
+	case Flexible:
+		return true
+	case Moderate:
+		return true
+	case Strict:
+		return true
+	case SuperStrict:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingGenerateContentRequestStyle.
+const (
+	Concise      ListingGenerateContentRequestStyle = "concise"
+	Professional ListingGenerateContentRequestStyle = "professional"
+	Warm         ListingGenerateContentRequestStyle = "warm"
+)
+
+// Valid indicates whether the value is a known member of the ListingGenerateContentRequestStyle enum.
+func (e ListingGenerateContentRequestStyle) Valid() bool {
+	switch e {
+	case Concise:
+		return true
+	case Professional:
+		return true
+	case Warm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPricingApplyRequestAction.
+const (
+	ListingPricingApplyRequestActionApply   ListingPricingApplyRequestAction = "apply"
+	ListingPricingApplyRequestActionDecline ListingPricingApplyRequestAction = "decline"
+)
+
+// Valid indicates whether the value is a known member of the ListingPricingApplyRequestAction enum.
+func (e ListingPricingApplyRequestAction) Valid() bool {
+	switch e {
+	case ListingPricingApplyRequestActionApply:
+		return true
+	case ListingPricingApplyRequestActionDecline:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPricingHistoryEntryStatus.
+const (
+	ListingPricingHistoryEntryStatusApplied    ListingPricingHistoryEntryStatus = "applied"
+	ListingPricingHistoryEntryStatusDeclined   ListingPricingHistoryEntryStatus = "declined"
+	ListingPricingHistoryEntryStatusOverridden ListingPricingHistoryEntryStatus = "overridden"
+	ListingPricingHistoryEntryStatusPending    ListingPricingHistoryEntryStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the ListingPricingHistoryEntryStatus enum.
+func (e ListingPricingHistoryEntryStatus) Valid() bool {
+	switch e {
+	case ListingPricingHistoryEntryStatusApplied:
+		return true
+	case ListingPricingHistoryEntryStatusDeclined:
+		return true
+	case ListingPricingHistoryEntryStatusOverridden:
+		return true
+	case ListingPricingHistoryEntryStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPricingRecommendationStatus.
+const (
+	ListingPricingRecommendationStatusApplied  ListingPricingRecommendationStatus = "applied"
+	ListingPricingRecommendationStatusDeclined ListingPricingRecommendationStatus = "declined"
+	ListingPricingRecommendationStatusPending  ListingPricingRecommendationStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the ListingPricingRecommendationStatus enum.
+func (e ListingPricingRecommendationStatus) Valid() bool {
+	switch e {
+	case ListingPricingRecommendationStatusApplied:
+		return true
+	case ListingPricingRecommendationStatusDeclined:
+		return true
+	case ListingPricingRecommendationStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPricingStrategyCompPositionTarget.
+const (
+	ListingPricingStrategyCompPositionTargetAbove ListingPricingStrategyCompPositionTarget = "above"
+	ListingPricingStrategyCompPositionTargetBelow ListingPricingStrategyCompPositionTarget = "below"
+	ListingPricingStrategyCompPositionTargetMatch ListingPricingStrategyCompPositionTarget = "match"
+)
+
+// Valid indicates whether the value is a known member of the ListingPricingStrategyCompPositionTarget enum.
+func (e ListingPricingStrategyCompPositionTarget) Valid() bool {
+	switch e {
+	case ListingPricingStrategyCompPositionTargetAbove:
+		return true
+	case ListingPricingStrategyCompPositionTargetBelow:
+		return true
+	case ListingPricingStrategyCompPositionTargetMatch:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPricingStrategyMode.
+const (
+	ListingPricingStrategyModeAuto      ListingPricingStrategyMode = "auto"
+	ListingPricingStrategyModeRecommend ListingPricingStrategyMode = "recommend"
+)
+
+// Valid indicates whether the value is a known member of the ListingPricingStrategyMode enum.
+func (e ListingPricingStrategyMode) Valid() bool {
+	switch e {
+	case ListingPricingStrategyModeAuto:
+		return true
+	case ListingPricingStrategyModeRecommend:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPricingStrategyInputCompPositionTarget.
+const (
+	ListingPricingStrategyInputCompPositionTargetAbove ListingPricingStrategyInputCompPositionTarget = "above"
+	ListingPricingStrategyInputCompPositionTargetBelow ListingPricingStrategyInputCompPositionTarget = "below"
+	ListingPricingStrategyInputCompPositionTargetMatch ListingPricingStrategyInputCompPositionTarget = "match"
+)
+
+// Valid indicates whether the value is a known member of the ListingPricingStrategyInputCompPositionTarget enum.
+func (e ListingPricingStrategyInputCompPositionTarget) Valid() bool {
+	switch e {
+	case ListingPricingStrategyInputCompPositionTargetAbove:
+		return true
+	case ListingPricingStrategyInputCompPositionTargetBelow:
+		return true
+	case ListingPricingStrategyInputCompPositionTargetMatch:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPricingStrategyInputMode.
+const (
+	ListingPricingStrategyInputModeAuto      ListingPricingStrategyInputMode = "auto"
+	ListingPricingStrategyInputModeRecommend ListingPricingStrategyInputMode = "recommend"
+)
+
+// Valid indicates whether the value is a known member of the ListingPricingStrategyInputMode enum.
+func (e ListingPricingStrategyInputMode) Valid() bool {
+	switch e {
+	case ListingPricingStrategyInputModeAuto:
+		return true
+	case ListingPricingStrategyInputModeRecommend:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPublishResponseChannel.
+const (
+	ListingPublishResponseChannelAirbnb  ListingPublishResponseChannel = "airbnb"
+	ListingPublishResponseChannelBooking ListingPublishResponseChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the ListingPublishResponseChannel enum.
+func (e ListingPublishResponseChannel) Valid() bool {
+	switch e {
+	case ListingPublishResponseChannelAirbnb:
+		return true
+	case ListingPublishResponseChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPublishStatusChannelPushStatus.
+const (
+	ListingPublishStatusChannelPushStatusError   ListingPublishStatusChannelPushStatus = "error"
+	ListingPublishStatusChannelPushStatusIdle    ListingPublishStatusChannelPushStatus = "idle"
+	ListingPublishStatusChannelPushStatusPushing ListingPublishStatusChannelPushStatus = "pushing"
+	ListingPublishStatusChannelPushStatusSuccess ListingPublishStatusChannelPushStatus = "success"
+)
+
+// Valid indicates whether the value is a known member of the ListingPublishStatusChannelPushStatus enum.
+func (e ListingPublishStatusChannelPushStatus) Valid() bool {
+	switch e {
+	case ListingPublishStatusChannelPushStatusError:
+		return true
+	case ListingPublishStatusChannelPushStatusIdle:
+		return true
+	case ListingPublishStatusChannelPushStatusPushing:
+		return true
+	case ListingPublishStatusChannelPushStatusSuccess:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingQualityTierTier.
+const (
+	ListingQualityTierTierBudget   ListingQualityTierTier = "budget"
+	ListingQualityTierTierLuxury   ListingQualityTierTier = "luxury"
+	ListingQualityTierTierStandard ListingQualityTierTier = "standard"
+	ListingQualityTierTierUpscale  ListingQualityTierTier = "upscale"
+)
+
+// Valid indicates whether the value is a known member of the ListingQualityTierTier enum.
+func (e ListingQualityTierTier) Valid() bool {
+	switch e {
+	case ListingQualityTierTierBudget:
+		return true
+	case ListingQualityTierTierLuxury:
+		return true
+	case ListingQualityTierTierStandard:
+		return true
+	case ListingQualityTierTierUpscale:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingSegmentQualityTier.
+const (
+	ListingSegmentQualityTierBudget      ListingSegmentQualityTier = "budget"
+	ListingSegmentQualityTierLessThannil ListingSegmentQualityTier = "<nil>"
+	ListingSegmentQualityTierLuxury      ListingSegmentQualityTier = "luxury"
+	ListingSegmentQualityTierStandard    ListingSegmentQualityTier = "standard"
+	ListingSegmentQualityTierUpscale     ListingSegmentQualityTier = "upscale"
+)
+
+// Valid indicates whether the value is a known member of the ListingSegmentQualityTier enum.
+func (e ListingSegmentQualityTier) Valid() bool {
+	switch e {
+	case ListingSegmentQualityTierBudget:
+		return true
+	case ListingSegmentQualityTierLessThannil:
+		return true
+	case ListingSegmentQualityTierLuxury:
+		return true
+	case ListingSegmentQualityTierStandard:
+		return true
+	case ListingSegmentQualityTierUpscale:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingSegmentRecommendationKind.
+const (
+	LowDnaCoverage  ListingSegmentRecommendationKind = "low_dna_coverage"
+	MySegment       ListingSegmentRecommendationKind = "my_segment"
+	NoGeo           ListingSegmentRecommendationKind = "no_geo"
+	NoMarketSignal  ListingSegmentRecommendationKind = "no_market_signal"
+	SegmentNotFound ListingSegmentRecommendationKind = "segment_not_found"
+	SelfNotScored   ListingSegmentRecommendationKind = "self_not_scored"
+	TierUplift      ListingSegmentRecommendationKind = "tier_uplift"
+)
+
+// Valid indicates whether the value is a known member of the ListingSegmentRecommendationKind enum.
+func (e ListingSegmentRecommendationKind) Valid() bool {
+	switch e {
+	case LowDnaCoverage:
+		return true
+	case MySegment:
+		return true
+	case NoGeo:
+		return true
+	case NoMarketSignal:
+		return true
+	case SegmentNotFound:
+		return true
+	case SelfNotScored:
+		return true
+	case TierUplift:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingSegmentsResponseLevel.
+const (
+	ListingSegmentsResponseLevelCompSet ListingSegmentsResponseLevel = "comp_set"
+	ListingSegmentsResponseLevelMarket  ListingSegmentsResponseLevel = "market"
+)
+
+// Valid indicates whether the value is a known member of the ListingSegmentsResponseLevel enum.
+func (e ListingSegmentsResponseLevel) Valid() bool {
+	switch e {
+	case ListingSegmentsResponseLevelCompSet:
+		return true
+	case ListingSegmentsResponseLevelMarket:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingSegmentsResponseMyQualityTier.
+const (
+	Budget      ListingSegmentsResponseMyQualityTier = "budget"
+	LessThannil ListingSegmentsResponseMyQualityTier = "<nil>"
+	Luxury      ListingSegmentsResponseMyQualityTier = "luxury"
+	Standard    ListingSegmentsResponseMyQualityTier = "standard"
+	Upscale     ListingSegmentsResponseMyQualityTier = "upscale"
+)
+
+// Valid indicates whether the value is a known member of the ListingSegmentsResponseMyQualityTier enum.
+func (e ListingSegmentsResponseMyQualityTier) Valid() bool {
+	switch e {
+	case Budget:
+		return true
+	case LessThannil:
+		return true
+	case Luxury:
+		return true
+	case Standard:
+		return true
+	case Upscale:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MarketMyListingType.
+const (
+	Mine MarketMyListingType = "mine"
+)
+
+// Valid indicates whether the value is a known member of the MarketMyListingType enum.
+func (e MarketMyListingType) Valid() bool {
+	switch e {
+	case Mine:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MessageDirection.
+const (
+	Inbound  MessageDirection = "inbound"
+	Outbound MessageDirection = "outbound"
+)
+
+// Valid indicates whether the value is a known member of the MessageDirection enum.
+func (e MessageDirection) Valid() bool {
+	switch e {
+	case Inbound:
+		return true
+	case Outbound:
 		return true
 	default:
 		return false
@@ -105,31 +740,31 @@ func (e MessageSenderType) Valid() bool {
 
 // Defines values for ReservationPlatform.
 const (
-	Airbnb     ReservationPlatform = "airbnb"
-	BookingCom ReservationPlatform = "booking.com"
-	Direct     ReservationPlatform = "direct"
-	Other      ReservationPlatform = "other"
-	Owner      ReservationPlatform = "owner"
-	Vrbo       ReservationPlatform = "vrbo"
-	Website    ReservationPlatform = "website"
+	ReservationPlatformAirbnb     ReservationPlatform = "airbnb"
+	ReservationPlatformBookingCom ReservationPlatform = "booking.com"
+	ReservationPlatformDirect     ReservationPlatform = "direct"
+	ReservationPlatformOther      ReservationPlatform = "other"
+	ReservationPlatformOwner      ReservationPlatform = "owner"
+	ReservationPlatformVrbo       ReservationPlatform = "vrbo"
+	ReservationPlatformWebsite    ReservationPlatform = "website"
 )
 
 // Valid indicates whether the value is a known member of the ReservationPlatform enum.
 func (e ReservationPlatform) Valid() bool {
 	switch e {
-	case Airbnb:
+	case ReservationPlatformAirbnb:
 		return true
-	case BookingCom:
+	case ReservationPlatformBookingCom:
 		return true
-	case Direct:
+	case ReservationPlatformDirect:
 		return true
-	case Other:
+	case ReservationPlatformOther:
 		return true
-	case Owner:
+	case ReservationPlatformOwner:
 		return true
-	case Vrbo:
+	case ReservationPlatformVrbo:
 		return true
-	case Website:
+	case ReservationPlatformWebsite:
 		return true
 	default:
 		return false
@@ -160,15 +795,99 @@ func (e ReservationStatus) Valid() bool {
 	}
 }
 
-// Defines values for PostV1BillingJSONBodyPlan.
+// Defines values for ReviewPlatform.
 const (
-	Growth  PostV1BillingJSONBodyPlan = "growth"
-	Scale   PostV1BillingJSONBodyPlan = "scale"
-	Starter PostV1BillingJSONBodyPlan = "starter"
+	ReviewPlatformAirbnb  ReviewPlatform = "airbnb"
+	ReviewPlatformBooking ReviewPlatform = "booking"
+	ReviewPlatformVrbo    ReviewPlatform = "vrbo"
 )
 
-// Valid indicates whether the value is a known member of the PostV1BillingJSONBodyPlan enum.
-func (e PostV1BillingJSONBodyPlan) Valid() bool {
+// Valid indicates whether the value is a known member of the ReviewPlatform enum.
+func (e ReviewPlatform) Valid() bool {
+	switch e {
+	case ReviewPlatformAirbnb:
+		return true
+	case ReviewPlatformBooking:
+		return true
+	case ReviewPlatformVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReviewReviewerRole.
+const (
+	ReviewReviewerRoleGuest ReviewReviewerRole = "guest"
+	ReviewReviewerRoleHost  ReviewReviewerRole = "host"
+)
+
+// Valid indicates whether the value is a known member of the ReviewReviewerRole enum.
+func (e ReviewReviewerRole) Valid() bool {
+	switch e {
+	case ReviewReviewerRoleGuest:
+		return true
+	case ReviewReviewerRoleHost:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SelectProviderResponsePattern.
+const (
+	SelectProviderResponsePatternActivation  SelectProviderResponsePattern = "activation"
+	SelectProviderResponsePatternClaim       SelectProviderResponsePattern = "claim"
+	SelectProviderResponsePatternCredentials SelectProviderResponsePattern = "credentials"
+	SelectProviderResponsePatternOauth       SelectProviderResponsePattern = "oauth"
+)
+
+// Valid indicates whether the value is a known member of the SelectProviderResponsePattern enum.
+func (e SelectProviderResponsePattern) Valid() bool {
+	switch e {
+	case SelectProviderResponsePatternActivation:
+		return true
+	case SelectProviderResponsePatternClaim:
+		return true
+	case SelectProviderResponsePatternCredentials:
+		return true
+	case SelectProviderResponsePatternOauth:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebhookSubscriptionStatus.
+const (
+	WebhookSubscriptionStatusActive   WebhookSubscriptionStatus = "active"
+	WebhookSubscriptionStatusDisabled WebhookSubscriptionStatus = "disabled"
+	WebhookSubscriptionStatusPaused   WebhookSubscriptionStatus = "paused"
+)
+
+// Valid indicates whether the value is a known member of the WebhookSubscriptionStatus enum.
+func (e WebhookSubscriptionStatus) Valid() bool {
+	switch e {
+	case WebhookSubscriptionStatusActive:
+		return true
+	case WebhookSubscriptionStatusDisabled:
+		return true
+	case WebhookSubscriptionStatusPaused:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateBillingCheckoutJSONBodyPlan.
+const (
+	Growth  CreateBillingCheckoutJSONBodyPlan = "growth"
+	Scale   CreateBillingCheckoutJSONBodyPlan = "scale"
+	Starter CreateBillingCheckoutJSONBodyPlan = "starter"
+)
+
+// Valid indicates whether the value is a known member of the CreateBillingCheckoutJSONBodyPlan enum.
+func (e CreateBillingCheckoutJSONBodyPlan) Valid() bool {
 	switch e {
 	case Growth:
 		return true
@@ -181,14 +900,14 @@ func (e PostV1BillingJSONBodyPlan) Valid() bool {
 	}
 }
 
-// Defines values for PostV1ConnectProviderJSONBodyAccessType.
+// Defines values for CreateConnectionJSONBodyAccessType.
 const (
-	FullAccess PostV1ConnectProviderJSONBodyAccessType = "full_access"
-	ReadOnly   PostV1ConnectProviderJSONBodyAccessType = "read_only"
+	FullAccess CreateConnectionJSONBodyAccessType = "full_access"
+	ReadOnly   CreateConnectionJSONBodyAccessType = "read_only"
 )
 
-// Valid indicates whether the value is a known member of the PostV1ConnectProviderJSONBodyAccessType enum.
-func (e PostV1ConnectProviderJSONBodyAccessType) Valid() bool {
+// Valid indicates whether the value is a known member of the CreateConnectionJSONBodyAccessType enum.
+func (e CreateConnectionJSONBodyAccessType) Valid() bool {
 	switch e {
 	case FullAccess:
 		return true
@@ -199,24 +918,246 @@ func (e PostV1ConnectProviderJSONBodyAccessType) Valid() bool {
 	}
 }
 
-// Defines values for GetV1ReservationsParamsStatus.
+// Defines values for ListConversationsParamsPlatform.
 const (
-	GetV1ReservationsParamsStatusCancelled GetV1ReservationsParamsStatus = "cancelled"
-	GetV1ReservationsParamsStatusCompleted GetV1ReservationsParamsStatus = "completed"
-	GetV1ReservationsParamsStatusConfirmed GetV1ReservationsParamsStatus = "confirmed"
-	GetV1ReservationsParamsStatusPending   GetV1ReservationsParamsStatus = "pending"
+	ListConversationsParamsPlatformAirbnb  ListConversationsParamsPlatform = "airbnb"
+	ListConversationsParamsPlatformBooking ListConversationsParamsPlatform = "booking"
+	ListConversationsParamsPlatformEmail   ListConversationsParamsPlatform = "email"
+	ListConversationsParamsPlatformVrbo    ListConversationsParamsPlatform = "vrbo"
+	ListConversationsParamsPlatformWebsite ListConversationsParamsPlatform = "website"
 )
 
-// Valid indicates whether the value is a known member of the GetV1ReservationsParamsStatus enum.
-func (e GetV1ReservationsParamsStatus) Valid() bool {
+// Valid indicates whether the value is a known member of the ListConversationsParamsPlatform enum.
+func (e ListConversationsParamsPlatform) Valid() bool {
 	switch e {
-	case GetV1ReservationsParamsStatusCancelled:
+	case ListConversationsParamsPlatformAirbnb:
 		return true
-	case GetV1ReservationsParamsStatusCompleted:
+	case ListConversationsParamsPlatformBooking:
 		return true
-	case GetV1ReservationsParamsStatusConfirmed:
+	case ListConversationsParamsPlatformEmail:
 		return true
-	case GetV1ReservationsParamsStatusPending:
+	case ListConversationsParamsPlatformVrbo:
+		return true
+	case ListConversationsParamsPlatformWebsite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListConversationsParamsStatus.
+const (
+	ListConversationsParamsStatusArchived ListConversationsParamsStatus = "archived"
+	ListConversationsParamsStatusOpen     ListConversationsParamsStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the ListConversationsParamsStatus enum.
+func (e ListConversationsParamsStatus) Valid() bool {
+	switch e {
+	case ListConversationsParamsStatusArchived:
+		return true
+	case ListConversationsParamsStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListConversationMessagesParamsOrder.
+const (
+	Asc  ListConversationMessagesParamsOrder = "asc"
+	Desc ListConversationMessagesParamsOrder = "desc"
+)
+
+// Valid indicates whether the value is a known member of the ListConversationMessagesParamsOrder enum.
+func (e ListConversationMessagesParamsOrder) Valid() bool {
+	switch e {
+	case Asc:
+		return true
+	case Desc:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListListingsParamsStatus.
+const (
+	ListListingsParamsStatusActive   ListListingsParamsStatus = "active"
+	ListListingsParamsStatusArchived ListListingsParamsStatus = "archived"
+	ListListingsParamsStatusInactive ListListingsParamsStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the ListListingsParamsStatus enum.
+func (e ListListingsParamsStatus) Valid() bool {
+	switch e {
+	case ListListingsParamsStatusActive:
+		return true
+	case ListListingsParamsStatusArchived:
+		return true
+	case ListListingsParamsStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetListingSegmentsParamsLevel.
+const (
+	GetListingSegmentsParamsLevelCompSet GetListingSegmentsParamsLevel = "comp_set"
+	GetListingSegmentsParamsLevelMarket  GetListingSegmentsParamsLevel = "market"
+)
+
+// Valid indicates whether the value is a known member of the GetListingSegmentsParamsLevel enum.
+func (e GetListingSegmentsParamsLevel) Valid() bool {
+	switch e {
+	case GetListingSegmentsParamsLevelCompSet:
+		return true
+	case GetListingSegmentsParamsLevelMarket:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListMarketBrowseParamsSort.
+const (
+	ListingsDesc ListMarketBrowseParamsSort = "listings_desc"
+	NameAsc      ListMarketBrowseParamsSort = "name_asc"
+)
+
+// Valid indicates whether the value is a known member of the ListMarketBrowseParamsSort enum.
+func (e ListMarketBrowseParamsSort) Valid() bool {
+	switch e {
+	case ListingsDesc:
+		return true
+	case NameAsc:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListReservationsParamsStatus.
+const (
+	ListReservationsParamsStatusCancelled ListReservationsParamsStatus = "cancelled"
+	ListReservationsParamsStatusCompleted ListReservationsParamsStatus = "completed"
+	ListReservationsParamsStatusConfirmed ListReservationsParamsStatus = "confirmed"
+	ListReservationsParamsStatusPending   ListReservationsParamsStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the ListReservationsParamsStatus enum.
+func (e ListReservationsParamsStatus) Valid() bool {
+	switch e {
+	case ListReservationsParamsStatusCancelled:
+		return true
+	case ListReservationsParamsStatusCompleted:
+		return true
+	case ListReservationsParamsStatusConfirmed:
+		return true
+	case ListReservationsParamsStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListReviewsParamsPlatform.
+const (
+	Airbnb  ListReviewsParamsPlatform = "airbnb"
+	Booking ListReviewsParamsPlatform = "booking"
+	Vrbo    ListReviewsParamsPlatform = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the ListReviewsParamsPlatform enum.
+func (e ListReviewsParamsPlatform) Valid() bool {
+	switch e {
+	case Airbnb:
+		return true
+	case Booking:
+		return true
+	case Vrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListReviewsParamsStatus.
+const (
+	All        ListReviewsParamsStatus = "all"
+	Responded  ListReviewsParamsStatus = "responded"
+	Unanswered ListReviewsParamsStatus = "unanswered"
+)
+
+// Valid indicates whether the value is a known member of the ListReviewsParamsStatus enum.
+func (e ListReviewsParamsStatus) Valid() bool {
+	switch e {
+	case All:
+		return true
+	case Responded:
+		return true
+	case Unanswered:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListReviewsParamsReviewerRole.
+const (
+	ListReviewsParamsReviewerRoleAll   ListReviewsParamsReviewerRole = "all"
+	ListReviewsParamsReviewerRoleGuest ListReviewsParamsReviewerRole = "guest"
+	ListReviewsParamsReviewerRoleHost  ListReviewsParamsReviewerRole = "host"
+)
+
+// Valid indicates whether the value is a known member of the ListReviewsParamsReviewerRole enum.
+func (e ListReviewsParamsReviewerRole) Valid() bool {
+	switch e {
+	case ListReviewsParamsReviewerRoleAll:
+		return true
+	case ListReviewsParamsReviewerRoleGuest:
+		return true
+	case ListReviewsParamsReviewerRoleHost:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateWebhookJSONBodyStatus.
+const (
+	Active UpdateWebhookJSONBodyStatus = "active"
+	Paused UpdateWebhookJSONBodyStatus = "paused"
+)
+
+// Valid indicates whether the value is a known member of the UpdateWebhookJSONBodyStatus enum.
+func (e UpdateWebhookJSONBodyStatus) Valid() bool {
+	switch e {
+	case Active:
+		return true
+	case Paused:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListWebhookDeliveriesParamsStatus.
+const (
+	ListWebhookDeliveriesParamsStatusAll     ListWebhookDeliveriesParamsStatus = "all"
+	ListWebhookDeliveriesParamsStatusFailure ListWebhookDeliveriesParamsStatus = "failure"
+	ListWebhookDeliveriesParamsStatusSuccess ListWebhookDeliveriesParamsStatus = "success"
+)
+
+// Valid indicates whether the value is a known member of the ListWebhookDeliveriesParamsStatus enum.
+func (e ListWebhookDeliveriesParamsStatus) Valid() bool {
+	switch e {
+	case ListWebhookDeliveriesParamsStatusAll:
+		return true
+	case ListWebhookDeliveriesParamsStatusFailure:
+		return true
+	case ListWebhookDeliveriesParamsStatusSuccess:
 		return true
 	default:
 		return false
@@ -235,12 +1176,293 @@ type AIOperation struct {
 // AIOperationOperation AI operation to perform
 type AIOperationOperation string
 
+// AirbnbListing An Airbnb listing in the host account. Mirrors the Airbnb partner API shape with light normalization.
+type AirbnbListing struct {
+	Bathrooms *float32 `json:"bathrooms,omitempty"`
+	Bedrooms  *int     `json:"bedrooms,omitempty"`
+
+	// Id Airbnb listing ID
+	Id        *string `json:"id,omitempty"`
+	MaxGuests *int    `json:"maxGuests,omitempty"`
+
+	// Name Listing title
+	Name         *string `json:"name,omitempty"`
+	PropertyType *string `json:"propertyType,omitempty"`
+	RoomType     *string `json:"roomType,omitempty"`
+
+	// Status Listing status (active, unlisted, etc.)
+	Status       *string `json:"status,omitempty"`
+	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
+}
+
+// AirbnbListingListResponse defines model for AirbnbListingListResponse.
+type AirbnbListingListResponse struct {
+	Data       *[]AirbnbListing `json:"data,omitempty"`
+	Pagination *Pagination      `json:"pagination,omitempty"`
+}
+
+// AirbnbReservation An Airbnb reservation as returned by the channel API. Use `confirmationCode` to address it in Airbnb operations.
+type AirbnbReservation struct {
+	CheckIn          *openapi_types.Date      `json:"checkIn,omitempty"`
+	CheckOut         *openapi_types.Date      `json:"checkOut,omitempty"`
+	ConfirmationCode *string                  `json:"confirmationCode,omitempty"`
+	Currency         *string                  `json:"currency,omitempty"`
+	GuestCount       *int                     `json:"guestCount,omitempty"`
+	GuestName        *string                  `json:"guestName,omitempty"`
+	ListingId        *string                  `json:"listingId,omitempty"`
+	Status           *AirbnbReservationStatus `json:"status,omitempty"`
+	TotalPrice       *float32                 `json:"totalPrice,omitempty"`
+}
+
+// AirbnbReservationStatus defines model for AirbnbReservation.Status.
+type AirbnbReservationStatus string
+
+// AirbnbReservationListResponse defines model for AirbnbReservationListResponse.
+type AirbnbReservationListResponse struct {
+	Data       *[]AirbnbReservation `json:"data,omitempty"`
+	Pagination *Pagination          `json:"pagination,omitempty"`
+}
+
+// AirbnbReview An Airbnb review (guest → host or host → guest).
+type AirbnbReview struct {
+	Comment         *string    `json:"comment,omitempty"`
+	CreatedAt       *time.Time `json:"createdAt,omitempty"`
+	Id              *string    `json:"id,omitempty"`
+	Rating          *int       `json:"rating,omitempty"`
+	ReservationCode *string    `json:"reservationCode,omitempty"`
+	Response        *string    `json:"response,omitempty"`
+}
+
+// AirbnbReviewListResponse defines model for AirbnbReviewListResponse.
+type AirbnbReviewListResponse struct {
+	Data       *[]AirbnbReview `json:"data,omitempty"`
+	Pagination *Pagination     `json:"pagination,omitempty"`
+}
+
+// AirbnbThread An Airbnb message thread.
+type AirbnbThread struct {
+	GuestName     *string    `json:"guestName,omitempty"`
+	Id            *string    `json:"id,omitempty"`
+	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
+	ListingId     *string    `json:"listingId,omitempty"`
+	UnreadCount   *int       `json:"unreadCount,omitempty"`
+}
+
+// AirbnbThreadListResponse defines model for AirbnbThreadListResponse.
+type AirbnbThreadListResponse struct {
+	Data       *[]AirbnbThread `json:"data,omitempty"`
+	Pagination *Pagination     `json:"pagination,omitempty"`
+}
+
+// BookingConnectListingOption A Repull listing the customer can map a Booking room to. Mirrors the minimal shape needed for a select dropdown.
+type BookingConnectListingOption struct {
+	City *string `json:"city,omitempty"`
+	Id   int     `json:"id"`
+	Name string  `json:"name"`
+}
+
+// BookingConnectRoom A Booking.com room imported from the claimed hotel. The customer maps each room to one of their Repull listings via `mapConnectBookingRooms`.
+type BookingConnectRoom struct {
+	// CurrentListingId Currently mapped Repull listing ID, or null if not yet mapped.
+	CurrentListingId *int `json:"currentListingId,omitempty"`
+	MaxGuests        *int `json:"maxGuests,omitempty"`
+
+	// NumberOfRooms Number of inventory units of this room type at the hotel.
+	NumberOfRooms int `json:"numberOfRooms"`
+
+	// RoomBookingId Booking.com-side room ID (used internally for `listing_platform_links`).
+	RoomBookingId *int `json:"roomBookingId,omitempty"`
+
+	// RoomId Repull-side `listings_booking_rooms.id`. Pass this back in the mapping submission.
+	RoomId   int    `json:"roomId"`
+	RoomName string `json:"roomName"`
+}
+
+// BookingConnectRoomsResponse Returned by `GET /v1/connect/booking/rooms`. The hosted picker page polls this every ~2s while the room import runs server-side; once `status` is `ready` it renders the mapping UI.
+type BookingConnectRoomsResponse struct {
+	HotelId        string                        `json:"hotelId"`
+	ListingOptions []BookingConnectListingOption `json:"listingOptions"`
+	Rooms          []BookingConnectRoom          `json:"rooms"`
+	SessionId      string                        `json:"sessionId"`
+
+	// Status `importing` — listings_booking row exists but rooms not yet imported. `ready` — rooms imported, awaiting mapping. `completed` — session already finished.
+	Status BookingConnectRoomsResponseStatus `json:"status"`
+}
+
+// BookingConnectRoomsResponseStatus `importing` — listings_booking row exists but rooms not yet imported. `ready` — rooms imported, awaiting mapping. `completed` — session already finished.
+type BookingConnectRoomsResponseStatus string
+
+// BookingConversation A Booking.com guest conversation.
+type BookingConversation struct {
+	GuestName     *string    `json:"guestName,omitempty"`
+	Id            *string    `json:"id,omitempty"`
+	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
+	ReservationId *string    `json:"reservationId,omitempty"`
+}
+
+// BookingConversationListResponse defines model for BookingConversationListResponse.
+type BookingConversationListResponse struct {
+	Data       *[]BookingConversation `json:"data,omitempty"`
+	Pagination *Pagination            `json:"pagination,omitempty"`
+}
+
+// BookingPricingRateUpdate A single (room, rate-plan, date-range) update pushed to Booking.com via the rates API.
+type BookingPricingRateUpdate struct {
+	Currency  string `json:"currency"`
+	DateRange struct {
+		End   openapi_types.Date `json:"end"`
+		Start openapi_types.Date `json:"start"`
+	} `json:"dateRange"`
+	Occupancy *int    `json:"occupancy,omitempty"`
+	Price     float32 `json:"price"`
+
+	// RateId Booking.com rate-plan ID.
+	RateId string `json:"rateId"`
+
+	// Restrictions Optional length-of-stay / availability restrictions for one rate update.
+	Restrictions *BookingPricingRateUpdateRestrictions `json:"restrictions,omitempty"`
+
+	// RoomId Booking.com room ID for the rate plan. Comes from `listings_booking_rooms` mapping.
+	RoomId      string   `json:"roomId"`
+	RoomsToSell *int     `json:"roomsToSell,omitempty"`
+	SinglePrice *float32 `json:"singlePrice,omitempty"`
+}
+
+// BookingPricingRateUpdateRestrictions Optional length-of-stay / availability restrictions for one rate update.
+type BookingPricingRateUpdateRestrictions struct {
+	ClosedToArrival   *bool `json:"closedToArrival,omitempty"`
+	ClosedToDeparture *bool `json:"closedToDeparture,omitempty"`
+	MaxStay           *int  `json:"maxStay,omitempty"`
+	MinStay           *int  `json:"minStay,omitempty"`
+}
+
+// BookingPricingResponse Returned by `GET /v1/channels/booking/listings/{id}/pricing`. Mirrors Booking's `getRoomRateAvailability` response with `hotel_id` and `listing_id` echoed back for SDK consumers.
+type BookingPricingResponse struct {
+	HotelId              *string                `json:"hotel_id,omitempty"`
+	ListingId            *int                   `json:"listing_id,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// BookingPricingUpdateRequest Body for `PUT /v1/channels/booking/listings/{id}/pricing`. Pricing on Booking is per-room/per-rate-plan, so `room_id` + `rate_id` are required on every update.
+type BookingPricingUpdateRequest struct {
+	Updates []BookingPricingRateUpdate `json:"updates"`
+}
+
+// BookingPricingUpdateResponse defines model for BookingPricingUpdateResponse.
+type BookingPricingUpdateResponse struct {
+	// Errors Per-update failure rows from Booking — shape mirrors the Booking rates API response.
+	Errors    *[]map[string]interface{} `json:"errors,omitempty"`
+	HotelId   *string                   `json:"hotel_id,omitempty"`
+	ListingId *int                      `json:"listing_id,omitempty"`
+
+	// Pushed Number of updates Booking.com accepted as `success`. Falls back to total update count when Booking omits per-update status on full success.
+	Pushed *int `json:"pushed,omitempty"`
+
+	// Raw Verbatim Booking response envelope for debugging.
+	Raw       *map[string]interface{} `json:"raw,omitempty"`
+	Requested *int                    `json:"requested,omitempty"`
+}
+
+// BookingProperty A property registered in the Booking.com extranet for the connected hotel ID.
+type BookingProperty struct {
+	City    *string `json:"city,omitempty"`
+	Country *string `json:"country,omitempty"`
+
+	// Id Booking.com hotel/property ID
+	Id     *string `json:"id,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	Status *string `json:"status,omitempty"`
+}
+
+// BookingPropertyListResponse defines model for BookingPropertyListResponse.
+type BookingPropertyListResponse struct {
+	Data       *[]BookingProperty `json:"data,omitempty"`
+	Pagination *Pagination        `json:"pagination,omitempty"`
+}
+
+// BookingRoomMapping A single room→listing assignment. Pass `listingId: null` to explicitly UNMAP a room (e.g. "skip this room for now") — this also removes the corresponding `listing_platform_links` row.
+type BookingRoomMapping struct {
+	// ListingId Repull listing to bind to this room. `null` to unmap.
+	ListingId *int `json:"listingId,omitempty"`
+
+	// RoomId Repull-side `listings_booking_rooms.id` from `listConnectBookingRooms`.
+	RoomId int `json:"roomId"`
+}
+
+// BookingVerifyHotelRequest Body for `POST /v1/connect/booking/verify`. Manual-paste fallback that closes a Booking.com Connect session after the customer completes Stage 1 designation in the Extranet.
+type BookingVerifyHotelRequest struct {
+	// HotelId Booking.com hotel ID the customer pasted. 6+ digits.
+	HotelId string `json:"hotelId"`
+
+	// SessionId The Connect session ID returned by `createConnectSession`. Acts as the capability token — no API key required.
+	SessionId string `json:"sessionId"`
+}
+
+// BookingVerifyHotelResponse Successful verify response. The session is transitioned to `awaiting_room_mapping` and a `pms_connections` row is upserted.
+type BookingVerifyHotelResponse struct {
+	City *string `json:"city,omitempty"`
+
+	// ConnectionId Repull-side `pms_connections.id` for the linked Booking account.
+	ConnectionId int     `json:"connectionId"`
+	Country      *string `json:"country,omitempty"`
+	HotelId      string  `json:"hotelId"`
+	HotelName    *string `json:"hotelName,omitempty"`
+
+	// HotelType Booking.com hotel/property type code (e.g. `apartment`, `hotel`).
+	HotelType *string `json:"hotelType,omitempty"`
+	SessionId string  `json:"sessionId"`
+	Valid     bool    `json:"valid"`
+}
+
+// BulkPricingFailure Per-item failure entry. Per-item failures DO NOT fail the whole batch — partial-success is the norm at this scale.
+type BulkPricingFailure struct {
+	Dates     *[]openapi_types.Date        `json:"dates,omitempty"`
+	Error     *string                      `json:"error,omitempty"`
+	ErrorCode *BulkPricingFailureErrorCode `json:"error_code,omitempty"`
+	ListingId *int                         `json:"listing_id,omitempty"`
+}
+
+// BulkPricingFailureErrorCode defines model for BulkPricingFailure.ErrorCode.
+type BulkPricingFailureErrorCode string
+
+// BulkPricingItem A single (listing_id, dates) pair in a bulk pricing request. The action in the parent request body applies to every date in `dates` for this listing.
+type BulkPricingItem struct {
+	Dates     []openapi_types.Date `json:"dates"`
+	ListingId int                  `json:"listing_id"`
+}
+
+// BulkPricingRequest Body for `POST /v1/listings/pricing/bulk`. Apply or decline pending Atlas pricing recommendations across many listings in one call. Capped at 500 items per request — exceeding returns 422.
+type BulkPricingRequest struct {
+	// Action `apply` writes the recommended price to each listing's calendar and fans out to channels (Airbnb/Booking/VRBO). `decline` marks the recommendations as `declined` so they stop surfacing.
+	Action BulkPricingRequestAction `json:"action"`
+	Items  []BulkPricingItem        `json:"items"`
+}
+
+// BulkPricingRequestAction `apply` writes the recommended price to each listing's calendar and fans out to channels (Airbnb/Booking/VRBO). `decline` marks the recommendations as `declined` so they stop surfacing.
+type BulkPricingRequestAction string
+
+// BulkPricingResponse Response for `POST /v1/listings/pricing/bulk`. Per-item failures are returned granularly so the SDK consumer can retry just the bad entries.
+type BulkPricingResponse struct {
+	Failed *[]BulkPricingFailure `json:"failed,omitempty"`
+
+	// Processed Total dates attempted across every item.
+	Processed *int `json:"processed,omitempty"`
+
+	// Succeeded Total dates that were successfully applied (or declined).
+	Succeeded *int `json:"succeeded,omitempty"`
+}
+
 // CalendarDay defines model for CalendarDay.
 type CalendarDay struct {
 	Available *bool               `json:"available,omitempty"`
 	Date      *openapi_types.Date `json:"date,omitempty"`
 	MinNights *int                `json:"minNights,omitempty"`
 	Price     *float32            `json:"price,omitempty"`
+}
+
+// CalendarResponse defines model for CalendarResponse.
+type CalendarResponse struct {
+	Data *[]CalendarDay `json:"data,omitempty"`
 }
 
 // ConnectHost Public-facing metadata about the host whose account is linked. Lets clients render an account-level card (avatar + name) instead of just an opaque ID. Email is intentionally NOT exposed for Airbnb — the partner API doesn't return host email.
@@ -259,6 +1481,54 @@ type ConnectHost struct {
 
 	// DisplayNameLong Preferred long-form name. Falls back to displayName when the host hasn't set a preferred form.
 	DisplayNameLong *string `json:"displayNameLong,omitempty"`
+}
+
+// ConnectProvider A channel the multi-channel Connect picker can show. Returned by `GET /v1/connect/providers` and consumed by SDKs that render their own picker UI.
+type ConnectProvider struct {
+	// Aliases Optional friendly aliases the picker's search box can match.
+	Aliases *[]string `json:"aliases,omitempty"`
+
+	// Category Channel category — OTAs are listing marketplaces; PMSes are property management systems.
+	Category ConnectProviderCategory `json:"category"`
+
+	// ConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake (Vrbo). `claim`: connectivity-provider designation in the channel's Extranet (Booking.com).
+	ConnectPattern ConnectProviderConnectPattern `json:"connectPattern"`
+	Description    string                        `json:"description"`
+	DisplayName    string                        `json:"displayName"`
+	DocsUrl        string                        `json:"docsUrl"`
+
+	// Id Stable identifier passed back to /select-provider and used in /v1/connect/{provider} routes.
+	Id string `json:"id"`
+
+	// LogoUrl Logo URL — Clearbit stand-in until self-hosted SVGs land.
+	LogoUrl string `json:"logoUrl"`
+
+	// Status Pickers should hide / disable `coming-soon` cards. `beta` cards are clickable but show a Beta pill.
+	Status ConnectProviderStatus `json:"status"`
+}
+
+// ConnectProviderCategory Channel category — OTAs are listing marketplaces; PMSes are property management systems.
+type ConnectProviderCategory string
+
+// ConnectProviderConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake (Vrbo). `claim`: connectivity-provider designation in the channel's Extranet (Booking.com).
+type ConnectProviderConnectPattern string
+
+// ConnectProviderStatus Pickers should hide / disable `coming-soon` cards. `beta` cards are clickable but show a Beta pill.
+type ConnectProviderStatus string
+
+// ConnectProviderListResponse defines model for ConnectProviderListResponse.
+type ConnectProviderListResponse struct {
+	Data *[]ConnectProvider `json:"data,omitempty"`
+}
+
+// ConnectSession A multi-channel Connect picker session. The `url` is the hosted picker page on connect.repull.dev — redirect the host to it, they pick a channel, and the picker takes them through the per-provider flow before redirecting back to the original `redirectUrl`.
+type ConnectSession struct {
+	ExpiresAt time.Time `json:"expiresAt"`
+	SessionId string    `json:"sessionId"`
+
+	// State Echoed back from the request body for SDK consumers that pass an opaque correlation token.
+	State *string `json:"state,omitempty"`
+	Url   string  `json:"url"`
 }
 
 // ConnectStatus Connection status response for a single provider. When `connected` is false, all other fields except `provider` and `host` may be omitted, and `host` is null.
@@ -296,14 +1566,118 @@ type Connection struct {
 // ConnectionStatus defines model for Connection.Status.
 type ConnectionStatus string
 
-// Conversation defines model for Conversation.
+// ConnectionListResponse defines model for ConnectionListResponse.
+type ConnectionListResponse struct {
+	Data       *[]Connection `json:"data,omitempty"`
+	Pagination *Pagination   `json:"pagination,omitempty"`
+}
+
+// Conversation Channel-agnostic message thread between the host workspace and a guest. Returned by `GET /v1/conversations`. The `id` is the internal Repull thread id (integer) — pass it back as the `{id}` path param on detail / messages calls.
 type Conversation struct {
-	GuestName     *string    `json:"guestName,omitempty"`
-	Id            *string    `json:"id,omitempty"`
-	LastMessage   *string    `json:"lastMessage,omitempty"`
-	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
-	ReservationId *int       `json:"reservationId,omitempty"`
-	UnreadCount   *int       `json:"unreadCount,omitempty"`
+	CreatedAt     *time.Time `json:"created_at,omitempty"`
+	GuestId       *int       `json:"guest_id,omitempty"`
+	Id            *int       `json:"id,omitempty"`
+	LastMessageAt *time.Time `json:"last_message_at,omitempty"`
+
+	// LastMessagePreview Short preview of the most recent message body for list-UI rendering.
+	LastMessagePreview *string               `json:"last_message_preview,omitempty"`
+	ListingId          *int                  `json:"listing_id,omitempty"`
+	Platform           *ConversationPlatform `json:"platform,omitempty"`
+	ReservationId      *int                  `json:"reservation_id,omitempty"`
+
+	// Status `archived` is reserved for a future bit on `message_threads` — currently always `open`.
+	Status *ConversationStatus `json:"status,omitempty"`
+
+	// Subject Thread subject (email/website channels) or null when not applicable.
+	Subject     *string    `json:"subject,omitempty"`
+	UnreadCount *int       `json:"unread_count,omitempty"`
+	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+}
+
+// ConversationPlatform defines model for Conversation.Platform.
+type ConversationPlatform string
+
+// ConversationStatus `archived` is reserved for a future bit on `message_threads` — currently always `open`.
+type ConversationStatus string
+
+// ConversationDetail defines model for ConversationDetail.
+type ConversationDetail struct {
+	CreatedAt     *time.Time         `json:"created_at,omitempty"`
+	Guest         *ConversationGuest `json:"guest,omitempty"`
+	GuestId       *int               `json:"guest_id,omitempty"`
+	Host          *ConversationHost  `json:"host,omitempty"`
+	Id            *int               `json:"id,omitempty"`
+	LastMessageAt *time.Time         `json:"last_message_at,omitempty"`
+
+	// LastMessagePreview Short preview of the most recent message body for list-UI rendering.
+	LastMessagePreview *string                     `json:"last_message_preview,omitempty"`
+	ListingId          *int                        `json:"listing_id,omitempty"`
+	Platform           *ConversationDetailPlatform `json:"platform,omitempty"`
+	ReservationId      *int                        `json:"reservation_id,omitempty"`
+
+	// Status `archived` is reserved for a future bit on `message_threads` — currently always `open`.
+	Status *ConversationDetailStatus `json:"status,omitempty"`
+
+	// Subject Thread subject (email/website channels) or null when not applicable.
+	Subject     *string    `json:"subject,omitempty"`
+	UnreadCount *int       `json:"unread_count,omitempty"`
+	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+}
+
+// ConversationDetailPlatform defines model for ConversationDetail.Platform.
+type ConversationDetailPlatform string
+
+// ConversationDetailStatus `archived` is reserved for a future bit on `message_threads` — currently always `open`.
+type ConversationDetailStatus string
+
+// ConversationGuest Linked guest metadata for a conversation thread. Resolved through the thread's `reservation_id` → `reservations.guest_id`. Up to 50 contacts are returned.
+type ConversationGuest struct {
+	AvatarUrl   *string                     `json:"avatarUrl,omitempty"`
+	Contacts    *[]ConversationGuestContact `json:"contacts,omitempty"`
+	DisplayName *string                     `json:"displayName,omitempty"`
+	Id          *int                        `json:"id,omitempty"`
+}
+
+// ConversationGuestContact defines model for ConversationGuestContact.
+type ConversationGuestContact struct {
+	IsPrimary  *bool   `json:"isPrimary,omitempty"`
+	IsVerified *bool   `json:"isVerified,omitempty"`
+	Type       *string `json:"type,omitempty"`
+	Value      *string `json:"value,omitempty"`
+}
+
+// ConversationHost Linked host metadata for a conversation thread. Currently populated for Airbnb threads (resolved through `airbnb_hosts`); null for other channels until per-channel host enrichment lands.
+type ConversationHost struct {
+	// AirbnbId Airbnb-side host id.
+	AirbnbId    *string `json:"airbnbId,omitempty"`
+	AvatarUrl   *string `json:"avatarUrl,omitempty"`
+	DisplayName *string `json:"displayName,omitempty"`
+	FirstName   *string `json:"firstName,omitempty"`
+	Id          *int    `json:"id,omitempty"`
+}
+
+// ConversationListResponse Cursor-paginated conversation list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page.
+type ConversationListResponse struct {
+	Data *[]Conversation `json:"data,omitempty"`
+
+	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+}
+
+// ConversationMessageAttachment defines model for ConversationMessageAttachment.
+type ConversationMessageAttachment struct {
+	ContentType *string    `json:"contentType,omitempty"`
+	CreatedAt   *time.Time `json:"createdAt,omitempty"`
+	Id          *int       `json:"id,omitempty"`
+	ImageUrl    *string    `json:"imageUrl,omitempty"`
+}
+
+// CursorPagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+type CursorPagination struct {
+	HasMore *bool `json:"has_more,omitempty"`
+
+	// NextCursor Opaque base64-encoded cursor — pass back as `?cursor=<value>`. `null` when there are no more pages.
+	NextCursor *string `json:"next_cursor,omitempty"`
 }
 
 // Error defines model for Error.
@@ -318,39 +1692,885 @@ type Error struct {
 	} `json:"error,omitempty"`
 }
 
-// Guest defines model for Guest.
+// Guest Guest list-row shape returned by `GET /v1/guests`. Pre-resolved primary phone/email + display name + cumulative stay aggregates so list UIs can render without a per-row round-trip.
 type Guest struct {
-	Email        *openapi_types.Email `json:"email,omitempty"`
-	FirstName    *string              `json:"firstName,omitempty"`
-	Id           *int                 `json:"id,omitempty"`
-	LastName     *string              `json:"lastName,omitempty"`
-	Phone        *string              `json:"phone,omitempty"`
-	TotalRevenue *float32             `json:"totalRevenue,omitempty"`
-	TotalStays   *int                 `json:"totalStays,omitempty"`
+	AvatarUrl *string `json:"avatarUrl,omitempty"`
+
+	// Country Guest country (from profile metadata or address).
+	Country   *string    `json:"country,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// DisplayName Short display name (first name).
+	DisplayName *string `json:"displayName,omitempty"`
+
+	// DisplayNameLong Long display name (first + last). Falls back to displayName when last name is missing.
+	DisplayNameLong *string `json:"displayNameLong,omitempty"`
+
+	// Email Primary email contact.
+	Email         *openapi_types.Email `json:"email,omitempty"`
+	FirstStayedAt *time.Time           `json:"firstStayedAt,omitempty"`
+	Id            *int                 `json:"id,omitempty"`
+
+	// Language Guest's preferred language (ISO 639-1).
+	Language     *string    `json:"language,omitempty"`
+	LastStayedAt *time.Time `json:"lastStayedAt,omitempty"`
+
+	// Phone Primary phone contact (or first non-primary if no primary set).
+	Phone *string `json:"phone,omitempty"`
+
+	// TotalReservations Lifetime reservation count.
+	TotalReservations *int `json:"totalReservations,omitempty"`
+
+	// TotalRevenue Decimal-as-string to preserve precision across mixed-currency totals.
+	TotalRevenue *string `json:"totalRevenue,omitempty"`
 }
 
-// Message defines model for Message.
+// GuestContact One contact channel attached to a guest profile (phone, email, etc.).
+type GuestContact struct {
+	IsPrimary *bool      `json:"is_primary,omitempty"`
+	LastUsed  *time.Time `json:"last_used,omitempty"`
+
+	// Type Contact channel type (`phone`, `email`, etc.).
+	Type     *string `json:"type,omitempty"`
+	Value    *string `json:"value,omitempty"`
+	Verified *bool   `json:"verified,omitempty"`
+}
+
+// GuestFlag A risk/operational flag attached to a guest profile (e.g. blacklist, do-not-host, VIP). Severity comes from main vanio's flag taxonomy.
+type GuestFlag struct {
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	IsActive  *bool      `json:"is_active,omitempty"`
+
+	// Note Reason text when present.
+	Note *string `json:"note,omitempty"`
+
+	// Type Severity / category (e.g. `info`, `warning`, `block`).
+	Type *string `json:"type,omitempty"`
+}
+
+// GuestListResponse Cursor-paginated guest list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page.
+type GuestListResponse struct {
+	Data *[]Guest `json:"data,omitempty"`
+
+	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+}
+
+// GuestNote defines model for GuestNote.
+type GuestNote struct {
+	Body      *string    `json:"body,omitempty"`
+	Category  *string    `json:"category,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedBy *string    `json:"created_by,omitempty"`
+	Id        *int       `json:"id,omitempty"`
+}
+
+// GuestProfile Full guest profile returned by `GET /v1/guests/{id}`. Aggregates the base list-row fields plus contacts, flags, notes, risk metadata, and a reservations-summary rollup.
+type GuestProfile struct {
+	AvatarUrl         *string              `json:"avatarUrl,omitempty"`
+	BlacklistedReason *string              `json:"blacklistedReason,omitempty"`
+	Contacts          *[]GuestContact      `json:"contacts,omitempty"`
+	Country           *string              `json:"country,omitempty"`
+	CreatedAt         *time.Time           `json:"created_at,omitempty"`
+	Currency          *string              `json:"currency,omitempty"`
+	DisplayName       *string              `json:"displayName,omitempty"`
+	DisplayNameLong   *string              `json:"displayNameLong,omitempty"`
+	Email             *openapi_types.Email `json:"email,omitempty"`
+	Flags             *[]GuestFlag         `json:"flags,omitempty"`
+	Id                *int                 `json:"id,omitempty"`
+	IsBlacklisted     *bool                `json:"isBlacklisted,omitempty"`
+	Language          *string              `json:"language,omitempty"`
+	Notes             *[]GuestNote         `json:"notes,omitempty"`
+	Phone             *string              `json:"phone,omitempty"`
+
+	// ReservationsSummary Aggregate counts of reservations attached to the guest. `future` is derived from `total - past - cancelled`.
+	ReservationsSummary *GuestReservationsSummary `json:"reservations_summary,omitempty"`
+
+	// RiskLevel Main-vanio risk score (e.g. `low`, `medium`, `high`).
+	RiskLevel         *string `json:"riskLevel,omitempty"`
+	TotalReservations *int    `json:"totalReservations,omitempty"`
+
+	// TotalRevenue Decimal as string.
+	TotalRevenue      *string `json:"totalRevenue,omitempty"`
+	VerificationLevel *string `json:"verificationLevel,omitempty"`
+}
+
+// GuestReservationsSummary Aggregate counts of reservations attached to the guest. `future` is derived from `total - past - cancelled`.
+type GuestReservationsSummary struct {
+	Cancelled *int `json:"cancelled,omitempty"`
+	Future    *int `json:"future,omitempty"`
+	Past      *int `json:"past,omitempty"`
+	Total     *int `json:"total,omitempty"`
+}
+
+// Listing A vacation rental listing in your Repull workspace.
+type Listing struct {
+	Address *struct {
+		City   *string `json:"city,omitempty"`
+		Street *string `json:"street,omitempty"`
+	} `json:"address,omitempty"`
+
+	// Channels Channels (Airbnb, Booking, VRBO, etc.) the listing is connected to.
+	Channels  *[]ListingChannel `json:"channels,omitempty"`
+	CreatedAt *time.Time        `json:"createdAt,omitempty"`
+
+	// Id Repull listing id
+	Id           *int           `json:"id,omitempty"`
+	Name         *string        `json:"name,omitempty"`
+	Status       *ListingStatus `json:"status,omitempty"`
+	ThumbnailUrl *string        `json:"thumbnailUrl,omitempty"`
+	UpdatedAt    *time.Time     `json:"updatedAt,omitempty"`
+}
+
+// ListingStatus defines model for Listing.Status.
+type ListingStatus string
+
+// ListingChannel Per-platform connection for a listing — one row per channel the listing is published to.
+type ListingChannel struct {
+	Active *bool `json:"active,omitempty"`
+
+	// ExternalId ID in the platform (Airbnb listing id, Booking room id, etc.)
+	ExternalId  *string `json:"externalId,omitempty"`
+	Platform    *string `json:"platform,omitempty"`
+	SyncEnabled *bool   `json:"syncEnabled,omitempty"`
+}
+
+// ListingComp A single competitor listing in a comp set, sorted closest-first. Includes per-day rate/availability for the requested calendar window.
+type ListingComp struct {
+	Bedrooms *int    `json:"bedrooms,omitempty"`
+	CompId   *int    `json:"comp_id,omitempty"`
+	Currency *string `json:"currency,omitempty"`
+
+	// CurrentNightlyRate Latest snapshot ADR — fallback to render when the calendar window is empty.
+	CurrentNightlyRate *float32 `json:"current_nightly_rate,omitempty"`
+
+	// DistanceKm Haversine distance from the source listing in km, rounded to 3 decimals.
+	DistanceKm *float32 `json:"distance_km,omitempty"`
+
+	// ExternalUrl Link to the listing on its source platform when one is available.
+	ExternalUrl *string  `json:"external_url,omitempty"`
+	Lat         *float32 `json:"lat,omitempty"`
+	ListingName *string  `json:"listing_name,omitempty"`
+	Lng         *float32 `json:"lng,omitempty"`
+	MaxGuests   *int     `json:"max_guests,omitempty"`
+
+	// Nightly Per-day rate + availability for the requested window. May be empty if Atlas hasn't snapshotted the comp recently.
+	Nightly  *[]ListingCompNightly `json:"nightly,omitempty"`
+	Platform *string               `json:"platform,omitempty"`
+	Ratings  *struct {
+		Avg   *float32 `json:"avg,omitempty"`
+		Count *int     `json:"count,omitempty"`
+	} `json:"ratings,omitempty"`
+}
+
+// ListingCompNightly defines model for ListingCompNightly.
+type ListingCompNightly struct {
+	Available *bool               `json:"available,omitempty"`
+	Date      *openapi_types.Date `json:"date,omitempty"`
+	Rate      *float32            `json:"rate,omitempty"`
+}
+
+// ListingCompsResponse Returned by `GET /v1/listings/{id}/comps`. Comps without coordinates are excluded — there's no way to rank them by distance. May include a `warning` field when the source listing itself has no coordinates.
+type ListingCompsResponse struct {
+	Data      *[]ListingComp `json:"data,omitempty"`
+	DateRange *struct {
+		End   *openapi_types.Date `json:"end,omitempty"`
+		Start *openapi_types.Date `json:"start,omitempty"`
+	} `json:"dateRange,omitempty"`
+	ListingId *int     `json:"listingId,omitempty"`
+	RadiusKm  *float32 `json:"radiusKm,omitempty"`
+	Total     *int     `json:"total,omitempty"`
+
+	// Warning Present (and `data` empty) when the source listing has no coordinates.
+	Warning *string `json:"warning,omitempty"`
+}
+
+// ListingContent defines model for ListingContent.
+type ListingContent struct {
+	Amenities            *[]string `json:"amenities,omitempty"`
+	Description          *string   `json:"description,omitempty"`
+	GuestAccess          *string   `json:"guestAccess,omitempty"`
+	HouseRules           *string   `json:"houseRules,omitempty"`
+	NeighborhoodOverview *string   `json:"neighborhoodOverview,omitempty"`
+	Notes                *string   `json:"notes,omitempty"`
+	Space                *string   `json:"space,omitempty"`
+	Summary              *string   `json:"summary,omitempty"`
+	Title                *string   `json:"title,omitempty"`
+	Transit              *string   `json:"transit,omitempty"`
+}
+
+// ListingCreateRequest Inputs for `POST /v1/listings`. Provide enough address detail (street + city + lat/lng) for downstream Airbnb publish to work.
+type ListingCreateRequest struct {
+	AllowsChildren     *bool                                   `json:"allowsChildren,omitempty"`
+	AllowsEvents       *bool                                   `json:"allowsEvents,omitempty"`
+	AllowsPets         *bool                                   `json:"allowsPets,omitempty"`
+	AllowsSmoking      *bool                                   `json:"allowsSmoking,omitempty"`
+	Bathrooms          *float32                                `json:"bathrooms,omitempty"`
+	Bedrooms           *int                                    `json:"bedrooms,omitempty"`
+	Beds               *int                                    `json:"beds,omitempty"`
+	CancellationPolicy *ListingCreateRequestCancellationPolicy `json:"cancellationPolicy,omitempty"`
+	CheckInTimeStart   *string                                 `json:"checkInTimeStart,omitempty"`
+	CheckOutTime       *string                                 `json:"checkOutTime,omitempty"`
+	City               *string                                 `json:"city,omitempty"`
+	CleaningFee        *float32                                `json:"cleaningFee,omitempty"`
+	CountryCode        *string                                 `json:"countryCode,omitempty"`
+	DefaultDailyPrice  *float32                                `json:"defaultDailyPrice,omitempty"`
+	Description        *string                                 `json:"description,omitempty"`
+	Lat                *float32                                `json:"lat,omitempty"`
+	Lng                *float32                                `json:"lng,omitempty"`
+
+	// Name Public guest-facing title
+	Name           string  `json:"name"`
+	PersonCapacity *int    `json:"personCapacity,omitempty"`
+	PropertyType   *string `json:"propertyType,omitempty"`
+	State          *string `json:"state,omitempty"`
+	Street         *string `json:"street,omitempty"`
+	Summary        *string `json:"summary,omitempty"`
+}
+
+// ListingCreateRequestCancellationPolicy defines model for ListingCreateRequest.CancellationPolicy.
+type ListingCreateRequestCancellationPolicy string
+
+// ListingCreateResponse defines model for ListingCreateResponse.
+type ListingCreateResponse struct {
+	// Id New listing ID — use for follow-up generate-content / publish calls
+	Id *int `json:"id,omitempty"`
+}
+
+// ListingGenerateContentRequest defines model for ListingGenerateContentRequest.
+type ListingGenerateContentRequest struct {
+	// Persist Save the generated content to the listing (so subsequent publishes pick it up).
+	Persist *bool `json:"persist,omitempty"`
+
+	// Photos Up to 8 reference photos. When present, Kimi K2 vision is used for grounded copy.
+	Photos *[]string                           `json:"photos,omitempty"`
+	Style  *ListingGenerateContentRequestStyle `json:"style,omitempty"`
+}
+
+// ListingGenerateContentRequestStyle defines model for ListingGenerateContentRequest.Style.
+type ListingGenerateContentRequestStyle string
+
+// ListingGenerateContentResponse defines model for ListingGenerateContentResponse.
+type ListingGenerateContentResponse struct {
+	Content   *ListingContent `json:"content,omitempty"`
+	ListingId *int            `json:"listingId,omitempty"`
+	Persisted *bool           `json:"persisted,omitempty"`
+}
+
+// ListingListResponse defines model for ListingListResponse.
+type ListingListResponse struct {
+	Data *[]Listing `json:"data,omitempty"`
+
+	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+}
+
+// ListingPricingApplyRequest defines model for ListingPricingApplyRequest.
+type ListingPricingApplyRequest struct {
+	Action ListingPricingApplyRequestAction `json:"action"`
+
+	// Dates Dates the action applies to. Must match dates that have a `pending` recommendation; others are silently skipped.
+	Dates []openapi_types.Date `json:"dates"`
+}
+
+// ListingPricingApplyRequestAction defines model for ListingPricingApplyRequest.Action.
+type ListingPricingApplyRequestAction string
+
+// ListingPricingApplyResponse defines model for ListingPricingApplyResponse.
+type ListingPricingApplyResponse struct {
+	// Applied Number of recommendations applied (apply action only).
+	Applied *int `json:"applied,omitempty"`
+
+	// Declined Number of dates declined (decline action only).
+	Declined *int  `json:"declined,omitempty"`
+	Ok       *bool `json:"ok,omitempty"`
+}
+
+// ListingPricingHistoryEntry One date in the recommendation-vs-applied audit trail.
+type ListingPricingHistoryEntry struct {
+	AppliedAt *time.Time `json:"applied_at,omitempty"`
+
+	// AppliedBy Who applied it (e.g. `auto`, `api`, `user`).
+	AppliedBy *string `json:"applied_by,omitempty"`
+
+	// AppliedRate Price actually written to the calendar. `null` when status is `pending` or `declined`. For now, when `status=applied` this equals `recommended_rate` because the apply path writes the recommendation verbatim.
+	AppliedRate *float32            `json:"applied_rate,omitempty"`
+	Date        *openapi_types.Date `json:"date,omitempty"`
+
+	// RecommendationFactors Raw model factors (comp distance, event boost, weekend, demand, etc.).
+	RecommendationFactors *map[string]interface{} `json:"recommendation_factors,omitempty"`
+
+	// RecommendedRate The Atlas model's recommended price for the date.
+	RecommendedRate *float32 `json:"recommended_rate,omitempty"`
+
+	// Status `overridden` is reserved for a future signal — it never appears today.
+	Status *ListingPricingHistoryEntryStatus `json:"status,omitempty"`
+}
+
+// ListingPricingHistoryEntryStatus `overridden` is reserved for a future signal — it never appears today.
+type ListingPricingHistoryEntryStatus string
+
+// ListingPricingHistoryResponse Cursor-paginated audit trail. Pagination is keyset on `date ASC` — stable across concurrent writes.
+type ListingPricingHistoryResponse struct {
+	Data *[]ListingPricingHistoryEntry `json:"data,omitempty"`
+
+	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+}
+
+// ListingPricingRecommendation A pricing recommendation for one date in the listing's calendar window.
+type ListingPricingRecommendation struct {
+	// BookingProbability Expected booking probability for the date at the recommended price.
+	BookingProbability *float32 `json:"bookingProbability,omitempty"`
+
+	// Confidence Model confidence in [0, 1].
+	Confidence *float32 `json:"confidence,omitempty"`
+	Currency   *string  `json:"currency,omitempty"`
+
+	// CurrentPrice Current calendar price (from Vanio listings_calendar_days) before applying the recommendation.
+	CurrentPrice    *float32            `json:"currentPrice,omitempty"`
+	Date            *openapi_types.Date `json:"date,omitempty"`
+	ExpectedRevenue *float32            `json:"expectedRevenue,omitempty"`
+
+	// Factors Free-form JSON of model factors (comp distance, event boost, weekend, demand, etc.).
+	Factors      *map[string]interface{} `json:"factors,omitempty"`
+	GeneratedAt  *time.Time              `json:"generatedAt,omitempty"`
+	MaxPrice     *float32                `json:"maxPrice,omitempty"`
+	MinPrice     *float32                `json:"minPrice,omitempty"`
+	ModelVersion *string                 `json:"modelVersion,omitempty"`
+
+	// RecommendedPrice Atlas model's recommended price.
+	RecommendedPrice *float32 `json:"recommendedPrice,omitempty"`
+
+	// Status Lifecycle state.
+	Status *ListingPricingRecommendationStatus `json:"status,omitempty"`
+}
+
+// ListingPricingRecommendationStatus Lifecycle state.
+type ListingPricingRecommendationStatus string
+
+// ListingPricingResponse defines model for ListingPricingResponse.
+type ListingPricingResponse struct {
+	// CompSummary 5km comp aggregate (Atlas comp_listings).
+	CompSummary *struct {
+		AvgPrice *float32 `json:"avgPrice,omitempty"`
+		Count    *int     `json:"count,omitempty"`
+		MaxPrice *float32 `json:"maxPrice,omitempty"`
+		MinPrice *float32 `json:"minPrice,omitempty"`
+	} `json:"compSummary,omitempty"`
+	DateRange *struct {
+		End   *openapi_types.Date `json:"end,omitempty"`
+		Start *openapi_types.Date `json:"start,omitempty"`
+	} `json:"dateRange,omitempty"`
+
+	// Listing AI-derived base-price context for the listing.
+	Listing *struct {
+		AiBasePrice        *float32                `json:"aiBasePrice,omitempty"`
+		AiBasePriceFactors *map[string]interface{} `json:"aiBasePriceFactors,omitempty"`
+		Currency           *string                 `json:"currency,omitempty"`
+		QualityTier        *string                 `json:"qualityTier,omitempty"`
+		Segment            *string                 `json:"segment,omitempty"`
+	} `json:"listing,omitempty"`
+	ListingId       *int                            `json:"listingId,omitempty"`
+	Recommendations *[]ListingPricingRecommendation `json:"recommendations,omitempty"`
+}
+
+// ListingPricingStrategy Strategy that constrains the Atlas pricing model for one listing.
+type ListingPricingStrategy struct {
+	// CompAdjustPct Extra adjustment vs comp median (-30..+30).
+	CompAdjustPct      *float32                                  `json:"compAdjustPct,omitempty"`
+	CompPositionTarget *ListingPricingStrategyCompPositionTarget `json:"compPositionTarget,omitempty"`
+	CustomerId         *int                                      `json:"customerId,omitempty"`
+
+	// DayOfWeekMultipliers Multiplier per ISO weekday key (0..6).
+	DayOfWeekMultipliers *map[string]float32 `json:"dayOfWeekMultipliers,omitempty"`
+	EventBoostEnabled    *bool               `json:"eventBoostEnabled,omitempty"`
+	EventBoostMaxPct     *float32            `json:"eventBoostMaxPct,omitempty"`
+	Id                   *int                `json:"id,omitempty"`
+
+	// IsDefault true when no row exists yet and the response is server-side defaults.
+	IsDefault *bool `json:"isDefault,omitempty"`
+	ListingId *int  `json:"listingId,omitempty"`
+
+	// MaxDailyChangePct Max day-over-day swing in %.
+	MaxDailyChangePct *float32 `json:"maxDailyChangePct,omitempty"`
+	MaxPrice          *float32 `json:"maxPrice,omitempty"`
+	MinPrice          *float32 `json:"minPrice,omitempty"`
+
+	// Mode `recommend` surfaces suggestions; `auto` applies them on the next sync.
+	Mode                  *ListingPricingStrategyMode `json:"mode,omitempty"`
+	OwnerMinMonthlyPayout *float32                    `json:"ownerMinMonthlyPayout,omitempty"`
+	TargetMonthlyRevenue  *float32                    `json:"targetMonthlyRevenue,omitempty"`
+	TargetOccupancyPct    *float32                    `json:"targetOccupancyPct,omitempty"`
+
+	// WeekendMarkupPct % bump applied on Fri/Sat.
+	WeekendMarkupPct *float32 `json:"weekendMarkupPct,omitempty"`
+}
+
+// ListingPricingStrategyCompPositionTarget defines model for ListingPricingStrategy.CompPositionTarget.
+type ListingPricingStrategyCompPositionTarget string
+
+// ListingPricingStrategyMode `recommend` surfaces suggestions; `auto` applies them on the next sync.
+type ListingPricingStrategyMode string
+
+// ListingPricingStrategyInput Same shape as `ListingPricingStrategy` minus the read-only fields. Send only fields you want to change.
+type ListingPricingStrategyInput struct {
+	CompAdjustPct         *float32                                       `json:"compAdjustPct,omitempty"`
+	CompPositionTarget    *ListingPricingStrategyInputCompPositionTarget `json:"compPositionTarget,omitempty"`
+	DayOfWeekMultipliers  *map[string]float32                            `json:"dayOfWeekMultipliers,omitempty"`
+	EventBoostEnabled     *bool                                          `json:"eventBoostEnabled,omitempty"`
+	EventBoostMaxPct      *float32                                       `json:"eventBoostMaxPct,omitempty"`
+	MaxDailyChangePct     *float32                                       `json:"maxDailyChangePct,omitempty"`
+	MaxPrice              *float32                                       `json:"maxPrice,omitempty"`
+	MinPrice              *float32                                       `json:"minPrice,omitempty"`
+	Mode                  *ListingPricingStrategyInputMode               `json:"mode,omitempty"`
+	OwnerMinMonthlyPayout *float32                                       `json:"ownerMinMonthlyPayout,omitempty"`
+	TargetMonthlyRevenue  *float32                                       `json:"targetMonthlyRevenue,omitempty"`
+	TargetOccupancyPct    *float32                                       `json:"targetOccupancyPct,omitempty"`
+	WeekendMarkupPct      *float32                                       `json:"weekendMarkupPct,omitempty"`
+}
+
+// ListingPricingStrategyInputCompPositionTarget defines model for ListingPricingStrategyInput.CompPositionTarget.
+type ListingPricingStrategyInputCompPositionTarget string
+
+// ListingPricingStrategyInputMode defines model for ListingPricingStrategyInput.Mode.
+type ListingPricingStrategyInputMode string
+
+// ListingPublishAirbnbRequest Pass either `airbnbConnectionId` (update an already-mapped listing) or `hostId` (create a brand-new Airbnb listing under that host).
+type ListingPublishAirbnbRequest struct {
+	// AirbnbConnectionId Existing Airbnb connection row id
+	AirbnbConnectionId *int `json:"airbnbConnectionId,omitempty"`
+
+	// Force Re-push every section, ignoring dirty-fields tracking
+	Force *bool `json:"force,omitempty"`
+
+	// HostId Airbnb host id (required for first-time creates)
+	HostId *string `json:"hostId,omitempty"`
+}
+
+// ListingPublishResponse defines model for ListingPublishResponse.
+type ListingPublishResponse struct {
+	Channel   *ListingPublishResponseChannel `json:"channel,omitempty"`
+	ListingId *int                           `json:"listingId,omitempty"`
+
+	// Result Channel-specific push result (sections pushed, errors, etc.)
+	Result *map[string]interface{} `json:"result,omitempty"`
+}
+
+// ListingPublishResponseChannel defines model for ListingPublishResponse.Channel.
+type ListingPublishResponseChannel string
+
+// ListingPublishStatusChannel defines model for ListingPublishStatusChannel.
+type ListingPublishStatusChannel struct {
+	DirtyFields        *[]string                              `json:"dirtyFields,omitempty"`
+	LastPulledAt       *time.Time                             `json:"lastPulledAt,omitempty"`
+	LastPushedAt       *time.Time                             `json:"lastPushedAt,omitempty"`
+	Platform           *string                                `json:"platform,omitempty"`
+	PlatformHasChanges *bool                                  `json:"platformHasChanges,omitempty"`
+	PushStatus         *ListingPublishStatusChannelPushStatus `json:"pushStatus,omitempty"`
+}
+
+// ListingPublishStatusChannelPushStatus defines model for ListingPublishStatusChannel.PushStatus.
+type ListingPublishStatusChannelPushStatus string
+
+// ListingPublishStatusResponse defines model for ListingPublishStatusResponse.
+type ListingPublishStatusResponse struct {
+	Channels  *[]ListingPublishStatusChannel `json:"channels,omitempty"`
+	ListingId *int                           `json:"listingId,omitempty"`
+}
+
+// ListingQualityTier defines model for ListingQualityTier.
+type ListingQualityTier struct {
+	AvgAdr     *float32                `json:"avg_adr,omitempty"`
+	SampleSize *int                    `json:"sample_size,omitempty"`
+	SharePct   *float32                `json:"share_pct,omitempty"`
+	Tier       *ListingQualityTierTier `json:"tier,omitempty"`
+}
+
+// ListingQualityTierTier defines model for ListingQualityTier.Tier.
+type ListingQualityTierTier string
+
+// ListingSegment One Atlas DNA segment (e.g. `upscale-modern-2br`) with share + ADR aggregates across the scoped comp set or market.
+type ListingSegment struct {
+	AvgAdrInSegment *float32 `json:"avg_adr_in_segment,omitempty"`
+
+	// Bedrooms Decomposed bedroom count. `0` indicates studio.
+	Bedrooms *int    `json:"bedrooms,omitempty"`
+	Currency *string `json:"currency,omitempty"`
+
+	// DesignStyle Decomposed style token (e.g. `modern`, `mid-century`).
+	DesignStyle *string `json:"design_style,omitempty"`
+
+	// MyListingMatch True when the source listing's `ai_segment` matches this segment.
+	MyListingMatch *bool                      `json:"my_listing_match,omitempty"`
+	Name           *string                    `json:"name,omitempty"`
+	QualityTier    *ListingSegmentQualityTier `json:"quality_tier,omitempty"`
+	SampleSize     *int                       `json:"sample_size,omitempty"`
+
+	// SharePct Percent of analyzed comps in the scope that fall in this segment.
+	SharePct *float32 `json:"share_pct,omitempty"`
+}
+
+// ListingSegmentQualityTier defines model for ListingSegment.QualityTier.
+type ListingSegmentQualityTier string
+
+// ListingSegmentRecommendation Structural observation about the segment landscape — not LLM-generated.
+type ListingSegmentRecommendation struct {
+	Evidence *map[string]interface{} `json:"evidence,omitempty"`
+
+	// Kind Stable identifier for the recommendation kind. SDKs can switch on this safely.
+	Kind    *ListingSegmentRecommendationKind `json:"kind,omitempty"`
+	Message *string                           `json:"message,omitempty"`
+}
+
+// ListingSegmentRecommendationKind Stable identifier for the recommendation kind. SDKs can switch on this safely.
+type ListingSegmentRecommendationKind string
+
+// ListingSegmentsResponse Returned by `GET /v1/listings/{id}/segments`. Honest about DNA coverage — when no comps in the scope have been DNA-scored, returns `totalCompsAnalyzed: 0` plus a `low_dna_coverage` recommendation rather than fabricated data.
+type ListingSegmentsResponse struct {
+	Level         *ListingSegmentsResponseLevel         `json:"level,omitempty"`
+	ListingId     *int                                  `json:"listingId,omitempty"`
+	MyQualityTier *ListingSegmentsResponseMyQualityTier `json:"myQualityTier,omitempty"`
+
+	// MySegment The source listing's own `ai_segment` (or null if not yet scored).
+	MySegment       *string                         `json:"mySegment,omitempty"`
+	QualityTiers    *[]ListingQualityTier           `json:"qualityTiers,omitempty"`
+	Recommendations *[]ListingSegmentRecommendation `json:"recommendations,omitempty"`
+
+	// Scope When `level=comp_set` carries `radiusKm`; when `level=market` carries `city`. May be empty when neither could be resolved.
+	Scope *struct {
+		City     *string  `json:"city,omitempty"`
+		RadiusKm *float32 `json:"radiusKm,omitempty"`
+	} `json:"scope,omitempty"`
+	Segments *[]ListingSegment `json:"segments,omitempty"`
+
+	// TotalCompsAnalyzed Number of comps in scope that have a DNA score. `0` is a coverage signal, not an error.
+	TotalCompsAnalyzed *int `json:"totalCompsAnalyzed,omitempty"`
+}
+
+// ListingSegmentsResponseLevel defines model for ListingSegmentsResponse.Level.
+type ListingSegmentsResponseLevel string
+
+// ListingSegmentsResponseMyQualityTier defines model for ListingSegmentsResponse.MyQualityTier.
+type ListingSegmentsResponseMyQualityTier string
+
+// MapConnectBookingRoomsRequest Body for `POST /v1/connect/booking/map-rooms`. Submits all room→listing assignments in one transaction; on success the Connect session is marked `completed`.
+type MapConnectBookingRoomsRequest struct {
+	Mappings  []BookingRoomMapping `json:"mappings"`
+	SessionId string               `json:"sessionId"`
+}
+
+// MapConnectBookingRoomsResponse defines model for MapConnectBookingRoomsResponse.
+type MapConnectBookingRoomsResponse struct {
+	ConnectionId int `json:"connectionId"`
+
+	// Mapped Number of rooms processed (mapped + unmapped).
+	Mapped    int    `json:"mapped"`
+	SessionId string `json:"sessionId"`
+	Success   bool   `json:"success"`
+}
+
+// MarketBrowseCategory defines model for MarketBrowseCategory.
+type MarketBrowseCategory struct {
+	// Count Number of Atlas-tracked cities in this country.
+	Count *int `json:"count,omitempty"`
+
+	// Country ISO 3166-1 alpha-2.
+	Country *string `json:"country,omitempty"`
+}
+
+// MarketBrowseEntry Discovery catalog entry returned by `/v1/markets/browse`.
+type MarketBrowseEntry struct {
+	AvgAdr *float32 `json:"avg_adr,omitempty"`
+	City   *string  `json:"city,omitempty"`
+
+	// Country ISO 3166-1 alpha-2.
+	Country *string `json:"country,omitempty"`
+
+	// Currency ISO 4217 currency derived from the country code.
+	Currency *string `json:"currency,omitempty"`
+
+	// Listings Atlas-tracked active comps in this city.
+	Listings   *int  `json:"listings,omitempty"`
+	Subscribed *bool `json:"subscribed,omitempty"`
+}
+
+// MarketBrowseFeatured Curated featured market entry on the discovery summary. Enriched with `subscribed` so the dashboard can render "Already unlocked" pills without an extra round-trip.
+type MarketBrowseFeatured struct {
+	// AvgAdr Atlas-aggregated avg nightly rate (mixed currency, dominated by the country base).
+	AvgAdr *float32 `json:"avg_adr,omitempty"`
+	City   *string  `json:"city,omitempty"`
+
+	// Country ISO 3166-1 alpha-2.
+	Country *string `json:"country,omitempty"`
+
+	// Listings Atlas-tracked active comps in this city.
+	Listings   *int  `json:"listings,omitempty"`
+	Subscribed *bool `json:"subscribed,omitempty"`
+}
+
+// MarketBrowsePagination defines model for MarketBrowsePagination.
+type MarketBrowsePagination struct {
+	HasMore *bool `json:"has_more,omitempty"`
+
+	// NextCursor Opaque cursor for the next page; null when no more results.
+	NextCursor *string `json:"next_cursor,omitempty"`
+
+	// TotalInFilter Total markets matching the current `q`/`country`/`min_listings` filter (ignores cursor).
+	TotalInFilter *int `json:"total_in_filter,omitempty"`
+}
+
+// MarketBrowseResponse defines model for MarketBrowseResponse.
+type MarketBrowseResponse struct {
+	Data       *[]MarketBrowseEntry    `json:"data,omitempty"`
+	Pagination *MarketBrowsePagination `json:"pagination,omitempty"`
+}
+
+// MarketCalendarDay defines model for MarketCalendarDay.
+type MarketCalendarDay struct {
+	Date   *openapi_types.Date `json:"date,omitempty"`
+	Events *[]struct {
+		Attendance *int     `json:"attendance,omitempty"`
+		Category   *string  `json:"category,omitempty"`
+		Rank       *float32 `json:"rank,omitempty"`
+		Title      *string  `json:"title,omitempty"`
+	} `json:"events,omitempty"`
+	MarketAvgRate *float32 `json:"marketAvgRate,omitempty"`
+	MarketMaxRate *float32 `json:"marketMaxRate,omitempty"`
+	MarketMinRate *float32 `json:"marketMinRate,omitempty"`
+
+	// MyAvailable Only meaningful when `listingId` is supplied.
+	MyAvailable *bool `json:"myAvailable,omitempty"`
+
+	// MyPrice Only present when `listingId` is supplied.
+	MyPrice             *float32 `json:"myPrice,omitempty"`
+	OccupancyPct        *float32 `json:"occupancyPct,omitempty"`
+	PricedListings      *int     `json:"pricedListings,omitempty"`
+	TotalListings       *int     `json:"totalListings,omitempty"`
+	WheelhouseAdr       *float32 `json:"wheelhouseAdr,omitempty"`
+	WheelhouseOccupancy *float32 `json:"wheelhouseOccupancy,omitempty"`
+}
+
+// MarketCalendarResponse defines model for MarketCalendarResponse.
+type MarketCalendarResponse struct {
+	City      *string `json:"city,omitempty"`
+	DateRange *struct {
+		End   *openapi_types.Date `json:"end,omitempty"`
+		Start *openapi_types.Date `json:"start,omitempty"`
+	} `json:"dateRange,omitempty"`
+	Days   *[]MarketCalendarDay `json:"days,omitempty"`
+	Events *[]MarketEvent       `json:"events,omitempty"`
+}
+
+// MarketDetailResponse Detailed view for a single city. Several sub-objects are passed through verbatim from upstream — keys mirror the underlying SQL aggregations.
+type MarketDetailResponse struct {
+	BedroomBreakdown  *[]map[string]interface{} `json:"bedroomBreakdown,omitempty"`
+	Benchmarks        *[]map[string]interface{} `json:"benchmarks,omitempty"`
+	CapacityGap       *map[string]interface{}   `json:"capacityGap,omitempty"`
+	City              *string                   `json:"city,omitempty"`
+	Events            *[]MarketEvent            `json:"events,omitempty"`
+	HealthSummary     *map[string]interface{}   `json:"healthSummary,omitempty"`
+	MarketPosition    *map[string]interface{}   `json:"marketPosition,omitempty"`
+	PriceDistribution *[]struct {
+		AvgRate *int    `json:"avg_rate,omitempty"`
+		Count   *int    `json:"count,omitempty"`
+		Label   *string `json:"label,omitempty"`
+		MaxRate *int    `json:"max_rate,omitempty"`
+		MinRate *int    `json:"min_rate,omitempty"`
+	} `json:"priceDistribution,omitempty"`
+	PropertyTypeMix *[]struct {
+		AvgRate      *int    `json:"avg_rate,omitempty"`
+		Count        *int    `json:"count,omitempty"`
+		PropertyType *string `json:"property_type,omitempty"`
+	} `json:"propertyTypeMix,omitempty"`
+	SupplyTrend *[]struct {
+		Month       *string `json:"month,omitempty"`
+		NewListings *int    `json:"new_listings,omitempty"`
+	} `json:"supplyTrend,omitempty"`
+	TopComps *struct {
+		Items    *[]MarketTopComp `json:"items,omitempty"`
+		MapItems *[]MarketTopComp `json:"mapItems,omitempty"`
+		Page     *int             `json:"page,omitempty"`
+		PageSize *int             `json:"pageSize,omitempty"`
+		Total    *int             `json:"total,omitempty"`
+	} `json:"topComps,omitempty"`
+	WheelhouseTrends *[]map[string]interface{} `json:"wheelhouseTrends,omitempty"`
+}
+
+// MarketEvent defines model for MarketEvent.
+type MarketEvent struct {
+	Attendance   *int                `json:"attendance,omitempty"`
+	Category     *string             `json:"category,omitempty"`
+	DemandImpact *string             `json:"demand_impact,omitempty"`
+	EndDate      *openapi_types.Date `json:"end_date,omitempty"`
+	Id           *string             `json:"id,omitempty"`
+	Labels       *[]string           `json:"labels,omitempty"`
+	Lat          *float32            `json:"lat,omitempty"`
+	Lng          *float32            `json:"lng,omitempty"`
+	LocalRank    *float32            `json:"local_rank,omitempty"`
+	Rank         *float32            `json:"rank,omitempty"`
+	StartDate    *openapi_types.Date `json:"start_date,omitempty"`
+	Title        *string             `json:"title,omitempty"`
+}
+
+// MarketMyListing Lightweight customer listing entry for map rendering.
+type MarketMyListing struct {
+	AvailableNights *int     `json:"availableNights,omitempty"`
+	Blocked         *bool    `json:"blocked,omitempty"`
+	BookedNights    *int     `json:"bookedNights,omitempty"`
+	City            *string  `json:"city,omitempty"`
+	Id              *int     `json:"id,omitempty"`
+	Lat             *float32 `json:"lat,omitempty"`
+	Lng             *float32 `json:"lng,omitempty"`
+	Name            *string  `json:"name,omitempty"`
+	Thumbnail       *string  `json:"thumbnail,omitempty"`
+
+	// TodayPrice Pre-computed ADR rounded to integer.
+	TodayPrice *int                 `json:"todayPrice,omitempty"`
+	Type       *MarketMyListingType `json:"type,omitempty"`
+}
+
+// MarketMyListingType defines model for MarketMyListing.Type.
+type MarketMyListingType string
+
+// MarketSummary Per-city KPIs combining the customer's own listings with Atlas comp aggregates.
+type MarketSummary struct {
+	City               *string  `json:"city,omitempty"`
+	MarketAvgAdr       *float32 `json:"marketAvgAdr,omitempty"`
+	MarketAvgRating    *float32 `json:"marketAvgRating,omitempty"`
+	MarketOccupancyPct *float32 `json:"marketOccupancyPct,omitempty"`
+	MarketSharePct     *int     `json:"marketSharePct,omitempty"`
+	MyAvgAdr           *float32 `json:"myAvgAdr,omitempty"`
+	MyAvgRating        *float32 `json:"myAvgRating,omitempty"`
+	MyListings         *int     `json:"myListings,omitempty"`
+
+	// MyOccupancyPct Customer's 30-day forward occupancy %.
+	MyOccupancyPct *float32 `json:"myOccupancyPct,omitempty"`
+
+	// PriceDiffPct (myAvgAdr - marketAvgAdr) / marketAvgAdr * 100, rounded.
+	PriceDiffPct *int `json:"priceDiffPct,omitempty"`
+
+	// PropertyTypes Distinct property types Atlas has seen in this city.
+	PropertyTypes *int `json:"propertyTypes,omitempty"`
+
+	// TotalListings Atlas-tracked active comps in this city.
+	TotalListings *int `json:"totalListings,omitempty"`
+}
+
+// MarketTopComp defines model for MarketTopComp.
+type MarketTopComp struct {
+	Bedrooms           *int     `json:"bedrooms,omitempty"`
+	CurrentNightlyRate *float32 `json:"current_nightly_rate,omitempty"`
+	DistanceKm         *float32 `json:"distance_km,omitempty"`
+	Id                 *int     `json:"id,omitempty"`
+	Lat                *float32 `json:"lat,omitempty"`
+	Lng                *float32 `json:"lng,omitempty"`
+	MaxGuests          *int     `json:"max_guests,omitempty"`
+	PlatformListingId  *string  `json:"platform_listing_id,omitempty"`
+	PropertyType       *string  `json:"property_type,omitempty"`
+	Rating             *float32 `json:"rating,omitempty"`
+	ReviewCount        *int     `json:"review_count,omitempty"`
+	ThumbnailUrl       *string  `json:"thumbnail_url,omitempty"`
+	Title              *string  `json:"title,omitempty"`
+	Url                *string  `json:"url,omitempty"`
+}
+
+// MarketsOverviewResponse defines model for MarketsOverviewResponse.
+type MarketsOverviewResponse struct {
+	// Browse Lightweight discovery summary. Use `/v1/markets/browse` for the full paginated catalog.
+	Browse *struct {
+		// Categories Top 50 countries by tracked-city count.
+		Categories *[]MarketBrowseCategory `json:"categories,omitempty"`
+
+		// Featured Top ~50 markets by listing volume the customer doesn't already operate in.
+		Featured *[]MarketBrowseFeatured `json:"featured,omitempty"`
+
+		// TotalAvailable Total Atlas-tracked cities in the catalog.
+		TotalAvailable *int `json:"total_available,omitempty"`
+	} `json:"browse,omitempty"`
+
+	// FreeMarket City auto-assigned as the customer's free market (largest by listing count). Null for customers with no listings.
+	FreeMarket *string            `json:"free_market,omitempty"`
+	Markets    *[]MarketSummary   `json:"markets,omitempty"`
+	MyListings *[]MarketMyListing `json:"myListings,omitempty"`
+
+	// Subscriptions Active per-market unlocks vs the tier quota.
+	Subscriptions *struct {
+		Active *int `json:"active,omitempty"`
+		Limit  *int `json:"limit,omitempty"`
+	} `json:"subscriptions,omitempty"`
+
+	// Tier Resolved Repull tier (free / pro / scale).
+	Tier   *string `json:"tier,omitempty"`
+	Totals *struct {
+		Markets          *int `json:"markets,omitempty"`
+		MyListings       *int `json:"myListings,omitempty"`
+		TotalCompetitors *int `json:"totalCompetitors,omitempty"`
+	} `json:"totals,omitempty"`
+}
+
+// Message A single message inside a conversation thread. Returned by `GET /v1/conversations/{id}/messages`. `direction` is normalized to `inbound` (from the guest) / `outbound` (from the host or an automation).
 type Message struct {
-	ConversationId *string            `json:"conversationId,omitempty"`
-	Id             *string            `json:"id,omitempty"`
-	Message        *string            `json:"message,omitempty"`
-	SenderName     *string            `json:"senderName,omitempty"`
-	SenderType     *MessageSenderType `json:"senderType,omitempty"`
-	SentAt         *time.Time         `json:"sentAt,omitempty"`
+	// AiGenerated `true` when the body was authored by Vanio AI (autopilot, draft).
+	AiGenerated *bool                            `json:"ai_generated,omitempty"`
+	Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
+
+	// Body Message body in the original language.
+	Body *string `json:"body,omitempty"`
+
+	// Channel Delivery channel — `airbnb`, `booking`, `sms`, `email`, etc.
+	Channel     *string           `json:"channel,omitempty"`
+	DeliveredAt *time.Time        `json:"delivered_at,omitempty"`
+	Direction   *MessageDirection `json:"direction,omitempty"`
+
+	// ExternalMessageId ID assigned by the source channel (Airbnb message id, Booking message id, etc.). Stable across syncs.
+	ExternalMessageId *string `json:"external_message_id,omitempty"`
+	Id                *int    `json:"id,omitempty"`
+
+	// IsAutomated `true` when the message was sent by a Vanio automation (template, schedule, etc.).
+	IsAutomated  *bool      `json:"is_automated,omitempty"`
+	ReadAt       *time.Time `json:"read_at,omitempty"`
+	SenderAvatar *string    `json:"sender_avatar,omitempty"`
+	SenderName   *string    `json:"sender_name,omitempty"`
+
+	// SenderType Free-form sender role from the channel (e.g. `guest`, `host`, `system`, `airbnb`). Use `direction` for binary inbound/outbound logic.
+	SenderType *string    `json:"sender_type,omitempty"`
+	SentAt     *time.Time `json:"sent_at,omitempty"`
+
+	// TranslatedBody English translation when the original language is non-English and a translation has been computed.
+	TranslatedBody *string `json:"translated_body,omitempty"`
 }
 
-// MessageSenderType defines model for Message.SenderType.
-type MessageSenderType string
+// MessageDirection defines model for Message.Direction.
+type MessageDirection string
 
-// PaginatedResponse defines model for PaginatedResponse.
-type PaginatedResponse struct {
-	Data       *[]interface{} `json:"data,omitempty"`
-	Pagination *struct {
-		HasMore *bool `json:"hasMore,omitempty"`
-		Limit   *int  `json:"limit,omitempty"`
-		Offset  *int  `json:"offset,omitempty"`
-		Total   *int  `json:"total,omitempty"`
-	} `json:"pagination,omitempty"`
+// MessageListResponse Cursor-paginated message list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page.
+type MessageListResponse struct {
+	Data *[]Message `json:"data,omitempty"`
+
+	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+}
+
+// Pagination defines model for Pagination.
+type Pagination struct {
+	HasMore *bool `json:"hasMore,omitempty"`
+	Limit   *int  `json:"limit,omitempty"`
+	Offset  *int  `json:"offset,omitempty"`
+	Total   *int  `json:"total,omitempty"`
+}
+
+// PlumguideListing A Plumguide listing.
+type PlumguideListing struct {
+	Id     *string `json:"id,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	Status *string `json:"status,omitempty"`
+}
+
+// PlumguideListingListResponse defines model for PlumguideListingListResponse.
+type PlumguideListingListResponse struct {
+	Data       *[]PlumguideListing `json:"data,omitempty"`
+	Pagination *Pagination         `json:"pagination,omitempty"`
 }
 
 // Property A vacation rental property from a connected PMS
@@ -380,6 +2600,12 @@ type Property struct {
 
 	// Thumbnail Primary photo URL
 	Thumbnail *string `json:"thumbnail,omitempty"`
+}
+
+// PropertyListResponse defines model for PropertyListResponse.
+type PropertyListResponse struct {
+	Data       *[]Property `json:"data,omitempty"`
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // Reservation A booking/reservation from a connected PMS
@@ -415,16 +2641,244 @@ type ReservationPlatform string
 // ReservationStatus defines model for Reservation.Status.
 type ReservationStatus string
 
-// WebhookSubscription defines model for WebhookSubscription.
-type WebhookSubscription struct {
-	Active *bool     `json:"active,omitempty"`
-	Events *[]string `json:"events,omitempty"`
-	Id     *string   `json:"id,omitempty"`
+// ReservationListResponse Cursor-paginated reservation list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page; stop when `pagination.has_more` is `false`. The `total` field is the count of rows matching the current filter (across all pages).
+//
+// Legacy `?offset=` consumers continue to receive `pagination.limit` + `pagination.offset` during the deprecation window. A `Deprecation: true` header (with a `Sunset` date) is set on responses that came in via `?offset=` — migrate to `?cursor=`.
+type ReservationListResponse struct {
+	Data *[]Reservation `json:"data,omitempty"`
 
-	// Secret HMAC-SHA256 signing secret
-	Secret *string `json:"secret,omitempty"`
-	Url    *string `json:"url,omitempty"`
+	// Pagination Hybrid pagination envelope for `/v1/reservations`. Always populates `next_cursor` + `has_more` + `total`. When the request used the deprecated `?offset=` path, also populates `limit` + `offset`.
+	Pagination *ReservationPagination `json:"pagination,omitempty"`
 }
+
+// ReservationPagination Hybrid pagination envelope for `/v1/reservations`. Always populates `next_cursor` + `has_more` + `total`. When the request used the deprecated `?offset=` path, also populates `limit` + `offset`.
+type ReservationPagination struct {
+	HasMore bool `json:"has_more"`
+
+	// Limit Deprecated — only present on responses to `?offset=` requests.
+	Limit *int `json:"limit,omitempty"`
+
+	// NextCursor Opaque base64 cursor — pass back as `?cursor=<value>`. `null` when there are no more pages.
+	NextCursor *string `json:"next_cursor"`
+
+	// Offset Deprecated — only present on responses to `?offset=` requests.
+	Offset *int `json:"offset,omitempty"`
+
+	// Total Total rows matching the current filter (across all pages).
+	Total int `json:"total"`
+}
+
+// Review A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Populated from main vanio's unified `reviews` table after the per-channel backfill cron has run.
+type Review struct {
+	Categories *[]ReviewCategory `json:"categories,omitempty"`
+
+	// ExpiresAt When the review window closes (Airbnb has a 14-day window after checkout).
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
+	// ExternalId ID in the source channel (Airbnb review id, Booking review id, etc.).
+	ExternalId  *string `json:"external_id,omitempty"`
+	GuestAvatar *string `json:"guest_avatar,omitempty"`
+	GuestId     *int    `json:"guest_id,omitempty"`
+	GuestName   *string `json:"guest_name,omitempty"`
+	Hidden      *bool   `json:"hidden,omitempty"`
+
+	// Id Internal Repull review id — pass back to `/v1/reviews/{id}`.
+	Id *int `json:"id,omitempty"`
+
+	// IsRevieweeRecommended Did the reviewer recommend the reviewee? Used for guest-side reviews.
+	IsRevieweeRecommended *bool `json:"is_reviewee_recommended,omitempty"`
+
+	// Language Detected language (ISO 639-1) of the review body.
+	Language *string `json:"language,omitempty"`
+
+	// ListingId Internal Repull listing id the review is attached to.
+	ListingId *int            `json:"listing_id,omitempty"`
+	Platform  *ReviewPlatform `json:"platform,omitempty"`
+
+	// PrivateFeedback Private feedback the reviewer sent only to the host.
+	PrivateFeedback *string `json:"private_feedback,omitempty"`
+
+	// PublicReview Public-facing review text shown on the listing page.
+	PublicReview *string `json:"public_review,omitempty"`
+
+	// Rating Overall rating on the platform's scale (typically 1..5). May be `null` for review types that lack a numeric overall score.
+	Rating *float32 `json:"rating,omitempty"`
+
+	// ReservationConfirmationCode Channel-side confirmation code for the reservation being reviewed.
+	ReservationConfirmationCode *string         `json:"reservation_confirmation_code,omitempty"`
+	ReservationId               *int            `json:"reservation_id,omitempty"`
+	Response                    *ReviewResponse `json:"response,omitempty"`
+
+	// ReviewerRole Who wrote the review — `guest` (about the host/property) or `host` (about the guest).
+	ReviewerRole *ReviewReviewerRole `json:"reviewer_role,omitempty"`
+	SubmittedAt  *time.Time          `json:"submitted_at,omitempty"`
+	UpdatedAt    *time.Time          `json:"updated_at,omitempty"`
+}
+
+// ReviewPlatform defines model for Review.Platform.
+type ReviewPlatform string
+
+// ReviewReviewerRole Who wrote the review — `guest` (about the host/property) or `host` (about the guest).
+type ReviewReviewerRole string
+
+// ReviewCategory One scored sub-category of a multi-axis review (cleanliness, communication, accuracy, etc.). Categories vary by platform.
+type ReviewCategory struct {
+	Category *string `json:"category,omitempty"`
+	Comment  *string `json:"comment,omitempty"`
+
+	// Rating Per-category rating on the platform's scale (typically 1..5).
+	Rating *float32 `json:"rating,omitempty"`
+}
+
+// ReviewGetResponse defines model for ReviewGetResponse.
+type ReviewGetResponse struct {
+	// Data A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Populated from main vanio's unified `reviews` table after the per-channel backfill cron has run.
+	Data *Review `json:"data,omitempty"`
+}
+
+// ReviewListResponse Cursor-paginated review list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page.
+type ReviewListResponse struct {
+	Data *[]Review `json:"data,omitempty"`
+
+	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+}
+
+// ReviewResponse Host response to a review, when present.
+type ReviewResponse struct {
+	Body        *string    `json:"body,omitempty"`
+	SubmittedAt *time.Time `json:"submitted_at,omitempty"`
+}
+
+// SelectProviderResponse Returned by `POST /v1/connect/sessions/{sessionId}/select-provider`. The picker UI navigates the user to `nextUrl` to begin the per-provider handoff.
+type SelectProviderResponse struct {
+	// NextUrl Where to send the user next — OAuth consent, credentials form, activation checklist, or claim form.
+	NextUrl   *string                        `json:"nextUrl,omitempty"`
+	Pattern   *SelectProviderResponsePattern `json:"pattern,omitempty"`
+	Provider  *string                        `json:"provider,omitempty"`
+	SessionId *string                        `json:"sessionId,omitempty"`
+}
+
+// SelectProviderResponsePattern defines model for SelectProviderResponse.Pattern.
+type SelectProviderResponsePattern string
+
+// VrboListing A VRBO listing.
+type VrboListing struct {
+	Id     *string `json:"id,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	Status *string `json:"status,omitempty"`
+}
+
+// VrboListingListResponse defines model for VrboListingListResponse.
+type VrboListingListResponse struct {
+	Data       *[]VrboListing `json:"data,omitempty"`
+	Pagination *Pagination    `json:"pagination,omitempty"`
+}
+
+// VrboReservation A VRBO reservation.
+type VrboReservation struct {
+	CheckIn   *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckOut  *openapi_types.Date `json:"checkOut,omitempty"`
+	Id        *string             `json:"id,omitempty"`
+	ListingId *string             `json:"listingId,omitempty"`
+	Status    *string             `json:"status,omitempty"`
+}
+
+// VrboReservationListResponse defines model for VrboReservationListResponse.
+type VrboReservationListResponse struct {
+	Data       *[]VrboReservation `json:"data,omitempty"`
+	Pagination *Pagination        `json:"pagination,omitempty"`
+}
+
+// WebhookDelivery defines model for WebhookDelivery.
+type WebhookDelivery struct {
+	Attempt      *int       `json:"attempt,omitempty"`
+	CreatedAt    *time.Time `json:"createdAt,omitempty"`
+	ErrorMessage *string    `json:"errorMessage,omitempty"`
+
+	// EventId Stable across retries of the same logical event.
+	EventId        *openapi_types.UUID `json:"eventId,omitempty"`
+	EventType      *string             `json:"eventType,omitempty"`
+	FailedAt       *time.Time          `json:"failedAt,omitempty"`
+	Id             *openapi_types.UUID `json:"id,omitempty"`
+	ResponseTimeMs *int                `json:"responseTimeMs,omitempty"`
+	StatusCode     *int                `json:"statusCode,omitempty"`
+	SucceededAt    *time.Time          `json:"succeededAt,omitempty"`
+	Success        *bool               `json:"success,omitempty"`
+}
+
+// WebhookDeliveryDetail defines model for WebhookDeliveryDetail.
+type WebhookDeliveryDetail struct {
+	Attempt         *int                    `json:"attempt,omitempty"`
+	CreatedAt       *time.Time              `json:"createdAt,omitempty"`
+	ErrorMessage    *string                 `json:"errorMessage,omitempty"`
+	EventId         *string                 `json:"eventId,omitempty"`
+	EventType       *string                 `json:"eventType,omitempty"`
+	Id              *string                 `json:"id,omitempty"`
+	Payload         *map[string]interface{} `json:"payload,omitempty"`
+	RequestHeaders  *map[string]interface{} `json:"requestHeaders,omitempty"`
+	ResponseBody    *string                 `json:"responseBody,omitempty"`
+	ResponseHeaders *map[string]interface{} `json:"responseHeaders,omitempty"`
+	ResponseTimeMs  *int                    `json:"responseTimeMs,omitempty"`
+	StatusCode      *int                    `json:"statusCode,omitempty"`
+	Success         *bool                   `json:"success,omitempty"`
+}
+
+// WebhookDeliveryListResponse defines model for WebhookDeliveryListResponse.
+type WebhookDeliveryListResponse struct {
+	Data       *[]WebhookDelivery `json:"data,omitempty"`
+	Pagination *struct {
+		HasMore    *bool   `json:"hasMore,omitempty"`
+		Limit      *int    `json:"limit,omitempty"`
+		NextCursor *string `json:"nextCursor,omitempty"`
+	} `json:"pagination,omitempty"`
+}
+
+// WebhookEventCatalog defines model for WebhookEventCatalog.
+type WebhookEventCatalog struct {
+	Domains *[]struct {
+		Events *[]struct {
+			Description   *string                 `json:"description,omitempty"`
+			Domain        *string                 `json:"domain,omitempty"`
+			SamplePayload *map[string]interface{} `json:"samplePayload,omitempty"`
+			Title         *string                 `json:"title,omitempty"`
+			Type          *string                 `json:"type,omitempty"`
+		} `json:"events,omitempty"`
+		Id    *string `json:"id,omitempty"`
+		Title *string `json:"title,omitempty"`
+	} `json:"domains,omitempty"`
+}
+
+// WebhookListResponse defines model for WebhookListResponse.
+type WebhookListResponse struct {
+	Data       *[]WebhookSubscription `json:"data,omitempty"`
+	Pagination *Pagination            `json:"pagination,omitempty"`
+}
+
+// WebhookSubscription A registered webhook endpoint. The `secret` field is only present in the response of `POST /v1/webhooks` and `POST /v1/webhooks/{id}/rotate-secret` (Stripe pattern — capture it then; it is masked everywhere else).
+type WebhookSubscription struct {
+	ApiVersion          *string             `json:"apiVersion,omitempty"`
+	ConsecutiveFailures *int                `json:"consecutiveFailures,omitempty"`
+	CreatedAt           *time.Time          `json:"createdAt,omitempty"`
+	Description         *string             `json:"description,omitempty"`
+	DisabledAt          *time.Time          `json:"disabledAt,omitempty"`
+	Events              *[]string           `json:"events,omitempty"`
+	Id                  *openapi_types.UUID `json:"id,omitempty"`
+	LastDeliveredAt     *time.Time          `json:"lastDeliveredAt,omitempty"`
+	LastDeliveryStatus  *int                `json:"lastDeliveryStatus,omitempty"`
+	LastFailureAt       *time.Time          `json:"lastFailureAt,omitempty"`
+	LastSuccessAt       *time.Time          `json:"lastSuccessAt,omitempty"`
+
+	// Secret Plaintext signing secret. Only returned by create + rotate. Capture and store securely.
+	Secret       *string                    `json:"secret,omitempty"`
+	SecretMasked *string                    `json:"secretMasked,omitempty"`
+	Status       *WebhookSubscriptionStatus `json:"status,omitempty"`
+	UpdatedAt    *time.Time                 `json:"updatedAt,omitempty"`
+	Url          *string                    `json:"url,omitempty"`
+}
+
+// WebhookSubscriptionStatus defines model for WebhookSubscription.Status.
+type WebhookSubscriptionStatus string
 
 // Limit defines model for limit.
 type Limit = int
@@ -435,29 +2889,63 @@ type Offset = int
 // Provider defines model for provider.
 type Provider = string
 
-// GetV1AvailabilityPropertyIdParams defines parameters for GetV1AvailabilityPropertyId.
-type GetV1AvailabilityPropertyIdParams struct {
+// GetAvailabilityParams defines parameters for GetAvailability.
+type GetAvailabilityParams struct {
 	StartDate openapi_types.Date `form:"startDate" json:"startDate"`
 	EndDate   openapi_types.Date `form:"endDate" json:"endDate"`
 }
 
-// PutV1AvailabilityPropertyIdJSONBody defines parameters for PutV1AvailabilityPropertyId.
-type PutV1AvailabilityPropertyIdJSONBody struct {
+// UpdateAvailabilityJSONBody defines parameters for UpdateAvailability.
+type UpdateAvailabilityJSONBody struct {
 	Dates *[]CalendarDay `json:"dates,omitempty"`
 }
 
-// PostV1BillingJSONBody defines parameters for PostV1Billing.
-type PostV1BillingJSONBody struct {
-	Plan *PostV1BillingJSONBodyPlan `json:"plan,omitempty"`
+// CreateBillingCheckoutJSONBody defines parameters for CreateBillingCheckout.
+type CreateBillingCheckoutJSONBody struct {
+	Plan *CreateBillingCheckoutJSONBodyPlan `json:"plan,omitempty"`
 }
 
-// PostV1BillingJSONBodyPlan defines parameters for PostV1Billing.
-type PostV1BillingJSONBodyPlan string
+// CreateBillingCheckoutJSONBodyPlan defines parameters for CreateBillingCheckout.
+type CreateBillingCheckoutJSONBodyPlan string
 
-// PostV1ConnectProviderJSONBody defines parameters for PostV1ConnectProvider.
-type PostV1ConnectProviderJSONBody struct {
+// GetBookingListingPricingParams defines parameters for GetBookingListingPricing.
+type GetBookingListingPricingParams struct {
+	StartDate    *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+	NumberOfDays *int                `form:"number_of_days,omitempty" json:"number_of_days,omitempty"`
+	RoomId       *string             `form:"room_id,omitempty" json:"room_id,omitempty"`
+
+	// RoomLevel When true, returns room-level (vs rate-plan-level) availability.
+	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
+}
+
+// CreateConnectSessionJSONBody defines parameters for CreateConnectSession.
+type CreateConnectSessionJSONBody struct {
+	// AllowedProviders Optional whitelist of provider IDs the picker should expose. Omit to show every channel in the registry.
+	AllowedProviders *[]string `json:"allowed_providers,omitempty"`
+
+	// RedirectUrl Where to send the user after they finish (or cancel). Status query params are appended.
+	RedirectUrl string `json:"redirectUrl"`
+
+	// State Opaque pass-through correlation token. Echoed back in the response.
+	State *string `json:"state,omitempty"`
+}
+
+// ListConnectBookingRoomsParams defines parameters for ListConnectBookingRooms.
+type ListConnectBookingRoomsParams struct {
+	// SessionId The Connect session ID returned by `createConnectSession`.
+	SessionId string `form:"sessionId" json:"sessionId"`
+}
+
+// SelectConnectProviderJSONBody defines parameters for SelectConnectProvider.
+type SelectConnectProviderJSONBody struct {
+	// Provider Provider ID from the registry.
+	Provider string `json:"provider"`
+}
+
+// CreateConnectionJSONBody defines parameters for CreateConnection.
+type CreateConnectionJSONBody struct {
 	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants calendar-only access; 'full_access' grants full host scopes (default).
-	AccessType *PostV1ConnectProviderJSONBodyAccessType `json:"accessType,omitempty"`
+	AccessType *CreateConnectionJSONBodyAccessType `json:"accessType,omitempty"`
 
 	// ApiKey PMS providers — API key.
 	ApiKey *string `json:"apiKey,omitempty"`
@@ -472,28 +2960,171 @@ type PostV1ConnectProviderJSONBody struct {
 	RedirectUrl *string `json:"redirectUrl,omitempty"`
 }
 
-// PostV1ConnectProviderJSONBodyAccessType defines parameters for PostV1ConnectProvider.
-type PostV1ConnectProviderJSONBodyAccessType string
+// CreateConnectionJSONBodyAccessType defines parameters for CreateConnection.
+type CreateConnectionJSONBodyAccessType string
 
-// PostV1ConversationsIdMessagesJSONBody defines parameters for PostV1ConversationsIdMessages.
-type PostV1ConversationsIdMessagesJSONBody struct {
-	Message string `json:"message"`
+// ListConversationsParams defines parameters for ListConversations.
+type ListConversationsParams struct {
+	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Max items per page. Hard cap is 100.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Platform Restrict to threads on a single channel.
+	Platform *ListConversationsParamsPlatform `form:"platform,omitempty" json:"platform,omitempty"`
+
+	// Status Filter by archive status. `archived` currently always returns an empty page — kept for forward-compat.
+	Status *ListConversationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 }
 
-// GetV1GuestsParams defines parameters for GetV1Guests.
-type GetV1GuestsParams struct {
-	// Limit Max items per page
-	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+// ListConversationsParamsPlatform defines parameters for ListConversations.
+type ListConversationsParamsPlatform string
 
-	// Offset Pagination offset
-	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+// ListConversationsParamsStatus defines parameters for ListConversations.
+type ListConversationsParamsStatus string
 
-	// Search Search by name, email, or phone
-	Search *string `form:"search,omitempty" json:"search,omitempty"`
+// ListConversationMessagesParams defines parameters for ListConversationMessages.
+type ListConversationMessagesParams struct {
+	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Order `desc` (default) returns newest first. `asc` returns chronological replay.
+	Order *ListConversationMessagesParamsOrder `form:"order,omitempty" json:"order,omitempty"`
 }
 
-// GetV1PropertiesParams defines parameters for GetV1Properties.
-type GetV1PropertiesParams struct {
+// ListConversationMessagesParamsOrder defines parameters for ListConversationMessages.
+type ListConversationMessagesParamsOrder string
+
+// ListGuestsParams defines parameters for ListGuests.
+type ListGuestsParams struct {
+	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Max items per page. Hard cap is 100.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Q Case-insensitive substring search on name, email, or phone.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// HasReservation Restrict to guests that do (`true`) or do not (`false`) have any reservation on file.
+	HasReservation *bool `form:"has_reservation,omitempty" json:"has_reservation,omitempty"`
+
+	// ListingId Restrict to guests with at least one reservation on the given internal Repull listing id.
+	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+}
+
+// ListListingsParams defines parameters for ListListings.
+type ListListingsParams struct {
+	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Max items per page. Hard cap is 100.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Q Case-insensitive substring search on name, street, or city.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// Status Filter by listing status.
+	Status *ListListingsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Channel Restrict to listings published on the given channel (`airbnb`, `booking`, `vrbo`, etc.). Joins through `listing_platform_links` and matches active links only.
+	Channel *string `form:"channel,omitempty" json:"channel,omitempty"`
+}
+
+// ListListingsParamsStatus defines parameters for ListListings.
+type ListListingsParamsStatus string
+
+// ListListingCompsParams defines parameters for ListListingComps.
+type ListListingCompsParams struct {
+	// RadiusKm Bbox + haversine on lat/lng. Default 5, max 50.
+	RadiusKm *float32 `form:"radius_km,omitempty" json:"radius_km,omitempty"`
+
+	// Limit Closest-first. Max 100.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// StartDate Defaults to today.
+	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+
+	// EndDate Defaults to today + 30 days.
+	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+}
+
+// GetListingPricingParams defines parameters for GetListingPricing.
+type GetListingPricingParams struct {
+	// StartDate Inclusive start of the calendar window. Defaults to today.
+	StartDate *openapi_types.Date `form:"startDate,omitempty" json:"startDate,omitempty"`
+
+	// EndDate Inclusive end of the calendar window. Defaults to today + 90 days.
+	EndDate *openapi_types.Date `form:"endDate,omitempty" json:"endDate,omitempty"`
+}
+
+// GetListingPricingHistoryParams defines parameters for GetListingPricingHistory.
+type GetListingPricingHistoryParams struct {
+	// StartDate Inclusive. Defaults to today - 90 days.
+	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+
+	// EndDate Inclusive. Defaults to today + 90 days.
+	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+	Limit   *int                `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
+// GetListingSegmentsParams defines parameters for GetListingSegments.
+type GetListingSegmentsParams struct {
+	// Level `comp_set` (default) restricts to a `radius_km` bbox. `market` aggregates across the whole city.
+	Level *GetListingSegmentsParamsLevel `form:"level,omitempty" json:"level,omitempty"`
+
+	// RadiusKm Only used when `level=comp_set`.
+	RadiusKm *float32 `form:"radius_km,omitempty" json:"radius_km,omitempty"`
+}
+
+// GetListingSegmentsParamsLevel defines parameters for GetListingSegments.
+type GetListingSegmentsParamsLevel string
+
+// ListMarketBrowseParams defines parameters for ListMarketBrowse.
+type ListMarketBrowseParams struct {
+	// Q Substring match on city name (case-insensitive).
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// Country ISO 3166-1 alpha-2 (e.g. `US`, `ES`).
+	Country *string `form:"country,omitempty" json:"country,omitempty"`
+
+	// MinListings Minimum comp-set size — cities with fewer active comps are excluded.
+	MinListings *int `form:"min_listings,omitempty" json:"min_listings,omitempty"`
+
+	// Cursor Opaque cursor returned by the previous page's `pagination.next_cursor`.
+	Cursor *string                     `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Limit  *int                        `form:"limit,omitempty" json:"limit,omitempty"`
+	Sort   *ListMarketBrowseParamsSort `form:"sort,omitempty" json:"sort,omitempty"`
+}
+
+// ListMarketBrowseParamsSort defines parameters for ListMarketBrowse.
+type ListMarketBrowseParamsSort string
+
+// GetMarketParams defines parameters for GetMarket.
+type GetMarketParams struct {
+	// CompsPage 1-indexed page number for the `topComps` slice.
+	CompsPage *int `form:"compsPage,omitempty" json:"compsPage,omitempty"`
+}
+
+// GetMarketCalendarParams defines parameters for GetMarketCalendar.
+type GetMarketCalendarParams struct {
+	// StartDate Defaults to today.
+	StartDate *openapi_types.Date `form:"startDate,omitempty" json:"startDate,omitempty"`
+
+	// EndDate Defaults to today + 365 days.
+	EndDate *openapi_types.Date `form:"endDate,omitempty" json:"endDate,omitempty"`
+
+	// ListingId Optional — overlays the customer's own pricing/availability for direct comparison. Bypasses the upstream cache.
+	ListingId *int `form:"listingId,omitempty" json:"listingId,omitempty"`
+}
+
+// ListPropertiesParams defines parameters for ListProperties.
+type ListPropertiesParams struct {
 	// Limit Max items per page
 	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -504,30 +3135,42 @@ type GetV1PropertiesParams struct {
 	Provider *string `form:"provider,omitempty" json:"provider,omitempty"`
 }
 
-// GetV1ReservationsParams defines parameters for GetV1Reservations.
-type GetV1ReservationsParams struct {
-	// Limit Max items per page
-	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+// ListReservationsParams defines parameters for ListReservations.
+type ListReservationsParams struct {
+	// Limit Page size (max 100). Requests over the cap return 422.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// Offset Pagination offset
-	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset Deprecated — use `cursor` instead. Will be removed after the `Sunset` response header date.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Platform Filter by booking platform
-	Platform *string                        `form:"platform,omitempty" json:"platform,omitempty"`
-	Status   *GetV1ReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+	Platform *string                       `form:"platform,omitempty" json:"platform,omitempty"`
+	Status   *ListReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
-	// CheckInFrom Check-in date range start
+	// ListingId Filter to a single listing
+	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+
+	// CheckInAfter Check-in date >= this value
+	CheckInAfter *openapi_types.Date `form:"check_in_after,omitempty" json:"check_in_after,omitempty"`
+
+	// CheckInBefore Check-in date <= this value
+	CheckInBefore *openapi_types.Date `form:"check_in_before,omitempty" json:"check_in_before,omitempty"`
+
+	// CheckInFrom Deprecated alias for `check_in_after`.
 	CheckInFrom *openapi_types.Date `form:"checkInFrom,omitempty" json:"checkInFrom,omitempty"`
 
-	// CheckInTo Check-in date range end
+	// CheckInTo Deprecated alias for `check_in_before`.
 	CheckInTo *openapi_types.Date `form:"checkInTo,omitempty" json:"checkInTo,omitempty"`
 }
 
-// GetV1ReservationsParamsStatus defines parameters for GetV1Reservations.
-type GetV1ReservationsParamsStatus string
+// ListReservationsParamsStatus defines parameters for ListReservations.
+type ListReservationsParamsStatus string
 
-// PostV1ReservationsJSONBody defines parameters for PostV1Reservations.
-type PostV1ReservationsJSONBody struct {
+// CreateReservationJSONBody defines parameters for CreateReservation.
+type CreateReservationJSONBody struct {
 	CheckIn        openapi_types.Date `json:"checkIn"`
 	CheckOut       openapi_types.Date `json:"checkOut"`
 	Currency       *string            `json:"currency,omitempty"`
@@ -540,49 +3183,217 @@ type PostV1ReservationsJSONBody struct {
 	TotalPrice     *float32           `json:"totalPrice,omitempty"`
 }
 
-// PatchV1ReservationsIdJSONBody defines parameters for PatchV1ReservationsId.
-type PatchV1ReservationsIdJSONBody struct {
+// UpdateReservationJSONBody defines parameters for UpdateReservation.
+type UpdateReservationJSONBody struct {
 	CheckIn    *openapi_types.Date `json:"checkIn,omitempty"`
 	CheckOut   *openapi_types.Date `json:"checkOut,omitempty"`
 	Status     *string             `json:"status,omitempty"`
 	TotalPrice *float32            `json:"totalPrice,omitempty"`
 }
 
-// PostV1WebhooksJSONBody defines parameters for PostV1Webhooks.
-type PostV1WebhooksJSONBody struct {
-	Events []string `json:"events"`
-	Url    string   `json:"url"`
+// ListReviewsParams defines parameters for ListReviews.
+type ListReviewsParams struct {
+	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`.
+	Cursor   *string                    `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Limit    *int                       `form:"limit,omitempty" json:"limit,omitempty"`
+	Platform *ListReviewsParamsPlatform `form:"platform,omitempty" json:"platform,omitempty"`
+
+	// ListingId Restrict to one internal Repull listing.
+	ListingId *int     `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+	RatingMin *float32 `form:"rating_min,omitempty" json:"rating_min,omitempty"`
+	RatingMax *float32 `form:"rating_max,omitempty" json:"rating_max,omitempty"`
+
+	// Status `responded` — host has replied. `unanswered` — host has not replied. `all` — no filter.
+	Status *ListReviewsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// ReviewerRole `guest` (default) — reviews written by guests about the host/property. `host` — reviews written by the host about guests. `all` — both.
+	ReviewerRole *ListReviewsParamsReviewerRole `form:"reviewer_role,omitempty" json:"reviewer_role,omitempty"`
 }
 
-// PostV1WebhooksTestJSONBody defines parameters for PostV1WebhooksTest.
-type PostV1WebhooksTestJSONBody struct {
-	Event     *string `json:"event,omitempty"`
-	WebhookId *string `json:"webhookId,omitempty"`
+// ListReviewsParamsPlatform defines parameters for ListReviews.
+type ListReviewsParamsPlatform string
+
+// ListReviewsParamsStatus defines parameters for ListReviews.
+type ListReviewsParamsStatus string
+
+// ListReviewsParamsReviewerRole defines parameters for ListReviews.
+type ListReviewsParamsReviewerRole string
+
+// CreateWebhookJSONBody defines parameters for CreateWebhook.
+type CreateWebhookJSONBody struct {
+	ApiVersion  *string  `json:"apiVersion,omitempty"`
+	Description *string  `json:"description,omitempty"`
+	Events      []string `json:"events"`
+	Url         string   `json:"url"`
 }
 
-// PostV1AiJSONRequestBody defines body for PostV1Ai for application/json ContentType.
-type PostV1AiJSONRequestBody = AIOperation
+// TestWebhookJSONBody defines parameters for TestWebhook.
+type TestWebhookJSONBody struct {
+	EventType     *string `json:"event_type,omitempty"`
+	SigningSecret *string `json:"signing_secret,omitempty"`
+	Url           *string `json:"url,omitempty"`
+}
 
-// PutV1AvailabilityPropertyIdJSONRequestBody defines body for PutV1AvailabilityPropertyId for application/json ContentType.
-type PutV1AvailabilityPropertyIdJSONRequestBody PutV1AvailabilityPropertyIdJSONBody
+// UpdateWebhookJSONBody defines parameters for UpdateWebhook.
+type UpdateWebhookJSONBody struct {
+	Description *string                      `json:"description,omitempty"`
+	Events      *[]string                    `json:"events,omitempty"`
+	Status      *UpdateWebhookJSONBodyStatus `json:"status,omitempty"`
+	Url         *string                      `json:"url,omitempty"`
+}
 
-// PostV1BillingJSONRequestBody defines body for PostV1Billing for application/json ContentType.
-type PostV1BillingJSONRequestBody PostV1BillingJSONBody
+// UpdateWebhookJSONBodyStatus defines parameters for UpdateWebhook.
+type UpdateWebhookJSONBodyStatus string
 
-// PostV1ConnectProviderJSONRequestBody defines body for PostV1ConnectProvider for application/json ContentType.
-type PostV1ConnectProviderJSONRequestBody PostV1ConnectProviderJSONBody
+// ListWebhookDeliveriesParams defines parameters for ListWebhookDeliveries.
+type ListWebhookDeliveriesParams struct {
+	Limit  *int                               `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor *string                            `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Status *ListWebhookDeliveriesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
 
-// PostV1ConversationsIdMessagesJSONRequestBody defines body for PostV1ConversationsIdMessages for application/json ContentType.
-type PostV1ConversationsIdMessagesJSONRequestBody PostV1ConversationsIdMessagesJSONBody
+// ListWebhookDeliveriesParamsStatus defines parameters for ListWebhookDeliveries.
+type ListWebhookDeliveriesParamsStatus string
 
-// PostV1ReservationsJSONRequestBody defines body for PostV1Reservations for application/json ContentType.
-type PostV1ReservationsJSONRequestBody PostV1ReservationsJSONBody
+// CreateAiOperationJSONRequestBody defines body for CreateAiOperation for application/json ContentType.
+type CreateAiOperationJSONRequestBody = AIOperation
 
-// PatchV1ReservationsIdJSONRequestBody defines body for PatchV1ReservationsId for application/json ContentType.
-type PatchV1ReservationsIdJSONRequestBody PatchV1ReservationsIdJSONBody
+// UpdateAvailabilityJSONRequestBody defines body for UpdateAvailability for application/json ContentType.
+type UpdateAvailabilityJSONRequestBody UpdateAvailabilityJSONBody
 
-// PostV1WebhooksJSONRequestBody defines body for PostV1Webhooks for application/json ContentType.
-type PostV1WebhooksJSONRequestBody PostV1WebhooksJSONBody
+// CreateBillingCheckoutJSONRequestBody defines body for CreateBillingCheckout for application/json ContentType.
+type CreateBillingCheckoutJSONRequestBody CreateBillingCheckoutJSONBody
 
-// PostV1WebhooksTestJSONRequestBody defines body for PostV1WebhooksTest for application/json ContentType.
-type PostV1WebhooksTestJSONRequestBody PostV1WebhooksTestJSONBody
+// UpdateBookingListingPricingJSONRequestBody defines body for UpdateBookingListingPricing for application/json ContentType.
+type UpdateBookingListingPricingJSONRequestBody = BookingPricingUpdateRequest
+
+// CreateConnectSessionJSONRequestBody defines body for CreateConnectSession for application/json ContentType.
+type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
+
+// MapConnectBookingRoomsJSONRequestBody defines body for MapConnectBookingRooms for application/json ContentType.
+type MapConnectBookingRoomsJSONRequestBody = MapConnectBookingRoomsRequest
+
+// VerifyBookingHotelJSONRequestBody defines body for VerifyBookingHotel for application/json ContentType.
+type VerifyBookingHotelJSONRequestBody = BookingVerifyHotelRequest
+
+// SelectConnectProviderJSONRequestBody defines body for SelectConnectProvider for application/json ContentType.
+type SelectConnectProviderJSONRequestBody SelectConnectProviderJSONBody
+
+// CreateConnectionJSONRequestBody defines body for CreateConnection for application/json ContentType.
+type CreateConnectionJSONRequestBody CreateConnectionJSONBody
+
+// CreateListingJSONRequestBody defines body for CreateListing for application/json ContentType.
+type CreateListingJSONRequestBody = ListingCreateRequest
+
+// BulkApplyPricingJSONRequestBody defines body for BulkApplyPricing for application/json ContentType.
+type BulkApplyPricingJSONRequestBody = BulkPricingRequest
+
+// GenerateListingContentJSONRequestBody defines body for GenerateListingContent for application/json ContentType.
+type GenerateListingContentJSONRequestBody = ListingGenerateContentRequest
+
+// ApplyListingPricingJSONRequestBody defines body for ApplyListingPricing for application/json ContentType.
+type ApplyListingPricingJSONRequestBody = ListingPricingApplyRequest
+
+// UpdateListingPricingStrategyJSONRequestBody defines body for UpdateListingPricingStrategy for application/json ContentType.
+type UpdateListingPricingStrategyJSONRequestBody = ListingPricingStrategyInput
+
+// PublishListingToAirbnbJSONRequestBody defines body for PublishListingToAirbnb for application/json ContentType.
+type PublishListingToAirbnbJSONRequestBody = ListingPublishAirbnbRequest
+
+// CreateReservationJSONRequestBody defines body for CreateReservation for application/json ContentType.
+type CreateReservationJSONRequestBody CreateReservationJSONBody
+
+// UpdateReservationJSONRequestBody defines body for UpdateReservation for application/json ContentType.
+type UpdateReservationJSONRequestBody UpdateReservationJSONBody
+
+// CreateWebhookJSONRequestBody defines body for CreateWebhook for application/json ContentType.
+type CreateWebhookJSONRequestBody CreateWebhookJSONBody
+
+// TestWebhookJSONRequestBody defines body for TestWebhook for application/json ContentType.
+type TestWebhookJSONRequestBody TestWebhookJSONBody
+
+// UpdateWebhookJSONRequestBody defines body for UpdateWebhook for application/json ContentType.
+type UpdateWebhookJSONRequestBody UpdateWebhookJSONBody
+
+// Getter for additional properties for BookingPricingResponse. Returns the specified
+// element and whether it was found
+func (a BookingPricingResponse) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for BookingPricingResponse
+func (a *BookingPricingResponse) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for BookingPricingResponse to handle AdditionalProperties
+func (a *BookingPricingResponse) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["hotel_id"]; found {
+		err = json.Unmarshal(raw, &a.HotelId)
+		if err != nil {
+			return fmt.Errorf("error reading 'hotel_id': %w", err)
+		}
+		delete(object, "hotel_id")
+	}
+
+	if raw, found := object["listing_id"]; found {
+		err = json.Unmarshal(raw, &a.ListingId)
+		if err != nil {
+			return fmt.Errorf("error reading 'listing_id': %w", err)
+		}
+		delete(object, "listing_id")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for BookingPricingResponse to handle AdditionalProperties
+func (a BookingPricingResponse) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.HotelId != nil {
+		object["hotel_id"], err = json.Marshal(a.HotelId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'hotel_id': %w", err)
+		}
+	}
+
+	if a.ListingId != nil {
+		object["listing_id"], err = json.Marshal(a.ListingId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'listing_id': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}

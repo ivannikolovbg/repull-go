@@ -20,8 +20,8 @@ func TestWithBearer_AddsAuthorizationHeader(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
 	}
-	if _, err := c.GetV1Health(context.Background()); err != nil {
-		t.Fatalf("GetV1Health: %v", err)
+	if _, err := c.GetHealth(context.Background()); err != nil {
+		t.Fatalf("GetHealth: %v", err)
 	}
 	if want := "Bearer sk_test_abc"; got != want {
 		t.Fatalf("authorization header = %q, want %q", got, want)

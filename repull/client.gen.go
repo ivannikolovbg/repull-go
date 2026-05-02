@@ -12,8 +12,10 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
@@ -89,204 +91,958 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// PostV1AiWithBody request with any body
-	PostV1AiWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateAiOperationWithBody request with any body
+	CreateAiOperationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostV1Ai(ctx context.Context, body PostV1AiJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateAiOperation(ctx context.Context, body CreateAiOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1AvailabilityPropertyId request
-	GetV1AvailabilityPropertyId(ctx context.Context, propertyId int, params *GetV1AvailabilityPropertyIdParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetAvailability request
+	GetAvailability(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutV1AvailabilityPropertyIdWithBody request with any body
-	PutV1AvailabilityPropertyIdWithBody(ctx context.Context, propertyId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateAvailabilityWithBody request with any body
+	UpdateAvailabilityWithBody(ctx context.Context, propertyId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PutV1AvailabilityPropertyId(ctx context.Context, propertyId int, body PutV1AvailabilityPropertyIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateAvailability(ctx context.Context, propertyId int, body UpdateAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1Billing request
-	GetV1Billing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetBilling request
+	GetBilling(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1BillingWithBody request with any body
-	PostV1BillingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateBillingCheckoutWithBody request with any body
+	CreateBillingCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostV1Billing(ctx context.Context, body PostV1BillingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateBillingCheckout(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbListings request
-	GetV1ChannelsAirbnbListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListAirbnbListings request
+	ListAirbnbListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsAirbnbListings request
-	PostV1ChannelsAirbnbListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateAirbnbListing request
+	CreateAirbnbListing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbListingsId request
-	GetV1ChannelsAirbnbListingsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetAirbnbListing request
+	GetAirbnbListing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsAirbnbListingsId request
-	PostV1ChannelsAirbnbListingsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AirbnbListingAction request
+	AirbnbListingAction(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbListingsIdAvailability request
-	GetV1ChannelsAirbnbListingsIdAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetAirbnbListingAvailability request
+	GetAirbnbListingAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutV1ChannelsAirbnbListingsIdAvailability request
-	PutV1ChannelsAirbnbListingsIdAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateAirbnbListingAvailability request
+	UpdateAirbnbListingAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbListingsIdPhotos request
-	GetV1ChannelsAirbnbListingsIdPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListAirbnbListingPhotos request
+	ListAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsAirbnbListingsIdPhotos request
-	PostV1ChannelsAirbnbListingsIdPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UploadAirbnbListingPhotos request
+	UploadAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbListingsIdPricing request
-	GetV1ChannelsAirbnbListingsIdPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetAirbnbListingPricing request
+	GetAirbnbListingPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutV1ChannelsAirbnbListingsIdPricing request
-	PutV1ChannelsAirbnbListingsIdPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateAirbnbListingPricing request
+	UpdateAirbnbListingPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbMessaging request
-	GetV1ChannelsAirbnbMessaging(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListAirbnbThreads request
+	ListAirbnbThreads(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbMessagingThreadIdMessages request
-	GetV1ChannelsAirbnbMessagingThreadIdMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListAirbnbThreadMessages request
+	ListAirbnbThreadMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsAirbnbMessagingThreadIdMessages request
-	PostV1ChannelsAirbnbMessagingThreadIdMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// SendAirbnbMessage request
+	SendAirbnbMessage(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbReservations request
-	GetV1ChannelsAirbnbReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListAirbnbReservations request
+	ListAirbnbReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbReservationsCode request
-	GetV1ChannelsAirbnbReservationsCode(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetAirbnbReservation request
+	GetAirbnbReservation(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsAirbnbReservationsCode request
-	PostV1ChannelsAirbnbReservationsCode(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AirbnbReservationAction request
+	AirbnbReservationAction(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsAirbnbReviews request
-	GetV1ChannelsAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListAirbnbReviews request
+	ListAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsAirbnbReviews request
-	PostV1ChannelsAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// RespondAirbnbReview request
+	RespondAirbnbReview(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsAirbnbSync request
-	PostV1ChannelsAirbnbSync(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// SyncAirbnb request
+	SyncAirbnb(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutV1ChannelsBookingAvailability request
-	PutV1ChannelsBookingAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateBookingAvailability request
+	UpdateBookingAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsBookingContent request
-	GetV1ChannelsBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetBookingContent request
+	GetBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsBookingContent request
-	PostV1ChannelsBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateBookingContent request
+	UpdateBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsBookingMessaging request
-	GetV1ChannelsBookingMessaging(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetBookingListingPricing request
+	GetBookingListingPricing(ctx context.Context, id int, params *GetBookingListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsBookingMessaging request
-	PostV1ChannelsBookingMessaging(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateBookingListingPricingWithBody request with any body
+	UpdateBookingListingPricingWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsBookingProperties request
-	GetV1ChannelsBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateBookingListingPricing(ctx context.Context, id int, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsBookingProperties request
-	PostV1ChannelsBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListBookingConversations request
+	ListBookingConversations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ChannelsBookingSync request
-	PostV1ChannelsBookingSync(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// SendBookingMessage request
+	SendBookingMessage(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsPlumguideAvailability request
-	GetV1ChannelsPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListBookingProperties request
+	ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutV1ChannelsPlumguideAvailability request
-	PutV1ChannelsPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateBookingProperty request
+	CreateBookingProperty(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsPlumguideListings request
-	GetV1ChannelsPlumguideListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// SyncBooking request
+	SyncBooking(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsPlumguidePricing request
-	GetV1ChannelsPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetPlumguideAvailability request
+	GetPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutV1ChannelsPlumguidePricing request
-	PutV1ChannelsPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdatePlumguideAvailability request
+	UpdatePlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsVrboListings request
-	GetV1ChannelsVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListPlumguideListings request
+	ListPlumguideListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ChannelsVrboReservations request
-	GetV1ChannelsVrboReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetPlumguidePricing request
+	GetPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1Connect request
-	GetV1Connect(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdatePlumguidePricing request
+	UpdatePlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteV1ConnectProvider request
-	DeleteV1ConnectProvider(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListVrboListings request
+	ListVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ConnectProvider request
-	GetV1ConnectProvider(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetVrboListingPricing request
+	GetVrboListingPricing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ConnectProviderWithBody request with any body
-	PostV1ConnectProviderWithBody(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateVrboListingPricing request
+	UpdateVrboListingPricing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostV1ConnectProvider(ctx context.Context, provider Provider, body PostV1ConnectProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListVrboReservations request
+	ListVrboReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1Conversations request
-	GetV1Conversations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListConnections request
+	ListConnections(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ConversationsIdMessages request
-	GetV1ConversationsIdMessages(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateConnectSessionWithBody request with any body
+	CreateConnectSessionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ConversationsIdMessagesWithBody request with any body
-	PostV1ConversationsIdMessagesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateConnectSession(ctx context.Context, body CreateConnectSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostV1ConversationsIdMessages(ctx context.Context, id string, body PostV1ConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// MapConnectBookingRoomsWithBody request with any body
+	MapConnectBookingRoomsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1Guests request
-	GetV1Guests(ctx context.Context, params *GetV1GuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	MapConnectBookingRooms(ctx context.Context, body MapConnectBookingRoomsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1GuestsId request
-	GetV1GuestsId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListConnectBookingRooms request
+	ListConnectBookingRooms(ctx context.Context, params *ListConnectBookingRoomsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1Health request
-	GetV1Health(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// VerifyBookingHotelWithBody request with any body
+	VerifyBookingHotelWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1Properties request
-	GetV1Properties(ctx context.Context, params *GetV1PropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	VerifyBookingHotel(ctx context.Context, body VerifyBookingHotelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1PropertiesId request
-	GetV1PropertiesId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListConnectProviders request
+	ListConnectProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1Reservations request
-	GetV1Reservations(ctx context.Context, params *GetV1ReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// SelectConnectProviderWithBody request with any body
+	SelectConnectProviderWithBody(ctx context.Context, sessionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1ReservationsWithBody request with any body
-	PostV1ReservationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	SelectConnectProvider(ctx context.Context, sessionId string, body SelectConnectProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostV1Reservations(ctx context.Context, body PostV1ReservationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeleteConnection request
+	DeleteConnection(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteV1ReservationsId request
-	DeleteV1ReservationsId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetConnectStatus request
+	GetConnectStatus(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1ReservationsId request
-	GetV1ReservationsId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateConnectionWithBody request with any body
+	CreateConnectionWithBody(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PatchV1ReservationsIdWithBody request with any body
-	PatchV1ReservationsIdWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateConnection(ctx context.Context, provider Provider, body CreateConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PatchV1ReservationsId(ctx context.Context, id int, body PatchV1ReservationsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListConversations request
+	ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV1Webhooks request
-	GetV1Webhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetConversation request
+	GetConversation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1WebhooksWithBody request with any body
-	PostV1WebhooksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListConversationMessages request
+	ListConversationMessages(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostV1Webhooks(ctx context.Context, body PostV1WebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListGuests request
+	ListGuests(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostV1WebhooksTestWithBody request with any body
-	PostV1WebhooksTestWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetGuest request
+	GetGuest(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostV1WebhooksTest(ctx context.Context, body PostV1WebhooksTestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetHealth request
+	GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListListings request
+	ListListings(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateListingWithBody request with any body
+	CreateListingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateListing(ctx context.Context, body CreateListingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BulkApplyPricingWithBody request with any body
+	BulkApplyPricingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListListingComps request
+	ListListingComps(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GenerateListingContentWithBody request with any body
+	GenerateListingContentWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	GenerateListingContent(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetListingPricing request
+	GetListingPricing(ctx context.Context, id int, params *GetListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ApplyListingPricingWithBody request with any body
+	ApplyListingPricingWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ApplyListingPricing(ctx context.Context, id int, body ApplyListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetListingPricingHistory request
+	GetListingPricingHistory(ctx context.Context, id int, params *GetListingPricingHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetListingPricingStrategy request
+	GetListingPricingStrategy(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateListingPricingStrategyWithBody request with any body
+	UpdateListingPricingStrategyWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateListingPricingStrategy(ctx context.Context, id int, body UpdateListingPricingStrategyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetListingPublishStatus request
+	GetListingPublishStatus(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PublishListingToAirbnbWithBody request with any body
+	PublishListingToAirbnbWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PublishListingToAirbnb(ctx context.Context, id int, body PublishListingToAirbnbJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PublishListingToBooking request
+	PublishListingToBooking(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetListingSegments request
+	GetListingSegments(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListMarkets request
+	ListMarkets(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListMarketBrowse request
+	ListMarketBrowse(ctx context.Context, params *ListMarketBrowseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMarket request
+	GetMarket(ctx context.Context, city string, params *GetMarketParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMarketCalendar request
+	GetMarketCalendar(ctx context.Context, city string, params *GetMarketCalendarParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListProperties request
+	ListProperties(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProperty request
+	GetProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListReservations request
+	ListReservations(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateReservationWithBody request with any body
+	CreateReservationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateReservation(ctx context.Context, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CancelReservation request
+	CancelReservation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetReservation request
+	GetReservation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateReservationWithBody request with any body
+	UpdateReservationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateReservation(ctx context.Context, id int, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListReviews request
+	ListReviews(ctx context.Context, params *ListReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetReview request
+	GetReview(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWebhooks request
+	ListWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWebhookWithBody request with any body
+	CreateWebhookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWebhook(ctx context.Context, body CreateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWebhookEventTypes request
+	ListWebhookEventTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TestWebhookWithBody request with any body
+	TestWebhookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	TestWebhook(ctx context.Context, body TestWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteWebhook request
+	DeleteWebhook(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWebhook request
+	GetWebhook(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateWebhookWithBody request with any body
+	UpdateWebhookWithBody(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateWebhook(ctx context.Context, id openapi_types.UUID, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWebhookDeliveries request
+	ListWebhookDeliveries(ctx context.Context, id openapi_types.UUID, params *ListWebhookDeliveriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWebhookDelivery request
+	GetWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReplayWebhookDelivery request
+	ReplayWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PingWebhook request
+	PingWebhook(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RotateWebhookSecret request
+	RotateWebhookSecret(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TestFireWebhook request
+	TestFireWebhook(ctx context.Context, id openapi_types.UUID, eventType string, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) CreateAiOperationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAiOperationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAiOperation(ctx context.Context, body CreateAiOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAiOperationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAvailability(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAvailabilityRequest(c.Server, propertyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAvailabilityWithBody(ctx context.Context, propertyId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAvailabilityRequestWithBody(c.Server, propertyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAvailability(ctx context.Context, propertyId int, body UpdateAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAvailabilityRequest(c.Server, propertyId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBilling(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBillingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBillingCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBillingCheckoutRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBillingCheckout(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBillingCheckoutRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbListingsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAirbnbListing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbListingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbListing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AirbnbListingAction(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAirbnbListingActionRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbListingAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingAvailabilityRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAirbnbListingAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbListingAvailabilityRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbListingPhotosRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UploadAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUploadAirbnbListingPhotosRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbListingPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingPricingRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAirbnbListingPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbListingPricingRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbThreads(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbThreadsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbThreadMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbThreadMessagesRequest(c.Server, threadId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SendAirbnbMessage(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendAirbnbMessageRequest(c.Server, threadId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbReservationsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbReservation(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbReservationRequest(c.Server, code)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AirbnbReservationAction(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAirbnbReservationActionRequest(c.Server, code)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbReviewsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RespondAirbnbReview(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRespondAirbnbReviewRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SyncAirbnb(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSyncAirbnbRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBookingAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingAvailabilityRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBookingContentRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingContentRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBookingListingPricing(ctx context.Context, id int, params *GetBookingListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBookingListingPricingRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBookingListingPricingWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingListingPricingRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBookingListingPricing(ctx context.Context, id int, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingListingPricingRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListBookingConversations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBookingConversationsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SendBookingMessage(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendBookingMessageRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBookingPropertiesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBookingProperty(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBookingPropertyRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SyncBooking(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSyncBookingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPlumguideAvailabilityRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdatePlumguideAvailabilityRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListPlumguideListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListPlumguideListingsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPlumguidePricingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdatePlumguidePricingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVrboListingsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetVrboListingPricing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVrboListingPricingRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateVrboListingPricing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateVrboListingPricingRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListVrboReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVrboReservationsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListConnections(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListConnectionsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateConnectSessionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateConnectSessionRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateConnectSession(ctx context.Context, body CreateConnectSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateConnectSessionRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MapConnectBookingRoomsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMapConnectBookingRoomsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1AiWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1AiRequestWithBody(c.Server, contentType, body)
+func (c *Client) MapConnectBookingRooms(ctx context.Context, body MapConnectBookingRoomsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMapConnectBookingRoomsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -297,8 +1053,8 @@ func (c *Client) PostV1AiWithBody(ctx context.Context, contentType string, body 
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1Ai(ctx context.Context, body PostV1AiJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1AiRequest(c.Server, body)
+func (c *Client) ListConnectBookingRooms(ctx context.Context, params *ListConnectBookingRoomsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListConnectBookingRoomsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -309,8 +1065,8 @@ func (c *Client) PostV1Ai(ctx context.Context, body PostV1AiJSONRequestBody, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1AvailabilityPropertyId(ctx context.Context, propertyId int, params *GetV1AvailabilityPropertyIdParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1AvailabilityPropertyIdRequest(c.Server, propertyId, params)
+func (c *Client) VerifyBookingHotelWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVerifyBookingHotelRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -321,8 +1077,8 @@ func (c *Client) GetV1AvailabilityPropertyId(ctx context.Context, propertyId int
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutV1AvailabilityPropertyIdWithBody(ctx context.Context, propertyId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutV1AvailabilityPropertyIdRequestWithBody(c.Server, propertyId, contentType, body)
+func (c *Client) VerifyBookingHotel(ctx context.Context, body VerifyBookingHotelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVerifyBookingHotelRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -333,8 +1089,8 @@ func (c *Client) PutV1AvailabilityPropertyIdWithBody(ctx context.Context, proper
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutV1AvailabilityPropertyId(ctx context.Context, propertyId int, body PutV1AvailabilityPropertyIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutV1AvailabilityPropertyIdRequest(c.Server, propertyId, body)
+func (c *Client) ListConnectProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListConnectProvidersRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -345,8 +1101,8 @@ func (c *Client) PutV1AvailabilityPropertyId(ctx context.Context, propertyId int
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1Billing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1BillingRequest(c.Server)
+func (c *Client) SelectConnectProviderWithBody(ctx context.Context, sessionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSelectConnectProviderRequestWithBody(c.Server, sessionId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -357,8 +1113,8 @@ func (c *Client) GetV1Billing(ctx context.Context, reqEditors ...RequestEditorFn
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1BillingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1BillingRequestWithBody(c.Server, contentType, body)
+func (c *Client) SelectConnectProvider(ctx context.Context, sessionId string, body SelectConnectProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSelectConnectProviderRequest(c.Server, sessionId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -369,8 +1125,8 @@ func (c *Client) PostV1BillingWithBody(ctx context.Context, contentType string, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1Billing(ctx context.Context, body PostV1BillingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1BillingRequest(c.Server, body)
+func (c *Client) DeleteConnection(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteConnectionRequest(c.Server, provider)
 	if err != nil {
 		return nil, err
 	}
@@ -381,8 +1137,8 @@ func (c *Client) PostV1Billing(ctx context.Context, body PostV1BillingJSONReques
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbListingsRequest(c.Server)
+func (c *Client) GetConnectStatus(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConnectStatusRequest(c.Server, provider)
 	if err != nil {
 		return nil, err
 	}
@@ -393,8 +1149,8 @@ func (c *Client) GetV1ChannelsAirbnbListings(ctx context.Context, reqEditors ...
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsAirbnbListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsAirbnbListingsRequest(c.Server)
+func (c *Client) CreateConnectionWithBody(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateConnectionRequestWithBody(c.Server, provider, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -405,8 +1161,8 @@ func (c *Client) PostV1ChannelsAirbnbListings(ctx context.Context, reqEditors ..
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbListingsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbListingsIdRequest(c.Server, id)
+func (c *Client) CreateConnection(ctx context.Context, provider Provider, body CreateConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateConnectionRequest(c.Server, provider, body)
 	if err != nil {
 		return nil, err
 	}
@@ -417,8 +1173,8 @@ func (c *Client) GetV1ChannelsAirbnbListingsId(ctx context.Context, id string, r
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsAirbnbListingsId(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsAirbnbListingsIdRequest(c.Server, id)
+func (c *Client) ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListConversationsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -429,8 +1185,8 @@ func (c *Client) PostV1ChannelsAirbnbListingsId(ctx context.Context, id string, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbListingsIdAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbListingsIdAvailabilityRequest(c.Server, id)
+func (c *Client) GetConversation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConversationRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -441,8 +1197,8 @@ func (c *Client) GetV1ChannelsAirbnbListingsIdAvailability(ctx context.Context, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutV1ChannelsAirbnbListingsIdAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutV1ChannelsAirbnbListingsIdAvailabilityRequest(c.Server, id)
+func (c *Client) ListConversationMessages(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListConversationMessagesRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -453,8 +1209,8 @@ func (c *Client) PutV1ChannelsAirbnbListingsIdAvailability(ctx context.Context, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbListingsIdPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbListingsIdPhotosRequest(c.Server, id)
+func (c *Client) ListGuests(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListGuestsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -465,8 +1221,8 @@ func (c *Client) GetV1ChannelsAirbnbListingsIdPhotos(ctx context.Context, id str
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsAirbnbListingsIdPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsAirbnbListingsIdPhotosRequest(c.Server, id)
+func (c *Client) GetGuest(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetGuestRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -477,8 +1233,8 @@ func (c *Client) PostV1ChannelsAirbnbListingsIdPhotos(ctx context.Context, id st
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbListingsIdPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbListingsIdPricingRequest(c.Server, id)
+func (c *Client) GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetHealthRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -489,8 +1245,8 @@ func (c *Client) GetV1ChannelsAirbnbListingsIdPricing(ctx context.Context, id st
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutV1ChannelsAirbnbListingsIdPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutV1ChannelsAirbnbListingsIdPricingRequest(c.Server, id)
+func (c *Client) ListListings(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListListingsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -501,8 +1257,8 @@ func (c *Client) PutV1ChannelsAirbnbListingsIdPricing(ctx context.Context, id st
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbMessaging(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbMessagingRequest(c.Server)
+func (c *Client) CreateListingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateListingRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -513,8 +1269,8 @@ func (c *Client) GetV1ChannelsAirbnbMessaging(ctx context.Context, reqEditors ..
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbMessagingThreadIdMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbMessagingThreadIdMessagesRequest(c.Server, threadId)
+func (c *Client) CreateListing(ctx context.Context, body CreateListingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateListingRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -525,8 +1281,8 @@ func (c *Client) GetV1ChannelsAirbnbMessagingThreadIdMessages(ctx context.Contex
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsAirbnbMessagingThreadIdMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsAirbnbMessagingThreadIdMessagesRequest(c.Server, threadId)
+func (c *Client) BulkApplyPricingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkApplyPricingRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -537,8 +1293,8 @@ func (c *Client) PostV1ChannelsAirbnbMessagingThreadIdMessages(ctx context.Conte
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbReservationsRequest(c.Server)
+func (c *Client) BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkApplyPricingRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -549,8 +1305,8 @@ func (c *Client) GetV1ChannelsAirbnbReservations(ctx context.Context, reqEditors
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbReservationsCode(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbReservationsCodeRequest(c.Server, code)
+func (c *Client) ListListingComps(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListListingCompsRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -561,8 +1317,8 @@ func (c *Client) GetV1ChannelsAirbnbReservationsCode(ctx context.Context, code s
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsAirbnbReservationsCode(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsAirbnbReservationsCodeRequest(c.Server, code)
+func (c *Client) GenerateListingContentWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateListingContentRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -573,8 +1329,8 @@ func (c *Client) PostV1ChannelsAirbnbReservationsCode(ctx context.Context, code 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsAirbnbReviewsRequest(c.Server)
+func (c *Client) GenerateListingContent(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateListingContentRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -585,8 +1341,8 @@ func (c *Client) GetV1ChannelsAirbnbReviews(ctx context.Context, reqEditors ...R
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsAirbnbReviewsRequest(c.Server)
+func (c *Client) GetListingPricing(ctx context.Context, id int, params *GetListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingPricingRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -597,8 +1353,8 @@ func (c *Client) PostV1ChannelsAirbnbReviews(ctx context.Context, reqEditors ...
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsAirbnbSync(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsAirbnbSyncRequest(c.Server)
+func (c *Client) ApplyListingPricingWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewApplyListingPricingRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -609,8 +1365,8 @@ func (c *Client) PostV1ChannelsAirbnbSync(ctx context.Context, reqEditors ...Req
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutV1ChannelsBookingAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutV1ChannelsBookingAvailabilityRequest(c.Server)
+func (c *Client) ApplyListingPricing(ctx context.Context, id int, body ApplyListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewApplyListingPricingRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -621,8 +1377,8 @@ func (c *Client) PutV1ChannelsBookingAvailability(ctx context.Context, reqEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsBookingContentRequest(c.Server)
+func (c *Client) GetListingPricingHistory(ctx context.Context, id int, params *GetListingPricingHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingPricingHistoryRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -633,8 +1389,8 @@ func (c *Client) GetV1ChannelsBookingContent(ctx context.Context, reqEditors ...
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsBookingContentRequest(c.Server)
+func (c *Client) GetListingPricingStrategy(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingPricingStrategyRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -645,8 +1401,8 @@ func (c *Client) PostV1ChannelsBookingContent(ctx context.Context, reqEditors ..
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsBookingMessaging(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsBookingMessagingRequest(c.Server)
+func (c *Client) UpdateListingPricingStrategyWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateListingPricingStrategyRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -657,8 +1413,8 @@ func (c *Client) GetV1ChannelsBookingMessaging(ctx context.Context, reqEditors .
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsBookingMessaging(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsBookingMessagingRequest(c.Server)
+func (c *Client) UpdateListingPricingStrategy(ctx context.Context, id int, body UpdateListingPricingStrategyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateListingPricingStrategyRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -669,8 +1425,8 @@ func (c *Client) PostV1ChannelsBookingMessaging(ctx context.Context, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsBookingPropertiesRequest(c.Server)
+func (c *Client) GetListingPublishStatus(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingPublishStatusRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -681,8 +1437,8 @@ func (c *Client) GetV1ChannelsBookingProperties(ctx context.Context, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsBookingPropertiesRequest(c.Server)
+func (c *Client) PublishListingToAirbnbWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingToAirbnbRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -693,8 +1449,8 @@ func (c *Client) PostV1ChannelsBookingProperties(ctx context.Context, reqEditors
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ChannelsBookingSync(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ChannelsBookingSyncRequest(c.Server)
+func (c *Client) PublishListingToAirbnb(ctx context.Context, id int, body PublishListingToAirbnbJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingToAirbnbRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -705,8 +1461,8 @@ func (c *Client) PostV1ChannelsBookingSync(ctx context.Context, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsPlumguideAvailabilityRequest(c.Server)
+func (c *Client) PublishListingToBooking(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingToBookingRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -717,8 +1473,8 @@ func (c *Client) GetV1ChannelsPlumguideAvailability(ctx context.Context, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutV1ChannelsPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutV1ChannelsPlumguideAvailabilityRequest(c.Server)
+func (c *Client) GetListingSegments(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingSegmentsRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -729,8 +1485,8 @@ func (c *Client) PutV1ChannelsPlumguideAvailability(ctx context.Context, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsPlumguideListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsPlumguideListingsRequest(c.Server)
+func (c *Client) ListMarkets(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListMarketsRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -741,8 +1497,8 @@ func (c *Client) GetV1ChannelsPlumguideListings(ctx context.Context, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsPlumguidePricingRequest(c.Server)
+func (c *Client) ListMarketBrowse(ctx context.Context, params *ListMarketBrowseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListMarketBrowseRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -753,8 +1509,8 @@ func (c *Client) GetV1ChannelsPlumguidePricing(ctx context.Context, reqEditors .
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutV1ChannelsPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutV1ChannelsPlumguidePricingRequest(c.Server)
+func (c *Client) GetMarket(ctx context.Context, city string, params *GetMarketParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMarketRequest(c.Server, city, params)
 	if err != nil {
 		return nil, err
 	}
@@ -765,8 +1521,8 @@ func (c *Client) PutV1ChannelsPlumguidePricing(ctx context.Context, reqEditors .
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsVrboListingsRequest(c.Server)
+func (c *Client) GetMarketCalendar(ctx context.Context, city string, params *GetMarketCalendarParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMarketCalendarRequest(c.Server, city, params)
 	if err != nil {
 		return nil, err
 	}
@@ -777,8 +1533,8 @@ func (c *Client) GetV1ChannelsVrboListings(ctx context.Context, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ChannelsVrboReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ChannelsVrboReservationsRequest(c.Server)
+func (c *Client) ListProperties(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListPropertiesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -789,8 +1545,8 @@ func (c *Client) GetV1ChannelsVrboReservations(ctx context.Context, reqEditors .
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1Connect(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ConnectRequest(c.Server)
+func (c *Client) GetProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPropertyRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -801,8 +1557,8 @@ func (c *Client) GetV1Connect(ctx context.Context, reqEditors ...RequestEditorFn
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteV1ConnectProvider(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteV1ConnectProviderRequest(c.Server, provider)
+func (c *Client) ListReservations(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListReservationsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -813,8 +1569,8 @@ func (c *Client) DeleteV1ConnectProvider(ctx context.Context, provider Provider,
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ConnectProvider(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ConnectProviderRequest(c.Server, provider)
+func (c *Client) CreateReservationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReservationRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -825,8 +1581,8 @@ func (c *Client) GetV1ConnectProvider(ctx context.Context, provider Provider, re
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ConnectProviderWithBody(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ConnectProviderRequestWithBody(c.Server, provider, contentType, body)
+func (c *Client) CreateReservation(ctx context.Context, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReservationRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -837,8 +1593,8 @@ func (c *Client) PostV1ConnectProviderWithBody(ctx context.Context, provider Pro
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ConnectProvider(ctx context.Context, provider Provider, body PostV1ConnectProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ConnectProviderRequest(c.Server, provider, body)
+func (c *Client) CancelReservation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelReservationRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -849,8 +1605,8 @@ func (c *Client) PostV1ConnectProvider(ctx context.Context, provider Provider, b
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1Conversations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ConversationsRequest(c.Server)
+func (c *Client) GetReservation(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetReservationRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -861,8 +1617,8 @@ func (c *Client) GetV1Conversations(ctx context.Context, reqEditors ...RequestEd
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ConversationsIdMessages(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ConversationsIdMessagesRequest(c.Server, id)
+func (c *Client) UpdateReservationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateReservationRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -873,8 +1629,8 @@ func (c *Client) GetV1ConversationsIdMessages(ctx context.Context, id string, re
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ConversationsIdMessagesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ConversationsIdMessagesRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) UpdateReservation(ctx context.Context, id int, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateReservationRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -885,8 +1641,8 @@ func (c *Client) PostV1ConversationsIdMessagesWithBody(ctx context.Context, id s
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ConversationsIdMessages(ctx context.Context, id string, body PostV1ConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ConversationsIdMessagesRequest(c.Server, id, body)
+func (c *Client) ListReviews(ctx context.Context, params *ListReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListReviewsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -897,8 +1653,8 @@ func (c *Client) PostV1ConversationsIdMessages(ctx context.Context, id string, b
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1Guests(ctx context.Context, params *GetV1GuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1GuestsRequest(c.Server, params)
+func (c *Client) GetReview(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetReviewRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -909,8 +1665,8 @@ func (c *Client) GetV1Guests(ctx context.Context, params *GetV1GuestsParams, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1GuestsId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1GuestsIdRequest(c.Server, id)
+func (c *Client) ListWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWebhooksRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -921,8 +1677,8 @@ func (c *Client) GetV1GuestsId(ctx context.Context, id int, reqEditors ...Reques
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1Health(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1HealthRequest(c.Server)
+func (c *Client) CreateWebhookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWebhookRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -933,8 +1689,8 @@ func (c *Client) GetV1Health(ctx context.Context, reqEditors ...RequestEditorFn)
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1Properties(ctx context.Context, params *GetV1PropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1PropertiesRequest(c.Server, params)
+func (c *Client) CreateWebhook(ctx context.Context, body CreateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWebhookRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -945,8 +1701,8 @@ func (c *Client) GetV1Properties(ctx context.Context, params *GetV1PropertiesPar
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1PropertiesId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1PropertiesIdRequest(c.Server, id)
+func (c *Client) ListWebhookEventTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWebhookEventTypesRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -957,8 +1713,8 @@ func (c *Client) GetV1PropertiesId(ctx context.Context, id int, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1Reservations(ctx context.Context, params *GetV1ReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ReservationsRequest(c.Server, params)
+func (c *Client) TestWebhookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTestWebhookRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -969,8 +1725,8 @@ func (c *Client) GetV1Reservations(ctx context.Context, params *GetV1Reservation
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1ReservationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ReservationsRequestWithBody(c.Server, contentType, body)
+func (c *Client) TestWebhook(ctx context.Context, body TestWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTestWebhookRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -981,8 +1737,8 @@ func (c *Client) PostV1ReservationsWithBody(ctx context.Context, contentType str
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1Reservations(ctx context.Context, body PostV1ReservationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1ReservationsRequest(c.Server, body)
+func (c *Client) DeleteWebhook(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWebhookRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -993,8 +1749,8 @@ func (c *Client) PostV1Reservations(ctx context.Context, body PostV1Reservations
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteV1ReservationsId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteV1ReservationsIdRequest(c.Server, id)
+func (c *Client) GetWebhook(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWebhookRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -1005,8 +1761,8 @@ func (c *Client) DeleteV1ReservationsId(ctx context.Context, id int, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1ReservationsId(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1ReservationsIdRequest(c.Server, id)
+func (c *Client) UpdateWebhookWithBody(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWebhookRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1017,8 +1773,8 @@ func (c *Client) GetV1ReservationsId(ctx context.Context, id int, reqEditors ...
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchV1ReservationsIdWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchV1ReservationsIdRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) UpdateWebhook(ctx context.Context, id openapi_types.UUID, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWebhookRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1029,8 +1785,8 @@ func (c *Client) PatchV1ReservationsIdWithBody(ctx context.Context, id int, cont
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchV1ReservationsId(ctx context.Context, id int, body PatchV1ReservationsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchV1ReservationsIdRequest(c.Server, id, body)
+func (c *Client) ListWebhookDeliveries(ctx context.Context, id openapi_types.UUID, params *ListWebhookDeliveriesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWebhookDeliveriesRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1041,8 +1797,8 @@ func (c *Client) PatchV1ReservationsId(ctx context.Context, id int, body PatchV1
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV1Webhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV1WebhooksRequest(c.Server)
+func (c *Client) GetWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWebhookDeliveryRequest(c.Server, id, deliveryId)
 	if err != nil {
 		return nil, err
 	}
@@ -1053,8 +1809,8 @@ func (c *Client) GetV1Webhooks(ctx context.Context, reqEditors ...RequestEditorF
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1WebhooksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1WebhooksRequestWithBody(c.Server, contentType, body)
+func (c *Client) ReplayWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReplayWebhookDeliveryRequest(c.Server, id, deliveryId)
 	if err != nil {
 		return nil, err
 	}
@@ -1065,8 +1821,8 @@ func (c *Client) PostV1WebhooksWithBody(ctx context.Context, contentType string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1Webhooks(ctx context.Context, body PostV1WebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1WebhooksRequest(c.Server, body)
+func (c *Client) PingWebhook(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPingWebhookRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -1077,8 +1833,8 @@ func (c *Client) PostV1Webhooks(ctx context.Context, body PostV1WebhooksJSONRequ
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1WebhooksTestWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1WebhooksTestRequestWithBody(c.Server, contentType, body)
+func (c *Client) RotateWebhookSecret(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRotateWebhookSecretRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -1089,8 +1845,8 @@ func (c *Client) PostV1WebhooksTestWithBody(ctx context.Context, contentType str
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostV1WebhooksTest(ctx context.Context, body PostV1WebhooksTestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostV1WebhooksTestRequest(c.Server, body)
+func (c *Client) TestFireWebhook(ctx context.Context, id openapi_types.UUID, eventType string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTestFireWebhookRequest(c.Server, id, eventType)
 	if err != nil {
 		return nil, err
 	}
@@ -1101,19 +1857,19 @@ func (c *Client) PostV1WebhooksTest(ctx context.Context, body PostV1WebhooksTest
 	return c.Client.Do(req)
 }
 
-// NewPostV1AiRequest calls the generic PostV1Ai builder with application/json body
-func NewPostV1AiRequest(server string, body PostV1AiJSONRequestBody) (*http.Request, error) {
+// NewCreateAiOperationRequest calls the generic CreateAiOperation builder with application/json body
+func NewCreateAiOperationRequest(server string, body CreateAiOperationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostV1AiRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateAiOperationRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewPostV1AiRequestWithBody generates requests for PostV1Ai with any type of body
-func NewPostV1AiRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateAiOperationRequestWithBody generates requests for CreateAiOperation with any type of body
+func NewCreateAiOperationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1141,8 +1897,8 @@ func NewPostV1AiRequestWithBody(server string, contentType string, body io.Reade
 	return req, nil
 }
 
-// NewGetV1AvailabilityPropertyIdRequest generates requests for GetV1AvailabilityPropertyId
-func NewGetV1AvailabilityPropertyIdRequest(server string, propertyId int, params *GetV1AvailabilityPropertyIdParams) (*http.Request, error) {
+// NewGetAvailabilityRequest generates requests for GetAvailability
+func NewGetAvailabilityRequest(server string, propertyId int, params *GetAvailabilityParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1205,19 +1961,19 @@ func NewGetV1AvailabilityPropertyIdRequest(server string, propertyId int, params
 	return req, nil
 }
 
-// NewPutV1AvailabilityPropertyIdRequest calls the generic PutV1AvailabilityPropertyId builder with application/json body
-func NewPutV1AvailabilityPropertyIdRequest(server string, propertyId int, body PutV1AvailabilityPropertyIdJSONRequestBody) (*http.Request, error) {
+// NewUpdateAvailabilityRequest calls the generic UpdateAvailability builder with application/json body
+func NewUpdateAvailabilityRequest(server string, propertyId int, body UpdateAvailabilityJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPutV1AvailabilityPropertyIdRequestWithBody(server, propertyId, "application/json", bodyReader)
+	return NewUpdateAvailabilityRequestWithBody(server, propertyId, "application/json", bodyReader)
 }
 
-// NewPutV1AvailabilityPropertyIdRequestWithBody generates requests for PutV1AvailabilityPropertyId with any type of body
-func NewPutV1AvailabilityPropertyIdRequestWithBody(server string, propertyId int, contentType string, body io.Reader) (*http.Request, error) {
+// NewUpdateAvailabilityRequestWithBody generates requests for UpdateAvailability with any type of body
+func NewUpdateAvailabilityRequestWithBody(server string, propertyId int, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1252,8 +2008,8 @@ func NewPutV1AvailabilityPropertyIdRequestWithBody(server string, propertyId int
 	return req, nil
 }
 
-// NewGetV1BillingRequest generates requests for GetV1Billing
-func NewGetV1BillingRequest(server string) (*http.Request, error) {
+// NewGetBillingRequest generates requests for GetBilling
+func NewGetBillingRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1279,19 +2035,19 @@ func NewGetV1BillingRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewPostV1BillingRequest calls the generic PostV1Billing builder with application/json body
-func NewPostV1BillingRequest(server string, body PostV1BillingJSONRequestBody) (*http.Request, error) {
+// NewCreateBillingCheckoutRequest calls the generic CreateBillingCheckout builder with application/json body
+func NewCreateBillingCheckoutRequest(server string, body CreateBillingCheckoutJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostV1BillingRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateBillingCheckoutRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewPostV1BillingRequestWithBody generates requests for PostV1Billing with any type of body
-func NewPostV1BillingRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateBillingCheckoutRequestWithBody generates requests for CreateBillingCheckout with any type of body
+func NewCreateBillingCheckoutRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1319,8 +2075,8 @@ func NewPostV1BillingRequestWithBody(server string, contentType string, body io.
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbListingsRequest generates requests for GetV1ChannelsAirbnbListings
-func NewGetV1ChannelsAirbnbListingsRequest(server string) (*http.Request, error) {
+// NewListAirbnbListingsRequest generates requests for ListAirbnbListings
+func NewListAirbnbListingsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1346,8 +2102,8 @@ func NewGetV1ChannelsAirbnbListingsRequest(server string) (*http.Request, error)
 	return req, nil
 }
 
-// NewPostV1ChannelsAirbnbListingsRequest generates requests for PostV1ChannelsAirbnbListings
-func NewPostV1ChannelsAirbnbListingsRequest(server string) (*http.Request, error) {
+// NewCreateAirbnbListingRequest generates requests for CreateAirbnbListing
+func NewCreateAirbnbListingRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1373,8 +2129,8 @@ func NewPostV1ChannelsAirbnbListingsRequest(server string) (*http.Request, error
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbListingsIdRequest generates requests for GetV1ChannelsAirbnbListingsId
-func NewGetV1ChannelsAirbnbListingsIdRequest(server string, id string) (*http.Request, error) {
+// NewGetAirbnbListingRequest generates requests for GetAirbnbListing
+func NewGetAirbnbListingRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1407,8 +2163,8 @@ func NewGetV1ChannelsAirbnbListingsIdRequest(server string, id string) (*http.Re
 	return req, nil
 }
 
-// NewPostV1ChannelsAirbnbListingsIdRequest generates requests for PostV1ChannelsAirbnbListingsId
-func NewPostV1ChannelsAirbnbListingsIdRequest(server string, id string) (*http.Request, error) {
+// NewAirbnbListingActionRequest generates requests for AirbnbListingAction
+func NewAirbnbListingActionRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1441,8 +2197,8 @@ func NewPostV1ChannelsAirbnbListingsIdRequest(server string, id string) (*http.R
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbListingsIdAvailabilityRequest generates requests for GetV1ChannelsAirbnbListingsIdAvailability
-func NewGetV1ChannelsAirbnbListingsIdAvailabilityRequest(server string, id string) (*http.Request, error) {
+// NewGetAirbnbListingAvailabilityRequest generates requests for GetAirbnbListingAvailability
+func NewGetAirbnbListingAvailabilityRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1475,8 +2231,8 @@ func NewGetV1ChannelsAirbnbListingsIdAvailabilityRequest(server string, id strin
 	return req, nil
 }
 
-// NewPutV1ChannelsAirbnbListingsIdAvailabilityRequest generates requests for PutV1ChannelsAirbnbListingsIdAvailability
-func NewPutV1ChannelsAirbnbListingsIdAvailabilityRequest(server string, id string) (*http.Request, error) {
+// NewUpdateAirbnbListingAvailabilityRequest generates requests for UpdateAirbnbListingAvailability
+func NewUpdateAirbnbListingAvailabilityRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1509,8 +2265,8 @@ func NewPutV1ChannelsAirbnbListingsIdAvailabilityRequest(server string, id strin
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbListingsIdPhotosRequest generates requests for GetV1ChannelsAirbnbListingsIdPhotos
-func NewGetV1ChannelsAirbnbListingsIdPhotosRequest(server string, id string) (*http.Request, error) {
+// NewListAirbnbListingPhotosRequest generates requests for ListAirbnbListingPhotos
+func NewListAirbnbListingPhotosRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1543,8 +2299,8 @@ func NewGetV1ChannelsAirbnbListingsIdPhotosRequest(server string, id string) (*h
 	return req, nil
 }
 
-// NewPostV1ChannelsAirbnbListingsIdPhotosRequest generates requests for PostV1ChannelsAirbnbListingsIdPhotos
-func NewPostV1ChannelsAirbnbListingsIdPhotosRequest(server string, id string) (*http.Request, error) {
+// NewUploadAirbnbListingPhotosRequest generates requests for UploadAirbnbListingPhotos
+func NewUploadAirbnbListingPhotosRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1577,8 +2333,8 @@ func NewPostV1ChannelsAirbnbListingsIdPhotosRequest(server string, id string) (*
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbListingsIdPricingRequest generates requests for GetV1ChannelsAirbnbListingsIdPricing
-func NewGetV1ChannelsAirbnbListingsIdPricingRequest(server string, id string) (*http.Request, error) {
+// NewGetAirbnbListingPricingRequest generates requests for GetAirbnbListingPricing
+func NewGetAirbnbListingPricingRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1611,8 +2367,8 @@ func NewGetV1ChannelsAirbnbListingsIdPricingRequest(server string, id string) (*
 	return req, nil
 }
 
-// NewPutV1ChannelsAirbnbListingsIdPricingRequest generates requests for PutV1ChannelsAirbnbListingsIdPricing
-func NewPutV1ChannelsAirbnbListingsIdPricingRequest(server string, id string) (*http.Request, error) {
+// NewUpdateAirbnbListingPricingRequest generates requests for UpdateAirbnbListingPricing
+func NewUpdateAirbnbListingPricingRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1645,8 +2401,8 @@ func NewPutV1ChannelsAirbnbListingsIdPricingRequest(server string, id string) (*
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbMessagingRequest generates requests for GetV1ChannelsAirbnbMessaging
-func NewGetV1ChannelsAirbnbMessagingRequest(server string) (*http.Request, error) {
+// NewListAirbnbThreadsRequest generates requests for ListAirbnbThreads
+func NewListAirbnbThreadsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1672,8 +2428,8 @@ func NewGetV1ChannelsAirbnbMessagingRequest(server string) (*http.Request, error
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbMessagingThreadIdMessagesRequest generates requests for GetV1ChannelsAirbnbMessagingThreadIdMessages
-func NewGetV1ChannelsAirbnbMessagingThreadIdMessagesRequest(server string, threadId string) (*http.Request, error) {
+// NewListAirbnbThreadMessagesRequest generates requests for ListAirbnbThreadMessages
+func NewListAirbnbThreadMessagesRequest(server string, threadId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1706,8 +2462,8 @@ func NewGetV1ChannelsAirbnbMessagingThreadIdMessagesRequest(server string, threa
 	return req, nil
 }
 
-// NewPostV1ChannelsAirbnbMessagingThreadIdMessagesRequest generates requests for PostV1ChannelsAirbnbMessagingThreadIdMessages
-func NewPostV1ChannelsAirbnbMessagingThreadIdMessagesRequest(server string, threadId string) (*http.Request, error) {
+// NewSendAirbnbMessageRequest generates requests for SendAirbnbMessage
+func NewSendAirbnbMessageRequest(server string, threadId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1740,8 +2496,8 @@ func NewPostV1ChannelsAirbnbMessagingThreadIdMessagesRequest(server string, thre
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbReservationsRequest generates requests for GetV1ChannelsAirbnbReservations
-func NewGetV1ChannelsAirbnbReservationsRequest(server string) (*http.Request, error) {
+// NewListAirbnbReservationsRequest generates requests for ListAirbnbReservations
+func NewListAirbnbReservationsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1767,8 +2523,8 @@ func NewGetV1ChannelsAirbnbReservationsRequest(server string) (*http.Request, er
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbReservationsCodeRequest generates requests for GetV1ChannelsAirbnbReservationsCode
-func NewGetV1ChannelsAirbnbReservationsCodeRequest(server string, code string) (*http.Request, error) {
+// NewGetAirbnbReservationRequest generates requests for GetAirbnbReservation
+func NewGetAirbnbReservationRequest(server string, code string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1801,8 +2557,8 @@ func NewGetV1ChannelsAirbnbReservationsCodeRequest(server string, code string) (
 	return req, nil
 }
 
-// NewPostV1ChannelsAirbnbReservationsCodeRequest generates requests for PostV1ChannelsAirbnbReservationsCode
-func NewPostV1ChannelsAirbnbReservationsCodeRequest(server string, code string) (*http.Request, error) {
+// NewAirbnbReservationActionRequest generates requests for AirbnbReservationAction
+func NewAirbnbReservationActionRequest(server string, code string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1835,8 +2591,8 @@ func NewPostV1ChannelsAirbnbReservationsCodeRequest(server string, code string) 
 	return req, nil
 }
 
-// NewGetV1ChannelsAirbnbReviewsRequest generates requests for GetV1ChannelsAirbnbReviews
-func NewGetV1ChannelsAirbnbReviewsRequest(server string) (*http.Request, error) {
+// NewListAirbnbReviewsRequest generates requests for ListAirbnbReviews
+func NewListAirbnbReviewsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1862,8 +2618,8 @@ func NewGetV1ChannelsAirbnbReviewsRequest(server string) (*http.Request, error) 
 	return req, nil
 }
 
-// NewPostV1ChannelsAirbnbReviewsRequest generates requests for PostV1ChannelsAirbnbReviews
-func NewPostV1ChannelsAirbnbReviewsRequest(server string) (*http.Request, error) {
+// NewRespondAirbnbReviewRequest generates requests for RespondAirbnbReview
+func NewRespondAirbnbReviewRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1889,8 +2645,8 @@ func NewPostV1ChannelsAirbnbReviewsRequest(server string) (*http.Request, error)
 	return req, nil
 }
 
-// NewPostV1ChannelsAirbnbSyncRequest generates requests for PostV1ChannelsAirbnbSync
-func NewPostV1ChannelsAirbnbSyncRequest(server string) (*http.Request, error) {
+// NewSyncAirbnbRequest generates requests for SyncAirbnb
+func NewSyncAirbnbRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1916,8 +2672,8 @@ func NewPostV1ChannelsAirbnbSyncRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewPutV1ChannelsBookingAvailabilityRequest generates requests for PutV1ChannelsBookingAvailability
-func NewPutV1ChannelsBookingAvailabilityRequest(server string) (*http.Request, error) {
+// NewUpdateBookingAvailabilityRequest generates requests for UpdateBookingAvailability
+func NewUpdateBookingAvailabilityRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1943,8 +2699,8 @@ func NewPutV1ChannelsBookingAvailabilityRequest(server string) (*http.Request, e
 	return req, nil
 }
 
-// NewGetV1ChannelsBookingContentRequest generates requests for GetV1ChannelsBookingContent
-func NewGetV1ChannelsBookingContentRequest(server string) (*http.Request, error) {
+// NewGetBookingContentRequest generates requests for GetBookingContent
+func NewGetBookingContentRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1970,8 +2726,8 @@ func NewGetV1ChannelsBookingContentRequest(server string) (*http.Request, error)
 	return req, nil
 }
 
-// NewPostV1ChannelsBookingContentRequest generates requests for PostV1ChannelsBookingContent
-func NewPostV1ChannelsBookingContentRequest(server string) (*http.Request, error) {
+// NewUpdateBookingContentRequest generates requests for UpdateBookingContent
+func NewUpdateBookingContentRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1997,8 +2753,159 @@ func NewPostV1ChannelsBookingContentRequest(server string) (*http.Request, error
 	return req, nil
 }
 
-// NewGetV1ChannelsBookingMessagingRequest generates requests for GetV1ChannelsBookingMessaging
-func NewGetV1ChannelsBookingMessagingRequest(server string) (*http.Request, error) {
+// NewGetBookingListingPricingRequest generates requests for GetBookingListingPricing
+func NewGetBookingListingPricingRequest(server string, id int, params *GetBookingListingPricingParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/listings/%s/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.NumberOfDays != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "number_of_days", *params.NumberOfDays, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.RoomId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "room_id", *params.RoomId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.RoomLevel != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "room_level", *params.RoomLevel, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateBookingListingPricingRequest calls the generic UpdateBookingListingPricing builder with application/json body
+func NewUpdateBookingListingPricingRequest(server string, id int, body UpdateBookingListingPricingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateBookingListingPricingRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateBookingListingPricingRequestWithBody generates requests for UpdateBookingListingPricing with any type of body
+func NewUpdateBookingListingPricingRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/listings/%s/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListBookingConversationsRequest generates requests for ListBookingConversations
+func NewListBookingConversationsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2024,8 +2931,8 @@ func NewGetV1ChannelsBookingMessagingRequest(server string) (*http.Request, erro
 	return req, nil
 }
 
-// NewPostV1ChannelsBookingMessagingRequest generates requests for PostV1ChannelsBookingMessaging
-func NewPostV1ChannelsBookingMessagingRequest(server string) (*http.Request, error) {
+// NewSendBookingMessageRequest generates requests for SendBookingMessage
+func NewSendBookingMessageRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2051,8 +2958,8 @@ func NewPostV1ChannelsBookingMessagingRequest(server string) (*http.Request, err
 	return req, nil
 }
 
-// NewGetV1ChannelsBookingPropertiesRequest generates requests for GetV1ChannelsBookingProperties
-func NewGetV1ChannelsBookingPropertiesRequest(server string) (*http.Request, error) {
+// NewListBookingPropertiesRequest generates requests for ListBookingProperties
+func NewListBookingPropertiesRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2078,8 +2985,8 @@ func NewGetV1ChannelsBookingPropertiesRequest(server string) (*http.Request, err
 	return req, nil
 }
 
-// NewPostV1ChannelsBookingPropertiesRequest generates requests for PostV1ChannelsBookingProperties
-func NewPostV1ChannelsBookingPropertiesRequest(server string) (*http.Request, error) {
+// NewCreateBookingPropertyRequest generates requests for CreateBookingProperty
+func NewCreateBookingPropertyRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2105,8 +3012,8 @@ func NewPostV1ChannelsBookingPropertiesRequest(server string) (*http.Request, er
 	return req, nil
 }
 
-// NewPostV1ChannelsBookingSyncRequest generates requests for PostV1ChannelsBookingSync
-func NewPostV1ChannelsBookingSyncRequest(server string) (*http.Request, error) {
+// NewSyncBookingRequest generates requests for SyncBooking
+func NewSyncBookingRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2132,8 +3039,8 @@ func NewPostV1ChannelsBookingSyncRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetV1ChannelsPlumguideAvailabilityRequest generates requests for GetV1ChannelsPlumguideAvailability
-func NewGetV1ChannelsPlumguideAvailabilityRequest(server string) (*http.Request, error) {
+// NewGetPlumguideAvailabilityRequest generates requests for GetPlumguideAvailability
+func NewGetPlumguideAvailabilityRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2159,8 +3066,8 @@ func NewGetV1ChannelsPlumguideAvailabilityRequest(server string) (*http.Request,
 	return req, nil
 }
 
-// NewPutV1ChannelsPlumguideAvailabilityRequest generates requests for PutV1ChannelsPlumguideAvailability
-func NewPutV1ChannelsPlumguideAvailabilityRequest(server string) (*http.Request, error) {
+// NewUpdatePlumguideAvailabilityRequest generates requests for UpdatePlumguideAvailability
+func NewUpdatePlumguideAvailabilityRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2186,8 +3093,8 @@ func NewPutV1ChannelsPlumguideAvailabilityRequest(server string) (*http.Request,
 	return req, nil
 }
 
-// NewGetV1ChannelsPlumguideListingsRequest generates requests for GetV1ChannelsPlumguideListings
-func NewGetV1ChannelsPlumguideListingsRequest(server string) (*http.Request, error) {
+// NewListPlumguideListingsRequest generates requests for ListPlumguideListings
+func NewListPlumguideListingsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2213,8 +3120,8 @@ func NewGetV1ChannelsPlumguideListingsRequest(server string) (*http.Request, err
 	return req, nil
 }
 
-// NewGetV1ChannelsPlumguidePricingRequest generates requests for GetV1ChannelsPlumguidePricing
-func NewGetV1ChannelsPlumguidePricingRequest(server string) (*http.Request, error) {
+// NewGetPlumguidePricingRequest generates requests for GetPlumguidePricing
+func NewGetPlumguidePricingRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2240,8 +3147,8 @@ func NewGetV1ChannelsPlumguidePricingRequest(server string) (*http.Request, erro
 	return req, nil
 }
 
-// NewPutV1ChannelsPlumguidePricingRequest generates requests for PutV1ChannelsPlumguidePricing
-func NewPutV1ChannelsPlumguidePricingRequest(server string) (*http.Request, error) {
+// NewUpdatePlumguidePricingRequest generates requests for UpdatePlumguidePricing
+func NewUpdatePlumguidePricingRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2267,8 +3174,8 @@ func NewPutV1ChannelsPlumguidePricingRequest(server string) (*http.Request, erro
 	return req, nil
 }
 
-// NewGetV1ChannelsVrboListingsRequest generates requests for GetV1ChannelsVrboListings
-func NewGetV1ChannelsVrboListingsRequest(server string) (*http.Request, error) {
+// NewListVrboListingsRequest generates requests for ListVrboListings
+func NewListVrboListingsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2294,8 +3201,76 @@ func NewGetV1ChannelsVrboListingsRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetV1ChannelsVrboReservationsRequest generates requests for GetV1ChannelsVrboReservations
-func NewGetV1ChannelsVrboReservationsRequest(server string) (*http.Request, error) {
+// NewGetVrboListingPricingRequest generates requests for GetVrboListingPricing
+func NewGetVrboListingPricingRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/listings/%s/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateVrboListingPricingRequest generates requests for UpdateVrboListingPricing
+func NewUpdateVrboListingPricingRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/listings/%s/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListVrboReservationsRequest generates requests for ListVrboReservations
+func NewListVrboReservationsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2321,8 +3296,8 @@ func NewGetV1ChannelsVrboReservationsRequest(server string) (*http.Request, erro
 	return req, nil
 }
 
-// NewGetV1ConnectRequest generates requests for GetV1Connect
-func NewGetV1ConnectRequest(server string) (*http.Request, error) {
+// NewListConnectionsRequest generates requests for ListConnections
+func NewListConnectionsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2348,8 +3323,247 @@ func NewGetV1ConnectRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewDeleteV1ConnectProviderRequest generates requests for DeleteV1ConnectProvider
-func NewDeleteV1ConnectProviderRequest(server string, provider Provider) (*http.Request, error) {
+// NewCreateConnectSessionRequest calls the generic CreateConnectSession builder with application/json body
+func NewCreateConnectSessionRequest(server string, body CreateConnectSessionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateConnectSessionRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateConnectSessionRequestWithBody generates requests for CreateConnectSession with any type of body
+func NewCreateConnectSessionRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMapConnectBookingRoomsRequest calls the generic MapConnectBookingRooms builder with application/json body
+func NewMapConnectBookingRoomsRequest(server string, body MapConnectBookingRoomsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMapConnectBookingRoomsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMapConnectBookingRoomsRequestWithBody generates requests for MapConnectBookingRooms with any type of body
+func NewMapConnectBookingRoomsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/booking/map-rooms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListConnectBookingRoomsRequest generates requests for ListConnectBookingRooms
+func NewListConnectBookingRoomsRequest(server string, params *ListConnectBookingRoomsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/booking/rooms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewVerifyBookingHotelRequest calls the generic VerifyBookingHotel builder with application/json body
+func NewVerifyBookingHotelRequest(server string, body VerifyBookingHotelJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewVerifyBookingHotelRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewVerifyBookingHotelRequestWithBody generates requests for VerifyBookingHotel with any type of body
+func NewVerifyBookingHotelRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/booking/verify")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListConnectProvidersRequest generates requests for ListConnectProviders
+func NewListConnectProvidersRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/providers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSelectConnectProviderRequest calls the generic SelectConnectProvider builder with application/json body
+func NewSelectConnectProviderRequest(server string, sessionId string, body SelectConnectProviderJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSelectConnectProviderRequestWithBody(server, sessionId, "application/json", bodyReader)
+}
+
+// NewSelectConnectProviderRequestWithBody generates requests for SelectConnectProvider with any type of body
+func NewSelectConnectProviderRequestWithBody(server string, sessionId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "sessionId", sessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/sessions/%s/select-provider", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteConnectionRequest generates requests for DeleteConnection
+func NewDeleteConnectionRequest(server string, provider Provider) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2382,8 +3596,8 @@ func NewDeleteV1ConnectProviderRequest(server string, provider Provider) (*http.
 	return req, nil
 }
 
-// NewGetV1ConnectProviderRequest generates requests for GetV1ConnectProvider
-func NewGetV1ConnectProviderRequest(server string, provider Provider) (*http.Request, error) {
+// NewGetConnectStatusRequest generates requests for GetConnectStatus
+func NewGetConnectStatusRequest(server string, provider Provider) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2416,19 +3630,19 @@ func NewGetV1ConnectProviderRequest(server string, provider Provider) (*http.Req
 	return req, nil
 }
 
-// NewPostV1ConnectProviderRequest calls the generic PostV1ConnectProvider builder with application/json body
-func NewPostV1ConnectProviderRequest(server string, provider Provider, body PostV1ConnectProviderJSONRequestBody) (*http.Request, error) {
+// NewCreateConnectionRequest calls the generic CreateConnection builder with application/json body
+func NewCreateConnectionRequest(server string, provider Provider, body CreateConnectionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostV1ConnectProviderRequestWithBody(server, provider, "application/json", bodyReader)
+	return NewCreateConnectionRequestWithBody(server, provider, "application/json", bodyReader)
 }
 
-// NewPostV1ConnectProviderRequestWithBody generates requests for PostV1ConnectProvider with any type of body
-func NewPostV1ConnectProviderRequestWithBody(server string, provider Provider, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateConnectionRequestWithBody generates requests for CreateConnection with any type of body
+func NewCreateConnectionRequestWithBody(server string, provider Provider, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2463,8 +3677,8 @@ func NewPostV1ConnectProviderRequestWithBody(server string, provider Provider, c
 	return req, nil
 }
 
-// NewGetV1ConversationsRequest generates requests for GetV1Conversations
-func NewGetV1ConversationsRequest(server string) (*http.Request, error) {
+// NewListConversationsRequest generates requests for ListConversations
+func NewListConversationsRequest(server string, params *ListConversationsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2482,116 +3696,24 @@ func NewGetV1ConversationsRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetV1ConversationsIdMessagesRequest generates requests for GetV1ConversationsIdMessages
-func NewGetV1ConversationsIdMessagesRequest(server string, id string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/conversations/%s/messages", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewPostV1ConversationsIdMessagesRequest calls the generic PostV1ConversationsIdMessages builder with application/json body
-func NewPostV1ConversationsIdMessagesRequest(server string, id string, body PostV1ConversationsIdMessagesJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPostV1ConversationsIdMessagesRequestWithBody(server, id, "application/json", bodyReader)
-}
-
-// NewPostV1ConversationsIdMessagesRequestWithBody generates requests for PostV1ConversationsIdMessages with any type of body
-func NewPostV1ConversationsIdMessagesRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/conversations/%s/messages", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewGetV1GuestsRequest generates requests for GetV1Guests
-func NewGetV1GuestsRequest(server string, params *GetV1GuestsParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/guests")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
 	if params != nil {
 		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
 
 		if params.Limit != nil {
 
@@ -2609,9 +3731,9 @@ func NewGetV1GuestsRequest(server string, params *GetV1GuestsParams) (*http.Requ
 
 		}
 
-		if params.Offset != nil {
+		if params.Platform != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "platform", *params.Platform, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2625,9 +3747,9 @@ func NewGetV1GuestsRequest(server string, params *GetV1GuestsParams) (*http.Requ
 
 		}
 
-		if params.Search != nil {
+		if params.Status != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "search", *params.Search, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2652,8 +3774,243 @@ func NewGetV1GuestsRequest(server string, params *GetV1GuestsParams) (*http.Requ
 	return req, nil
 }
 
-// NewGetV1GuestsIdRequest generates requests for GetV1GuestsId
-func NewGetV1GuestsIdRequest(server string, id int) (*http.Request, error) {
+// NewGetConversationRequest generates requests for GetConversation
+func NewGetConversationRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListConversationMessagesRequest generates requests for ListConversationMessages
+func NewListConversationMessagesRequest(server string, id int, params *ListConversationMessagesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Order != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "order", *params.Order, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListGuestsRequest generates requests for ListGuests
+func NewListGuestsRequest(server string, params *ListGuestsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/guests")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Q != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "q", *params.Q, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.HasReservation != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "has_reservation", *params.HasReservation, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetGuestRequest generates requests for GetGuest
+func NewGetGuestRequest(server string, id int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2686,8 +4043,8 @@ func NewGetV1GuestsIdRequest(server string, id int) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetV1HealthRequest generates requests for GetV1Health
-func NewGetV1HealthRequest(server string) (*http.Request, error) {
+// NewGetHealthRequest generates requests for GetHealth
+func NewGetHealthRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2713,8 +4070,1143 @@ func NewGetV1HealthRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetV1PropertiesRequest generates requests for GetV1Properties
-func NewGetV1PropertiesRequest(server string, params *GetV1PropertiesParams) (*http.Request, error) {
+// NewListListingsRequest generates requests for ListListings
+func NewListListingsRequest(server string, params *ListListingsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Q != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "q", *params.Q, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Channel != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "channel", *params.Channel, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateListingRequest calls the generic CreateListing builder with application/json body
+func NewCreateListingRequest(server string, body CreateListingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateListingRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateListingRequestWithBody generates requests for CreateListing with any type of body
+func NewCreateListingRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewBulkApplyPricingRequest calls the generic BulkApplyPricing builder with application/json body
+func NewBulkApplyPricingRequest(server string, body BulkApplyPricingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkApplyPricingRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBulkApplyPricingRequestWithBody generates requests for BulkApplyPricing with any type of body
+func NewBulkApplyPricingRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/pricing/bulk")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListListingCompsRequest generates requests for ListListingComps
+func NewListListingCompsRequest(server string, id int, params *ListListingCompsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/comps", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.RadiusKm != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "radius_km", *params.RadiusKm, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "number", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGenerateListingContentRequest calls the generic GenerateListingContent builder with application/json body
+func NewGenerateListingContentRequest(server string, id int, body GenerateListingContentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGenerateListingContentRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewGenerateListingContentRequestWithBody generates requests for GenerateListingContent with any type of body
+func NewGenerateListingContentRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/generate-content", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetListingPricingRequest generates requests for GetListingPricing
+func NewGetListingPricingRequest(server string, id int, params *GetListingPricingParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "startDate", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "endDate", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewApplyListingPricingRequest calls the generic ApplyListingPricing builder with application/json body
+func NewApplyListingPricingRequest(server string, id int, body ApplyListingPricingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewApplyListingPricingRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewApplyListingPricingRequestWithBody generates requests for ApplyListingPricing with any type of body
+func NewApplyListingPricingRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetListingPricingHistoryRequest generates requests for GetListingPricingHistory
+func NewGetListingPricingHistoryRequest(server string, id int, params *GetListingPricingHistoryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/pricing/history", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetListingPricingStrategyRequest generates requests for GetListingPricingStrategy
+func NewGetListingPricingStrategyRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/pricing/strategy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateListingPricingStrategyRequest calls the generic UpdateListingPricingStrategy builder with application/json body
+func NewUpdateListingPricingStrategyRequest(server string, id int, body UpdateListingPricingStrategyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateListingPricingStrategyRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateListingPricingStrategyRequestWithBody generates requests for UpdateListingPricingStrategy with any type of body
+func NewUpdateListingPricingStrategyRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/pricing/strategy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetListingPublishStatusRequest generates requests for GetListingPublishStatus
+func NewGetListingPublishStatusRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/publish-status", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPublishListingToAirbnbRequest calls the generic PublishListingToAirbnb builder with application/json body
+func NewPublishListingToAirbnbRequest(server string, id int, body PublishListingToAirbnbJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPublishListingToAirbnbRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPublishListingToAirbnbRequestWithBody generates requests for PublishListingToAirbnb with any type of body
+func NewPublishListingToAirbnbRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/publish/airbnb", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPublishListingToBookingRequest generates requests for PublishListingToBooking
+func NewPublishListingToBookingRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/publish/booking", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetListingSegmentsRequest generates requests for GetListingSegments
+func NewGetListingSegmentsRequest(server string, id int, params *GetListingSegmentsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/segments", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Level != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "level", *params.Level, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.RadiusKm != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "radius_km", *params.RadiusKm, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "number", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListMarketsRequest generates requests for ListMarkets
+func NewListMarketsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/markets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListMarketBrowseRequest generates requests for ListMarketBrowse
+func NewListMarketBrowseRequest(server string, params *ListMarketBrowseParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/markets/browse")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Q != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "q", *params.Q, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Country != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "country", *params.Country, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.MinListings != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "min_listings", *params.MinListings, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Sort != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sort", *params.Sort, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMarketRequest generates requests for GetMarket
+func NewGetMarketRequest(server string, city string, params *GetMarketParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "city", city, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/markets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.CompsPage != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "compsPage", *params.CompsPage, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMarketCalendarRequest generates requests for GetMarketCalendar
+func NewGetMarketCalendarRequest(server string, city string, params *GetMarketCalendarParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "city", city, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/markets/%s/calendar", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "startDate", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "endDate", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listingId", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListPropertiesRequest generates requests for ListProperties
+func NewListPropertiesRequest(server string, params *ListPropertiesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2794,8 +5286,8 @@ func NewGetV1PropertiesRequest(server string, params *GetV1PropertiesParams) (*h
 	return req, nil
 }
 
-// NewGetV1PropertiesIdRequest generates requests for GetV1PropertiesId
-func NewGetV1PropertiesIdRequest(server string, id int) (*http.Request, error) {
+// NewGetPropertyRequest generates requests for GetProperty
+func NewGetPropertyRequest(server string, id int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2828,8 +5320,8 @@ func NewGetV1PropertiesIdRequest(server string, id int) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetV1ReservationsRequest generates requests for GetV1Reservations
-func NewGetV1ReservationsRequest(server string, params *GetV1ReservationsParams) (*http.Request, error) {
+// NewListReservationsRequest generates requests for ListReservations
+func NewListReservationsRequest(server string, params *ListReservationsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2853,6 +5345,22 @@ func NewGetV1ReservationsRequest(server string, params *GetV1ReservationsParams)
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2914,6 +5422,54 @@ func NewGetV1ReservationsRequest(server string, params *GetV1ReservationsParams)
 
 		}
 
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CheckInAfter != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "check_in_after", *params.CheckInAfter, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CheckInBefore != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "check_in_before", *params.CheckInBefore, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.CheckInFrom != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "checkInFrom", *params.CheckInFrom, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
@@ -2957,19 +5513,19 @@ func NewGetV1ReservationsRequest(server string, params *GetV1ReservationsParams)
 	return req, nil
 }
 
-// NewPostV1ReservationsRequest calls the generic PostV1Reservations builder with application/json body
-func NewPostV1ReservationsRequest(server string, body PostV1ReservationsJSONRequestBody) (*http.Request, error) {
+// NewCreateReservationRequest calls the generic CreateReservation builder with application/json body
+func NewCreateReservationRequest(server string, body CreateReservationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostV1ReservationsRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateReservationRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewPostV1ReservationsRequestWithBody generates requests for PostV1Reservations with any type of body
-func NewPostV1ReservationsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateReservationRequestWithBody generates requests for CreateReservation with any type of body
+func NewCreateReservationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2997,8 +5553,8 @@ func NewPostV1ReservationsRequestWithBody(server string, contentType string, bod
 	return req, nil
 }
 
-// NewDeleteV1ReservationsIdRequest generates requests for DeleteV1ReservationsId
-func NewDeleteV1ReservationsIdRequest(server string, id int) (*http.Request, error) {
+// NewCancelReservationRequest generates requests for CancelReservation
+func NewCancelReservationRequest(server string, id int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3031,8 +5587,8 @@ func NewDeleteV1ReservationsIdRequest(server string, id int) (*http.Request, err
 	return req, nil
 }
 
-// NewGetV1ReservationsIdRequest generates requests for GetV1ReservationsId
-func NewGetV1ReservationsIdRequest(server string, id int) (*http.Request, error) {
+// NewGetReservationRequest generates requests for GetReservation
+func NewGetReservationRequest(server string, id int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3065,19 +5621,19 @@ func NewGetV1ReservationsIdRequest(server string, id int) (*http.Request, error)
 	return req, nil
 }
 
-// NewPatchV1ReservationsIdRequest calls the generic PatchV1ReservationsId builder with application/json body
-func NewPatchV1ReservationsIdRequest(server string, id int, body PatchV1ReservationsIdJSONRequestBody) (*http.Request, error) {
+// NewUpdateReservationRequest calls the generic UpdateReservation builder with application/json body
+func NewUpdateReservationRequest(server string, id int, body UpdateReservationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPatchV1ReservationsIdRequestWithBody(server, id, "application/json", bodyReader)
+	return NewUpdateReservationRequestWithBody(server, id, "application/json", bodyReader)
 }
 
-// NewPatchV1ReservationsIdRequestWithBody generates requests for PatchV1ReservationsId with any type of body
-func NewPatchV1ReservationsIdRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+// NewUpdateReservationRequestWithBody generates requests for UpdateReservation with any type of body
+func NewUpdateReservationRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3112,8 +5668,203 @@ func NewPatchV1ReservationsIdRequestWithBody(server string, id int, contentType 
 	return req, nil
 }
 
-// NewGetV1WebhooksRequest generates requests for GetV1Webhooks
-func NewGetV1WebhooksRequest(server string) (*http.Request, error) {
+// NewListReviewsRequest generates requests for ListReviews
+func NewListReviewsRequest(server string, params *ListReviewsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reviews")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Platform != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "platform", *params.Platform, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.RatingMin != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "rating_min", *params.RatingMin, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "number", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.RatingMax != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "rating_max", *params.RatingMax, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "number", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ReviewerRole != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "reviewer_role", *params.ReviewerRole, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetReviewRequest generates requests for GetReview
+func NewGetReviewRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reviews/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListWebhooksRequest generates requests for ListWebhooks
+func NewListWebhooksRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3139,19 +5890,19 @@ func NewGetV1WebhooksRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewPostV1WebhooksRequest calls the generic PostV1Webhooks builder with application/json body
-func NewPostV1WebhooksRequest(server string, body PostV1WebhooksJSONRequestBody) (*http.Request, error) {
+// NewCreateWebhookRequest calls the generic CreateWebhook builder with application/json body
+func NewCreateWebhookRequest(server string, body CreateWebhookJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostV1WebhooksRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateWebhookRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewPostV1WebhooksRequestWithBody generates requests for PostV1Webhooks with any type of body
-func NewPostV1WebhooksRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateWebhookRequestWithBody generates requests for CreateWebhook with any type of body
+func NewCreateWebhookRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3179,19 +5930,46 @@ func NewPostV1WebhooksRequestWithBody(server string, contentType string, body io
 	return req, nil
 }
 
-// NewPostV1WebhooksTestRequest calls the generic PostV1WebhooksTest builder with application/json body
-func NewPostV1WebhooksTestRequest(server string, body PostV1WebhooksTestJSONRequestBody) (*http.Request, error) {
+// NewListWebhookEventTypesRequest generates requests for ListWebhookEventTypes
+func NewListWebhookEventTypesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/event-types")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewTestWebhookRequest calls the generic TestWebhook builder with application/json body
+func NewTestWebhookRequest(server string, body TestWebhookJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostV1WebhooksTestRequestWithBody(server, "application/json", bodyReader)
+	return NewTestWebhookRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewPostV1WebhooksTestRequestWithBody generates requests for PostV1WebhooksTest with any type of body
-func NewPostV1WebhooksTestRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewTestWebhookRequestWithBody generates requests for TestWebhook with any type of body
+func NewTestWebhookRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3215,6 +5993,400 @@ func NewPostV1WebhooksTestRequestWithBody(server string, contentType string, bod
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteWebhookRequest generates requests for DeleteWebhook
+func NewDeleteWebhookRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetWebhookRequest generates requests for GetWebhook
+func NewGetWebhookRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateWebhookRequest calls the generic UpdateWebhook builder with application/json body
+func NewUpdateWebhookRequest(server string, id openapi_types.UUID, body UpdateWebhookJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateWebhookRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateWebhookRequestWithBody generates requests for UpdateWebhook with any type of body
+func NewUpdateWebhookRequestWithBody(server string, id openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListWebhookDeliveriesRequest generates requests for ListWebhookDeliveries
+func NewListWebhookDeliveriesRequest(server string, id openapi_types.UUID, params *ListWebhookDeliveriesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s/deliveries", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetWebhookDeliveryRequest generates requests for GetWebhookDelivery
+func NewGetWebhookDeliveryRequest(server string, id openapi_types.UUID, deliveryId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "delivery_id", deliveryId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s/deliveries/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewReplayWebhookDeliveryRequest generates requests for ReplayWebhookDelivery
+func NewReplayWebhookDeliveryRequest(server string, id openapi_types.UUID, deliveryId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "delivery_id", deliveryId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s/deliveries/%s/replay", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPingWebhookRequest generates requests for PingWebhook
+func NewPingWebhookRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s/ping", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRotateWebhookSecretRequest generates requests for RotateWebhookSecret
+func NewRotateWebhookSecretRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s/rotate-secret", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewTestFireWebhookRequest generates requests for TestFireWebhook
+func NewTestFireWebhookRequest(server string, id openapi_types.UUID, eventType string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "event_type", eventType, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/webhooks/%s/test/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -3262,203 +6434,345 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// PostV1AiWithBodyWithResponse request with any body
-	PostV1AiWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1AiResponse, error)
+	// CreateAiOperationWithBodyWithResponse request with any body
+	CreateAiOperationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAiOperationClientResponse, error)
 
-	PostV1AiWithResponse(ctx context.Context, body PostV1AiJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1AiResponse, error)
+	CreateAiOperationWithResponse(ctx context.Context, body CreateAiOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAiOperationClientResponse, error)
 
-	// GetV1AvailabilityPropertyIdWithResponse request
-	GetV1AvailabilityPropertyIdWithResponse(ctx context.Context, propertyId int, params *GetV1AvailabilityPropertyIdParams, reqEditors ...RequestEditorFn) (*GetV1AvailabilityPropertyIdResponse, error)
+	// GetAvailabilityWithResponse request
+	GetAvailabilityWithResponse(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*GetAvailabilityClientResponse, error)
 
-	// PutV1AvailabilityPropertyIdWithBodyWithResponse request with any body
-	PutV1AvailabilityPropertyIdWithBodyWithResponse(ctx context.Context, propertyId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutV1AvailabilityPropertyIdResponse, error)
+	// UpdateAvailabilityWithBodyWithResponse request with any body
+	UpdateAvailabilityWithBodyWithResponse(ctx context.Context, propertyId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAvailabilityClientResponse, error)
 
-	PutV1AvailabilityPropertyIdWithResponse(ctx context.Context, propertyId int, body PutV1AvailabilityPropertyIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutV1AvailabilityPropertyIdResponse, error)
+	UpdateAvailabilityWithResponse(ctx context.Context, propertyId int, body UpdateAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAvailabilityClientResponse, error)
 
-	// GetV1BillingWithResponse request
-	GetV1BillingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1BillingResponse, error)
+	// GetBillingWithResponse request
+	GetBillingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBillingClientResponse, error)
 
-	// PostV1BillingWithBodyWithResponse request with any body
-	PostV1BillingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1BillingResponse, error)
+	// CreateBillingCheckoutWithBodyWithResponse request with any body
+	CreateBillingCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error)
 
-	PostV1BillingWithResponse(ctx context.Context, body PostV1BillingJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1BillingResponse, error)
+	CreateBillingCheckoutWithResponse(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error)
 
-	// GetV1ChannelsAirbnbListingsWithResponse request
-	GetV1ChannelsAirbnbListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsResponse, error)
+	// ListAirbnbListingsWithResponse request
+	ListAirbnbListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbListingsClientResponse, error)
 
-	// PostV1ChannelsAirbnbListingsWithResponse request
-	PostV1ChannelsAirbnbListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbListingsResponse, error)
+	// CreateAirbnbListingWithResponse request
+	CreateAirbnbListingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreateAirbnbListingClientResponse, error)
 
-	// GetV1ChannelsAirbnbListingsIdWithResponse request
-	GetV1ChannelsAirbnbListingsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsIdResponse, error)
+	// GetAirbnbListingWithResponse request
+	GetAirbnbListingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingClientResponse, error)
 
-	// PostV1ChannelsAirbnbListingsIdWithResponse request
-	PostV1ChannelsAirbnbListingsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbListingsIdResponse, error)
+	// AirbnbListingActionWithResponse request
+	AirbnbListingActionWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*AirbnbListingActionClientResponse, error)
 
-	// GetV1ChannelsAirbnbListingsIdAvailabilityWithResponse request
-	GetV1ChannelsAirbnbListingsIdAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsIdAvailabilityResponse, error)
+	// GetAirbnbListingAvailabilityWithResponse request
+	GetAirbnbListingAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingAvailabilityClientResponse, error)
 
-	// PutV1ChannelsAirbnbListingsIdAvailabilityWithResponse request
-	PutV1ChannelsAirbnbListingsIdAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PutV1ChannelsAirbnbListingsIdAvailabilityResponse, error)
+	// UpdateAirbnbListingAvailabilityWithResponse request
+	UpdateAirbnbListingAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingAvailabilityClientResponse, error)
 
-	// GetV1ChannelsAirbnbListingsIdPhotosWithResponse request
-	GetV1ChannelsAirbnbListingsIdPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsIdPhotosResponse, error)
+	// ListAirbnbListingPhotosWithResponse request
+	ListAirbnbListingPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListAirbnbListingPhotosClientResponse, error)
 
-	// PostV1ChannelsAirbnbListingsIdPhotosWithResponse request
-	PostV1ChannelsAirbnbListingsIdPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbListingsIdPhotosResponse, error)
+	// UploadAirbnbListingPhotosWithResponse request
+	UploadAirbnbListingPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*UploadAirbnbListingPhotosClientResponse, error)
 
-	// GetV1ChannelsAirbnbListingsIdPricingWithResponse request
-	GetV1ChannelsAirbnbListingsIdPricingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsIdPricingResponse, error)
+	// GetAirbnbListingPricingWithResponse request
+	GetAirbnbListingPricingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingPricingClientResponse, error)
 
-	// PutV1ChannelsAirbnbListingsIdPricingWithResponse request
-	PutV1ChannelsAirbnbListingsIdPricingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PutV1ChannelsAirbnbListingsIdPricingResponse, error)
+	// UpdateAirbnbListingPricingWithResponse request
+	UpdateAirbnbListingPricingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingPricingClientResponse, error)
 
-	// GetV1ChannelsAirbnbMessagingWithResponse request
-	GetV1ChannelsAirbnbMessagingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbMessagingResponse, error)
+	// ListAirbnbThreadsWithResponse request
+	ListAirbnbThreadsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbThreadsClientResponse, error)
 
-	// GetV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse request
-	GetV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse, error)
+	// ListAirbnbThreadMessagesWithResponse request
+	ListAirbnbThreadMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*ListAirbnbThreadMessagesClientResponse, error)
 
-	// PostV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse request
-	PostV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse, error)
+	// SendAirbnbMessageWithResponse request
+	SendAirbnbMessageWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*SendAirbnbMessageClientResponse, error)
 
-	// GetV1ChannelsAirbnbReservationsWithResponse request
-	GetV1ChannelsAirbnbReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbReservationsResponse, error)
+	// ListAirbnbReservationsWithResponse request
+	ListAirbnbReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbReservationsClientResponse, error)
 
-	// GetV1ChannelsAirbnbReservationsCodeWithResponse request
-	GetV1ChannelsAirbnbReservationsCodeWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbReservationsCodeResponse, error)
+	// GetAirbnbReservationWithResponse request
+	GetAirbnbReservationWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*GetAirbnbReservationClientResponse, error)
 
-	// PostV1ChannelsAirbnbReservationsCodeWithResponse request
-	PostV1ChannelsAirbnbReservationsCodeWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbReservationsCodeResponse, error)
+	// AirbnbReservationActionWithResponse request
+	AirbnbReservationActionWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error)
 
-	// GetV1ChannelsAirbnbReviewsWithResponse request
-	GetV1ChannelsAirbnbReviewsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbReviewsResponse, error)
+	// ListAirbnbReviewsWithResponse request
+	ListAirbnbReviewsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbReviewsClientResponse, error)
 
-	// PostV1ChannelsAirbnbReviewsWithResponse request
-	PostV1ChannelsAirbnbReviewsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbReviewsResponse, error)
+	// RespondAirbnbReviewWithResponse request
+	RespondAirbnbReviewWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error)
 
-	// PostV1ChannelsAirbnbSyncWithResponse request
-	PostV1ChannelsAirbnbSyncWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbSyncResponse, error)
+	// SyncAirbnbWithResponse request
+	SyncAirbnbWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SyncAirbnbClientResponse, error)
 
-	// PutV1ChannelsBookingAvailabilityWithResponse request
-	PutV1ChannelsBookingAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PutV1ChannelsBookingAvailabilityResponse, error)
+	// UpdateBookingAvailabilityWithResponse request
+	UpdateBookingAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdateBookingAvailabilityClientResponse, error)
 
-	// GetV1ChannelsBookingContentWithResponse request
-	GetV1ChannelsBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsBookingContentResponse, error)
+	// GetBookingContentWithResponse request
+	GetBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBookingContentClientResponse, error)
 
-	// PostV1ChannelsBookingContentWithResponse request
-	PostV1ChannelsBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsBookingContentResponse, error)
+	// UpdateBookingContentWithResponse request
+	UpdateBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdateBookingContentClientResponse, error)
 
-	// GetV1ChannelsBookingMessagingWithResponse request
-	GetV1ChannelsBookingMessagingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsBookingMessagingResponse, error)
+	// GetBookingListingPricingWithResponse request
+	GetBookingListingPricingWithResponse(ctx context.Context, id int, params *GetBookingListingPricingParams, reqEditors ...RequestEditorFn) (*GetBookingListingPricingClientResponse, error)
 
-	// PostV1ChannelsBookingMessagingWithResponse request
-	PostV1ChannelsBookingMessagingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsBookingMessagingResponse, error)
+	// UpdateBookingListingPricingWithBodyWithResponse request with any body
+	UpdateBookingListingPricingWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error)
 
-	// GetV1ChannelsBookingPropertiesWithResponse request
-	GetV1ChannelsBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsBookingPropertiesResponse, error)
+	UpdateBookingListingPricingWithResponse(ctx context.Context, id int, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error)
 
-	// PostV1ChannelsBookingPropertiesWithResponse request
-	PostV1ChannelsBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsBookingPropertiesResponse, error)
+	// ListBookingConversationsWithResponse request
+	ListBookingConversationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingConversationsClientResponse, error)
 
-	// PostV1ChannelsBookingSyncWithResponse request
-	PostV1ChannelsBookingSyncWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsBookingSyncResponse, error)
+	// SendBookingMessageWithResponse request
+	SendBookingMessageWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SendBookingMessageClientResponse, error)
 
-	// GetV1ChannelsPlumguideAvailabilityWithResponse request
-	GetV1ChannelsPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsPlumguideAvailabilityResponse, error)
+	// ListBookingPropertiesWithResponse request
+	ListBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingPropertiesClientResponse, error)
 
-	// PutV1ChannelsPlumguideAvailabilityWithResponse request
-	PutV1ChannelsPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PutV1ChannelsPlumguideAvailabilityResponse, error)
+	// CreateBookingPropertyWithResponse request
+	CreateBookingPropertyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreateBookingPropertyClientResponse, error)
 
-	// GetV1ChannelsPlumguideListingsWithResponse request
-	GetV1ChannelsPlumguideListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsPlumguideListingsResponse, error)
+	// SyncBookingWithResponse request
+	SyncBookingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SyncBookingClientResponse, error)
 
-	// GetV1ChannelsPlumguidePricingWithResponse request
-	GetV1ChannelsPlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsPlumguidePricingResponse, error)
+	// GetPlumguideAvailabilityWithResponse request
+	GetPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideAvailabilityClientResponse, error)
 
-	// PutV1ChannelsPlumguidePricingWithResponse request
-	PutV1ChannelsPlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PutV1ChannelsPlumguidePricingResponse, error)
+	// UpdatePlumguideAvailabilityWithResponse request
+	UpdatePlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguideAvailabilityClientResponse, error)
 
-	// GetV1ChannelsVrboListingsWithResponse request
-	GetV1ChannelsVrboListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsVrboListingsResponse, error)
+	// ListPlumguideListingsWithResponse request
+	ListPlumguideListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListPlumguideListingsClientResponse, error)
 
-	// GetV1ChannelsVrboReservationsWithResponse request
-	GetV1ChannelsVrboReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsVrboReservationsResponse, error)
+	// GetPlumguidePricingWithResponse request
+	GetPlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguidePricingClientResponse, error)
 
-	// GetV1ConnectWithResponse request
-	GetV1ConnectWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ConnectResponse, error)
+	// UpdatePlumguidePricingWithResponse request
+	UpdatePlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguidePricingClientResponse, error)
 
-	// DeleteV1ConnectProviderWithResponse request
-	DeleteV1ConnectProviderWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*DeleteV1ConnectProviderResponse, error)
+	// ListVrboListingsWithResponse request
+	ListVrboListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboListingsClientResponse, error)
 
-	// GetV1ConnectProviderWithResponse request
-	GetV1ConnectProviderWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*GetV1ConnectProviderResponse, error)
+	// GetVrboListingPricingWithResponse request
+	GetVrboListingPricingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetVrboListingPricingClientResponse, error)
 
-	// PostV1ConnectProviderWithBodyWithResponse request with any body
-	PostV1ConnectProviderWithBodyWithResponse(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1ConnectProviderResponse, error)
+	// UpdateVrboListingPricingWithResponse request
+	UpdateVrboListingPricingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*UpdateVrboListingPricingClientResponse, error)
 
-	PostV1ConnectProviderWithResponse(ctx context.Context, provider Provider, body PostV1ConnectProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1ConnectProviderResponse, error)
+	// ListVrboReservationsWithResponse request
+	ListVrboReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboReservationsClientResponse, error)
 
-	// GetV1ConversationsWithResponse request
-	GetV1ConversationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ConversationsResponse, error)
+	// ListConnectionsWithResponse request
+	ListConnectionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectionsClientResponse, error)
 
-	// GetV1ConversationsIdMessagesWithResponse request
-	GetV1ConversationsIdMessagesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ConversationsIdMessagesResponse, error)
+	// CreateConnectSessionWithBodyWithResponse request with any body
+	CreateConnectSessionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConnectSessionClientResponse, error)
 
-	// PostV1ConversationsIdMessagesWithBodyWithResponse request with any body
-	PostV1ConversationsIdMessagesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1ConversationsIdMessagesResponse, error)
+	CreateConnectSessionWithResponse(ctx context.Context, body CreateConnectSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConnectSessionClientResponse, error)
 
-	PostV1ConversationsIdMessagesWithResponse(ctx context.Context, id string, body PostV1ConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1ConversationsIdMessagesResponse, error)
+	// MapConnectBookingRoomsWithBodyWithResponse request with any body
+	MapConnectBookingRoomsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MapConnectBookingRoomsClientResponse, error)
 
-	// GetV1GuestsWithResponse request
-	GetV1GuestsWithResponse(ctx context.Context, params *GetV1GuestsParams, reqEditors ...RequestEditorFn) (*GetV1GuestsResponse, error)
+	MapConnectBookingRoomsWithResponse(ctx context.Context, body MapConnectBookingRoomsJSONRequestBody, reqEditors ...RequestEditorFn) (*MapConnectBookingRoomsClientResponse, error)
 
-	// GetV1GuestsIdWithResponse request
-	GetV1GuestsIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetV1GuestsIdResponse, error)
+	// ListConnectBookingRoomsWithResponse request
+	ListConnectBookingRoomsWithResponse(ctx context.Context, params *ListConnectBookingRoomsParams, reqEditors ...RequestEditorFn) (*ListConnectBookingRoomsClientResponse, error)
 
-	// GetV1HealthWithResponse request
-	GetV1HealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1HealthResponse, error)
+	// VerifyBookingHotelWithBodyWithResponse request with any body
+	VerifyBookingHotelWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VerifyBookingHotelClientResponse, error)
 
-	// GetV1PropertiesWithResponse request
-	GetV1PropertiesWithResponse(ctx context.Context, params *GetV1PropertiesParams, reqEditors ...RequestEditorFn) (*GetV1PropertiesResponse, error)
+	VerifyBookingHotelWithResponse(ctx context.Context, body VerifyBookingHotelJSONRequestBody, reqEditors ...RequestEditorFn) (*VerifyBookingHotelClientResponse, error)
 
-	// GetV1PropertiesIdWithResponse request
-	GetV1PropertiesIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetV1PropertiesIdResponse, error)
+	// ListConnectProvidersWithResponse request
+	ListConnectProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectProvidersClientResponse, error)
 
-	// GetV1ReservationsWithResponse request
-	GetV1ReservationsWithResponse(ctx context.Context, params *GetV1ReservationsParams, reqEditors ...RequestEditorFn) (*GetV1ReservationsResponse, error)
+	// SelectConnectProviderWithBodyWithResponse request with any body
+	SelectConnectProviderWithBodyWithResponse(ctx context.Context, sessionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SelectConnectProviderClientResponse, error)
 
-	// PostV1ReservationsWithBodyWithResponse request with any body
-	PostV1ReservationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1ReservationsResponse, error)
+	SelectConnectProviderWithResponse(ctx context.Context, sessionId string, body SelectConnectProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*SelectConnectProviderClientResponse, error)
 
-	PostV1ReservationsWithResponse(ctx context.Context, body PostV1ReservationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1ReservationsResponse, error)
+	// DeleteConnectionWithResponse request
+	DeleteConnectionWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*DeleteConnectionClientResponse, error)
 
-	// DeleteV1ReservationsIdWithResponse request
-	DeleteV1ReservationsIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteV1ReservationsIdResponse, error)
+	// GetConnectStatusWithResponse request
+	GetConnectStatusWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*GetConnectStatusClientResponse, error)
 
-	// GetV1ReservationsIdWithResponse request
-	GetV1ReservationsIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetV1ReservationsIdResponse, error)
+	// CreateConnectionWithBodyWithResponse request with any body
+	CreateConnectionWithBodyWithResponse(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConnectionClientResponse, error)
 
-	// PatchV1ReservationsIdWithBodyWithResponse request with any body
-	PatchV1ReservationsIdWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchV1ReservationsIdResponse, error)
+	CreateConnectionWithResponse(ctx context.Context, provider Provider, body CreateConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConnectionClientResponse, error)
 
-	PatchV1ReservationsIdWithResponse(ctx context.Context, id int, body PatchV1ReservationsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchV1ReservationsIdResponse, error)
+	// ListConversationsWithResponse request
+	ListConversationsWithResponse(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*ListConversationsClientResponse, error)
 
-	// GetV1WebhooksWithResponse request
-	GetV1WebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1WebhooksResponse, error)
+	// GetConversationWithResponse request
+	GetConversationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetConversationClientResponse, error)
 
-	// PostV1WebhooksWithBodyWithResponse request with any body
-	PostV1WebhooksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1WebhooksResponse, error)
+	// ListConversationMessagesWithResponse request
+	ListConversationMessagesWithResponse(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*ListConversationMessagesClientResponse, error)
 
-	PostV1WebhooksWithResponse(ctx context.Context, body PostV1WebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1WebhooksResponse, error)
+	// ListGuestsWithResponse request
+	ListGuestsWithResponse(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*ListGuestsClientResponse, error)
 
-	// PostV1WebhooksTestWithBodyWithResponse request with any body
-	PostV1WebhooksTestWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1WebhooksTestResponse, error)
+	// GetGuestWithResponse request
+	GetGuestWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetGuestClientResponse, error)
 
-	PostV1WebhooksTestWithResponse(ctx context.Context, body PostV1WebhooksTestJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1WebhooksTestResponse, error)
+	// GetHealthWithResponse request
+	GetHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthClientResponse, error)
+
+	// ListListingsWithResponse request
+	ListListingsWithResponse(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*ListListingsClientResponse, error)
+
+	// CreateListingWithBodyWithResponse request with any body
+	CreateListingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateListingClientResponse, error)
+
+	CreateListingWithResponse(ctx context.Context, body CreateListingJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateListingClientResponse, error)
+
+	// BulkApplyPricingWithBodyWithResponse request with any body
+	BulkApplyPricingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkApplyPricingClientResponse, error)
+
+	BulkApplyPricingWithResponse(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkApplyPricingClientResponse, error)
+
+	// ListListingCompsWithResponse request
+	ListListingCompsWithResponse(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*ListListingCompsClientResponse, error)
+
+	// GenerateListingContentWithBodyWithResponse request with any body
+	GenerateListingContentWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateListingContentClientResponse, error)
+
+	GenerateListingContentWithResponse(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateListingContentClientResponse, error)
+
+	// GetListingPricingWithResponse request
+	GetListingPricingWithResponse(ctx context.Context, id int, params *GetListingPricingParams, reqEditors ...RequestEditorFn) (*GetListingPricingClientResponse, error)
+
+	// ApplyListingPricingWithBodyWithResponse request with any body
+	ApplyListingPricingWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ApplyListingPricingClientResponse, error)
+
+	ApplyListingPricingWithResponse(ctx context.Context, id int, body ApplyListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*ApplyListingPricingClientResponse, error)
+
+	// GetListingPricingHistoryWithResponse request
+	GetListingPricingHistoryWithResponse(ctx context.Context, id int, params *GetListingPricingHistoryParams, reqEditors ...RequestEditorFn) (*GetListingPricingHistoryClientResponse, error)
+
+	// GetListingPricingStrategyWithResponse request
+	GetListingPricingStrategyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingPricingStrategyClientResponse, error)
+
+	// UpdateListingPricingStrategyWithBodyWithResponse request with any body
+	UpdateListingPricingStrategyWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListingPricingStrategyClientResponse, error)
+
+	UpdateListingPricingStrategyWithResponse(ctx context.Context, id int, body UpdateListingPricingStrategyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListingPricingStrategyClientResponse, error)
+
+	// GetListingPublishStatusWithResponse request
+	GetListingPublishStatusWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingPublishStatusClientResponse, error)
+
+	// PublishListingToAirbnbWithBodyWithResponse request with any body
+	PublishListingToAirbnbWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishListingToAirbnbClientResponse, error)
+
+	PublishListingToAirbnbWithResponse(ctx context.Context, id int, body PublishListingToAirbnbJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToAirbnbClientResponse, error)
+
+	// PublishListingToBookingWithResponse request
+	PublishListingToBookingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error)
+
+	// GetListingSegmentsWithResponse request
+	GetListingSegmentsWithResponse(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*GetListingSegmentsClientResponse, error)
+
+	// ListMarketsWithResponse request
+	ListMarketsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListMarketsClientResponse, error)
+
+	// ListMarketBrowseWithResponse request
+	ListMarketBrowseWithResponse(ctx context.Context, params *ListMarketBrowseParams, reqEditors ...RequestEditorFn) (*ListMarketBrowseClientResponse, error)
+
+	// GetMarketWithResponse request
+	GetMarketWithResponse(ctx context.Context, city string, params *GetMarketParams, reqEditors ...RequestEditorFn) (*GetMarketClientResponse, error)
+
+	// GetMarketCalendarWithResponse request
+	GetMarketCalendarWithResponse(ctx context.Context, city string, params *GetMarketCalendarParams, reqEditors ...RequestEditorFn) (*GetMarketCalendarClientResponse, error)
+
+	// ListPropertiesWithResponse request
+	ListPropertiesWithResponse(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*ListPropertiesClientResponse, error)
+
+	// GetPropertyWithResponse request
+	GetPropertyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetPropertyClientResponse, error)
+
+	// ListReservationsWithResponse request
+	ListReservationsWithResponse(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*ListReservationsClientResponse, error)
+
+	// CreateReservationWithBodyWithResponse request with any body
+	CreateReservationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error)
+
+	CreateReservationWithResponse(ctx context.Context, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error)
+
+	// CancelReservationWithResponse request
+	CancelReservationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error)
+
+	// GetReservationWithResponse request
+	GetReservationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetReservationClientResponse, error)
+
+	// UpdateReservationWithBodyWithResponse request with any body
+	UpdateReservationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error)
+
+	UpdateReservationWithResponse(ctx context.Context, id int, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error)
+
+	// ListReviewsWithResponse request
+	ListReviewsWithResponse(ctx context.Context, params *ListReviewsParams, reqEditors ...RequestEditorFn) (*ListReviewsClientResponse, error)
+
+	// GetReviewWithResponse request
+	GetReviewWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetReviewClientResponse, error)
+
+	// ListWebhooksWithResponse request
+	ListWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListWebhooksClientResponse, error)
+
+	// CreateWebhookWithBodyWithResponse request with any body
+	CreateWebhookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWebhookClientResponse, error)
+
+	CreateWebhookWithResponse(ctx context.Context, body CreateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWebhookClientResponse, error)
+
+	// ListWebhookEventTypesWithResponse request
+	ListWebhookEventTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListWebhookEventTypesClientResponse, error)
+
+	// TestWebhookWithBodyWithResponse request with any body
+	TestWebhookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TestWebhookClientResponse, error)
+
+	TestWebhookWithResponse(ctx context.Context, body TestWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*TestWebhookClientResponse, error)
+
+	// DeleteWebhookWithResponse request
+	DeleteWebhookWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteWebhookClientResponse, error)
+
+	// GetWebhookWithResponse request
+	GetWebhookWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWebhookClientResponse, error)
+
+	// UpdateWebhookWithBodyWithResponse request with any body
+	UpdateWebhookWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWebhookClientResponse, error)
+
+	UpdateWebhookWithResponse(ctx context.Context, id openapi_types.UUID, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWebhookClientResponse, error)
+
+	// ListWebhookDeliveriesWithResponse request
+	ListWebhookDeliveriesWithResponse(ctx context.Context, id openapi_types.UUID, params *ListWebhookDeliveriesParams, reqEditors ...RequestEditorFn) (*ListWebhookDeliveriesClientResponse, error)
+
+	// GetWebhookDeliveryWithResponse request
+	GetWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWebhookDeliveryClientResponse, error)
+
+	// ReplayWebhookDeliveryWithResponse request
+	ReplayWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ReplayWebhookDeliveryClientResponse, error)
+
+	// PingWebhookWithResponse request
+	PingWebhookWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*PingWebhookClientResponse, error)
+
+	// RotateWebhookSecretWithResponse request
+	RotateWebhookSecretWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*RotateWebhookSecretClientResponse, error)
+
+	// TestFireWebhookWithResponse request
+	TestFireWebhookWithResponse(ctx context.Context, id openapi_types.UUID, eventType string, reqEditors ...RequestEditorFn) (*TestFireWebhookClientResponse, error)
 }
 
-type PostV1AiResponse struct {
+type CreateAiOperationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -3468,7 +6782,7 @@ type PostV1AiResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1AiResponse) Status() string {
+func (r CreateAiOperationClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3476,23 +6790,21 @@ func (r PostV1AiResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1AiResponse) StatusCode() int {
+func (r CreateAiOperationClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1AvailabilityPropertyIdResponse struct {
+type GetAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data *[]CalendarDay `json:"data,omitempty"`
-	}
+	JSON200      *CalendarResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1AvailabilityPropertyIdResponse) Status() string {
+func (r GetAvailabilityClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3500,41 +6812,20 @@ func (r GetV1AvailabilityPropertyIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1AvailabilityPropertyIdResponse) StatusCode() int {
+func (r GetAvailabilityClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PutV1AvailabilityPropertyIdResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r PutV1AvailabilityPropertyIdResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PutV1AvailabilityPropertyIdResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1BillingResponse struct {
+type UpdateAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1BillingResponse) Status() string {
+func (r UpdateAvailabilityClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3542,20 +6833,20 @@ func (r GetV1BillingResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1BillingResponse) StatusCode() int {
+func (r UpdateAvailabilityClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1BillingResponse struct {
+type GetBillingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1BillingResponse) Status() string {
+func (r GetBillingClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3563,20 +6854,20 @@ func (r PostV1BillingResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1BillingResponse) StatusCode() int {
+func (r GetBillingClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbListingsResponse struct {
+type CreateBillingCheckoutClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbListingsResponse) Status() string {
+func (r CreateBillingCheckoutClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3584,20 +6875,86 @@ func (r GetV1ChannelsAirbnbListingsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbListingsResponse) StatusCode() int {
+func (r CreateBillingCheckoutClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ChannelsAirbnbListingsResponse struct {
+type ListAirbnbListingsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AirbnbListingListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbListingsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbListingsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAirbnbListingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *AirbnbListing
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAirbnbListingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAirbnbListingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAirbnbListingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AirbnbListing
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbListingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbListingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AirbnbListingActionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ChannelsAirbnbListingsResponse) Status() string {
+func (r AirbnbListingActionClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3605,20 +6962,20 @@ func (r PostV1ChannelsAirbnbListingsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsAirbnbListingsResponse) StatusCode() int {
+func (r AirbnbListingActionClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbListingsIdResponse struct {
+type GetAirbnbListingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbListingsIdResponse) Status() string {
+func (r GetAirbnbListingAvailabilityClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3626,20 +6983,20 @@ func (r GetV1ChannelsAirbnbListingsIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbListingsIdResponse) StatusCode() int {
+func (r GetAirbnbListingAvailabilityClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ChannelsAirbnbListingsIdResponse struct {
+type UpdateAirbnbListingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ChannelsAirbnbListingsIdResponse) Status() string {
+func (r UpdateAirbnbListingAvailabilityClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3647,20 +7004,20 @@ func (r PostV1ChannelsAirbnbListingsIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsAirbnbListingsIdResponse) StatusCode() int {
+func (r UpdateAirbnbListingAvailabilityClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbListingsIdAvailabilityResponse struct {
+type ListAirbnbListingPhotosClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbListingsIdAvailabilityResponse) Status() string {
+func (r ListAirbnbListingPhotosClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3668,20 +7025,20 @@ func (r GetV1ChannelsAirbnbListingsIdAvailabilityResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbListingsIdAvailabilityResponse) StatusCode() int {
+func (r ListAirbnbListingPhotosClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PutV1ChannelsAirbnbListingsIdAvailabilityResponse struct {
+type UploadAirbnbListingPhotosClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PutV1ChannelsAirbnbListingsIdAvailabilityResponse) Status() string {
+func (r UploadAirbnbListingPhotosClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3689,20 +7046,20 @@ func (r PutV1ChannelsAirbnbListingsIdAvailabilityResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PutV1ChannelsAirbnbListingsIdAvailabilityResponse) StatusCode() int {
+func (r UploadAirbnbListingPhotosClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbListingsIdPhotosResponse struct {
+type GetAirbnbListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbListingsIdPhotosResponse) Status() string {
+func (r GetAirbnbListingPricingClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3710,20 +7067,20 @@ func (r GetV1ChannelsAirbnbListingsIdPhotosResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbListingsIdPhotosResponse) StatusCode() int {
+func (r GetAirbnbListingPricingClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ChannelsAirbnbListingsIdPhotosResponse struct {
+type UpdateAirbnbListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ChannelsAirbnbListingsIdPhotosResponse) Status() string {
+func (r UpdateAirbnbListingPricingClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3731,20 +7088,64 @@ func (r PostV1ChannelsAirbnbListingsIdPhotosResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsAirbnbListingsIdPhotosResponse) StatusCode() int {
+func (r UpdateAirbnbListingPricingClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbListingsIdPricingResponse struct {
+type ListAirbnbThreadsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AirbnbThreadListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbThreadsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbThreadsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListAirbnbThreadMessagesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MessageListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbThreadMessagesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbThreadMessagesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SendAirbnbMessageClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbListingsIdPricingResponse) Status() string {
+func (r SendAirbnbMessageClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3752,20 +7153,64 @@ func (r GetV1ChannelsAirbnbListingsIdPricingResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbListingsIdPricingResponse) StatusCode() int {
+func (r SendAirbnbMessageClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PutV1ChannelsAirbnbListingsIdPricingResponse struct {
+type ListAirbnbReservationsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AirbnbReservationListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbReservationsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbReservationsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAirbnbReservationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AirbnbReservation
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbReservationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbReservationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AirbnbReservationActionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PutV1ChannelsAirbnbListingsIdPricingResponse) Status() string {
+func (r AirbnbReservationActionClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3773,20 +7218,42 @@ func (r PutV1ChannelsAirbnbListingsIdPricingResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PutV1ChannelsAirbnbListingsIdPricingResponse) StatusCode() int {
+func (r AirbnbReservationActionClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbMessagingResponse struct {
+type ListAirbnbReviewsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AirbnbReviewListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbReviewsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbReviewsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RespondAirbnbReviewClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbMessagingResponse) Status() string {
+func (r RespondAirbnbReviewClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3794,20 +7261,20 @@ func (r GetV1ChannelsAirbnbMessagingResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbMessagingResponse) StatusCode() int {
+func (r RespondAirbnbReviewClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse struct {
+type SyncAirbnbClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse) Status() string {
+func (r SyncAirbnbClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3815,20 +7282,20 @@ func (r GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse) StatusCode() int {
+func (r SyncAirbnbClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse struct {
+type UpdateBookingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse) Status() string {
+func (r UpdateBookingAvailabilityClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3836,20 +7303,20 @@ func (r PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse) StatusCode() int {
+func (r UpdateBookingAvailabilityClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbReservationsResponse struct {
+type GetBookingContentClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbReservationsResponse) Status() string {
+func (r GetBookingContentClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3857,20 +7324,20 @@ func (r GetV1ChannelsAirbnbReservationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbReservationsResponse) StatusCode() int {
+func (r GetBookingContentClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbReservationsCodeResponse struct {
+type UpdateBookingContentClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbReservationsCodeResponse) Status() string {
+func (r UpdateBookingContentClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3878,20 +7345,94 @@ func (r GetV1ChannelsAirbnbReservationsCodeResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbReservationsCodeResponse) StatusCode() int {
+func (r UpdateBookingContentClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ChannelsAirbnbReservationsCodeResponse struct {
+type GetBookingListingPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BookingPricingResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBookingListingPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBookingListingPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateBookingListingPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BookingPricingUpdateResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateBookingListingPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateBookingListingPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListBookingConversationsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BookingConversationListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBookingConversationsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBookingConversationsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SendBookingMessageClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ChannelsAirbnbReservationsCodeResponse) Status() string {
+func (r SendBookingMessageClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3899,20 +7440,64 @@ func (r PostV1ChannelsAirbnbReservationsCodeResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsAirbnbReservationsCodeResponse) StatusCode() int {
+func (r SendBookingMessageClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsAirbnbReviewsResponse struct {
+type ListBookingPropertiesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BookingPropertyListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBookingPropertiesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBookingPropertiesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateBookingPropertyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *BookingProperty
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateBookingPropertyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateBookingPropertyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SyncBookingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsAirbnbReviewsResponse) Status() string {
+func (r SyncBookingClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3920,20 +7505,20 @@ func (r GetV1ChannelsAirbnbReviewsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsAirbnbReviewsResponse) StatusCode() int {
+func (r SyncBookingClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ChannelsAirbnbReviewsResponse struct {
+type GetPlumguideAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ChannelsAirbnbReviewsResponse) Status() string {
+func (r GetPlumguideAvailabilityClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3941,20 +7526,20 @@ func (r PostV1ChannelsAirbnbReviewsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsAirbnbReviewsResponse) StatusCode() int {
+func (r GetPlumguideAvailabilityClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ChannelsAirbnbSyncResponse struct {
+type UpdatePlumguideAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ChannelsAirbnbSyncResponse) Status() string {
+func (r UpdatePlumguideAvailabilityClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3962,20 +7547,42 @@ func (r PostV1ChannelsAirbnbSyncResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsAirbnbSyncResponse) StatusCode() int {
+func (r UpdatePlumguideAvailabilityClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PutV1ChannelsBookingAvailabilityResponse struct {
+type ListPlumguideListingsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PlumguideListingListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListPlumguideListingsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListPlumguideListingsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPlumguidePricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PutV1ChannelsBookingAvailabilityResponse) Status() string {
+func (r GetPlumguidePricingClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3983,20 +7590,20 @@ func (r PutV1ChannelsBookingAvailabilityResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PutV1ChannelsBookingAvailabilityResponse) StatusCode() int {
+func (r GetPlumguidePricingClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsBookingContentResponse struct {
+type UpdatePlumguidePricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ChannelsBookingContentResponse) Status() string {
+func (r UpdatePlumguidePricingClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4004,20 +7611,284 @@ func (r GetV1ChannelsBookingContentResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsBookingContentResponse) StatusCode() int {
+func (r UpdatePlumguidePricingClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ChannelsBookingContentResponse struct {
+type ListVrboListingsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *VrboListingListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListVrboListingsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListVrboListingsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetVrboListingPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Error
+	JSON404      *Error
+	JSON501      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVrboListingPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVrboListingPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateVrboListingPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Error
+	JSON404      *Error
+	JSON501      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateVrboListingPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateVrboListingPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListVrboReservationsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *VrboReservationListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListVrboReservationsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListVrboReservationsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListConnectionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConnectionListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListConnectionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListConnectionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateConnectSessionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ConnectSession
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateConnectSessionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateConnectSessionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MapConnectBookingRoomsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MapConnectBookingRoomsResponse
+	JSON400      *Error
+	JSON403      *Error
+	JSON404      *Error
+	JSON409      *Error
+	JSON410      *Error
+	JSON425      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r MapConnectBookingRoomsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MapConnectBookingRoomsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListConnectBookingRoomsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BookingConnectRoomsResponse
+	JSON400      *Error
+	JSON404      *Error
+	JSON409      *Error
+	JSON410      *Error
+	JSON425      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListConnectBookingRoomsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListConnectBookingRoomsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type VerifyBookingHotelClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BookingVerifyHotelResponse
+	JSON400      *Error
+	JSON404      *Error
+	JSON409      *Error
+	JSON410      *Error
+	JSON412      *Error
+	JSON502      *Error
+	JSON503      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r VerifyBookingHotelClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VerifyBookingHotelClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListConnectProvidersClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ConnectProviderListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListConnectProvidersClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListConnectProvidersClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SelectConnectProviderClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SelectProviderResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r SelectConnectProviderClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SelectConnectProviderClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteConnectionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ChannelsBookingContentResponse) Status() string {
+func (r DeleteConnectionClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4025,318 +7896,21 @@ func (r PostV1ChannelsBookingContentResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsBookingContentResponse) StatusCode() int {
+func (r DeleteConnectionClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ChannelsBookingMessagingResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV1ChannelsBookingMessagingResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsBookingMessagingResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PostV1ChannelsBookingMessagingResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r PostV1ChannelsBookingMessagingResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsBookingMessagingResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1ChannelsBookingPropertiesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV1ChannelsBookingPropertiesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsBookingPropertiesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PostV1ChannelsBookingPropertiesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r PostV1ChannelsBookingPropertiesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsBookingPropertiesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PostV1ChannelsBookingSyncResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r PostV1ChannelsBookingSyncResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ChannelsBookingSyncResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1ChannelsPlumguideAvailabilityResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV1ChannelsPlumguideAvailabilityResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsPlumguideAvailabilityResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PutV1ChannelsPlumguideAvailabilityResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r PutV1ChannelsPlumguideAvailabilityResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PutV1ChannelsPlumguideAvailabilityResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1ChannelsPlumguideListingsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV1ChannelsPlumguideListingsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsPlumguideListingsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1ChannelsPlumguidePricingResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV1ChannelsPlumguidePricingResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsPlumguidePricingResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PutV1ChannelsPlumguidePricingResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r PutV1ChannelsPlumguidePricingResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PutV1ChannelsPlumguidePricingResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1ChannelsVrboListingsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV1ChannelsVrboListingsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsVrboListingsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1ChannelsVrboReservationsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV1ChannelsVrboReservationsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ChannelsVrboReservationsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1ConnectResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data *[]Connection `json:"data,omitempty"`
-	}
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV1ConnectResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ConnectResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteV1ConnectProviderResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteV1ConnectProviderResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteV1ConnectProviderResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV1ConnectProviderResponse struct {
+type GetConnectStatusClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ConnectStatus
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ConnectProviderResponse) Status() string {
+func (r GetConnectStatusClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4344,21 +7918,21 @@ func (r GetV1ConnectProviderResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ConnectProviderResponse) StatusCode() int {
+func (r GetConnectStatusClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ConnectProviderResponse struct {
+type CreateConnectionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Connection
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ConnectProviderResponse) Status() string {
+func (r CreateConnectionClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4366,23 +7940,25 @@ func (r PostV1ConnectProviderResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ConnectProviderResponse) StatusCode() int {
+func (r CreateConnectionClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ConversationsResponse struct {
+type ListConversationsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data *[]Conversation `json:"data,omitempty"`
-	}
+	JSON200      *ConversationListResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON422      *Error
+	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ConversationsResponse) Status() string {
+func (r ListConversationsClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4390,23 +7966,25 @@ func (r GetV1ConversationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ConversationsResponse) StatusCode() int {
+func (r ListConversationsClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ConversationsIdMessagesResponse struct {
+type GetConversationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data *[]Message `json:"data,omitempty"`
-	}
+	JSON200      *ConversationDetail
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ConversationsIdMessagesResponse) Status() string {
+func (r GetConversationClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4414,20 +7992,26 @@ func (r GetV1ConversationsIdMessagesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ConversationsIdMessagesResponse) StatusCode() int {
+func (r GetConversationClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ConversationsIdMessagesResponse struct {
+type ListConversationMessagesClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *MessageListResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON422      *Error
+	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ConversationsIdMessagesResponse) Status() string {
+func (r ListConversationMessagesClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4435,29 +8019,25 @@ func (r PostV1ConversationsIdMessagesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ConversationsIdMessagesResponse) StatusCode() int {
+func (r ListConversationMessagesClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1GuestsResponse struct {
+type ListGuestsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data       *[]Guest `json:"data,omitempty"`
-		Pagination *struct {
-			HasMore *bool `json:"hasMore,omitempty"`
-			Limit   *int  `json:"limit,omitempty"`
-			Offset  *int  `json:"offset,omitempty"`
-			Total   *int  `json:"total,omitempty"`
-		} `json:"pagination,omitempty"`
-	}
+	JSON200      *GuestListResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON422      *Error
+	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1GuestsResponse) Status() string {
+func (r ListGuestsClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4465,21 +8045,25 @@ func (r GetV1GuestsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1GuestsResponse) StatusCode() int {
+func (r ListGuestsClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1GuestsIdResponse struct {
+type GetGuestClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Guest
+	JSON200      *GuestProfile
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1GuestsIdResponse) Status() string {
+func (r GetGuestClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4487,14 +8071,14 @@ func (r GetV1GuestsIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1GuestsIdResponse) StatusCode() int {
+func (r GetGuestClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1HealthResponse struct {
+type GetHealthClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -4504,7 +8088,7 @@ type GetV1HealthResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1HealthResponse) Status() string {
+func (r GetHealthClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4512,30 +8096,23 @@ func (r GetV1HealthResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1HealthResponse) StatusCode() int {
+func (r GetHealthClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1PropertiesResponse struct {
+type ListListingsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data       *[]Property `json:"data,omitempty"`
-		Pagination *struct {
-			HasMore *bool `json:"hasMore,omitempty"`
-			Limit   *int  `json:"limit,omitempty"`
-			Offset  *int  `json:"offset,omitempty"`
-			Total   *int  `json:"total,omitempty"`
-		} `json:"pagination,omitempty"`
-	}
-	JSON401 *Error
+	JSON200      *ListingListResponse
+	JSON400      *Error
+	JSON422      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1PropertiesResponse) Status() string {
+func (r ListListingsClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4543,21 +8120,439 @@ func (r GetV1PropertiesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1PropertiesResponse) StatusCode() int {
+func (r ListListingsClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1PropertiesIdResponse struct {
+type CreateListingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ListingCreateResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateListingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateListingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkApplyPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BulkPricingResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON422      *Error
+	JSON502      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkApplyPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkApplyPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListListingCompsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingCompsResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON502      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListListingCompsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListListingCompsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GenerateListingContentClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingGenerateContentResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GenerateListingContentClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GenerateListingContentClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetListingPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingPricingResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ApplyListingPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingPricingApplyResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ApplyListingPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ApplyListingPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetListingPricingHistoryClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingPricingHistoryResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON422      *Error
+	JSON502      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingPricingHistoryClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingPricingHistoryClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetListingPricingStrategyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingPricingStrategy
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingPricingStrategyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingPricingStrategyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateListingPricingStrategyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Ok *bool `json:"ok,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateListingPricingStrategyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateListingPricingStrategyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetListingPublishStatusClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingPublishStatusResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingPublishStatusClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingPublishStatusClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PublishListingToAirbnbClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingPublishResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r PublishListingToAirbnbClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PublishListingToAirbnbClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PublishListingToBookingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingPublishResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r PublishListingToBookingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PublishListingToBookingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetListingSegmentsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingSegmentsResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON502      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingSegmentsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingSegmentsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListMarketsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MarketsOverviewResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListMarketsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListMarketsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListMarketBrowseClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MarketBrowseResponse
+	JSON401      *Error
+	JSON502      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListMarketBrowseClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListMarketBrowseClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetMarketClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MarketDetailResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMarketClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMarketClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetMarketCalendarClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MarketCalendarResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMarketCalendarClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMarketCalendarClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListPropertiesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PropertyListResponse
+	JSON401      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListPropertiesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListPropertiesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPropertyClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Property
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1PropertiesIdResponse) Status() string {
+func (r GetPropertyClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4565,29 +8560,21 @@ func (r GetV1PropertiesIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1PropertiesIdResponse) StatusCode() int {
+func (r GetPropertyClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ReservationsResponse struct {
+type ListReservationsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data       *[]Reservation `json:"data,omitempty"`
-		Pagination *struct {
-			HasMore *bool `json:"hasMore,omitempty"`
-			Limit   *int  `json:"limit,omitempty"`
-			Offset  *int  `json:"offset,omitempty"`
-			Total   *int  `json:"total,omitempty"`
-		} `json:"pagination,omitempty"`
-	}
+	JSON200      *ReservationListResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ReservationsResponse) Status() string {
+func (r ListReservationsClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4595,21 +8582,21 @@ func (r GetV1ReservationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ReservationsResponse) StatusCode() int {
+func (r ListReservationsClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1ReservationsResponse struct {
+type CreateReservationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *Reservation
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1ReservationsResponse) Status() string {
+func (r CreateReservationClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4617,20 +8604,20 @@ func (r PostV1ReservationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1ReservationsResponse) StatusCode() int {
+func (r CreateReservationClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DeleteV1ReservationsIdResponse struct {
+type CancelReservationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r DeleteV1ReservationsIdResponse) Status() string {
+func (r CancelReservationClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4638,21 +8625,21 @@ func (r DeleteV1ReservationsIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeleteV1ReservationsIdResponse) StatusCode() int {
+func (r CancelReservationClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1ReservationsIdResponse struct {
+type GetReservationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Reservation
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1ReservationsIdResponse) Status() string {
+func (r GetReservationClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4660,20 +8647,20 @@ func (r GetV1ReservationsIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1ReservationsIdResponse) StatusCode() int {
+func (r GetReservationClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PatchV1ReservationsIdResponse struct {
+type UpdateReservationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PatchV1ReservationsIdResponse) Status() string {
+func (r UpdateReservationClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4681,23 +8668,25 @@ func (r PatchV1ReservationsIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PatchV1ReservationsIdResponse) StatusCode() int {
+func (r UpdateReservationClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV1WebhooksResponse struct {
+type ListReviewsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Data *[]WebhookSubscription `json:"data,omitempty"`
-	}
+	JSON200      *ReviewListResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON422      *Error
+	JSON500      *Error
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV1WebhooksResponse) Status() string {
+func (r ListReviewsClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4705,21 +8694,69 @@ func (r GetV1WebhooksResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV1WebhooksResponse) StatusCode() int {
+func (r ListReviewsClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1WebhooksResponse struct {
+type GetReviewClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ReviewGetResponse
+	JSON400      *Error
+	JSON401      *Error
+	JSON404      *Error
+	JSON500      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetReviewClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetReviewClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListWebhooksClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WebhookListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWebhooksClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWebhooksClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateWebhookClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *WebhookSubscription
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1WebhooksResponse) Status() string {
+func (r CreateWebhookClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4727,20 +8764,42 @@ func (r PostV1WebhooksResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1WebhooksResponse) StatusCode() int {
+func (r CreateWebhookClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostV1WebhooksTestResponse struct {
+type ListWebhookEventTypesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WebhookEventCatalog
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWebhookEventTypesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWebhookEventTypesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type TestWebhookClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r PostV1WebhooksTestResponse) Status() string {
+func (r TestWebhookClientResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4748,625 +8807,1271 @@ func (r PostV1WebhooksTestResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostV1WebhooksTestResponse) StatusCode() int {
+func (r TestWebhookClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-// PostV1AiWithBodyWithResponse request with arbitrary body returning *PostV1AiResponse
-func (c *ClientWithResponses) PostV1AiWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1AiResponse, error) {
-	rsp, err := c.PostV1AiWithBody(ctx, contentType, body, reqEditors...)
+type DeleteWebhookClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteWebhookClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteWebhookClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWebhookClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WebhookSubscription
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWebhookClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWebhookClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateWebhookClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WebhookSubscription
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateWebhookClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateWebhookClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListWebhookDeliveriesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WebhookDeliveryListResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWebhookDeliveriesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWebhookDeliveriesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWebhookDeliveryClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WebhookDeliveryDetail
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWebhookDeliveryClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWebhookDeliveryClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ReplayWebhookDeliveryClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r ReplayWebhookDeliveryClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReplayWebhookDeliveryClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PingWebhookClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PingWebhookClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PingWebhookClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RotateWebhookSecretClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Id        *string    `json:"id,omitempty"`
+		RotatedAt *time.Time `json:"rotatedAt,omitempty"`
+		Secret    *string    `json:"secret,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r RotateWebhookSecretClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RotateWebhookSecretClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type TestFireWebhookClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r TestFireWebhookClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TestFireWebhookClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// CreateAiOperationWithBodyWithResponse request with arbitrary body returning *CreateAiOperationClientResponse
+func (c *ClientWithResponses) CreateAiOperationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAiOperationClientResponse, error) {
+	rsp, err := c.CreateAiOperationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAiOperationClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAiOperationWithResponse(ctx context.Context, body CreateAiOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAiOperationClientResponse, error) {
+	rsp, err := c.CreateAiOperation(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAiOperationClientResponse(rsp)
+}
+
+// GetAvailabilityWithResponse request returning *GetAvailabilityClientResponse
+func (c *ClientWithResponses) GetAvailabilityWithResponse(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*GetAvailabilityClientResponse, error) {
+	rsp, err := c.GetAvailability(ctx, propertyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAvailabilityClientResponse(rsp)
+}
+
+// UpdateAvailabilityWithBodyWithResponse request with arbitrary body returning *UpdateAvailabilityClientResponse
+func (c *ClientWithResponses) UpdateAvailabilityWithBodyWithResponse(ctx context.Context, propertyId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAvailabilityClientResponse, error) {
+	rsp, err := c.UpdateAvailabilityWithBody(ctx, propertyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAvailabilityClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAvailabilityWithResponse(ctx context.Context, propertyId int, body UpdateAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAvailabilityClientResponse, error) {
+	rsp, err := c.UpdateAvailability(ctx, propertyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAvailabilityClientResponse(rsp)
+}
+
+// GetBillingWithResponse request returning *GetBillingClientResponse
+func (c *ClientWithResponses) GetBillingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBillingClientResponse, error) {
+	rsp, err := c.GetBilling(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBillingClientResponse(rsp)
+}
+
+// CreateBillingCheckoutWithBodyWithResponse request with arbitrary body returning *CreateBillingCheckoutClientResponse
+func (c *ClientWithResponses) CreateBillingCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error) {
+	rsp, err := c.CreateBillingCheckoutWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBillingCheckoutClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateBillingCheckoutWithResponse(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error) {
+	rsp, err := c.CreateBillingCheckout(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBillingCheckoutClientResponse(rsp)
+}
+
+// ListAirbnbListingsWithResponse request returning *ListAirbnbListingsClientResponse
+func (c *ClientWithResponses) ListAirbnbListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbListingsClientResponse, error) {
+	rsp, err := c.ListAirbnbListings(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbListingsClientResponse(rsp)
+}
+
+// CreateAirbnbListingWithResponse request returning *CreateAirbnbListingClientResponse
+func (c *ClientWithResponses) CreateAirbnbListingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreateAirbnbListingClientResponse, error) {
+	rsp, err := c.CreateAirbnbListing(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAirbnbListingClientResponse(rsp)
+}
+
+// GetAirbnbListingWithResponse request returning *GetAirbnbListingClientResponse
+func (c *ClientWithResponses) GetAirbnbListingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingClientResponse, error) {
+	rsp, err := c.GetAirbnbListing(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbListingClientResponse(rsp)
+}
+
+// AirbnbListingActionWithResponse request returning *AirbnbListingActionClientResponse
+func (c *ClientWithResponses) AirbnbListingActionWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*AirbnbListingActionClientResponse, error) {
+	rsp, err := c.AirbnbListingAction(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAirbnbListingActionClientResponse(rsp)
+}
+
+// GetAirbnbListingAvailabilityWithResponse request returning *GetAirbnbListingAvailabilityClientResponse
+func (c *ClientWithResponses) GetAirbnbListingAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingAvailabilityClientResponse, error) {
+	rsp, err := c.GetAirbnbListingAvailability(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbListingAvailabilityClientResponse(rsp)
+}
+
+// UpdateAirbnbListingAvailabilityWithResponse request returning *UpdateAirbnbListingAvailabilityClientResponse
+func (c *ClientWithResponses) UpdateAirbnbListingAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingAvailabilityClientResponse, error) {
+	rsp, err := c.UpdateAirbnbListingAvailability(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbListingAvailabilityClientResponse(rsp)
+}
+
+// ListAirbnbListingPhotosWithResponse request returning *ListAirbnbListingPhotosClientResponse
+func (c *ClientWithResponses) ListAirbnbListingPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListAirbnbListingPhotosClientResponse, error) {
+	rsp, err := c.ListAirbnbListingPhotos(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbListingPhotosClientResponse(rsp)
+}
+
+// UploadAirbnbListingPhotosWithResponse request returning *UploadAirbnbListingPhotosClientResponse
+func (c *ClientWithResponses) UploadAirbnbListingPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*UploadAirbnbListingPhotosClientResponse, error) {
+	rsp, err := c.UploadAirbnbListingPhotos(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUploadAirbnbListingPhotosClientResponse(rsp)
+}
+
+// GetAirbnbListingPricingWithResponse request returning *GetAirbnbListingPricingClientResponse
+func (c *ClientWithResponses) GetAirbnbListingPricingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingPricingClientResponse, error) {
+	rsp, err := c.GetAirbnbListingPricing(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbListingPricingClientResponse(rsp)
+}
+
+// UpdateAirbnbListingPricingWithResponse request returning *UpdateAirbnbListingPricingClientResponse
+func (c *ClientWithResponses) UpdateAirbnbListingPricingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingPricingClientResponse, error) {
+	rsp, err := c.UpdateAirbnbListingPricing(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbListingPricingClientResponse(rsp)
+}
+
+// ListAirbnbThreadsWithResponse request returning *ListAirbnbThreadsClientResponse
+func (c *ClientWithResponses) ListAirbnbThreadsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbThreadsClientResponse, error) {
+	rsp, err := c.ListAirbnbThreads(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbThreadsClientResponse(rsp)
+}
+
+// ListAirbnbThreadMessagesWithResponse request returning *ListAirbnbThreadMessagesClientResponse
+func (c *ClientWithResponses) ListAirbnbThreadMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*ListAirbnbThreadMessagesClientResponse, error) {
+	rsp, err := c.ListAirbnbThreadMessages(ctx, threadId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbThreadMessagesClientResponse(rsp)
+}
+
+// SendAirbnbMessageWithResponse request returning *SendAirbnbMessageClientResponse
+func (c *ClientWithResponses) SendAirbnbMessageWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*SendAirbnbMessageClientResponse, error) {
+	rsp, err := c.SendAirbnbMessage(ctx, threadId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendAirbnbMessageClientResponse(rsp)
+}
+
+// ListAirbnbReservationsWithResponse request returning *ListAirbnbReservationsClientResponse
+func (c *ClientWithResponses) ListAirbnbReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbReservationsClientResponse, error) {
+	rsp, err := c.ListAirbnbReservations(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbReservationsClientResponse(rsp)
+}
+
+// GetAirbnbReservationWithResponse request returning *GetAirbnbReservationClientResponse
+func (c *ClientWithResponses) GetAirbnbReservationWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*GetAirbnbReservationClientResponse, error) {
+	rsp, err := c.GetAirbnbReservation(ctx, code, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbReservationClientResponse(rsp)
+}
+
+// AirbnbReservationActionWithResponse request returning *AirbnbReservationActionClientResponse
+func (c *ClientWithResponses) AirbnbReservationActionWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error) {
+	rsp, err := c.AirbnbReservationAction(ctx, code, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAirbnbReservationActionClientResponse(rsp)
+}
+
+// ListAirbnbReviewsWithResponse request returning *ListAirbnbReviewsClientResponse
+func (c *ClientWithResponses) ListAirbnbReviewsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbReviewsClientResponse, error) {
+	rsp, err := c.ListAirbnbReviews(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbReviewsClientResponse(rsp)
+}
+
+// RespondAirbnbReviewWithResponse request returning *RespondAirbnbReviewClientResponse
+func (c *ClientWithResponses) RespondAirbnbReviewWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error) {
+	rsp, err := c.RespondAirbnbReview(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRespondAirbnbReviewClientResponse(rsp)
+}
+
+// SyncAirbnbWithResponse request returning *SyncAirbnbClientResponse
+func (c *ClientWithResponses) SyncAirbnbWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SyncAirbnbClientResponse, error) {
+	rsp, err := c.SyncAirbnb(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSyncAirbnbClientResponse(rsp)
+}
+
+// UpdateBookingAvailabilityWithResponse request returning *UpdateBookingAvailabilityClientResponse
+func (c *ClientWithResponses) UpdateBookingAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdateBookingAvailabilityClientResponse, error) {
+	rsp, err := c.UpdateBookingAvailability(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBookingAvailabilityClientResponse(rsp)
+}
+
+// GetBookingContentWithResponse request returning *GetBookingContentClientResponse
+func (c *ClientWithResponses) GetBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBookingContentClientResponse, error) {
+	rsp, err := c.GetBookingContent(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBookingContentClientResponse(rsp)
+}
+
+// UpdateBookingContentWithResponse request returning *UpdateBookingContentClientResponse
+func (c *ClientWithResponses) UpdateBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdateBookingContentClientResponse, error) {
+	rsp, err := c.UpdateBookingContent(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBookingContentClientResponse(rsp)
+}
+
+// GetBookingListingPricingWithResponse request returning *GetBookingListingPricingClientResponse
+func (c *ClientWithResponses) GetBookingListingPricingWithResponse(ctx context.Context, id int, params *GetBookingListingPricingParams, reqEditors ...RequestEditorFn) (*GetBookingListingPricingClientResponse, error) {
+	rsp, err := c.GetBookingListingPricing(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBookingListingPricingClientResponse(rsp)
+}
+
+// UpdateBookingListingPricingWithBodyWithResponse request with arbitrary body returning *UpdateBookingListingPricingClientResponse
+func (c *ClientWithResponses) UpdateBookingListingPricingWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error) {
+	rsp, err := c.UpdateBookingListingPricingWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBookingListingPricingClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateBookingListingPricingWithResponse(ctx context.Context, id int, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error) {
+	rsp, err := c.UpdateBookingListingPricing(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBookingListingPricingClientResponse(rsp)
+}
+
+// ListBookingConversationsWithResponse request returning *ListBookingConversationsClientResponse
+func (c *ClientWithResponses) ListBookingConversationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingConversationsClientResponse, error) {
+	rsp, err := c.ListBookingConversations(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBookingConversationsClientResponse(rsp)
+}
+
+// SendBookingMessageWithResponse request returning *SendBookingMessageClientResponse
+func (c *ClientWithResponses) SendBookingMessageWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SendBookingMessageClientResponse, error) {
+	rsp, err := c.SendBookingMessage(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendBookingMessageClientResponse(rsp)
+}
+
+// ListBookingPropertiesWithResponse request returning *ListBookingPropertiesClientResponse
+func (c *ClientWithResponses) ListBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingPropertiesClientResponse, error) {
+	rsp, err := c.ListBookingProperties(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBookingPropertiesClientResponse(rsp)
+}
+
+// CreateBookingPropertyWithResponse request returning *CreateBookingPropertyClientResponse
+func (c *ClientWithResponses) CreateBookingPropertyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreateBookingPropertyClientResponse, error) {
+	rsp, err := c.CreateBookingProperty(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBookingPropertyClientResponse(rsp)
+}
+
+// SyncBookingWithResponse request returning *SyncBookingClientResponse
+func (c *ClientWithResponses) SyncBookingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SyncBookingClientResponse, error) {
+	rsp, err := c.SyncBooking(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSyncBookingClientResponse(rsp)
+}
+
+// GetPlumguideAvailabilityWithResponse request returning *GetPlumguideAvailabilityClientResponse
+func (c *ClientWithResponses) GetPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideAvailabilityClientResponse, error) {
+	rsp, err := c.GetPlumguideAvailability(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPlumguideAvailabilityClientResponse(rsp)
+}
+
+// UpdatePlumguideAvailabilityWithResponse request returning *UpdatePlumguideAvailabilityClientResponse
+func (c *ClientWithResponses) UpdatePlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguideAvailabilityClientResponse, error) {
+	rsp, err := c.UpdatePlumguideAvailability(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePlumguideAvailabilityClientResponse(rsp)
+}
+
+// ListPlumguideListingsWithResponse request returning *ListPlumguideListingsClientResponse
+func (c *ClientWithResponses) ListPlumguideListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListPlumguideListingsClientResponse, error) {
+	rsp, err := c.ListPlumguideListings(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListPlumguideListingsClientResponse(rsp)
+}
+
+// GetPlumguidePricingWithResponse request returning *GetPlumguidePricingClientResponse
+func (c *ClientWithResponses) GetPlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguidePricingClientResponse, error) {
+	rsp, err := c.GetPlumguidePricing(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPlumguidePricingClientResponse(rsp)
+}
+
+// UpdatePlumguidePricingWithResponse request returning *UpdatePlumguidePricingClientResponse
+func (c *ClientWithResponses) UpdatePlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguidePricingClientResponse, error) {
+	rsp, err := c.UpdatePlumguidePricing(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePlumguidePricingClientResponse(rsp)
+}
+
+// ListVrboListingsWithResponse request returning *ListVrboListingsClientResponse
+func (c *ClientWithResponses) ListVrboListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboListingsClientResponse, error) {
+	rsp, err := c.ListVrboListings(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListVrboListingsClientResponse(rsp)
+}
+
+// GetVrboListingPricingWithResponse request returning *GetVrboListingPricingClientResponse
+func (c *ClientWithResponses) GetVrboListingPricingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetVrboListingPricingClientResponse, error) {
+	rsp, err := c.GetVrboListingPricing(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVrboListingPricingClientResponse(rsp)
+}
+
+// UpdateVrboListingPricingWithResponse request returning *UpdateVrboListingPricingClientResponse
+func (c *ClientWithResponses) UpdateVrboListingPricingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*UpdateVrboListingPricingClientResponse, error) {
+	rsp, err := c.UpdateVrboListingPricing(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateVrboListingPricingClientResponse(rsp)
+}
+
+// ListVrboReservationsWithResponse request returning *ListVrboReservationsClientResponse
+func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboReservationsClientResponse, error) {
+	rsp, err := c.ListVrboReservations(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListVrboReservationsClientResponse(rsp)
+}
+
+// ListConnectionsWithResponse request returning *ListConnectionsClientResponse
+func (c *ClientWithResponses) ListConnectionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectionsClientResponse, error) {
+	rsp, err := c.ListConnections(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListConnectionsClientResponse(rsp)
+}
+
+// CreateConnectSessionWithBodyWithResponse request with arbitrary body returning *CreateConnectSessionClientResponse
+func (c *ClientWithResponses) CreateConnectSessionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConnectSessionClientResponse, error) {
+	rsp, err := c.CreateConnectSessionWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateConnectSessionClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateConnectSessionWithResponse(ctx context.Context, body CreateConnectSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConnectSessionClientResponse, error) {
+	rsp, err := c.CreateConnectSession(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateConnectSessionClientResponse(rsp)
+}
+
+// MapConnectBookingRoomsWithBodyWithResponse request with arbitrary body returning *MapConnectBookingRoomsClientResponse
+func (c *ClientWithResponses) MapConnectBookingRoomsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MapConnectBookingRoomsClientResponse, error) {
+	rsp, err := c.MapConnectBookingRoomsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMapConnectBookingRoomsClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) MapConnectBookingRoomsWithResponse(ctx context.Context, body MapConnectBookingRoomsJSONRequestBody, reqEditors ...RequestEditorFn) (*MapConnectBookingRoomsClientResponse, error) {
+	rsp, err := c.MapConnectBookingRooms(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1AiResponse(rsp)
+	return ParseMapConnectBookingRoomsClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostV1AiWithResponse(ctx context.Context, body PostV1AiJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1AiResponse, error) {
-	rsp, err := c.PostV1Ai(ctx, body, reqEditors...)
+// ListConnectBookingRoomsWithResponse request returning *ListConnectBookingRoomsClientResponse
+func (c *ClientWithResponses) ListConnectBookingRoomsWithResponse(ctx context.Context, params *ListConnectBookingRoomsParams, reqEditors ...RequestEditorFn) (*ListConnectBookingRoomsClientResponse, error) {
+	rsp, err := c.ListConnectBookingRooms(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1AiResponse(rsp)
+	return ParseListConnectBookingRoomsClientResponse(rsp)
 }
 
-// GetV1AvailabilityPropertyIdWithResponse request returning *GetV1AvailabilityPropertyIdResponse
-func (c *ClientWithResponses) GetV1AvailabilityPropertyIdWithResponse(ctx context.Context, propertyId int, params *GetV1AvailabilityPropertyIdParams, reqEditors ...RequestEditorFn) (*GetV1AvailabilityPropertyIdResponse, error) {
-	rsp, err := c.GetV1AvailabilityPropertyId(ctx, propertyId, params, reqEditors...)
+// VerifyBookingHotelWithBodyWithResponse request with arbitrary body returning *VerifyBookingHotelClientResponse
+func (c *ClientWithResponses) VerifyBookingHotelWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VerifyBookingHotelClientResponse, error) {
+	rsp, err := c.VerifyBookingHotelWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1AvailabilityPropertyIdResponse(rsp)
+	return ParseVerifyBookingHotelClientResponse(rsp)
 }
 
-// PutV1AvailabilityPropertyIdWithBodyWithResponse request with arbitrary body returning *PutV1AvailabilityPropertyIdResponse
-func (c *ClientWithResponses) PutV1AvailabilityPropertyIdWithBodyWithResponse(ctx context.Context, propertyId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutV1AvailabilityPropertyIdResponse, error) {
-	rsp, err := c.PutV1AvailabilityPropertyIdWithBody(ctx, propertyId, contentType, body, reqEditors...)
+func (c *ClientWithResponses) VerifyBookingHotelWithResponse(ctx context.Context, body VerifyBookingHotelJSONRequestBody, reqEditors ...RequestEditorFn) (*VerifyBookingHotelClientResponse, error) {
+	rsp, err := c.VerifyBookingHotel(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutV1AvailabilityPropertyIdResponse(rsp)
+	return ParseVerifyBookingHotelClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PutV1AvailabilityPropertyIdWithResponse(ctx context.Context, propertyId int, body PutV1AvailabilityPropertyIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutV1AvailabilityPropertyIdResponse, error) {
-	rsp, err := c.PutV1AvailabilityPropertyId(ctx, propertyId, body, reqEditors...)
+// ListConnectProvidersWithResponse request returning *ListConnectProvidersClientResponse
+func (c *ClientWithResponses) ListConnectProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectProvidersClientResponse, error) {
+	rsp, err := c.ListConnectProviders(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutV1AvailabilityPropertyIdResponse(rsp)
+	return ParseListConnectProvidersClientResponse(rsp)
 }
 
-// GetV1BillingWithResponse request returning *GetV1BillingResponse
-func (c *ClientWithResponses) GetV1BillingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1BillingResponse, error) {
-	rsp, err := c.GetV1Billing(ctx, reqEditors...)
+// SelectConnectProviderWithBodyWithResponse request with arbitrary body returning *SelectConnectProviderClientResponse
+func (c *ClientWithResponses) SelectConnectProviderWithBodyWithResponse(ctx context.Context, sessionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SelectConnectProviderClientResponse, error) {
+	rsp, err := c.SelectConnectProviderWithBody(ctx, sessionId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1BillingResponse(rsp)
+	return ParseSelectConnectProviderClientResponse(rsp)
 }
 
-// PostV1BillingWithBodyWithResponse request with arbitrary body returning *PostV1BillingResponse
-func (c *ClientWithResponses) PostV1BillingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1BillingResponse, error) {
-	rsp, err := c.PostV1BillingWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) SelectConnectProviderWithResponse(ctx context.Context, sessionId string, body SelectConnectProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*SelectConnectProviderClientResponse, error) {
+	rsp, err := c.SelectConnectProvider(ctx, sessionId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1BillingResponse(rsp)
+	return ParseSelectConnectProviderClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostV1BillingWithResponse(ctx context.Context, body PostV1BillingJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1BillingResponse, error) {
-	rsp, err := c.PostV1Billing(ctx, body, reqEditors...)
+// DeleteConnectionWithResponse request returning *DeleteConnectionClientResponse
+func (c *ClientWithResponses) DeleteConnectionWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*DeleteConnectionClientResponse, error) {
+	rsp, err := c.DeleteConnection(ctx, provider, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1BillingResponse(rsp)
+	return ParseDeleteConnectionClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbListingsWithResponse request returning *GetV1ChannelsAirbnbListingsResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbListings(ctx, reqEditors...)
+// GetConnectStatusWithResponse request returning *GetConnectStatusClientResponse
+func (c *ClientWithResponses) GetConnectStatusWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*GetConnectStatusClientResponse, error) {
+	rsp, err := c.GetConnectStatus(ctx, provider, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbListingsResponse(rsp)
+	return ParseGetConnectStatusClientResponse(rsp)
 }
 
-// PostV1ChannelsAirbnbListingsWithResponse request returning *PostV1ChannelsAirbnbListingsResponse
-func (c *ClientWithResponses) PostV1ChannelsAirbnbListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbListingsResponse, error) {
-	rsp, err := c.PostV1ChannelsAirbnbListings(ctx, reqEditors...)
+// CreateConnectionWithBodyWithResponse request with arbitrary body returning *CreateConnectionClientResponse
+func (c *ClientWithResponses) CreateConnectionWithBodyWithResponse(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConnectionClientResponse, error) {
+	rsp, err := c.CreateConnectionWithBody(ctx, provider, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsAirbnbListingsResponse(rsp)
+	return ParseCreateConnectionClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbListingsIdWithResponse request returning *GetV1ChannelsAirbnbListingsIdResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbListingsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsIdResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbListingsId(ctx, id, reqEditors...)
+func (c *ClientWithResponses) CreateConnectionWithResponse(ctx context.Context, provider Provider, body CreateConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConnectionClientResponse, error) {
+	rsp, err := c.CreateConnection(ctx, provider, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbListingsIdResponse(rsp)
+	return ParseCreateConnectionClientResponse(rsp)
 }
 
-// PostV1ChannelsAirbnbListingsIdWithResponse request returning *PostV1ChannelsAirbnbListingsIdResponse
-func (c *ClientWithResponses) PostV1ChannelsAirbnbListingsIdWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbListingsIdResponse, error) {
-	rsp, err := c.PostV1ChannelsAirbnbListingsId(ctx, id, reqEditors...)
+// ListConversationsWithResponse request returning *ListConversationsClientResponse
+func (c *ClientWithResponses) ListConversationsWithResponse(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*ListConversationsClientResponse, error) {
+	rsp, err := c.ListConversations(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsAirbnbListingsIdResponse(rsp)
+	return ParseListConversationsClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbListingsIdAvailabilityWithResponse request returning *GetV1ChannelsAirbnbListingsIdAvailabilityResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbListingsIdAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsIdAvailabilityResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbListingsIdAvailability(ctx, id, reqEditors...)
+// GetConversationWithResponse request returning *GetConversationClientResponse
+func (c *ClientWithResponses) GetConversationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetConversationClientResponse, error) {
+	rsp, err := c.GetConversation(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbListingsIdAvailabilityResponse(rsp)
+	return ParseGetConversationClientResponse(rsp)
 }
 
-// PutV1ChannelsAirbnbListingsIdAvailabilityWithResponse request returning *PutV1ChannelsAirbnbListingsIdAvailabilityResponse
-func (c *ClientWithResponses) PutV1ChannelsAirbnbListingsIdAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PutV1ChannelsAirbnbListingsIdAvailabilityResponse, error) {
-	rsp, err := c.PutV1ChannelsAirbnbListingsIdAvailability(ctx, id, reqEditors...)
+// ListConversationMessagesWithResponse request returning *ListConversationMessagesClientResponse
+func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*ListConversationMessagesClientResponse, error) {
+	rsp, err := c.ListConversationMessages(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutV1ChannelsAirbnbListingsIdAvailabilityResponse(rsp)
+	return ParseListConversationMessagesClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbListingsIdPhotosWithResponse request returning *GetV1ChannelsAirbnbListingsIdPhotosResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbListingsIdPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsIdPhotosResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbListingsIdPhotos(ctx, id, reqEditors...)
+// ListGuestsWithResponse request returning *ListGuestsClientResponse
+func (c *ClientWithResponses) ListGuestsWithResponse(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*ListGuestsClientResponse, error) {
+	rsp, err := c.ListGuests(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbListingsIdPhotosResponse(rsp)
+	return ParseListGuestsClientResponse(rsp)
 }
 
-// PostV1ChannelsAirbnbListingsIdPhotosWithResponse request returning *PostV1ChannelsAirbnbListingsIdPhotosResponse
-func (c *ClientWithResponses) PostV1ChannelsAirbnbListingsIdPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbListingsIdPhotosResponse, error) {
-	rsp, err := c.PostV1ChannelsAirbnbListingsIdPhotos(ctx, id, reqEditors...)
+// GetGuestWithResponse request returning *GetGuestClientResponse
+func (c *ClientWithResponses) GetGuestWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetGuestClientResponse, error) {
+	rsp, err := c.GetGuest(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsAirbnbListingsIdPhotosResponse(rsp)
+	return ParseGetGuestClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbListingsIdPricingWithResponse request returning *GetV1ChannelsAirbnbListingsIdPricingResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbListingsIdPricingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbListingsIdPricingResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbListingsIdPricing(ctx, id, reqEditors...)
+// GetHealthWithResponse request returning *GetHealthClientResponse
+func (c *ClientWithResponses) GetHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthClientResponse, error) {
+	rsp, err := c.GetHealth(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbListingsIdPricingResponse(rsp)
+	return ParseGetHealthClientResponse(rsp)
 }
 
-// PutV1ChannelsAirbnbListingsIdPricingWithResponse request returning *PutV1ChannelsAirbnbListingsIdPricingResponse
-func (c *ClientWithResponses) PutV1ChannelsAirbnbListingsIdPricingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*PutV1ChannelsAirbnbListingsIdPricingResponse, error) {
-	rsp, err := c.PutV1ChannelsAirbnbListingsIdPricing(ctx, id, reqEditors...)
+// ListListingsWithResponse request returning *ListListingsClientResponse
+func (c *ClientWithResponses) ListListingsWithResponse(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*ListListingsClientResponse, error) {
+	rsp, err := c.ListListings(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutV1ChannelsAirbnbListingsIdPricingResponse(rsp)
+	return ParseListListingsClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbMessagingWithResponse request returning *GetV1ChannelsAirbnbMessagingResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbMessagingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbMessagingResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbMessaging(ctx, reqEditors...)
+// CreateListingWithBodyWithResponse request with arbitrary body returning *CreateListingClientResponse
+func (c *ClientWithResponses) CreateListingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateListingClientResponse, error) {
+	rsp, err := c.CreateListingWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbMessagingResponse(rsp)
+	return ParseCreateListingClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse request returning *GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbMessagingThreadIdMessages(ctx, threadId, reqEditors...)
+func (c *ClientWithResponses) CreateListingWithResponse(ctx context.Context, body CreateListingJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateListingClientResponse, error) {
+	rsp, err := c.CreateListing(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbMessagingThreadIdMessagesResponse(rsp)
+	return ParseCreateListingClientResponse(rsp)
 }
 
-// PostV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse request returning *PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse
-func (c *ClientWithResponses) PostV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse, error) {
-	rsp, err := c.PostV1ChannelsAirbnbMessagingThreadIdMessages(ctx, threadId, reqEditors...)
+// BulkApplyPricingWithBodyWithResponse request with arbitrary body returning *BulkApplyPricingClientResponse
+func (c *ClientWithResponses) BulkApplyPricingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkApplyPricingClientResponse, error) {
+	rsp, err := c.BulkApplyPricingWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsAirbnbMessagingThreadIdMessagesResponse(rsp)
+	return ParseBulkApplyPricingClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbReservationsWithResponse request returning *GetV1ChannelsAirbnbReservationsResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbReservationsResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbReservations(ctx, reqEditors...)
+func (c *ClientWithResponses) BulkApplyPricingWithResponse(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkApplyPricingClientResponse, error) {
+	rsp, err := c.BulkApplyPricing(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbReservationsResponse(rsp)
+	return ParseBulkApplyPricingClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbReservationsCodeWithResponse request returning *GetV1ChannelsAirbnbReservationsCodeResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbReservationsCodeWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbReservationsCodeResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbReservationsCode(ctx, code, reqEditors...)
+// ListListingCompsWithResponse request returning *ListListingCompsClientResponse
+func (c *ClientWithResponses) ListListingCompsWithResponse(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*ListListingCompsClientResponse, error) {
+	rsp, err := c.ListListingComps(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbReservationsCodeResponse(rsp)
+	return ParseListListingCompsClientResponse(rsp)
 }
 
-// PostV1ChannelsAirbnbReservationsCodeWithResponse request returning *PostV1ChannelsAirbnbReservationsCodeResponse
-func (c *ClientWithResponses) PostV1ChannelsAirbnbReservationsCodeWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbReservationsCodeResponse, error) {
-	rsp, err := c.PostV1ChannelsAirbnbReservationsCode(ctx, code, reqEditors...)
+// GenerateListingContentWithBodyWithResponse request with arbitrary body returning *GenerateListingContentClientResponse
+func (c *ClientWithResponses) GenerateListingContentWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateListingContentClientResponse, error) {
+	rsp, err := c.GenerateListingContentWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsAirbnbReservationsCodeResponse(rsp)
+	return ParseGenerateListingContentClientResponse(rsp)
 }
 
-// GetV1ChannelsAirbnbReviewsWithResponse request returning *GetV1ChannelsAirbnbReviewsResponse
-func (c *ClientWithResponses) GetV1ChannelsAirbnbReviewsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsAirbnbReviewsResponse, error) {
-	rsp, err := c.GetV1ChannelsAirbnbReviews(ctx, reqEditors...)
+func (c *ClientWithResponses) GenerateListingContentWithResponse(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateListingContentClientResponse, error) {
+	rsp, err := c.GenerateListingContent(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsAirbnbReviewsResponse(rsp)
+	return ParseGenerateListingContentClientResponse(rsp)
 }
 
-// PostV1ChannelsAirbnbReviewsWithResponse request returning *PostV1ChannelsAirbnbReviewsResponse
-func (c *ClientWithResponses) PostV1ChannelsAirbnbReviewsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbReviewsResponse, error) {
-	rsp, err := c.PostV1ChannelsAirbnbReviews(ctx, reqEditors...)
+// GetListingPricingWithResponse request returning *GetListingPricingClientResponse
+func (c *ClientWithResponses) GetListingPricingWithResponse(ctx context.Context, id int, params *GetListingPricingParams, reqEditors ...RequestEditorFn) (*GetListingPricingClientResponse, error) {
+	rsp, err := c.GetListingPricing(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsAirbnbReviewsResponse(rsp)
+	return ParseGetListingPricingClientResponse(rsp)
 }
 
-// PostV1ChannelsAirbnbSyncWithResponse request returning *PostV1ChannelsAirbnbSyncResponse
-func (c *ClientWithResponses) PostV1ChannelsAirbnbSyncWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsAirbnbSyncResponse, error) {
-	rsp, err := c.PostV1ChannelsAirbnbSync(ctx, reqEditors...)
+// ApplyListingPricingWithBodyWithResponse request with arbitrary body returning *ApplyListingPricingClientResponse
+func (c *ClientWithResponses) ApplyListingPricingWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ApplyListingPricingClientResponse, error) {
+	rsp, err := c.ApplyListingPricingWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsAirbnbSyncResponse(rsp)
+	return ParseApplyListingPricingClientResponse(rsp)
 }
 
-// PutV1ChannelsBookingAvailabilityWithResponse request returning *PutV1ChannelsBookingAvailabilityResponse
-func (c *ClientWithResponses) PutV1ChannelsBookingAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PutV1ChannelsBookingAvailabilityResponse, error) {
-	rsp, err := c.PutV1ChannelsBookingAvailability(ctx, reqEditors...)
+func (c *ClientWithResponses) ApplyListingPricingWithResponse(ctx context.Context, id int, body ApplyListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*ApplyListingPricingClientResponse, error) {
+	rsp, err := c.ApplyListingPricing(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutV1ChannelsBookingAvailabilityResponse(rsp)
+	return ParseApplyListingPricingClientResponse(rsp)
 }
 
-// GetV1ChannelsBookingContentWithResponse request returning *GetV1ChannelsBookingContentResponse
-func (c *ClientWithResponses) GetV1ChannelsBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsBookingContentResponse, error) {
-	rsp, err := c.GetV1ChannelsBookingContent(ctx, reqEditors...)
+// GetListingPricingHistoryWithResponse request returning *GetListingPricingHistoryClientResponse
+func (c *ClientWithResponses) GetListingPricingHistoryWithResponse(ctx context.Context, id int, params *GetListingPricingHistoryParams, reqEditors ...RequestEditorFn) (*GetListingPricingHistoryClientResponse, error) {
+	rsp, err := c.GetListingPricingHistory(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsBookingContentResponse(rsp)
+	return ParseGetListingPricingHistoryClientResponse(rsp)
 }
 
-// PostV1ChannelsBookingContentWithResponse request returning *PostV1ChannelsBookingContentResponse
-func (c *ClientWithResponses) PostV1ChannelsBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsBookingContentResponse, error) {
-	rsp, err := c.PostV1ChannelsBookingContent(ctx, reqEditors...)
+// GetListingPricingStrategyWithResponse request returning *GetListingPricingStrategyClientResponse
+func (c *ClientWithResponses) GetListingPricingStrategyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingPricingStrategyClientResponse, error) {
+	rsp, err := c.GetListingPricingStrategy(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsBookingContentResponse(rsp)
+	return ParseGetListingPricingStrategyClientResponse(rsp)
 }
 
-// GetV1ChannelsBookingMessagingWithResponse request returning *GetV1ChannelsBookingMessagingResponse
-func (c *ClientWithResponses) GetV1ChannelsBookingMessagingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsBookingMessagingResponse, error) {
-	rsp, err := c.GetV1ChannelsBookingMessaging(ctx, reqEditors...)
+// UpdateListingPricingStrategyWithBodyWithResponse request with arbitrary body returning *UpdateListingPricingStrategyClientResponse
+func (c *ClientWithResponses) UpdateListingPricingStrategyWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListingPricingStrategyClientResponse, error) {
+	rsp, err := c.UpdateListingPricingStrategyWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsBookingMessagingResponse(rsp)
+	return ParseUpdateListingPricingStrategyClientResponse(rsp)
 }
 
-// PostV1ChannelsBookingMessagingWithResponse request returning *PostV1ChannelsBookingMessagingResponse
-func (c *ClientWithResponses) PostV1ChannelsBookingMessagingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsBookingMessagingResponse, error) {
-	rsp, err := c.PostV1ChannelsBookingMessaging(ctx, reqEditors...)
+func (c *ClientWithResponses) UpdateListingPricingStrategyWithResponse(ctx context.Context, id int, body UpdateListingPricingStrategyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListingPricingStrategyClientResponse, error) {
+	rsp, err := c.UpdateListingPricingStrategy(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsBookingMessagingResponse(rsp)
+	return ParseUpdateListingPricingStrategyClientResponse(rsp)
 }
 
-// GetV1ChannelsBookingPropertiesWithResponse request returning *GetV1ChannelsBookingPropertiesResponse
-func (c *ClientWithResponses) GetV1ChannelsBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsBookingPropertiesResponse, error) {
-	rsp, err := c.GetV1ChannelsBookingProperties(ctx, reqEditors...)
+// GetListingPublishStatusWithResponse request returning *GetListingPublishStatusClientResponse
+func (c *ClientWithResponses) GetListingPublishStatusWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingPublishStatusClientResponse, error) {
+	rsp, err := c.GetListingPublishStatus(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsBookingPropertiesResponse(rsp)
+	return ParseGetListingPublishStatusClientResponse(rsp)
 }
 
-// PostV1ChannelsBookingPropertiesWithResponse request returning *PostV1ChannelsBookingPropertiesResponse
-func (c *ClientWithResponses) PostV1ChannelsBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsBookingPropertiesResponse, error) {
-	rsp, err := c.PostV1ChannelsBookingProperties(ctx, reqEditors...)
+// PublishListingToAirbnbWithBodyWithResponse request with arbitrary body returning *PublishListingToAirbnbClientResponse
+func (c *ClientWithResponses) PublishListingToAirbnbWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishListingToAirbnbClientResponse, error) {
+	rsp, err := c.PublishListingToAirbnbWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsBookingPropertiesResponse(rsp)
+	return ParsePublishListingToAirbnbClientResponse(rsp)
 }
 
-// PostV1ChannelsBookingSyncWithResponse request returning *PostV1ChannelsBookingSyncResponse
-func (c *ClientWithResponses) PostV1ChannelsBookingSyncWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PostV1ChannelsBookingSyncResponse, error) {
-	rsp, err := c.PostV1ChannelsBookingSync(ctx, reqEditors...)
+func (c *ClientWithResponses) PublishListingToAirbnbWithResponse(ctx context.Context, id int, body PublishListingToAirbnbJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToAirbnbClientResponse, error) {
+	rsp, err := c.PublishListingToAirbnb(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ChannelsBookingSyncResponse(rsp)
+	return ParsePublishListingToAirbnbClientResponse(rsp)
 }
 
-// GetV1ChannelsPlumguideAvailabilityWithResponse request returning *GetV1ChannelsPlumguideAvailabilityResponse
-func (c *ClientWithResponses) GetV1ChannelsPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsPlumguideAvailabilityResponse, error) {
-	rsp, err := c.GetV1ChannelsPlumguideAvailability(ctx, reqEditors...)
+// PublishListingToBookingWithResponse request returning *PublishListingToBookingClientResponse
+func (c *ClientWithResponses) PublishListingToBookingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error) {
+	rsp, err := c.PublishListingToBooking(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsPlumguideAvailabilityResponse(rsp)
+	return ParsePublishListingToBookingClientResponse(rsp)
 }
 
-// PutV1ChannelsPlumguideAvailabilityWithResponse request returning *PutV1ChannelsPlumguideAvailabilityResponse
-func (c *ClientWithResponses) PutV1ChannelsPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PutV1ChannelsPlumguideAvailabilityResponse, error) {
-	rsp, err := c.PutV1ChannelsPlumguideAvailability(ctx, reqEditors...)
+// GetListingSegmentsWithResponse request returning *GetListingSegmentsClientResponse
+func (c *ClientWithResponses) GetListingSegmentsWithResponse(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*GetListingSegmentsClientResponse, error) {
+	rsp, err := c.GetListingSegments(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutV1ChannelsPlumguideAvailabilityResponse(rsp)
+	return ParseGetListingSegmentsClientResponse(rsp)
 }
 
-// GetV1ChannelsPlumguideListingsWithResponse request returning *GetV1ChannelsPlumguideListingsResponse
-func (c *ClientWithResponses) GetV1ChannelsPlumguideListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsPlumguideListingsResponse, error) {
-	rsp, err := c.GetV1ChannelsPlumguideListings(ctx, reqEditors...)
+// ListMarketsWithResponse request returning *ListMarketsClientResponse
+func (c *ClientWithResponses) ListMarketsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListMarketsClientResponse, error) {
+	rsp, err := c.ListMarkets(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsPlumguideListingsResponse(rsp)
+	return ParseListMarketsClientResponse(rsp)
 }
 
-// GetV1ChannelsPlumguidePricingWithResponse request returning *GetV1ChannelsPlumguidePricingResponse
-func (c *ClientWithResponses) GetV1ChannelsPlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsPlumguidePricingResponse, error) {
-	rsp, err := c.GetV1ChannelsPlumguidePricing(ctx, reqEditors...)
+// ListMarketBrowseWithResponse request returning *ListMarketBrowseClientResponse
+func (c *ClientWithResponses) ListMarketBrowseWithResponse(ctx context.Context, params *ListMarketBrowseParams, reqEditors ...RequestEditorFn) (*ListMarketBrowseClientResponse, error) {
+	rsp, err := c.ListMarketBrowse(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsPlumguidePricingResponse(rsp)
+	return ParseListMarketBrowseClientResponse(rsp)
 }
 
-// PutV1ChannelsPlumguidePricingWithResponse request returning *PutV1ChannelsPlumguidePricingResponse
-func (c *ClientWithResponses) PutV1ChannelsPlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PutV1ChannelsPlumguidePricingResponse, error) {
-	rsp, err := c.PutV1ChannelsPlumguidePricing(ctx, reqEditors...)
+// GetMarketWithResponse request returning *GetMarketClientResponse
+func (c *ClientWithResponses) GetMarketWithResponse(ctx context.Context, city string, params *GetMarketParams, reqEditors ...RequestEditorFn) (*GetMarketClientResponse, error) {
+	rsp, err := c.GetMarket(ctx, city, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutV1ChannelsPlumguidePricingResponse(rsp)
+	return ParseGetMarketClientResponse(rsp)
 }
 
-// GetV1ChannelsVrboListingsWithResponse request returning *GetV1ChannelsVrboListingsResponse
-func (c *ClientWithResponses) GetV1ChannelsVrboListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsVrboListingsResponse, error) {
-	rsp, err := c.GetV1ChannelsVrboListings(ctx, reqEditors...)
+// GetMarketCalendarWithResponse request returning *GetMarketCalendarClientResponse
+func (c *ClientWithResponses) GetMarketCalendarWithResponse(ctx context.Context, city string, params *GetMarketCalendarParams, reqEditors ...RequestEditorFn) (*GetMarketCalendarClientResponse, error) {
+	rsp, err := c.GetMarketCalendar(ctx, city, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsVrboListingsResponse(rsp)
+	return ParseGetMarketCalendarClientResponse(rsp)
 }
 
-// GetV1ChannelsVrboReservationsWithResponse request returning *GetV1ChannelsVrboReservationsResponse
-func (c *ClientWithResponses) GetV1ChannelsVrboReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ChannelsVrboReservationsResponse, error) {
-	rsp, err := c.GetV1ChannelsVrboReservations(ctx, reqEditors...)
+// ListPropertiesWithResponse request returning *ListPropertiesClientResponse
+func (c *ClientWithResponses) ListPropertiesWithResponse(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*ListPropertiesClientResponse, error) {
+	rsp, err := c.ListProperties(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ChannelsVrboReservationsResponse(rsp)
+	return ParseListPropertiesClientResponse(rsp)
 }
 
-// GetV1ConnectWithResponse request returning *GetV1ConnectResponse
-func (c *ClientWithResponses) GetV1ConnectWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ConnectResponse, error) {
-	rsp, err := c.GetV1Connect(ctx, reqEditors...)
+// GetPropertyWithResponse request returning *GetPropertyClientResponse
+func (c *ClientWithResponses) GetPropertyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetPropertyClientResponse, error) {
+	rsp, err := c.GetProperty(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ConnectResponse(rsp)
+	return ParseGetPropertyClientResponse(rsp)
 }
 
-// DeleteV1ConnectProviderWithResponse request returning *DeleteV1ConnectProviderResponse
-func (c *ClientWithResponses) DeleteV1ConnectProviderWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*DeleteV1ConnectProviderResponse, error) {
-	rsp, err := c.DeleteV1ConnectProvider(ctx, provider, reqEditors...)
+// ListReservationsWithResponse request returning *ListReservationsClientResponse
+func (c *ClientWithResponses) ListReservationsWithResponse(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*ListReservationsClientResponse, error) {
+	rsp, err := c.ListReservations(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteV1ConnectProviderResponse(rsp)
+	return ParseListReservationsClientResponse(rsp)
 }
 
-// GetV1ConnectProviderWithResponse request returning *GetV1ConnectProviderResponse
-func (c *ClientWithResponses) GetV1ConnectProviderWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*GetV1ConnectProviderResponse, error) {
-	rsp, err := c.GetV1ConnectProvider(ctx, provider, reqEditors...)
+// CreateReservationWithBodyWithResponse request with arbitrary body returning *CreateReservationClientResponse
+func (c *ClientWithResponses) CreateReservationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error) {
+	rsp, err := c.CreateReservationWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ConnectProviderResponse(rsp)
+	return ParseCreateReservationClientResponse(rsp)
 }
 
-// PostV1ConnectProviderWithBodyWithResponse request with arbitrary body returning *PostV1ConnectProviderResponse
-func (c *ClientWithResponses) PostV1ConnectProviderWithBodyWithResponse(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1ConnectProviderResponse, error) {
-	rsp, err := c.PostV1ConnectProviderWithBody(ctx, provider, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CreateReservationWithResponse(ctx context.Context, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error) {
+	rsp, err := c.CreateReservation(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ConnectProviderResponse(rsp)
+	return ParseCreateReservationClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostV1ConnectProviderWithResponse(ctx context.Context, provider Provider, body PostV1ConnectProviderJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1ConnectProviderResponse, error) {
-	rsp, err := c.PostV1ConnectProvider(ctx, provider, body, reqEditors...)
+// CancelReservationWithResponse request returning *CancelReservationClientResponse
+func (c *ClientWithResponses) CancelReservationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error) {
+	rsp, err := c.CancelReservation(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ConnectProviderResponse(rsp)
+	return ParseCancelReservationClientResponse(rsp)
 }
 
-// GetV1ConversationsWithResponse request returning *GetV1ConversationsResponse
-func (c *ClientWithResponses) GetV1ConversationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1ConversationsResponse, error) {
-	rsp, err := c.GetV1Conversations(ctx, reqEditors...)
+// GetReservationWithResponse request returning *GetReservationClientResponse
+func (c *ClientWithResponses) GetReservationWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetReservationClientResponse, error) {
+	rsp, err := c.GetReservation(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ConversationsResponse(rsp)
+	return ParseGetReservationClientResponse(rsp)
 }
 
-// GetV1ConversationsIdMessagesWithResponse request returning *GetV1ConversationsIdMessagesResponse
-func (c *ClientWithResponses) GetV1ConversationsIdMessagesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetV1ConversationsIdMessagesResponse, error) {
-	rsp, err := c.GetV1ConversationsIdMessages(ctx, id, reqEditors...)
+// UpdateReservationWithBodyWithResponse request with arbitrary body returning *UpdateReservationClientResponse
+func (c *ClientWithResponses) UpdateReservationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error) {
+	rsp, err := c.UpdateReservationWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ConversationsIdMessagesResponse(rsp)
+	return ParseUpdateReservationClientResponse(rsp)
 }
 
-// PostV1ConversationsIdMessagesWithBodyWithResponse request with arbitrary body returning *PostV1ConversationsIdMessagesResponse
-func (c *ClientWithResponses) PostV1ConversationsIdMessagesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1ConversationsIdMessagesResponse, error) {
-	rsp, err := c.PostV1ConversationsIdMessagesWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateReservationWithResponse(ctx context.Context, id int, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error) {
+	rsp, err := c.UpdateReservation(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ConversationsIdMessagesResponse(rsp)
+	return ParseUpdateReservationClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostV1ConversationsIdMessagesWithResponse(ctx context.Context, id string, body PostV1ConversationsIdMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1ConversationsIdMessagesResponse, error) {
-	rsp, err := c.PostV1ConversationsIdMessages(ctx, id, body, reqEditors...)
+// ListReviewsWithResponse request returning *ListReviewsClientResponse
+func (c *ClientWithResponses) ListReviewsWithResponse(ctx context.Context, params *ListReviewsParams, reqEditors ...RequestEditorFn) (*ListReviewsClientResponse, error) {
+	rsp, err := c.ListReviews(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ConversationsIdMessagesResponse(rsp)
+	return ParseListReviewsClientResponse(rsp)
 }
 
-// GetV1GuestsWithResponse request returning *GetV1GuestsResponse
-func (c *ClientWithResponses) GetV1GuestsWithResponse(ctx context.Context, params *GetV1GuestsParams, reqEditors ...RequestEditorFn) (*GetV1GuestsResponse, error) {
-	rsp, err := c.GetV1Guests(ctx, params, reqEditors...)
+// GetReviewWithResponse request returning *GetReviewClientResponse
+func (c *ClientWithResponses) GetReviewWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetReviewClientResponse, error) {
+	rsp, err := c.GetReview(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1GuestsResponse(rsp)
+	return ParseGetReviewClientResponse(rsp)
 }
 
-// GetV1GuestsIdWithResponse request returning *GetV1GuestsIdResponse
-func (c *ClientWithResponses) GetV1GuestsIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetV1GuestsIdResponse, error) {
-	rsp, err := c.GetV1GuestsId(ctx, id, reqEditors...)
+// ListWebhooksWithResponse request returning *ListWebhooksClientResponse
+func (c *ClientWithResponses) ListWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListWebhooksClientResponse, error) {
+	rsp, err := c.ListWebhooks(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1GuestsIdResponse(rsp)
+	return ParseListWebhooksClientResponse(rsp)
 }
 
-// GetV1HealthWithResponse request returning *GetV1HealthResponse
-func (c *ClientWithResponses) GetV1HealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1HealthResponse, error) {
-	rsp, err := c.GetV1Health(ctx, reqEditors...)
+// CreateWebhookWithBodyWithResponse request with arbitrary body returning *CreateWebhookClientResponse
+func (c *ClientWithResponses) CreateWebhookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWebhookClientResponse, error) {
+	rsp, err := c.CreateWebhookWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1HealthResponse(rsp)
+	return ParseCreateWebhookClientResponse(rsp)
 }
 
-// GetV1PropertiesWithResponse request returning *GetV1PropertiesResponse
-func (c *ClientWithResponses) GetV1PropertiesWithResponse(ctx context.Context, params *GetV1PropertiesParams, reqEditors ...RequestEditorFn) (*GetV1PropertiesResponse, error) {
-	rsp, err := c.GetV1Properties(ctx, params, reqEditors...)
+func (c *ClientWithResponses) CreateWebhookWithResponse(ctx context.Context, body CreateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWebhookClientResponse, error) {
+	rsp, err := c.CreateWebhook(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1PropertiesResponse(rsp)
+	return ParseCreateWebhookClientResponse(rsp)
 }
 
-// GetV1PropertiesIdWithResponse request returning *GetV1PropertiesIdResponse
-func (c *ClientWithResponses) GetV1PropertiesIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetV1PropertiesIdResponse, error) {
-	rsp, err := c.GetV1PropertiesId(ctx, id, reqEditors...)
+// ListWebhookEventTypesWithResponse request returning *ListWebhookEventTypesClientResponse
+func (c *ClientWithResponses) ListWebhookEventTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListWebhookEventTypesClientResponse, error) {
+	rsp, err := c.ListWebhookEventTypes(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1PropertiesIdResponse(rsp)
+	return ParseListWebhookEventTypesClientResponse(rsp)
 }
 
-// GetV1ReservationsWithResponse request returning *GetV1ReservationsResponse
-func (c *ClientWithResponses) GetV1ReservationsWithResponse(ctx context.Context, params *GetV1ReservationsParams, reqEditors ...RequestEditorFn) (*GetV1ReservationsResponse, error) {
-	rsp, err := c.GetV1Reservations(ctx, params, reqEditors...)
+// TestWebhookWithBodyWithResponse request with arbitrary body returning *TestWebhookClientResponse
+func (c *ClientWithResponses) TestWebhookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TestWebhookClientResponse, error) {
+	rsp, err := c.TestWebhookWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ReservationsResponse(rsp)
+	return ParseTestWebhookClientResponse(rsp)
 }
 
-// PostV1ReservationsWithBodyWithResponse request with arbitrary body returning *PostV1ReservationsResponse
-func (c *ClientWithResponses) PostV1ReservationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1ReservationsResponse, error) {
-	rsp, err := c.PostV1ReservationsWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) TestWebhookWithResponse(ctx context.Context, body TestWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*TestWebhookClientResponse, error) {
+	rsp, err := c.TestWebhook(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ReservationsResponse(rsp)
+	return ParseTestWebhookClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostV1ReservationsWithResponse(ctx context.Context, body PostV1ReservationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1ReservationsResponse, error) {
-	rsp, err := c.PostV1Reservations(ctx, body, reqEditors...)
+// DeleteWebhookWithResponse request returning *DeleteWebhookClientResponse
+func (c *ClientWithResponses) DeleteWebhookWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteWebhookClientResponse, error) {
+	rsp, err := c.DeleteWebhook(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1ReservationsResponse(rsp)
+	return ParseDeleteWebhookClientResponse(rsp)
 }
 
-// DeleteV1ReservationsIdWithResponse request returning *DeleteV1ReservationsIdResponse
-func (c *ClientWithResponses) DeleteV1ReservationsIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteV1ReservationsIdResponse, error) {
-	rsp, err := c.DeleteV1ReservationsId(ctx, id, reqEditors...)
+// GetWebhookWithResponse request returning *GetWebhookClientResponse
+func (c *ClientWithResponses) GetWebhookWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWebhookClientResponse, error) {
+	rsp, err := c.GetWebhook(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteV1ReservationsIdResponse(rsp)
+	return ParseGetWebhookClientResponse(rsp)
 }
 
-// GetV1ReservationsIdWithResponse request returning *GetV1ReservationsIdResponse
-func (c *ClientWithResponses) GetV1ReservationsIdWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetV1ReservationsIdResponse, error) {
-	rsp, err := c.GetV1ReservationsId(ctx, id, reqEditors...)
+// UpdateWebhookWithBodyWithResponse request with arbitrary body returning *UpdateWebhookClientResponse
+func (c *ClientWithResponses) UpdateWebhookWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWebhookClientResponse, error) {
+	rsp, err := c.UpdateWebhookWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1ReservationsIdResponse(rsp)
+	return ParseUpdateWebhookClientResponse(rsp)
 }
 
-// PatchV1ReservationsIdWithBodyWithResponse request with arbitrary body returning *PatchV1ReservationsIdResponse
-func (c *ClientWithResponses) PatchV1ReservationsIdWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchV1ReservationsIdResponse, error) {
-	rsp, err := c.PatchV1ReservationsIdWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWebhookWithResponse(ctx context.Context, id openapi_types.UUID, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWebhookClientResponse, error) {
+	rsp, err := c.UpdateWebhook(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchV1ReservationsIdResponse(rsp)
+	return ParseUpdateWebhookClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PatchV1ReservationsIdWithResponse(ctx context.Context, id int, body PatchV1ReservationsIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchV1ReservationsIdResponse, error) {
-	rsp, err := c.PatchV1ReservationsId(ctx, id, body, reqEditors...)
+// ListWebhookDeliveriesWithResponse request returning *ListWebhookDeliveriesClientResponse
+func (c *ClientWithResponses) ListWebhookDeliveriesWithResponse(ctx context.Context, id openapi_types.UUID, params *ListWebhookDeliveriesParams, reqEditors ...RequestEditorFn) (*ListWebhookDeliveriesClientResponse, error) {
+	rsp, err := c.ListWebhookDeliveries(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchV1ReservationsIdResponse(rsp)
+	return ParseListWebhookDeliveriesClientResponse(rsp)
 }
 
-// GetV1WebhooksWithResponse request returning *GetV1WebhooksResponse
-func (c *ClientWithResponses) GetV1WebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV1WebhooksResponse, error) {
-	rsp, err := c.GetV1Webhooks(ctx, reqEditors...)
+// GetWebhookDeliveryWithResponse request returning *GetWebhookDeliveryClientResponse
+func (c *ClientWithResponses) GetWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWebhookDeliveryClientResponse, error) {
+	rsp, err := c.GetWebhookDelivery(ctx, id, deliveryId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV1WebhooksResponse(rsp)
+	return ParseGetWebhookDeliveryClientResponse(rsp)
 }
 
-// PostV1WebhooksWithBodyWithResponse request with arbitrary body returning *PostV1WebhooksResponse
-func (c *ClientWithResponses) PostV1WebhooksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1WebhooksResponse, error) {
-	rsp, err := c.PostV1WebhooksWithBody(ctx, contentType, body, reqEditors...)
+// ReplayWebhookDeliveryWithResponse request returning *ReplayWebhookDeliveryClientResponse
+func (c *ClientWithResponses) ReplayWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ReplayWebhookDeliveryClientResponse, error) {
+	rsp, err := c.ReplayWebhookDelivery(ctx, id, deliveryId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1WebhooksResponse(rsp)
+	return ParseReplayWebhookDeliveryClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostV1WebhooksWithResponse(ctx context.Context, body PostV1WebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1WebhooksResponse, error) {
-	rsp, err := c.PostV1Webhooks(ctx, body, reqEditors...)
+// PingWebhookWithResponse request returning *PingWebhookClientResponse
+func (c *ClientWithResponses) PingWebhookWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*PingWebhookClientResponse, error) {
+	rsp, err := c.PingWebhook(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1WebhooksResponse(rsp)
+	return ParsePingWebhookClientResponse(rsp)
 }
 
-// PostV1WebhooksTestWithBodyWithResponse request with arbitrary body returning *PostV1WebhooksTestResponse
-func (c *ClientWithResponses) PostV1WebhooksTestWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostV1WebhooksTestResponse, error) {
-	rsp, err := c.PostV1WebhooksTestWithBody(ctx, contentType, body, reqEditors...)
+// RotateWebhookSecretWithResponse request returning *RotateWebhookSecretClientResponse
+func (c *ClientWithResponses) RotateWebhookSecretWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*RotateWebhookSecretClientResponse, error) {
+	rsp, err := c.RotateWebhookSecret(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1WebhooksTestResponse(rsp)
+	return ParseRotateWebhookSecretClientResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostV1WebhooksTestWithResponse(ctx context.Context, body PostV1WebhooksTestJSONRequestBody, reqEditors ...RequestEditorFn) (*PostV1WebhooksTestResponse, error) {
-	rsp, err := c.PostV1WebhooksTest(ctx, body, reqEditors...)
+// TestFireWebhookWithResponse request returning *TestFireWebhookClientResponse
+func (c *ClientWithResponses) TestFireWebhookWithResponse(ctx context.Context, id openapi_types.UUID, eventType string, reqEditors ...RequestEditorFn) (*TestFireWebhookClientResponse, error) {
+	rsp, err := c.TestFireWebhook(ctx, id, eventType, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostV1WebhooksTestResponse(rsp)
+	return ParseTestFireWebhookClientResponse(rsp)
 }
 
-// ParsePostV1AiResponse parses an HTTP response from a PostV1AiWithResponse call
-func ParsePostV1AiResponse(rsp *http.Response) (*PostV1AiResponse, error) {
+// ParseCreateAiOperationClientResponse parses an HTTP response from a CreateAiOperationWithResponse call
+func ParseCreateAiOperationClientResponse(rsp *http.Response) (*CreateAiOperationClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostV1AiResponse{
+	response := &CreateAiOperationClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5387,24 +10092,22 @@ func ParsePostV1AiResponse(rsp *http.Response) (*PostV1AiResponse, error) {
 	return response, nil
 }
 
-// ParseGetV1AvailabilityPropertyIdResponse parses an HTTP response from a GetV1AvailabilityPropertyIdWithResponse call
-func ParseGetV1AvailabilityPropertyIdResponse(rsp *http.Response) (*GetV1AvailabilityPropertyIdResponse, error) {
+// ParseGetAvailabilityClientResponse parses an HTTP response from a GetAvailabilityWithResponse call
+func ParseGetAvailabilityClientResponse(rsp *http.Response) (*GetAvailabilityClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1AvailabilityPropertyIdResponse{
+	response := &GetAvailabilityClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data *[]CalendarDay `json:"data,omitempty"`
-		}
+		var dest CalendarResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5415,15 +10118,15 @@ func ParseGetV1AvailabilityPropertyIdResponse(rsp *http.Response) (*GetV1Availab
 	return response, nil
 }
 
-// ParsePutV1AvailabilityPropertyIdResponse parses an HTTP response from a PutV1AvailabilityPropertyIdWithResponse call
-func ParsePutV1AvailabilityPropertyIdResponse(rsp *http.Response) (*PutV1AvailabilityPropertyIdResponse, error) {
+// ParseUpdateAvailabilityClientResponse parses an HTTP response from a UpdateAvailabilityWithResponse call
+func ParseUpdateAvailabilityClientResponse(rsp *http.Response) (*UpdateAvailabilityClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PutV1AvailabilityPropertyIdResponse{
+	response := &UpdateAvailabilityClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5431,15 +10134,15 @@ func ParsePutV1AvailabilityPropertyIdResponse(rsp *http.Response) (*PutV1Availab
 	return response, nil
 }
 
-// ParseGetV1BillingResponse parses an HTTP response from a GetV1BillingWithResponse call
-func ParseGetV1BillingResponse(rsp *http.Response) (*GetV1BillingResponse, error) {
+// ParseGetBillingClientResponse parses an HTTP response from a GetBillingWithResponse call
+func ParseGetBillingClientResponse(rsp *http.Response) (*GetBillingClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1BillingResponse{
+	response := &GetBillingClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5447,15 +10150,15 @@ func ParseGetV1BillingResponse(rsp *http.Response) (*GetV1BillingResponse, error
 	return response, nil
 }
 
-// ParsePostV1BillingResponse parses an HTTP response from a PostV1BillingWithResponse call
-func ParsePostV1BillingResponse(rsp *http.Response) (*PostV1BillingResponse, error) {
+// ParseCreateBillingCheckoutClientResponse parses an HTTP response from a CreateBillingCheckoutWithResponse call
+func ParseCreateBillingCheckoutClientResponse(rsp *http.Response) (*CreateBillingCheckoutClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostV1BillingResponse{
+	response := &CreateBillingCheckoutClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5463,568 +10166,22 @@ func ParsePostV1BillingResponse(rsp *http.Response) (*PostV1BillingResponse, err
 	return response, nil
 }
 
-// ParseGetV1ChannelsAirbnbListingsResponse parses an HTTP response from a GetV1ChannelsAirbnbListingsWithResponse call
-func ParseGetV1ChannelsAirbnbListingsResponse(rsp *http.Response) (*GetV1ChannelsAirbnbListingsResponse, error) {
+// ParseListAirbnbListingsClientResponse parses an HTTP response from a ListAirbnbListingsWithResponse call
+func ParseListAirbnbListingsClientResponse(rsp *http.Response) (*ListAirbnbListingsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1ChannelsAirbnbListingsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsAirbnbListingsResponse parses an HTTP response from a PostV1ChannelsAirbnbListingsWithResponse call
-func ParsePostV1ChannelsAirbnbListingsResponse(rsp *http.Response) (*PostV1ChannelsAirbnbListingsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsAirbnbListingsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbListingsIdResponse parses an HTTP response from a GetV1ChannelsAirbnbListingsIdWithResponse call
-func ParseGetV1ChannelsAirbnbListingsIdResponse(rsp *http.Response) (*GetV1ChannelsAirbnbListingsIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbListingsIdResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsAirbnbListingsIdResponse parses an HTTP response from a PostV1ChannelsAirbnbListingsIdWithResponse call
-func ParsePostV1ChannelsAirbnbListingsIdResponse(rsp *http.Response) (*PostV1ChannelsAirbnbListingsIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsAirbnbListingsIdResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbListingsIdAvailabilityResponse parses an HTTP response from a GetV1ChannelsAirbnbListingsIdAvailabilityWithResponse call
-func ParseGetV1ChannelsAirbnbListingsIdAvailabilityResponse(rsp *http.Response) (*GetV1ChannelsAirbnbListingsIdAvailabilityResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbListingsIdAvailabilityResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePutV1ChannelsAirbnbListingsIdAvailabilityResponse parses an HTTP response from a PutV1ChannelsAirbnbListingsIdAvailabilityWithResponse call
-func ParsePutV1ChannelsAirbnbListingsIdAvailabilityResponse(rsp *http.Response) (*PutV1ChannelsAirbnbListingsIdAvailabilityResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PutV1ChannelsAirbnbListingsIdAvailabilityResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbListingsIdPhotosResponse parses an HTTP response from a GetV1ChannelsAirbnbListingsIdPhotosWithResponse call
-func ParseGetV1ChannelsAirbnbListingsIdPhotosResponse(rsp *http.Response) (*GetV1ChannelsAirbnbListingsIdPhotosResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbListingsIdPhotosResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsAirbnbListingsIdPhotosResponse parses an HTTP response from a PostV1ChannelsAirbnbListingsIdPhotosWithResponse call
-func ParsePostV1ChannelsAirbnbListingsIdPhotosResponse(rsp *http.Response) (*PostV1ChannelsAirbnbListingsIdPhotosResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsAirbnbListingsIdPhotosResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbListingsIdPricingResponse parses an HTTP response from a GetV1ChannelsAirbnbListingsIdPricingWithResponse call
-func ParseGetV1ChannelsAirbnbListingsIdPricingResponse(rsp *http.Response) (*GetV1ChannelsAirbnbListingsIdPricingResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbListingsIdPricingResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePutV1ChannelsAirbnbListingsIdPricingResponse parses an HTTP response from a PutV1ChannelsAirbnbListingsIdPricingWithResponse call
-func ParsePutV1ChannelsAirbnbListingsIdPricingResponse(rsp *http.Response) (*PutV1ChannelsAirbnbListingsIdPricingResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PutV1ChannelsAirbnbListingsIdPricingResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbMessagingResponse parses an HTTP response from a GetV1ChannelsAirbnbMessagingWithResponse call
-func ParseGetV1ChannelsAirbnbMessagingResponse(rsp *http.Response) (*GetV1ChannelsAirbnbMessagingResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbMessagingResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbMessagingThreadIdMessagesResponse parses an HTTP response from a GetV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse call
-func ParseGetV1ChannelsAirbnbMessagingThreadIdMessagesResponse(rsp *http.Response) (*GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbMessagingThreadIdMessagesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsAirbnbMessagingThreadIdMessagesResponse parses an HTTP response from a PostV1ChannelsAirbnbMessagingThreadIdMessagesWithResponse call
-func ParsePostV1ChannelsAirbnbMessagingThreadIdMessagesResponse(rsp *http.Response) (*PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsAirbnbMessagingThreadIdMessagesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbReservationsResponse parses an HTTP response from a GetV1ChannelsAirbnbReservationsWithResponse call
-func ParseGetV1ChannelsAirbnbReservationsResponse(rsp *http.Response) (*GetV1ChannelsAirbnbReservationsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbReservationsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbReservationsCodeResponse parses an HTTP response from a GetV1ChannelsAirbnbReservationsCodeWithResponse call
-func ParseGetV1ChannelsAirbnbReservationsCodeResponse(rsp *http.Response) (*GetV1ChannelsAirbnbReservationsCodeResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbReservationsCodeResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsAirbnbReservationsCodeResponse parses an HTTP response from a PostV1ChannelsAirbnbReservationsCodeWithResponse call
-func ParsePostV1ChannelsAirbnbReservationsCodeResponse(rsp *http.Response) (*PostV1ChannelsAirbnbReservationsCodeResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsAirbnbReservationsCodeResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsAirbnbReviewsResponse parses an HTTP response from a GetV1ChannelsAirbnbReviewsWithResponse call
-func ParseGetV1ChannelsAirbnbReviewsResponse(rsp *http.Response) (*GetV1ChannelsAirbnbReviewsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsAirbnbReviewsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsAirbnbReviewsResponse parses an HTTP response from a PostV1ChannelsAirbnbReviewsWithResponse call
-func ParsePostV1ChannelsAirbnbReviewsResponse(rsp *http.Response) (*PostV1ChannelsAirbnbReviewsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsAirbnbReviewsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsAirbnbSyncResponse parses an HTTP response from a PostV1ChannelsAirbnbSyncWithResponse call
-func ParsePostV1ChannelsAirbnbSyncResponse(rsp *http.Response) (*PostV1ChannelsAirbnbSyncResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsAirbnbSyncResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePutV1ChannelsBookingAvailabilityResponse parses an HTTP response from a PutV1ChannelsBookingAvailabilityWithResponse call
-func ParsePutV1ChannelsBookingAvailabilityResponse(rsp *http.Response) (*PutV1ChannelsBookingAvailabilityResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PutV1ChannelsBookingAvailabilityResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsBookingContentResponse parses an HTTP response from a GetV1ChannelsBookingContentWithResponse call
-func ParseGetV1ChannelsBookingContentResponse(rsp *http.Response) (*GetV1ChannelsBookingContentResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsBookingContentResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsBookingContentResponse parses an HTTP response from a PostV1ChannelsBookingContentWithResponse call
-func ParsePostV1ChannelsBookingContentResponse(rsp *http.Response) (*PostV1ChannelsBookingContentResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsBookingContentResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsBookingMessagingResponse parses an HTTP response from a GetV1ChannelsBookingMessagingWithResponse call
-func ParseGetV1ChannelsBookingMessagingResponse(rsp *http.Response) (*GetV1ChannelsBookingMessagingResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsBookingMessagingResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsBookingMessagingResponse parses an HTTP response from a PostV1ChannelsBookingMessagingWithResponse call
-func ParsePostV1ChannelsBookingMessagingResponse(rsp *http.Response) (*PostV1ChannelsBookingMessagingResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsBookingMessagingResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsBookingPropertiesResponse parses an HTTP response from a GetV1ChannelsBookingPropertiesWithResponse call
-func ParseGetV1ChannelsBookingPropertiesResponse(rsp *http.Response) (*GetV1ChannelsBookingPropertiesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsBookingPropertiesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsBookingPropertiesResponse parses an HTTP response from a PostV1ChannelsBookingPropertiesWithResponse call
-func ParsePostV1ChannelsBookingPropertiesResponse(rsp *http.Response) (*PostV1ChannelsBookingPropertiesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsBookingPropertiesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ChannelsBookingSyncResponse parses an HTTP response from a PostV1ChannelsBookingSyncWithResponse call
-func ParsePostV1ChannelsBookingSyncResponse(rsp *http.Response) (*PostV1ChannelsBookingSyncResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ChannelsBookingSyncResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsPlumguideAvailabilityResponse parses an HTTP response from a GetV1ChannelsPlumguideAvailabilityWithResponse call
-func ParseGetV1ChannelsPlumguideAvailabilityResponse(rsp *http.Response) (*GetV1ChannelsPlumguideAvailabilityResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsPlumguideAvailabilityResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePutV1ChannelsPlumguideAvailabilityResponse parses an HTTP response from a PutV1ChannelsPlumguideAvailabilityWithResponse call
-func ParsePutV1ChannelsPlumguideAvailabilityResponse(rsp *http.Response) (*PutV1ChannelsPlumguideAvailabilityResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PutV1ChannelsPlumguideAvailabilityResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsPlumguideListingsResponse parses an HTTP response from a GetV1ChannelsPlumguideListingsWithResponse call
-func ParseGetV1ChannelsPlumguideListingsResponse(rsp *http.Response) (*GetV1ChannelsPlumguideListingsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsPlumguideListingsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsPlumguidePricingResponse parses an HTTP response from a GetV1ChannelsPlumguidePricingWithResponse call
-func ParseGetV1ChannelsPlumguidePricingResponse(rsp *http.Response) (*GetV1ChannelsPlumguidePricingResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsPlumguidePricingResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePutV1ChannelsPlumguidePricingResponse parses an HTTP response from a PutV1ChannelsPlumguidePricingWithResponse call
-func ParsePutV1ChannelsPlumguidePricingResponse(rsp *http.Response) (*PutV1ChannelsPlumguidePricingResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PutV1ChannelsPlumguidePricingResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsVrboListingsResponse parses an HTTP response from a GetV1ChannelsVrboListingsWithResponse call
-func ParseGetV1ChannelsVrboListingsResponse(rsp *http.Response) (*GetV1ChannelsVrboListingsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsVrboListingsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ChannelsVrboReservationsResponse parses an HTTP response from a GetV1ChannelsVrboReservationsWithResponse call
-func ParseGetV1ChannelsVrboReservationsResponse(rsp *http.Response) (*GetV1ChannelsVrboReservationsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ChannelsVrboReservationsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1ConnectResponse parses an HTTP response from a GetV1ConnectWithResponse call
-func ParseGetV1ConnectResponse(rsp *http.Response) (*GetV1ConnectResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1ConnectResponse{
+	response := &ListAirbnbListingsClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data *[]Connection `json:"data,omitempty"`
-		}
+		var dest AirbnbListingListResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6035,15 +10192,67 @@ func ParseGetV1ConnectResponse(rsp *http.Response) (*GetV1ConnectResponse, error
 	return response, nil
 }
 
-// ParseDeleteV1ConnectProviderResponse parses an HTTP response from a DeleteV1ConnectProviderWithResponse call
-func ParseDeleteV1ConnectProviderResponse(rsp *http.Response) (*DeleteV1ConnectProviderResponse, error) {
+// ParseCreateAirbnbListingClientResponse parses an HTTP response from a CreateAirbnbListingWithResponse call
+func ParseCreateAirbnbListingClientResponse(rsp *http.Response) (*CreateAirbnbListingClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteV1ConnectProviderResponse{
+	response := &CreateAirbnbListingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest AirbnbListing
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbListingClientResponse parses an HTTP response from a GetAirbnbListingWithResponse call
+func ParseGetAirbnbListingClientResponse(rsp *http.Response) (*GetAirbnbListingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbListingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AirbnbListing
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAirbnbListingActionClientResponse parses an HTTP response from a AirbnbListingActionWithResponse call
+func ParseAirbnbListingActionClientResponse(rsp *http.Response) (*AirbnbListingActionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AirbnbListingActionClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6051,15 +10260,1117 @@ func ParseDeleteV1ConnectProviderResponse(rsp *http.Response) (*DeleteV1ConnectP
 	return response, nil
 }
 
-// ParseGetV1ConnectProviderResponse parses an HTTP response from a GetV1ConnectProviderWithResponse call
-func ParseGetV1ConnectProviderResponse(rsp *http.Response) (*GetV1ConnectProviderResponse, error) {
+// ParseGetAirbnbListingAvailabilityClientResponse parses an HTTP response from a GetAirbnbListingAvailabilityWithResponse call
+func ParseGetAirbnbListingAvailabilityClientResponse(rsp *http.Response) (*GetAirbnbListingAvailabilityClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1ConnectProviderResponse{
+	response := &GetAirbnbListingAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAirbnbListingAvailabilityClientResponse parses an HTTP response from a UpdateAirbnbListingAvailabilityWithResponse call
+func ParseUpdateAirbnbListingAvailabilityClientResponse(rsp *http.Response) (*UpdateAirbnbListingAvailabilityClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAirbnbListingAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListAirbnbListingPhotosClientResponse parses an HTTP response from a ListAirbnbListingPhotosWithResponse call
+func ParseListAirbnbListingPhotosClientResponse(rsp *http.Response) (*ListAirbnbListingPhotosClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbListingPhotosClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUploadAirbnbListingPhotosClientResponse parses an HTTP response from a UploadAirbnbListingPhotosWithResponse call
+func ParseUploadAirbnbListingPhotosClientResponse(rsp *http.Response) (*UploadAirbnbListingPhotosClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UploadAirbnbListingPhotosClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbListingPricingClientResponse parses an HTTP response from a GetAirbnbListingPricingWithResponse call
+func ParseGetAirbnbListingPricingClientResponse(rsp *http.Response) (*GetAirbnbListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAirbnbListingPricingClientResponse parses an HTTP response from a UpdateAirbnbListingPricingWithResponse call
+func ParseUpdateAirbnbListingPricingClientResponse(rsp *http.Response) (*UpdateAirbnbListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAirbnbListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListAirbnbThreadsClientResponse parses an HTTP response from a ListAirbnbThreadsWithResponse call
+func ParseListAirbnbThreadsClientResponse(rsp *http.Response) (*ListAirbnbThreadsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbThreadsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AirbnbThreadListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListAirbnbThreadMessagesClientResponse parses an HTTP response from a ListAirbnbThreadMessagesWithResponse call
+func ParseListAirbnbThreadMessagesClientResponse(rsp *http.Response) (*ListAirbnbThreadMessagesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbThreadMessagesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MessageListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSendAirbnbMessageClientResponse parses an HTTP response from a SendAirbnbMessageWithResponse call
+func ParseSendAirbnbMessageClientResponse(rsp *http.Response) (*SendAirbnbMessageClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SendAirbnbMessageClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListAirbnbReservationsClientResponse parses an HTTP response from a ListAirbnbReservationsWithResponse call
+func ParseListAirbnbReservationsClientResponse(rsp *http.Response) (*ListAirbnbReservationsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbReservationsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AirbnbReservationListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbReservationClientResponse parses an HTTP response from a GetAirbnbReservationWithResponse call
+func ParseGetAirbnbReservationClientResponse(rsp *http.Response) (*GetAirbnbReservationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbReservationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AirbnbReservation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAirbnbReservationActionClientResponse parses an HTTP response from a AirbnbReservationActionWithResponse call
+func ParseAirbnbReservationActionClientResponse(rsp *http.Response) (*AirbnbReservationActionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AirbnbReservationActionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListAirbnbReviewsClientResponse parses an HTTP response from a ListAirbnbReviewsWithResponse call
+func ParseListAirbnbReviewsClientResponse(rsp *http.Response) (*ListAirbnbReviewsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbReviewsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AirbnbReviewListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRespondAirbnbReviewClientResponse parses an HTTP response from a RespondAirbnbReviewWithResponse call
+func ParseRespondAirbnbReviewClientResponse(rsp *http.Response) (*RespondAirbnbReviewClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RespondAirbnbReviewClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseSyncAirbnbClientResponse parses an HTTP response from a SyncAirbnbWithResponse call
+func ParseSyncAirbnbClientResponse(rsp *http.Response) (*SyncAirbnbClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SyncAirbnbClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateBookingAvailabilityClientResponse parses an HTTP response from a UpdateBookingAvailabilityWithResponse call
+func ParseUpdateBookingAvailabilityClientResponse(rsp *http.Response) (*UpdateBookingAvailabilityClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateBookingAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetBookingContentClientResponse parses an HTTP response from a GetBookingContentWithResponse call
+func ParseGetBookingContentClientResponse(rsp *http.Response) (*GetBookingContentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBookingContentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateBookingContentClientResponse parses an HTTP response from a UpdateBookingContentWithResponse call
+func ParseUpdateBookingContentClientResponse(rsp *http.Response) (*UpdateBookingContentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateBookingContentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetBookingListingPricingClientResponse parses an HTTP response from a GetBookingListingPricingWithResponse call
+func ParseGetBookingListingPricingClientResponse(rsp *http.Response) (*GetBookingListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBookingListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BookingPricingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateBookingListingPricingClientResponse parses an HTTP response from a UpdateBookingListingPricingWithResponse call
+func ParseUpdateBookingListingPricingClientResponse(rsp *http.Response) (*UpdateBookingListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateBookingListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BookingPricingUpdateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListBookingConversationsClientResponse parses an HTTP response from a ListBookingConversationsWithResponse call
+func ParseListBookingConversationsClientResponse(rsp *http.Response) (*ListBookingConversationsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBookingConversationsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BookingConversationListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSendBookingMessageClientResponse parses an HTTP response from a SendBookingMessageWithResponse call
+func ParseSendBookingMessageClientResponse(rsp *http.Response) (*SendBookingMessageClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SendBookingMessageClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListBookingPropertiesClientResponse parses an HTTP response from a ListBookingPropertiesWithResponse call
+func ParseListBookingPropertiesClientResponse(rsp *http.Response) (*ListBookingPropertiesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBookingPropertiesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BookingPropertyListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateBookingPropertyClientResponse parses an HTTP response from a CreateBookingPropertyWithResponse call
+func ParseCreateBookingPropertyClientResponse(rsp *http.Response) (*CreateBookingPropertyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateBookingPropertyClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest BookingProperty
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSyncBookingClientResponse parses an HTTP response from a SyncBookingWithResponse call
+func ParseSyncBookingClientResponse(rsp *http.Response) (*SyncBookingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SyncBookingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetPlumguideAvailabilityClientResponse parses an HTTP response from a GetPlumguideAvailabilityWithResponse call
+func ParseGetPlumguideAvailabilityClientResponse(rsp *http.Response) (*GetPlumguideAvailabilityClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPlumguideAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdatePlumguideAvailabilityClientResponse parses an HTTP response from a UpdatePlumguideAvailabilityWithResponse call
+func ParseUpdatePlumguideAvailabilityClientResponse(rsp *http.Response) (*UpdatePlumguideAvailabilityClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdatePlumguideAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListPlumguideListingsClientResponse parses an HTTP response from a ListPlumguideListingsWithResponse call
+func ParseListPlumguideListingsClientResponse(rsp *http.Response) (*ListPlumguideListingsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListPlumguideListingsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PlumguideListingListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPlumguidePricingClientResponse parses an HTTP response from a GetPlumguidePricingWithResponse call
+func ParseGetPlumguidePricingClientResponse(rsp *http.Response) (*GetPlumguidePricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPlumguidePricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdatePlumguidePricingClientResponse parses an HTTP response from a UpdatePlumguidePricingWithResponse call
+func ParseUpdatePlumguidePricingClientResponse(rsp *http.Response) (*UpdatePlumguidePricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdatePlumguidePricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListVrboListingsClientResponse parses an HTTP response from a ListVrboListingsWithResponse call
+func ParseListVrboListingsClientResponse(rsp *http.Response) (*ListVrboListingsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListVrboListingsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VrboListingListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVrboListingPricingClientResponse parses an HTTP response from a GetVrboListingPricingWithResponse call
+func ParseGetVrboListingPricingClientResponse(rsp *http.Response) (*GetVrboListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVrboListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 501:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON501 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateVrboListingPricingClientResponse parses an HTTP response from a UpdateVrboListingPricingWithResponse call
+func ParseUpdateVrboListingPricingClientResponse(rsp *http.Response) (*UpdateVrboListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateVrboListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 501:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON501 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListVrboReservationsClientResponse parses an HTTP response from a ListVrboReservationsWithResponse call
+func ParseListVrboReservationsClientResponse(rsp *http.Response) (*ListVrboReservationsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListVrboReservationsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VrboReservationListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListConnectionsClientResponse parses an HTTP response from a ListConnectionsWithResponse call
+func ParseListConnectionsClientResponse(rsp *http.Response) (*ListConnectionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListConnectionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConnectionListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateConnectSessionClientResponse parses an HTTP response from a CreateConnectSessionWithResponse call
+func ParseCreateConnectSessionClientResponse(rsp *http.Response) (*CreateConnectSessionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateConnectSessionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ConnectSession
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMapConnectBookingRoomsClientResponse parses an HTTP response from a MapConnectBookingRoomsWithResponse call
+func ParseMapConnectBookingRoomsClientResponse(rsp *http.Response) (*MapConnectBookingRoomsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MapConnectBookingRoomsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MapConnectBookingRoomsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 425:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON425 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListConnectBookingRoomsClientResponse parses an HTTP response from a ListConnectBookingRoomsWithResponse call
+func ParseListConnectBookingRoomsClientResponse(rsp *http.Response) (*ListConnectBookingRoomsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListConnectBookingRoomsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BookingConnectRoomsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 425:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON425 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseVerifyBookingHotelClientResponse parses an HTTP response from a VerifyBookingHotelWithResponse call
+func ParseVerifyBookingHotelClientResponse(rsp *http.Response) (*VerifyBookingHotelClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VerifyBookingHotelClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BookingVerifyHotelResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 412:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON412 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListConnectProvidersClientResponse parses an HTTP response from a ListConnectProvidersWithResponse call
+func ParseListConnectProvidersClientResponse(rsp *http.Response) (*ListConnectProvidersClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListConnectProvidersClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConnectProviderListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSelectConnectProviderClientResponse parses an HTTP response from a SelectConnectProviderWithResponse call
+func ParseSelectConnectProviderClientResponse(rsp *http.Response) (*SelectConnectProviderClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SelectConnectProviderClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SelectProviderResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteConnectionClientResponse parses an HTTP response from a DeleteConnectionWithResponse call
+func ParseDeleteConnectionClientResponse(rsp *http.Response) (*DeleteConnectionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteConnectionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetConnectStatusClientResponse parses an HTTP response from a GetConnectStatusWithResponse call
+func ParseGetConnectStatusClientResponse(rsp *http.Response) (*GetConnectStatusClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConnectStatusClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6077,15 +11388,15 @@ func ParseGetV1ConnectProviderResponse(rsp *http.Response) (*GetV1ConnectProvide
 	return response, nil
 }
 
-// ParsePostV1ConnectProviderResponse parses an HTTP response from a PostV1ConnectProviderWithResponse call
-func ParsePostV1ConnectProviderResponse(rsp *http.Response) (*PostV1ConnectProviderResponse, error) {
+// ParseCreateConnectionClientResponse parses an HTTP response from a CreateConnectionWithResponse call
+func ParseCreateConnectionClientResponse(rsp *http.Response) (*CreateConnectionClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostV1ConnectProviderResponse{
+	response := &CreateConnectionClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6103,147 +11414,292 @@ func ParsePostV1ConnectProviderResponse(rsp *http.Response) (*PostV1ConnectProvi
 	return response, nil
 }
 
-// ParseGetV1ConversationsResponse parses an HTTP response from a GetV1ConversationsWithResponse call
-func ParseGetV1ConversationsResponse(rsp *http.Response) (*GetV1ConversationsResponse, error) {
+// ParseListConversationsClientResponse parses an HTTP response from a ListConversationsWithResponse call
+func ParseListConversationsClientResponse(rsp *http.Response) (*ListConversationsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1ConversationsResponse{
+	response := &ListConversationsClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data *[]Conversation `json:"data,omitempty"`
-		}
+		var dest ConversationListResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParseGetV1ConversationsIdMessagesResponse parses an HTTP response from a GetV1ConversationsIdMessagesWithResponse call
-func ParseGetV1ConversationsIdMessagesResponse(rsp *http.Response) (*GetV1ConversationsIdMessagesResponse, error) {
+// ParseGetConversationClientResponse parses an HTTP response from a GetConversationWithResponse call
+func ParseGetConversationClientResponse(rsp *http.Response) (*GetConversationClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1ConversationsIdMessagesResponse{
+	response := &GetConversationClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data *[]Message `json:"data,omitempty"`
-		}
+		var dest ConversationDetail
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
-	}
-
-	return response, nil
-}
-
-// ParsePostV1ConversationsIdMessagesResponse parses an HTTP response from a PostV1ConversationsIdMessagesWithResponse call
-func ParsePostV1ConversationsIdMessagesResponse(rsp *http.Response) (*PostV1ConversationsIdMessagesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostV1ConversationsIdMessagesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV1GuestsResponse parses an HTTP response from a GetV1GuestsWithResponse call
-func ParseGetV1GuestsResponse(rsp *http.Response) (*GetV1GuestsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV1GuestsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data       *[]Guest `json:"data,omitempty"`
-			Pagination *struct {
-				HasMore *bool `json:"hasMore,omitempty"`
-				Limit   *int  `json:"limit,omitempty"`
-				Offset  *int  `json:"offset,omitempty"`
-				Total   *int  `json:"total,omitempty"`
-			} `json:"pagination,omitempty"`
-		}
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParseGetV1GuestsIdResponse parses an HTTP response from a GetV1GuestsIdWithResponse call
-func ParseGetV1GuestsIdResponse(rsp *http.Response) (*GetV1GuestsIdResponse, error) {
+// ParseListConversationMessagesClientResponse parses an HTTP response from a ListConversationMessagesWithResponse call
+func ParseListConversationMessagesClientResponse(rsp *http.Response) (*ListConversationMessagesClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1GuestsIdResponse{
+	response := &ListConversationMessagesClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Guest
+		var dest MessageListResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
 	return response, nil
 }
 
-// ParseGetV1HealthResponse parses an HTTP response from a GetV1HealthWithResponse call
-func ParseGetV1HealthResponse(rsp *http.Response) (*GetV1HealthResponse, error) {
+// ParseListGuestsClientResponse parses an HTTP response from a ListGuestsWithResponse call
+func ParseListGuestsClientResponse(rsp *http.Response) (*ListGuestsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1HealthResponse{
+	response := &ListGuestsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GuestListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetGuestClientResponse parses an HTTP response from a GetGuestWithResponse call
+func ParseGetGuestClientResponse(rsp *http.Response) (*GetGuestClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetGuestClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GuestProfile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetHealthClientResponse parses an HTTP response from a GetHealthWithResponse call
+func ParseGetHealthClientResponse(rsp *http.Response) (*GetHealthClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetHealthClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6264,15 +11720,354 @@ func ParseGetV1HealthResponse(rsp *http.Response) (*GetV1HealthResponse, error) 
 	return response, nil
 }
 
-// ParseGetV1PropertiesResponse parses an HTTP response from a GetV1PropertiesWithResponse call
-func ParseGetV1PropertiesResponse(rsp *http.Response) (*GetV1PropertiesResponse, error) {
+// ParseListListingsClientResponse parses an HTTP response from a ListListingsWithResponse call
+func ParseListListingsClientResponse(rsp *http.Response) (*ListListingsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1PropertiesResponse{
+	response := &ListListingsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateListingClientResponse parses an HTTP response from a CreateListingWithResponse call
+func ParseCreateListingClientResponse(rsp *http.Response) (*CreateListingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateListingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ListingCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkApplyPricingClientResponse parses an HTTP response from a BulkApplyPricingWithResponse call
+func ParseBulkApplyPricingClientResponse(rsp *http.Response) (*BulkApplyPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkApplyPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BulkPricingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListListingCompsClientResponse parses an HTTP response from a ListListingCompsWithResponse call
+func ParseListListingCompsClientResponse(rsp *http.Response) (*ListListingCompsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListListingCompsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingCompsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGenerateListingContentClientResponse parses an HTTP response from a GenerateListingContentWithResponse call
+func ParseGenerateListingContentClientResponse(rsp *http.Response) (*GenerateListingContentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GenerateListingContentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingGenerateContentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingPricingClientResponse parses an HTTP response from a GetListingPricingWithResponse call
+func ParseGetListingPricingClientResponse(rsp *http.Response) (*GetListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingPricingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseApplyListingPricingClientResponse parses an HTTP response from a ApplyListingPricingWithResponse call
+func ParseApplyListingPricingClientResponse(rsp *http.Response) (*ApplyListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ApplyListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingPricingApplyResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingPricingHistoryClientResponse parses an HTTP response from a GetListingPricingHistoryWithResponse call
+func ParseGetListingPricingHistoryClientResponse(rsp *http.Response) (*GetListingPricingHistoryClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingPricingHistoryClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingPricingHistoryResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingPricingStrategyClientResponse parses an HTTP response from a GetListingPricingStrategyWithResponse call
+func ParseGetListingPricingStrategyClientResponse(rsp *http.Response) (*GetListingPricingStrategyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingPricingStrategyClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingPricingStrategy
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateListingPricingStrategyClientResponse parses an HTTP response from a UpdateListingPricingStrategyWithResponse call
+func ParseUpdateListingPricingStrategyClientResponse(rsp *http.Response) (*UpdateListingPricingStrategyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateListingPricingStrategyClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6280,14 +12075,284 @@ func ParseGetV1PropertiesResponse(rsp *http.Response) (*GetV1PropertiesResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			Data       *[]Property `json:"data,omitempty"`
-			Pagination *struct {
-				HasMore *bool `json:"hasMore,omitempty"`
-				Limit   *int  `json:"limit,omitempty"`
-				Offset  *int  `json:"offset,omitempty"`
-				Total   *int  `json:"total,omitempty"`
-			} `json:"pagination,omitempty"`
+			Ok *bool `json:"ok,omitempty"`
 		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingPublishStatusClientResponse parses an HTTP response from a GetListingPublishStatusWithResponse call
+func ParseGetListingPublishStatusClientResponse(rsp *http.Response) (*GetListingPublishStatusClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingPublishStatusClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingPublishStatusResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePublishListingToAirbnbClientResponse parses an HTTP response from a PublishListingToAirbnbWithResponse call
+func ParsePublishListingToAirbnbClientResponse(rsp *http.Response) (*PublishListingToAirbnbClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PublishListingToAirbnbClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingPublishResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePublishListingToBookingClientResponse parses an HTTP response from a PublishListingToBookingWithResponse call
+func ParsePublishListingToBookingClientResponse(rsp *http.Response) (*PublishListingToBookingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PublishListingToBookingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingPublishResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingSegmentsClientResponse parses an HTTP response from a GetListingSegmentsWithResponse call
+func ParseGetListingSegmentsClientResponse(rsp *http.Response) (*GetListingSegmentsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingSegmentsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingSegmentsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListMarketsClientResponse parses an HTTP response from a ListMarketsWithResponse call
+func ParseListMarketsClientResponse(rsp *http.Response) (*ListMarketsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListMarketsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MarketsOverviewResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListMarketBrowseClientResponse parses an HTTP response from a ListMarketBrowseWithResponse call
+func ParseListMarketBrowseClientResponse(rsp *http.Response) (*ListMarketBrowseClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListMarketBrowseClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MarketBrowseResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetMarketClientResponse parses an HTTP response from a GetMarketWithResponse call
+func ParseGetMarketClientResponse(rsp *http.Response) (*GetMarketClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMarketClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MarketDetailResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetMarketCalendarClientResponse parses an HTTP response from a GetMarketCalendarWithResponse call
+func ParseGetMarketCalendarClientResponse(rsp *http.Response) (*GetMarketCalendarClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMarketCalendarClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MarketCalendarResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListPropertiesClientResponse parses an HTTP response from a ListPropertiesWithResponse call
+func ParseListPropertiesClientResponse(rsp *http.Response) (*ListPropertiesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListPropertiesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PropertyListResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6305,15 +12370,15 @@ func ParseGetV1PropertiesResponse(rsp *http.Response) (*GetV1PropertiesResponse,
 	return response, nil
 }
 
-// ParseGetV1PropertiesIdResponse parses an HTTP response from a GetV1PropertiesIdWithResponse call
-func ParseGetV1PropertiesIdResponse(rsp *http.Response) (*GetV1PropertiesIdResponse, error) {
+// ParseGetPropertyClientResponse parses an HTTP response from a GetPropertyWithResponse call
+func ParseGetPropertyClientResponse(rsp *http.Response) (*GetPropertyClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1PropertiesIdResponse{
+	response := &GetPropertyClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6331,30 +12396,22 @@ func ParseGetV1PropertiesIdResponse(rsp *http.Response) (*GetV1PropertiesIdRespo
 	return response, nil
 }
 
-// ParseGetV1ReservationsResponse parses an HTTP response from a GetV1ReservationsWithResponse call
-func ParseGetV1ReservationsResponse(rsp *http.Response) (*GetV1ReservationsResponse, error) {
+// ParseListReservationsClientResponse parses an HTTP response from a ListReservationsWithResponse call
+func ParseListReservationsClientResponse(rsp *http.Response) (*ListReservationsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1ReservationsResponse{
+	response := &ListReservationsClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data       *[]Reservation `json:"data,omitempty"`
-			Pagination *struct {
-				HasMore *bool `json:"hasMore,omitempty"`
-				Limit   *int  `json:"limit,omitempty"`
-				Offset  *int  `json:"offset,omitempty"`
-				Total   *int  `json:"total,omitempty"`
-			} `json:"pagination,omitempty"`
-		}
+		var dest ReservationListResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6365,15 +12422,15 @@ func ParseGetV1ReservationsResponse(rsp *http.Response) (*GetV1ReservationsRespo
 	return response, nil
 }
 
-// ParsePostV1ReservationsResponse parses an HTTP response from a PostV1ReservationsWithResponse call
-func ParsePostV1ReservationsResponse(rsp *http.Response) (*PostV1ReservationsResponse, error) {
+// ParseCreateReservationClientResponse parses an HTTP response from a CreateReservationWithResponse call
+func ParseCreateReservationClientResponse(rsp *http.Response) (*CreateReservationClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostV1ReservationsResponse{
+	response := &CreateReservationClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6391,15 +12448,15 @@ func ParsePostV1ReservationsResponse(rsp *http.Response) (*PostV1ReservationsRes
 	return response, nil
 }
 
-// ParseDeleteV1ReservationsIdResponse parses an HTTP response from a DeleteV1ReservationsIdWithResponse call
-func ParseDeleteV1ReservationsIdResponse(rsp *http.Response) (*DeleteV1ReservationsIdResponse, error) {
+// ParseCancelReservationClientResponse parses an HTTP response from a CancelReservationWithResponse call
+func ParseCancelReservationClientResponse(rsp *http.Response) (*CancelReservationClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteV1ReservationsIdResponse{
+	response := &CancelReservationClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6407,15 +12464,15 @@ func ParseDeleteV1ReservationsIdResponse(rsp *http.Response) (*DeleteV1Reservati
 	return response, nil
 }
 
-// ParseGetV1ReservationsIdResponse parses an HTTP response from a GetV1ReservationsIdWithResponse call
-func ParseGetV1ReservationsIdResponse(rsp *http.Response) (*GetV1ReservationsIdResponse, error) {
+// ParseGetReservationClientResponse parses an HTTP response from a GetReservationWithResponse call
+func ParseGetReservationClientResponse(rsp *http.Response) (*GetReservationClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1ReservationsIdResponse{
+	response := &GetReservationClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6433,15 +12490,15 @@ func ParseGetV1ReservationsIdResponse(rsp *http.Response) (*GetV1ReservationsIdR
 	return response, nil
 }
 
-// ParsePatchV1ReservationsIdResponse parses an HTTP response from a PatchV1ReservationsIdWithResponse call
-func ParsePatchV1ReservationsIdResponse(rsp *http.Response) (*PatchV1ReservationsIdResponse, error) {
+// ParseUpdateReservationClientResponse parses an HTTP response from a UpdateReservationWithResponse call
+func ParseUpdateReservationClientResponse(rsp *http.Response) (*UpdateReservationClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PatchV1ReservationsIdResponse{
+	response := &UpdateReservationClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6449,24 +12506,130 @@ func ParsePatchV1ReservationsIdResponse(rsp *http.Response) (*PatchV1Reservation
 	return response, nil
 }
 
-// ParseGetV1WebhooksResponse parses an HTTP response from a GetV1WebhooksWithResponse call
-func ParseGetV1WebhooksResponse(rsp *http.Response) (*GetV1WebhooksResponse, error) {
+// ParseListReviewsClientResponse parses an HTTP response from a ListReviewsWithResponse call
+func ParseListReviewsClientResponse(rsp *http.Response) (*ListReviewsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV1WebhooksResponse{
+	response := &ListReviewsClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Data *[]WebhookSubscription `json:"data,omitempty"`
+		var dest ReviewListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
 		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetReviewClientResponse parses an HTTP response from a GetReviewWithResponse call
+func ParseGetReviewClientResponse(rsp *http.Response) (*GetReviewClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetReviewClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ReviewGetResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListWebhooksClientResponse parses an HTTP response from a ListWebhooksWithResponse call
+func ParseListWebhooksClientResponse(rsp *http.Response) (*ListWebhooksClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWebhooksClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WebhookListResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6477,15 +12640,15 @@ func ParseGetV1WebhooksResponse(rsp *http.Response) (*GetV1WebhooksResponse, err
 	return response, nil
 }
 
-// ParsePostV1WebhooksResponse parses an HTTP response from a PostV1WebhooksWithResponse call
-func ParsePostV1WebhooksResponse(rsp *http.Response) (*PostV1WebhooksResponse, error) {
+// ParseCreateWebhookClientResponse parses an HTTP response from a CreateWebhookWithResponse call
+func ParseCreateWebhookClientResponse(rsp *http.Response) (*CreateWebhookClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostV1WebhooksResponse{
+	response := &CreateWebhookClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6503,15 +12666,239 @@ func ParsePostV1WebhooksResponse(rsp *http.Response) (*PostV1WebhooksResponse, e
 	return response, nil
 }
 
-// ParsePostV1WebhooksTestResponse parses an HTTP response from a PostV1WebhooksTestWithResponse call
-func ParsePostV1WebhooksTestResponse(rsp *http.Response) (*PostV1WebhooksTestResponse, error) {
+// ParseListWebhookEventTypesClientResponse parses an HTTP response from a ListWebhookEventTypesWithResponse call
+func ParseListWebhookEventTypesClientResponse(rsp *http.Response) (*ListWebhookEventTypesClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostV1WebhooksTestResponse{
+	response := &ListWebhookEventTypesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WebhookEventCatalog
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTestWebhookClientResponse parses an HTTP response from a TestWebhookWithResponse call
+func ParseTestWebhookClientResponse(rsp *http.Response) (*TestWebhookClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TestWebhookClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeleteWebhookClientResponse parses an HTTP response from a DeleteWebhookWithResponse call
+func ParseDeleteWebhookClientResponse(rsp *http.Response) (*DeleteWebhookClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteWebhookClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetWebhookClientResponse parses an HTTP response from a GetWebhookWithResponse call
+func ParseGetWebhookClientResponse(rsp *http.Response) (*GetWebhookClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWebhookClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WebhookSubscription
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateWebhookClientResponse parses an HTTP response from a UpdateWebhookWithResponse call
+func ParseUpdateWebhookClientResponse(rsp *http.Response) (*UpdateWebhookClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateWebhookClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WebhookSubscription
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListWebhookDeliveriesClientResponse parses an HTTP response from a ListWebhookDeliveriesWithResponse call
+func ParseListWebhookDeliveriesClientResponse(rsp *http.Response) (*ListWebhookDeliveriesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWebhookDeliveriesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WebhookDeliveryListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWebhookDeliveryClientResponse parses an HTTP response from a GetWebhookDeliveryWithResponse call
+func ParseGetWebhookDeliveryClientResponse(rsp *http.Response) (*GetWebhookDeliveryClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWebhookDeliveryClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WebhookDeliveryDetail
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReplayWebhookDeliveryClientResponse parses an HTTP response from a ReplayWebhookDeliveryWithResponse call
+func ParseReplayWebhookDeliveryClientResponse(rsp *http.Response) (*ReplayWebhookDeliveryClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReplayWebhookDeliveryClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParsePingWebhookClientResponse parses an HTTP response from a PingWebhookWithResponse call
+func ParsePingWebhookClientResponse(rsp *http.Response) (*PingWebhookClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PingWebhookClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseRotateWebhookSecretClientResponse parses an HTTP response from a RotateWebhookSecretWithResponse call
+func ParseRotateWebhookSecretClientResponse(rsp *http.Response) (*RotateWebhookSecretClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RotateWebhookSecretClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Id        *string    `json:"id,omitempty"`
+			RotatedAt *time.Time `json:"rotatedAt,omitempty"`
+			Secret    *string    `json:"secret,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTestFireWebhookClientResponse parses an HTTP response from a TestFireWebhookWithResponse call
+func ParseTestFireWebhookClientResponse(rsp *http.Response) (*TestFireWebhookClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TestFireWebhookClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

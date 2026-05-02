@@ -55,7 +55,7 @@ func main() {
 
 	ctx := context.Background()
 	limit := 10
-	resp, err := client.GetV1ReservationsWithResponse(ctx, &repull.GetV1ReservationsParams{Limit: &limit})
+	resp, err := client.ListReservationsWithResponse(ctx, &repull.ListReservationsParams{Limit: &limit})
 	if err != nil {
 		// Type binding failed — fall back to a manual call so we can still demo
 		// the HTTP path against the live API while the spec is being corrected.
@@ -91,7 +91,7 @@ func fetchRaw(ctx context.Context, apiKey string, limit int) (*rawList, error) {
 	if err != nil {
 		return nil, err
 	}
-	httpResp, err := c.GetV1Reservations(ctx, &repull.GetV1ReservationsParams{Limit: &limit})
+	httpResp, err := c.ListReservations(ctx, &repull.ListReservationsParams{Limit: &limit})
 	if err != nil {
 		return nil, err
 	}
