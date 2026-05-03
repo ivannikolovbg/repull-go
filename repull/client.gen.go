@@ -299,6 +299,9 @@ type ClientInterface interface {
 
 	BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetListing request
+	GetListing(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListListingComps request
 	ListListingComps(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1314,6 +1317,18 @@ func (c *Client) BulkApplyPricingWithBody(ctx context.Context, contentType strin
 
 func (c *Client) BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewBulkApplyPricingRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetListing(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2887,7 +2902,7 @@ func NewGetBookingListingPricingRequest(server string, id int, params *GetBookin
 
 		if params.StartDate != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "startDate", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -4132,7 +4147,7 @@ func NewListGuestsRequest(server string, params *ListGuestsParams) (*http.Reques
 
 		if params.ListingId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listingId", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -4456,6 +4471,55 @@ func NewBulkApplyPricingRequestWithBody(server string, contentType string, body 
 	return req, nil
 }
 
+// NewGetListingRequest generates requests for GetListing
+func NewGetListingRequest(server string, id int, params *GetListingParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewListListingCompsRequest generates requests for ListListingComps
 func NewListListingCompsRequest(server string, id int, params *ListListingCompsParams) (*http.Request, error) {
 	var err error
@@ -4519,7 +4583,7 @@ func NewListListingCompsRequest(server string, id int, params *ListListingCompsP
 
 		if params.StartDate != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "startDate", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -4535,7 +4599,7 @@ func NewListListingCompsRequest(server string, id int, params *ListListingCompsP
 
 		if params.EndDate != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "endDate", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -4757,7 +4821,7 @@ func NewGetListingPricingHistoryRequest(server string, id int, params *GetListin
 
 		if params.StartDate != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "startDate", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -4773,7 +4837,7 @@ func NewGetListingPricingHistoryRequest(server string, id int, params *GetListin
 
 		if params.EndDate != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "endDate", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5436,9 +5500,9 @@ func NewListPropertiesRequest(server string, params *ListPropertiesParams) (*htt
 
 		}
 
-		if params.Offset != nil {
+		if params.Cursor != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5452,9 +5516,25 @@ func NewListPropertiesRequest(server string, params *ListPropertiesParams) (*htt
 
 		}
 
-		if params.Provider != nil {
+		if params.Status != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "provider", *params.Provider, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IncludeTotal != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_total", *params.IncludeTotal, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5567,22 +5647,6 @@ func NewListReservationsRequest(server string, params *ListReservationsParams) (
 
 		}
 
-		if params.Offset != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
 		if params.Platform != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "platform", *params.Platform, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -5617,7 +5681,7 @@ func NewListReservationsRequest(server string, params *ListReservationsParams) (
 
 		if params.ListingId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listingId", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5682,6 +5746,22 @@ func NewListReservationsRequest(server string, params *ListReservationsParams) (
 		if params.CheckInTo != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "checkInTo", *params.CheckInTo, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IncludeTotal != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_total", *params.IncludeTotal, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5963,7 +6043,7 @@ func NewListReviewsRequest(server string, params *ListReviewsParams) (*http.Requ
 
 		if params.ListingId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listingId", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6027,7 +6107,7 @@ func NewListReviewsRequest(server string, params *ListReviewsParams) (*http.Requ
 
 		if params.ReviewerRole != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "reviewer_role", *params.ReviewerRole, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "reviewerRole", *params.ReviewerRole, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7077,6 +7157,9 @@ type ClientWithResponsesInterface interface {
 
 	BulkApplyPricingWithResponse(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkApplyPricingClientResponse, error)
 
+	// GetListingWithResponse request
+	GetListingWithResponse(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*GetListingClientResponse, error)
+
 	// ListListingCompsWithResponse request
 	ListListingCompsWithResponse(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*ListListingCompsClientResponse, error)
 
@@ -7810,10 +7893,10 @@ type GetBookingListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *BookingPricingResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
-	JSON500      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -7836,10 +7919,10 @@ type UpdateBookingListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *BookingPricingUpdateResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
-	JSON500      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -8097,8 +8180,8 @@ func (r ListVrboListingsClientResponse) StatusCode() int {
 type GetVrboListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON401      *Error
-	JSON404      *Error
+	JSON401      *Unauthorized
+	JSON404      *NotFound
 	JSON501      *Error
 }
 
@@ -8121,8 +8204,8 @@ func (r GetVrboListingPricingClientResponse) StatusCode() int {
 type UpdateVrboListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON401      *Error
-	JSON404      *Error
+	JSON401      *Unauthorized
+	JSON404      *NotFound
 	JSON501      *Error
 }
 
@@ -8212,10 +8295,10 @@ type MapConnectBookingRoomsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *MapConnectBookingRoomsResponse
-	JSON400      *Error
+	JSON400      *BadRequest
 	JSON403      *Error
-	JSON404      *Error
-	JSON409      *Error
+	JSON404      *NotFound
+	JSON409      *Conflict
 	JSON410      *Error
 	JSON425      *Error
 }
@@ -8240,9 +8323,9 @@ type ListConnectBookingRoomsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *BookingConnectRoomsResponse
-	JSON400      *Error
-	JSON404      *Error
-	JSON409      *Error
+	JSON400      *BadRequest
+	JSON404      *NotFound
+	JSON409      *Conflict
 	JSON410      *Error
 	JSON425      *Error
 }
@@ -8267,9 +8350,9 @@ type VerifyBookingHotelClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *BookingVerifyHotelResponse
-	JSON400      *Error
-	JSON404      *Error
-	JSON409      *Error
+	JSON400      *BadRequest
+	JSON404      *NotFound
+	JSON409      *Conflict
 	JSON410      *Error
 	JSON412      *Error
 	JSON502      *Error
@@ -8405,10 +8488,10 @@ type ListConversationsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ConversationListResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON422      *Error
-	JSON500      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -8431,10 +8514,10 @@ type GetConversationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ConversationDetail
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
-	JSON500      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -8457,11 +8540,11 @@ type ListConversationMessagesClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *MessageListResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
-	JSON422      *Error
-	JSON500      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -8484,10 +8567,10 @@ type ListGuestsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *GuestListResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON422      *Error
-	JSON500      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -8510,10 +8593,10 @@ type GetGuestClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *GuestProfile
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
-	JSON500      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -8561,8 +8644,8 @@ type ListListingsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingListResponse
-	JSON400      *Error
-	JSON422      *Error
+	JSON400      *BadRequest
+	JSON422      *UnprocessableEntity
 }
 
 // Status returns HTTPResponse.Status
@@ -8585,6 +8668,7 @@ type CreateListingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *ListingCreateResponse
+	JSON400      *BadRequest
 }
 
 // Status returns HTTPResponse.Status
@@ -8607,9 +8691,9 @@ type BulkApplyPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *BulkPricingResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON422      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON422      *UnprocessableEntity
 	JSON502      *Error
 }
 
@@ -8629,13 +8713,38 @@ func (r BulkApplyPricingClientResponse) StatusCode() int {
 	return 0
 }
 
+type GetListingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Listing
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListListingCompsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingCompsResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
 	JSON502      *Error
 }
 
@@ -8659,6 +8768,7 @@ type GenerateListingContentClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingGenerateContentResponse
+	JSON404      *NotFound
 }
 
 // Status returns HTTPResponse.Status
@@ -8681,6 +8791,8 @@ type GetListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingPricingResponse
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
 }
 
 // Status returns HTTPResponse.Status
@@ -8703,6 +8815,7 @@ type ApplyListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingPricingApplyResponse
+	JSON400      *BadRequest
 }
 
 // Status returns HTTPResponse.Status
@@ -8725,10 +8838,10 @@ type GetListingPricingHistoryClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingPricingHistoryResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
-	JSON422      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
 	JSON502      *Error
 }
 
@@ -8752,6 +8865,7 @@ type GetListingPricingStrategyClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingPricingStrategy
+	JSON401      *Unauthorized
 }
 
 // Status returns HTTPResponse.Status
@@ -8820,6 +8934,7 @@ type PublishListingToAirbnbClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingPublishResponse
+	JSON400      *BadRequest
 }
 
 // Status returns HTTPResponse.Status
@@ -8842,6 +8957,7 @@ type PublishListingToBookingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingPublishResponse
+	JSON400      *BadRequest
 }
 
 // Status returns HTTPResponse.Status
@@ -8864,9 +8980,9 @@ type GetListingSegmentsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingSegmentsResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
 	JSON502      *Error
 }
 
@@ -8890,6 +9006,7 @@ type ListMarketsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *MarketsOverviewResponse
+	JSON401      *Unauthorized
 }
 
 // Status returns HTTPResponse.Status
@@ -8912,7 +9029,7 @@ type ListMarketBrowseClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *MarketBrowseResponse
-	JSON401      *Error
+	JSON401      *Unauthorized
 	JSON502      *Error
 }
 
@@ -8936,6 +9053,7 @@ type GetMarketClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *MarketDetailResponse
+	JSON401      *Unauthorized
 }
 
 // Status returns HTTPResponse.Status
@@ -8958,6 +9076,7 @@ type GetMarketCalendarClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *MarketCalendarResponse
+	JSON401      *Unauthorized
 }
 
 // Status returns HTTPResponse.Status
@@ -8980,7 +9099,8 @@ type ListPropertiesClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PropertyListResponse
-	JSON401      *Error
+	JSON401      *Unauthorized
+	JSON422      *UnprocessableEntity
 }
 
 // Status returns HTTPResponse.Status
@@ -9003,6 +9123,7 @@ type GetPropertyClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Property
+	JSON404      *NotFound
 }
 
 // Status returns HTTPResponse.Status
@@ -9025,6 +9146,7 @@ type ListReservationsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ReservationListResponse
+	JSON422      *UnprocessableEntity
 }
 
 // Status returns HTTPResponse.Status
@@ -9090,10 +9212,10 @@ type GetReservationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Reservation
-	JSON401      *Error
-	JSON404      *Error
-	JSON422      *Error
-	JSON500      *Error
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -9137,10 +9259,10 @@ type ListReviewsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ReviewListResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON422      *Error
-	JSON500      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -9162,11 +9284,11 @@ func (r ListReviewsClientResponse) StatusCode() int {
 type GetReviewClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ReviewGetResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON404      *Error
-	JSON500      *Error
+	JSON200      *Review
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -9189,8 +9311,8 @@ type ListCustomSchemasClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *CustomSchemaListResponse
-	JSON401      *Error
-	JSON403      *Error
+	JSON401      *Unauthorized
+	JSON403      *Forbidden
 }
 
 // Status returns HTTPResponse.Status
@@ -9213,10 +9335,10 @@ type CreateCustomSchemaClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *CustomSchemaCreateResponse
-	JSON400      *Error
-	JSON401      *Error
-	JSON403      *Error
-	JSON422      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON403      *Forbidden
+	JSON422      *UnprocessableEntity
 }
 
 // Status returns HTTPResponse.Status
@@ -9239,9 +9361,9 @@ type DeleteCustomSchemaClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *CustomSchemaDeleteResponse
-	JSON401      *Error
-	JSON403      *Error
-	JSON404      *Error
+	JSON401      *Unauthorized
+	JSON403      *Forbidden
+	JSON404      *NotFound
 }
 
 // Status returns HTTPResponse.Status
@@ -9264,9 +9386,9 @@ type GetCustomSchemaClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *CustomSchema
-	JSON401      *Error
-	JSON403      *Error
-	JSON404      *Error
+	JSON401      *Unauthorized
+	JSON403      *Forbidden
+	JSON404      *NotFound
 }
 
 // Status returns HTTPResponse.Status
@@ -9289,11 +9411,11 @@ type UpdateCustomSchemaClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *CustomSchema
-	JSON400      *Error
-	JSON401      *Error
-	JSON403      *Error
-	JSON404      *Error
-	JSON422      *Error
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
 }
 
 // Status returns HTTPResponse.Status
@@ -10241,6 +10363,15 @@ func (c *ClientWithResponses) BulkApplyPricingWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseBulkApplyPricingClientResponse(rsp)
+}
+
+// GetListingWithResponse request returning *GetListingClientResponse
+func (c *ClientWithResponses) GetListingWithResponse(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*GetListingClientResponse, error) {
+	rsp, err := c.GetListing(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetListingClientResponse(rsp)
 }
 
 // ListListingCompsWithResponse request returning *ListListingCompsClientResponse
@@ -11266,28 +11397,28 @@ func ParseGetBookingListingPricingClientResponse(rsp *http.Response) (*GetBookin
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -11320,28 +11451,28 @@ func ParseUpdateBookingListingPricingClientResponse(rsp *http.Response) (*Update
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -11593,14 +11724,14 @@ func ParseGetVrboListingPricingClientResponse(rsp *http.Response) (*GetVrboListi
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -11633,14 +11764,14 @@ func ParseUpdateVrboListingPricingClientResponse(rsp *http.Response) (*UpdateVrb
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -11758,7 +11889,7 @@ func ParseMapConnectBookingRoomsClientResponse(rsp *http.Response) (*MapConnectB
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -11772,14 +11903,14 @@ func ParseMapConnectBookingRoomsClientResponse(rsp *http.Response) (*MapConnectB
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Error
+		var dest Conflict
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -11826,21 +11957,21 @@ func ParseListConnectBookingRoomsClientResponse(rsp *http.Response) (*ListConnec
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Error
+		var dest Conflict
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -11887,21 +12018,21 @@ func ParseVerifyBookingHotelClientResponse(rsp *http.Response) (*VerifyBookingHo
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Error
+		var dest Conflict
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12082,28 +12213,28 @@ func ParseListConversationsClientResponse(rsp *http.Response) (*ListConversation
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12136,28 +12267,28 @@ func ParseGetConversationClientResponse(rsp *http.Response) (*GetConversationCli
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12190,35 +12321,35 @@ func ParseListConversationMessagesClientResponse(rsp *http.Response) (*ListConve
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12251,28 +12382,28 @@ func ParseListGuestsClientResponse(rsp *http.Response) (*ListGuestsClientRespons
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12305,28 +12436,28 @@ func ParseGetGuestClientResponse(rsp *http.Response) (*GetGuestClientResponse, e
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12388,14 +12519,14 @@ func ParseListListingsClientResponse(rsp *http.Response) (*ListListingsClientRes
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12427,6 +12558,13 @@ func ParseCreateListingClientResponse(rsp *http.Response) (*CreateListingClientR
 		}
 		response.JSON201 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	}
 
 	return response, nil
@@ -12454,21 +12592,21 @@ func ParseBulkApplyPricingClientResponse(rsp *http.Response) (*BulkApplyPricingC
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12480,6 +12618,53 @@ func ParseBulkApplyPricingClientResponse(rsp *http.Response) (*BulkApplyPricingC
 			return nil, err
 		}
 		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingClientResponse parses an HTTP response from a GetListingWithResponse call
+func ParseGetListingClientResponse(rsp *http.Response) (*GetListingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Listing
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -12508,21 +12693,21 @@ func ParseListListingCompsClientResponse(rsp *http.Response) (*ListListingCompsC
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12561,6 +12746,13 @@ func ParseGenerateListingContentClientResponse(rsp *http.Response) (*GenerateLis
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	}
 
 	return response, nil
@@ -12587,6 +12779,20 @@ func ParseGetListingPricingClientResponse(rsp *http.Response) (*GetListingPricin
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	}
 
 	return response, nil
@@ -12612,6 +12818,13 @@ func ParseApplyListingPricingClientResponse(rsp *http.Response) (*ApplyListingPr
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
@@ -12640,28 +12853,28 @@ func ParseGetListingPricingHistoryClientResponse(rsp *http.Response) (*GetListin
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12699,6 +12912,13 @@ func ParseGetListingPricingStrategyClientResponse(rsp *http.Response) (*GetListi
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	}
 
@@ -12780,6 +13000,13 @@ func ParsePublishListingToAirbnbClientResponse(rsp *http.Response) (*PublishList
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	}
 
 	return response, nil
@@ -12805,6 +13032,13 @@ func ParsePublishListingToBookingClientResponse(rsp *http.Response) (*PublishLis
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
@@ -12833,21 +13067,21 @@ func ParseGetListingSegmentsClientResponse(rsp *http.Response) (*GetListingSegme
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12886,6 +13120,13 @@ func ParseListMarketsClientResponse(rsp *http.Response) (*ListMarketsClientRespo
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	}
 
 	return response, nil
@@ -12913,7 +13154,7 @@ func ParseListMarketBrowseClientResponse(rsp *http.Response) (*ListMarketBrowseC
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -12952,6 +13193,13 @@ func ParseGetMarketClientResponse(rsp *http.Response) (*GetMarketClientResponse,
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	}
 
 	return response, nil
@@ -12977,6 +13225,13 @@ func ParseGetMarketCalendarClientResponse(rsp *http.Response) (*GetMarketCalenda
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	}
 
@@ -13005,11 +13260,18 @@ func ParseListPropertiesClientResponse(rsp *http.Response) (*ListPropertiesClien
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -13037,6 +13299,13 @@ func ParseGetPropertyClientResponse(rsp *http.Response) (*GetPropertyClientRespo
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	}
 
 	return response, nil
@@ -13062,6 +13331,13 @@ func ParseListReservationsClientResponse(rsp *http.Response) (*ListReservationsC
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -13132,28 +13408,28 @@ func ParseGetReservationClientResponse(rsp *http.Response) (*GetReservationClien
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -13202,28 +13478,28 @@ func ParseListReviewsClientResponse(rsp *http.Response) (*ListReviewsClientRespo
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -13249,35 +13525,35 @@ func ParseGetReviewClientResponse(rsp *http.Response) (*GetReviewClientResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ReviewGetResponse
+		var dest Review
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Error
+		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -13310,14 +13586,14 @@ func ParseListCustomSchemasClientResponse(rsp *http.Response) (*ListCustomSchema
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Error
+		var dest Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -13350,28 +13626,28 @@ func ParseCreateCustomSchemaClientResponse(rsp *http.Response) (*CreateCustomSch
 		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Error
+		var dest Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -13404,21 +13680,21 @@ func ParseDeleteCustomSchemaClientResponse(rsp *http.Response) (*DeleteCustomSch
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Error
+		var dest Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -13451,21 +13727,21 @@ func ParseGetCustomSchemaClientResponse(rsp *http.Response) (*GetCustomSchemaCli
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Error
+		var dest Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -13498,35 +13774,35 @@ func ParseUpdateCustomSchemaClientResponse(rsp *http.Response) (*UpdateCustomSch
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Error
+		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Error
+		var dest Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -92,22 +92,22 @@ func (e BookingConnectRoomsResponseStatus) Valid() bool {
 
 // Defines values for BulkPricingFailureErrorCode.
 const (
-	CalendarUpdateFailed     BulkPricingFailureErrorCode = "calendar_update_failed"
-	InternalError            BulkPricingFailureErrorCode = "internal_error"
-	NoPendingRecommendations BulkPricingFailureErrorCode = "no_pending_recommendations"
-	NotOwned                 BulkPricingFailureErrorCode = "not_owned"
+	BulkPricingFailureErrorCodeCalendarUpdateFailed     BulkPricingFailureErrorCode = "calendar_update_failed"
+	BulkPricingFailureErrorCodeInternalError            BulkPricingFailureErrorCode = "internal_error"
+	BulkPricingFailureErrorCodeNoPendingRecommendations BulkPricingFailureErrorCode = "no_pending_recommendations"
+	BulkPricingFailureErrorCodeNotOwned                 BulkPricingFailureErrorCode = "not_owned"
 )
 
 // Valid indicates whether the value is a known member of the BulkPricingFailureErrorCode enum.
 func (e BulkPricingFailureErrorCode) Valid() bool {
 	switch e {
-	case CalendarUpdateFailed:
+	case BulkPricingFailureErrorCodeCalendarUpdateFailed:
 		return true
-	case InternalError:
+	case BulkPricingFailureErrorCodeInternalError:
 		return true
-	case NoPendingRecommendations:
+	case BulkPricingFailureErrorCodeNoPendingRecommendations:
 		return true
-	case NotOwned:
+	case BulkPricingFailureErrorCodeNotOwned:
 		return true
 	default:
 		return false
@@ -1041,6 +1041,24 @@ func (e ListMarketBrowseParamsSort) Valid() bool {
 	}
 }
 
+// Defines values for ListPropertiesParamsStatus.
+const (
+	ListPropertiesParamsStatusActive ListPropertiesParamsStatus = "active"
+	ListPropertiesParamsStatusAll    ListPropertiesParamsStatus = "all"
+)
+
+// Valid indicates whether the value is a known member of the ListPropertiesParamsStatus enum.
+func (e ListPropertiesParamsStatus) Valid() bool {
+	switch e {
+	case ListPropertiesParamsStatusActive:
+		return true
+	case ListPropertiesParamsStatusAll:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListReservationsParamsStatus.
 const (
 	ListReservationsParamsStatusCancelled ListReservationsParamsStatus = "cancelled"
@@ -1088,19 +1106,19 @@ func (e ListReviewsParamsPlatform) Valid() bool {
 
 // Defines values for ListReviewsParamsStatus.
 const (
-	All        ListReviewsParamsStatus = "all"
-	Responded  ListReviewsParamsStatus = "responded"
-	Unanswered ListReviewsParamsStatus = "unanswered"
+	ListReviewsParamsStatusAll        ListReviewsParamsStatus = "all"
+	ListReviewsParamsStatusResponded  ListReviewsParamsStatus = "responded"
+	ListReviewsParamsStatusUnanswered ListReviewsParamsStatus = "unanswered"
 )
 
 // Valid indicates whether the value is a known member of the ListReviewsParamsStatus enum.
 func (e ListReviewsParamsStatus) Valid() bool {
 	switch e {
-	case All:
+	case ListReviewsParamsStatusAll:
 		return true
-	case Responded:
+	case ListReviewsParamsStatusResponded:
 		return true
-	case Unanswered:
+	case ListReviewsParamsStatusUnanswered:
 		return true
 	default:
 		return false
@@ -1200,8 +1218,10 @@ type AirbnbListing struct {
 
 // AirbnbListingListResponse defines model for AirbnbListingListResponse.
 type AirbnbListingListResponse struct {
-	Data       *[]AirbnbListing `json:"data,omitempty"`
-	Pagination *Pagination      `json:"pagination,omitempty"`
+	Data *[]AirbnbListing `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // AirbnbReservation An Airbnb reservation as returned by the channel API. Use `confirmationCode` to address it in Airbnb operations.
@@ -1222,8 +1242,10 @@ type AirbnbReservationStatus string
 
 // AirbnbReservationListResponse defines model for AirbnbReservationListResponse.
 type AirbnbReservationListResponse struct {
-	Data       *[]AirbnbReservation `json:"data,omitempty"`
-	Pagination *Pagination          `json:"pagination,omitempty"`
+	Data *[]AirbnbReservation `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // AirbnbReview An Airbnb review (guest → host or host → guest).
@@ -1238,8 +1260,10 @@ type AirbnbReview struct {
 
 // AirbnbReviewListResponse defines model for AirbnbReviewListResponse.
 type AirbnbReviewListResponse struct {
-	Data       *[]AirbnbReview `json:"data,omitempty"`
-	Pagination *Pagination     `json:"pagination,omitempty"`
+	Data *[]AirbnbReview `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // AirbnbThread An Airbnb message thread.
@@ -1253,31 +1277,33 @@ type AirbnbThread struct {
 
 // AirbnbThreadListResponse defines model for AirbnbThreadListResponse.
 type AirbnbThreadListResponse struct {
-	Data       *[]AirbnbThread `json:"data,omitempty"`
-	Pagination *Pagination     `json:"pagination,omitempty"`
+	Data *[]AirbnbThread `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // BookingConnectListingOption A Repull listing the customer can map a Booking room to. Mirrors the minimal shape needed for a select dropdown.
 type BookingConnectListingOption struct {
 	City *string `json:"city,omitempty"`
-	Id   int     `json:"id"`
+	Id   string  `json:"id"`
 	Name string  `json:"name"`
 }
 
 // BookingConnectRoom A Booking.com room imported from the claimed hotel. The customer maps each room to one of their Repull listings via `mapConnectBookingRooms`.
 type BookingConnectRoom struct {
 	// CurrentListingId Currently mapped Repull listing ID, or null if not yet mapped.
-	CurrentListingId *int `json:"currentListingId,omitempty"`
-	MaxGuests        *int `json:"maxGuests,omitempty"`
+	CurrentListingId *string `json:"currentListingId,omitempty"`
+	MaxGuests        *int    `json:"maxGuests,omitempty"`
 
 	// NumberOfRooms Number of inventory units of this room type at the hotel.
 	NumberOfRooms int `json:"numberOfRooms"`
 
 	// RoomBookingId Booking.com-side room ID (used internally for `listing_platform_links`).
-	RoomBookingId *int `json:"roomBookingId,omitempty"`
+	RoomBookingId *string `json:"roomBookingId,omitempty"`
 
 	// RoomId Repull-side `listings_booking_rooms.id`. Pass this back in the mapping submission.
-	RoomId   int    `json:"roomId"`
+	RoomId   string `json:"roomId"`
 	RoomName string `json:"roomName"`
 }
 
@@ -1305,8 +1331,10 @@ type BookingConversation struct {
 
 // BookingConversationListResponse defines model for BookingConversationListResponse.
 type BookingConversationListResponse struct {
-	Data       *[]BookingConversation `json:"data,omitempty"`
-	Pagination *Pagination            `json:"pagination,omitempty"`
+	Data *[]BookingConversation `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // BookingPricingRateUpdate A single (room, rate-plan, date-range) update pushed to Booking.com via the rates API.
@@ -1339,10 +1367,10 @@ type BookingPricingRateUpdateRestrictions struct {
 	MinStay           *int  `json:"minStay,omitempty"`
 }
 
-// BookingPricingResponse Returned by `GET /v1/channels/booking/listings/{id}/pricing`. Mirrors Booking's `getRoomRateAvailability` response with `hotel_id` and `listing_id` echoed back for SDK consumers.
+// BookingPricingResponse Returned by `GET /v1/channels/booking/listings/{id}/pricing`. Mirrors Booking's `getRoomRateAvailability` response with `hotelId` and `listingId` echoed back for SDK consumers.
 type BookingPricingResponse struct {
-	HotelId              *string                `json:"hotel_id,omitempty"`
-	ListingId            *int                   `json:"listing_id,omitempty"`
+	HotelId              *string                `json:"hotelId,omitempty"`
+	ListingId            *string                `json:"listingId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -1355,8 +1383,8 @@ type BookingPricingUpdateRequest struct {
 type BookingPricingUpdateResponse struct {
 	// Errors Per-update failure rows from Booking — shape mirrors the Booking rates API response.
 	Errors    *[]map[string]interface{} `json:"errors,omitempty"`
-	HotelId   *string                   `json:"hotel_id,omitempty"`
-	ListingId *int                      `json:"listing_id,omitempty"`
+	HotelId   *string                   `json:"hotelId,omitempty"`
+	ListingId *string                   `json:"listingId,omitempty"`
 
 	// Pushed Number of updates Booking.com accepted as `success`. Falls back to total update count when Booking omits per-update status on full success.
 	Pushed *int `json:"pushed,omitempty"`
@@ -1379,17 +1407,19 @@ type BookingProperty struct {
 
 // BookingPropertyListResponse defines model for BookingPropertyListResponse.
 type BookingPropertyListResponse struct {
-	Data       *[]BookingProperty `json:"data,omitempty"`
-	Pagination *Pagination        `json:"pagination,omitempty"`
+	Data *[]BookingProperty `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // BookingRoomMapping A single room→listing assignment. Pass `listingId: null` to explicitly UNMAP a room (e.g. "skip this room for now") — this also removes the corresponding `listing_platform_links` row.
 type BookingRoomMapping struct {
 	// ListingId Repull listing to bind to this room. `null` to unmap.
-	ListingId *int `json:"listingId,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
 
 	// RoomId Repull-side `listings_booking_rooms.id` from `listConnectBookingRooms`.
-	RoomId int `json:"roomId"`
+	RoomId string `json:"roomId"`
 }
 
 // BookingVerifyHotelRequest Body for `POST /v1/connect/booking/verify`. Manual-paste fallback that closes a Booking.com Connect session after the customer completes Stage 1 designation in the Extranet.
@@ -1406,7 +1436,7 @@ type BookingVerifyHotelResponse struct {
 	City *string `json:"city,omitempty"`
 
 	// ConnectionId Repull-side `pms_connections.id` for the linked Booking account.
-	ConnectionId int     `json:"connectionId"`
+	ConnectionId string  `json:"connectionId"`
 	Country      *string `json:"country,omitempty"`
 	HotelId      string  `json:"hotelId"`
 	HotelName    *string `json:"hotelName,omitempty"`
@@ -1421,17 +1451,17 @@ type BookingVerifyHotelResponse struct {
 type BulkPricingFailure struct {
 	Dates     *[]openapi_types.Date        `json:"dates,omitempty"`
 	Error     *string                      `json:"error,omitempty"`
-	ErrorCode *BulkPricingFailureErrorCode `json:"error_code,omitempty"`
-	ListingId *int                         `json:"listing_id,omitempty"`
+	ErrorCode *BulkPricingFailureErrorCode `json:"errorCode,omitempty"`
+	ListingId *string                      `json:"listingId,omitempty"`
 }
 
 // BulkPricingFailureErrorCode defines model for BulkPricingFailure.ErrorCode.
 type BulkPricingFailureErrorCode string
 
-// BulkPricingItem A single (listing_id, dates) pair in a bulk pricing request. The action in the parent request body applies to every date in `dates` for this listing.
+// BulkPricingItem A single (listingId, dates) pair in a bulk pricing request. The action in the parent request body applies to every date in `dates` for this listing.
 type BulkPricingItem struct {
 	Dates     []openapi_types.Date `json:"dates"`
-	ListingId int                  `json:"listing_id"`
+	ListingId string               `json:"listingId"`
 }
 
 // BulkPricingRequest Body for `POST /v1/listings/pricing/bulk`. Apply or decline pending Atlas pricing recommendations across many listings in one call. Capped at 500 items per request — exceeding returns 422.
@@ -1546,7 +1576,7 @@ type ConnectStatus struct {
 	Host *ConnectHost `json:"host,omitempty"`
 
 	// Id Repull-side connection ID. Stable across token refreshes.
-	Id       *int                 `json:"id,omitempty"`
+	Id       *string              `json:"id,omitempty"`
 	Provider *string              `json:"provider,omitempty"`
 	Status   *ConnectStatusStatus `json:"status,omitempty"`
 }
@@ -1561,7 +1591,7 @@ type Connection struct {
 
 	// Host Host metadata for the linked account. Currently populated for Airbnb only; null for other providers.
 	Host     *ConnectHost      `json:"host,omitempty"`
-	Id       *int              `json:"id,omitempty"`
+	Id       *string           `json:"id,omitempty"`
 	Provider *string           `json:"provider,omitempty"`
 	Status   *ConnectionStatus `json:"status,omitempty"`
 }
@@ -1571,30 +1601,32 @@ type ConnectionStatus string
 
 // ConnectionListResponse defines model for ConnectionListResponse.
 type ConnectionListResponse struct {
-	Data       *[]Connection `json:"data,omitempty"`
-	Pagination *Pagination   `json:"pagination,omitempty"`
+	Data *[]Connection `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // Conversation Channel-agnostic message thread between the host workspace and a guest. Returned by `GET /v1/conversations`. The `id` is the internal Repull thread id (integer) — pass it back as the `{id}` path param on detail / messages calls.
 type Conversation struct {
-	CreatedAt     *time.Time `json:"created_at,omitempty"`
-	GuestId       *int       `json:"guest_id,omitempty"`
-	Id            *int       `json:"id,omitempty"`
-	LastMessageAt *time.Time `json:"last_message_at,omitempty"`
+	CreatedAt     *time.Time `json:"createdAt,omitempty"`
+	GuestId       *string    `json:"guestId,omitempty"`
+	Id            *string    `json:"id,omitempty"`
+	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
 
 	// LastMessagePreview Short preview of the most recent message body for list-UI rendering.
-	LastMessagePreview *string               `json:"last_message_preview,omitempty"`
-	ListingId          *int                  `json:"listing_id,omitempty"`
+	LastMessagePreview *string               `json:"lastMessagePreview,omitempty"`
+	ListingId          *string               `json:"listingId,omitempty"`
 	Platform           *ConversationPlatform `json:"platform,omitempty"`
-	ReservationId      *int                  `json:"reservation_id,omitempty"`
+	ReservationId      *string               `json:"reservationId,omitempty"`
 
 	// Status `archived` is reserved for a future bit on `message_threads` — currently always `open`.
 	Status *ConversationStatus `json:"status,omitempty"`
 
 	// Subject Thread subject (email/website channels) or null when not applicable.
 	Subject     *string    `json:"subject,omitempty"`
-	UnreadCount *int       `json:"unread_count,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+	UnreadCount *int       `json:"unreadCount,omitempty"`
+	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
 }
 
 // ConversationPlatform defines model for Conversation.Platform.
@@ -1605,26 +1637,26 @@ type ConversationStatus string
 
 // ConversationDetail defines model for ConversationDetail.
 type ConversationDetail struct {
-	CreatedAt     *time.Time         `json:"created_at,omitempty"`
+	CreatedAt     *time.Time         `json:"createdAt,omitempty"`
 	Guest         *ConversationGuest `json:"guest,omitempty"`
-	GuestId       *int               `json:"guest_id,omitempty"`
+	GuestId       *string            `json:"guestId,omitempty"`
 	Host          *ConversationHost  `json:"host,omitempty"`
-	Id            *int               `json:"id,omitempty"`
-	LastMessageAt *time.Time         `json:"last_message_at,omitempty"`
+	Id            *string            `json:"id,omitempty"`
+	LastMessageAt *time.Time         `json:"lastMessageAt,omitempty"`
 
 	// LastMessagePreview Short preview of the most recent message body for list-UI rendering.
-	LastMessagePreview *string                     `json:"last_message_preview,omitempty"`
-	ListingId          *int                        `json:"listing_id,omitempty"`
+	LastMessagePreview *string                     `json:"lastMessagePreview,omitempty"`
+	ListingId          *string                     `json:"listingId,omitempty"`
 	Platform           *ConversationDetailPlatform `json:"platform,omitempty"`
-	ReservationId      *int                        `json:"reservation_id,omitempty"`
+	ReservationId      *string                     `json:"reservationId,omitempty"`
 
 	// Status `archived` is reserved for a future bit on `message_threads` — currently always `open`.
 	Status *ConversationDetailStatus `json:"status,omitempty"`
 
 	// Subject Thread subject (email/website channels) or null when not applicable.
 	Subject     *string    `json:"subject,omitempty"`
-	UnreadCount *int       `json:"unread_count,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+	UnreadCount *int       `json:"unreadCount,omitempty"`
+	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
 }
 
 // ConversationDetailPlatform defines model for ConversationDetail.Platform.
@@ -1638,7 +1670,7 @@ type ConversationGuest struct {
 	AvatarUrl   *string                     `json:"avatarUrl,omitempty"`
 	Contacts    *[]ConversationGuestContact `json:"contacts,omitempty"`
 	DisplayName *string                     `json:"displayName,omitempty"`
-	Id          *int                        `json:"id,omitempty"`
+	Id          *string                     `json:"id,omitempty"`
 }
 
 // ConversationGuestContact defines model for ConversationGuestContact.
@@ -1656,14 +1688,14 @@ type ConversationHost struct {
 	AvatarUrl   *string `json:"avatarUrl,omitempty"`
 	DisplayName *string `json:"displayName,omitempty"`
 	FirstName   *string `json:"firstName,omitempty"`
-	Id          *int    `json:"id,omitempty"`
+	Id          *string `json:"id,omitempty"`
 }
 
-// ConversationListResponse Cursor-paginated conversation list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page.
+// ConversationListResponse Cursor-paginated conversation list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page.
 type ConversationListResponse struct {
 	Data *[]Conversation `json:"data,omitempty"`
 
-	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
@@ -1671,17 +1703,12 @@ type ConversationListResponse struct {
 type ConversationMessageAttachment struct {
 	ContentType *string    `json:"contentType,omitempty"`
 	CreatedAt   *time.Time `json:"createdAt,omitempty"`
-	Id          *int       `json:"id,omitempty"`
+	Id          *string    `json:"id,omitempty"`
 	ImageUrl    *string    `json:"imageUrl,omitempty"`
 }
 
-// CursorPagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
-type CursorPagination struct {
-	HasMore *bool `json:"has_more,omitempty"`
-
-	// NextCursor Opaque base64-encoded cursor — pass back as `?cursor=<value>`. `null` when there are no more pages.
-	NextCursor *string `json:"next_cursor,omitempty"`
-}
+// CursorPagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+type CursorPagination = Pagination
 
 // CustomSchema A custom field-mapping schema owned by the workspace. Reshapes the `native` response into the workspace's preferred field names. Apply one per request via the `X-Schema: <name>` header on any read endpoint.
 type CustomSchema struct {
@@ -1732,6 +1759,9 @@ type CustomSchemaDeleteResponse struct {
 // CustomSchemaListResponse Returned by `GET /v1/schema/custom`. Returns every custom schema owned by the workspace.
 type CustomSchemaListResponse struct {
 	Data *[]CustomSchemaSummary `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // CustomSchemaMappings Field-mapping table. Keys are the output field names emitted in the response payload; values are simple expressions referenced against the source `native` payload (dot paths, basic arithmetic, string concatenation). Min 1 entry, max 50 entries. Each key must be <= 100 chars; each expression must be <= 500 chars and pass the safety check (no `eval`, no `function`, no `process`, etc.).
@@ -1759,16 +1789,54 @@ type CustomSchemaUpdate struct {
 	Mappings *CustomSchemaMappings `json:"mappings,omitempty"`
 }
 
-// Error defines model for Error.
+// Error Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type Error struct {
-	Error *struct {
-		Code    *string `json:"code,omitempty"`
-		DocsUrl *string `json:"docs_url,omitempty"`
+	Error struct {
+		// Code Stable machine-parseable error identifier. Match on this for retry logic. Codes are namespaced and never change meaning.
+		Code string `json:"code"`
 
-		// Example Example of correct usage
-		Example *string `json:"example,omitempty"`
-		Message *string `json:"message,omitempty"`
-	} `json:"error,omitempty"`
+		// DidYouMean Suggestion for typos and near-matches. Present when the server can guess the intent.
+		DidYouMean *string `json:"did_you_mean,omitempty"`
+
+		// DocsUrl Canonical write-up for this error code. URL pattern: `https://repull.dev/docs/errors/{code}`.
+		DocsUrl string `json:"docs_url"`
+
+		// Endpoint The endpoint path that produced the error. Present on `code: "unknown_params"` so consumers can match validation failures to the operation they invoked.
+		Endpoint *string `json:"endpoint,omitempty"`
+
+		// Field Body field, query param, or path segment the error is about. Present when the error is parameter-specific.
+		Field *string `json:"field,omitempty"`
+
+		// Fix Exact recovery steps. Surface this verbatim in your UI / agent reasoning trace — it is written to be actionable without further reading.
+		Fix string `json:"fix"`
+
+		// Message Human-readable cause. Echoes the offending value when relevant.
+		Message string `json:"message"`
+
+		// RequestId Opaque per-request id. Mirrors the `x-request-id` response header. Capture it before retrying so logs can be correlated.
+		RequestId string `json:"request_id"`
+
+		// RetryAfter Seconds the client should wait before retrying. Mirrors the `Retry-After` HTTP header. Present on rate-limit responses and on transient upstream failures that are safe to retry.
+		RetryAfter *int `json:"retry_after,omitempty"`
+
+		// Support LAST-RESORT contact handle. Only set on errors that genuinely cannot be self-fixed (billing dispute, account-state corruption, OAuth partner intervention). Never fall back to support before trying `fix` and `docs_url`.
+		Support *struct {
+			Email *openapi_types.Email `json:"email,omitempty"`
+
+			// Reference Internal reference to quote when contacting support.
+			Reference *string `json:"reference,omitempty"`
+			Url       *string `json:"url,omitempty"`
+		} `json:"support,omitempty"`
+
+		// ValidParams Sorted list of every query param this endpoint accepts. Present on `code: "unknown_params"` (HTTP 422) so SDK consumers can self-correct without reading docs.
+		ValidParams *[]string `json:"validParams,omitempty"`
+
+		// ValidValues Allowed values when the error is enum-related (e.g. unknown `provider`, unknown `status`).
+		ValidValues *[]string `json:"valid_values,omitempty"`
+
+		// ValueReceived Echo of the offending value (truncated to 200 chars). Useful for debugging — helps callers see what the server actually parsed.
+		ValueReceived interface{} `json:"value_received,omitempty"`
+	} `json:"error"`
 }
 
 // Guest Guest list-row shape returned by `GET /v1/guests`. Pre-resolved primary phone/email + display name + cumulative stay aggregates so list UIs can render without a per-row round-trip.
@@ -1777,7 +1845,7 @@ type Guest struct {
 
 	// Country Guest country (from profile metadata or address).
 	Country   *string    `json:"country,omitempty"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
 
 	// DisplayName Short display name (first name).
 	DisplayName *string `json:"displayName,omitempty"`
@@ -1788,7 +1856,7 @@ type Guest struct {
 	// Email Primary email contact.
 	Email         *openapi_types.Email `json:"email,omitempty"`
 	FirstStayedAt *time.Time           `json:"firstStayedAt,omitempty"`
-	Id            *int                 `json:"id,omitempty"`
+	Id            *string              `json:"id,omitempty"`
 
 	// Language Guest's preferred language (ISO 639-1).
 	Language     *string    `json:"language,omitempty"`
@@ -1806,8 +1874,8 @@ type Guest struct {
 
 // GuestContact One contact channel attached to a guest profile (phone, email, etc.).
 type GuestContact struct {
-	IsPrimary *bool      `json:"is_primary,omitempty"`
-	LastUsed  *time.Time `json:"last_used,omitempty"`
+	IsPrimary *bool      `json:"isPrimary,omitempty"`
+	LastUsed  *time.Time `json:"lastUsed,omitempty"`
 
 	// Type Contact channel type (`phone`, `email`, etc.).
 	Type     *string `json:"type,omitempty"`
@@ -1817,8 +1885,8 @@ type GuestContact struct {
 
 // GuestFlag A risk/operational flag attached to a guest profile (e.g. blacklist, do-not-host, VIP). Severity comes from main vanio's flag taxonomy.
 type GuestFlag struct {
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	IsActive  *bool      `json:"is_active,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	IsActive  *bool      `json:"isActive,omitempty"`
 
 	// Note Reason text when present.
 	Note *string `json:"note,omitempty"`
@@ -1827,11 +1895,11 @@ type GuestFlag struct {
 	Type *string `json:"type,omitempty"`
 }
 
-// GuestListResponse Cursor-paginated guest list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page.
+// GuestListResponse Cursor-paginated guest list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page.
 type GuestListResponse struct {
 	Data *[]Guest `json:"data,omitempty"`
 
-	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
@@ -1839,9 +1907,9 @@ type GuestListResponse struct {
 type GuestNote struct {
 	Body      *string    `json:"body,omitempty"`
 	Category  *string    `json:"category,omitempty"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	CreatedBy *string    `json:"created_by,omitempty"`
-	Id        *int       `json:"id,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	CreatedBy *string    `json:"createdBy,omitempty"`
+	Id        *string    `json:"id,omitempty"`
 }
 
 // GuestProfile Full guest profile returned by `GET /v1/guests/{id}`. Aggregates the base list-row fields plus contacts, flags, notes, risk metadata, and a reservations-summary rollup.
@@ -1850,20 +1918,20 @@ type GuestProfile struct {
 	BlacklistedReason *string              `json:"blacklistedReason,omitempty"`
 	Contacts          *[]GuestContact      `json:"contacts,omitempty"`
 	Country           *string              `json:"country,omitempty"`
-	CreatedAt         *time.Time           `json:"created_at,omitempty"`
+	CreatedAt         *time.Time           `json:"createdAt,omitempty"`
 	Currency          *string              `json:"currency,omitempty"`
 	DisplayName       *string              `json:"displayName,omitempty"`
 	DisplayNameLong   *string              `json:"displayNameLong,omitempty"`
 	Email             *openapi_types.Email `json:"email,omitempty"`
 	Flags             *[]GuestFlag         `json:"flags,omitempty"`
-	Id                *int                 `json:"id,omitempty"`
+	Id                *string              `json:"id,omitempty"`
 	IsBlacklisted     *bool                `json:"isBlacklisted,omitempty"`
 	Language          *string              `json:"language,omitempty"`
 	Notes             *[]GuestNote         `json:"notes,omitempty"`
 	Phone             *string              `json:"phone,omitempty"`
 
 	// ReservationsSummary Aggregate counts of reservations attached to the guest. `future` is derived from `total - past - cancelled`.
-	ReservationsSummary *GuestReservationsSummary `json:"reservations_summary,omitempty"`
+	ReservationsSummary *GuestReservationsSummary `json:"reservationsSummary,omitempty"`
 
 	// RiskLevel Main-vanio risk score (e.g. `low`, `medium`, `high`).
 	RiskLevel         *string `json:"riskLevel,omitempty"`
@@ -1894,7 +1962,7 @@ type Listing struct {
 	CreatedAt *time.Time        `json:"createdAt,omitempty"`
 
 	// Id Repull listing id
-	Id           *int           `json:"id,omitempty"`
+	Id           *string        `json:"id,omitempty"`
 	Name         *string        `json:"name,omitempty"`
 	Status       *ListingStatus `json:"status,omitempty"`
 	ThumbnailUrl *string        `json:"thumbnailUrl,omitempty"`
@@ -1917,21 +1985,21 @@ type ListingChannel struct {
 // ListingComp A single competitor listing in a comp set, sorted closest-first. Includes per-day rate/availability for the requested calendar window.
 type ListingComp struct {
 	Bedrooms *int    `json:"bedrooms,omitempty"`
-	CompId   *int    `json:"comp_id,omitempty"`
+	CompId   *string `json:"compId,omitempty"`
 	Currency *string `json:"currency,omitempty"`
 
 	// CurrentNightlyRate Latest snapshot ADR — fallback to render when the calendar window is empty.
-	CurrentNightlyRate *float32 `json:"current_nightly_rate,omitempty"`
+	CurrentNightlyRate *float32 `json:"currentNightlyRate,omitempty"`
 
 	// DistanceKm Haversine distance from the source listing in km, rounded to 3 decimals.
-	DistanceKm *float32 `json:"distance_km,omitempty"`
+	DistanceKm *float32 `json:"distanceKm,omitempty"`
 
 	// ExternalUrl Link to the listing on its source platform when one is available.
-	ExternalUrl *string  `json:"external_url,omitempty"`
+	ExternalUrl *string  `json:"externalUrl,omitempty"`
 	Lat         *float32 `json:"lat,omitempty"`
-	ListingName *string  `json:"listing_name,omitempty"`
+	ListingName *string  `json:"listingName,omitempty"`
 	Lng         *float32 `json:"lng,omitempty"`
-	MaxGuests   *int     `json:"max_guests,omitempty"`
+	MaxGuests   *int     `json:"maxGuests,omitempty"`
 
 	// Nightly Per-day rate + availability for the requested window. May be empty if Atlas hasn't snapshotted the comp recently.
 	Nightly  *[]ListingCompNightly `json:"nightly,omitempty"`
@@ -1956,7 +2024,7 @@ type ListingCompsResponse struct {
 		End   *openapi_types.Date `json:"end,omitempty"`
 		Start *openapi_types.Date `json:"start,omitempty"`
 	} `json:"dateRange,omitempty"`
-	ListingId *int     `json:"listingId,omitempty"`
+	ListingId *string  `json:"listingId,omitempty"`
 	RadiusKm  *float32 `json:"radiusKm,omitempty"`
 	Total     *int     `json:"total,omitempty"`
 
@@ -2013,7 +2081,7 @@ type ListingCreateRequestCancellationPolicy string
 // ListingCreateResponse defines model for ListingCreateResponse.
 type ListingCreateResponse struct {
 	// Id New listing ID — use for follow-up generate-content / publish calls
-	Id *int `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
 }
 
 // ListingGenerateContentRequest defines model for ListingGenerateContentRequest.
@@ -2032,7 +2100,7 @@ type ListingGenerateContentRequestStyle string
 // ListingGenerateContentResponse defines model for ListingGenerateContentResponse.
 type ListingGenerateContentResponse struct {
 	Content   *ListingContent `json:"content,omitempty"`
-	ListingId *int            `json:"listingId,omitempty"`
+	ListingId *string         `json:"listingId,omitempty"`
 	Persisted *bool           `json:"persisted,omitempty"`
 }
 
@@ -2040,7 +2108,7 @@ type ListingGenerateContentResponse struct {
 type ListingListResponse struct {
 	Data *[]Listing `json:"data,omitempty"`
 
-	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
@@ -2067,20 +2135,20 @@ type ListingPricingApplyResponse struct {
 
 // ListingPricingHistoryEntry One date in the recommendation-vs-applied audit trail.
 type ListingPricingHistoryEntry struct {
-	AppliedAt *time.Time `json:"applied_at,omitempty"`
+	AppliedAt *time.Time `json:"appliedAt,omitempty"`
 
 	// AppliedBy Who applied it (e.g. `auto`, `api`, `user`).
-	AppliedBy *string `json:"applied_by,omitempty"`
+	AppliedBy *string `json:"appliedBy,omitempty"`
 
 	// AppliedRate Price actually written to the calendar. `null` when status is `pending` or `declined`. For now, when `status=applied` this equals `recommended_rate` because the apply path writes the recommendation verbatim.
-	AppliedRate *float32            `json:"applied_rate,omitempty"`
+	AppliedRate *float32            `json:"appliedRate,omitempty"`
 	Date        *openapi_types.Date `json:"date,omitempty"`
 
 	// RecommendationFactors Raw model factors (comp distance, event boost, weekend, demand, etc.).
-	RecommendationFactors *map[string]interface{} `json:"recommendation_factors,omitempty"`
+	RecommendationFactors *map[string]interface{} `json:"recommendationFactors,omitempty"`
 
 	// RecommendedRate The Atlas model's recommended price for the date.
-	RecommendedRate *float32 `json:"recommended_rate,omitempty"`
+	RecommendedRate *float32 `json:"recommendedRate,omitempty"`
 
 	// Status `overridden` is reserved for a future signal — it never appears today.
 	Status *ListingPricingHistoryEntryStatus `json:"status,omitempty"`
@@ -2093,7 +2161,7 @@ type ListingPricingHistoryEntryStatus string
 type ListingPricingHistoryResponse struct {
 	Data *[]ListingPricingHistoryEntry `json:"data,omitempty"`
 
-	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
@@ -2150,7 +2218,7 @@ type ListingPricingResponse struct {
 		QualityTier        *string                 `json:"qualityTier,omitempty"`
 		Segment            *string                 `json:"segment,omitempty"`
 	} `json:"listing,omitempty"`
-	ListingId       *int                            `json:"listingId,omitempty"`
+	ListingId       *string                         `json:"listingId,omitempty"`
 	Recommendations *[]ListingPricingRecommendation `json:"recommendations,omitempty"`
 }
 
@@ -2159,17 +2227,17 @@ type ListingPricingStrategy struct {
 	// CompAdjustPct Extra adjustment vs comp median (-30..+30).
 	CompAdjustPct      *float32                                  `json:"compAdjustPct,omitempty"`
 	CompPositionTarget *ListingPricingStrategyCompPositionTarget `json:"compPositionTarget,omitempty"`
-	CustomerId         *int                                      `json:"customerId,omitempty"`
+	CustomerId         *string                                   `json:"customerId,omitempty"`
 
 	// DayOfWeekMultipliers Multiplier per ISO weekday key (0..6).
 	DayOfWeekMultipliers *map[string]float32 `json:"dayOfWeekMultipliers,omitempty"`
 	EventBoostEnabled    *bool               `json:"eventBoostEnabled,omitempty"`
 	EventBoostMaxPct     *float32            `json:"eventBoostMaxPct,omitempty"`
-	Id                   *int                `json:"id,omitempty"`
+	Id                   *string             `json:"id,omitempty"`
 
 	// IsDefault true when no row exists yet and the response is server-side defaults.
-	IsDefault *bool `json:"isDefault,omitempty"`
-	ListingId *int  `json:"listingId,omitempty"`
+	IsDefault *bool   `json:"isDefault,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
 
 	// MaxDailyChangePct Max day-over-day swing in %.
 	MaxDailyChangePct *float32 `json:"maxDailyChangePct,omitempty"`
@@ -2218,7 +2286,7 @@ type ListingPricingStrategyInputMode string
 // ListingPublishAirbnbRequest Pass either `airbnbConnectionId` (update an already-mapped listing) or `hostId` (create a brand-new Airbnb listing under that host).
 type ListingPublishAirbnbRequest struct {
 	// AirbnbConnectionId Existing Airbnb connection row id
-	AirbnbConnectionId *int `json:"airbnbConnectionId,omitempty"`
+	AirbnbConnectionId *string `json:"airbnbConnectionId,omitempty"`
 
 	// Force Re-push every section, ignoring dirty-fields tracking
 	Force *bool `json:"force,omitempty"`
@@ -2230,7 +2298,7 @@ type ListingPublishAirbnbRequest struct {
 // ListingPublishResponse defines model for ListingPublishResponse.
 type ListingPublishResponse struct {
 	Channel   *ListingPublishResponseChannel `json:"channel,omitempty"`
-	ListingId *int                           `json:"listingId,omitempty"`
+	ListingId *string                        `json:"listingId,omitempty"`
 
 	// Result Channel-specific push result (sections pushed, errors, etc.)
 	Result *map[string]interface{} `json:"result,omitempty"`
@@ -2255,14 +2323,14 @@ type ListingPublishStatusChannelPushStatus string
 // ListingPublishStatusResponse defines model for ListingPublishStatusResponse.
 type ListingPublishStatusResponse struct {
 	Channels  *[]ListingPublishStatusChannel `json:"channels,omitempty"`
-	ListingId *int                           `json:"listingId,omitempty"`
+	ListingId *string                        `json:"listingId,omitempty"`
 }
 
 // ListingQualityTier defines model for ListingQualityTier.
 type ListingQualityTier struct {
-	AvgAdr     *float32                `json:"avg_adr,omitempty"`
-	SampleSize *int                    `json:"sample_size,omitempty"`
-	SharePct   *float32                `json:"share_pct,omitempty"`
+	AvgAdr     *float32                `json:"avgAdr,omitempty"`
+	SampleSize *int                    `json:"sampleSize,omitempty"`
+	SharePct   *float32                `json:"sharePct,omitempty"`
 	Tier       *ListingQualityTierTier `json:"tier,omitempty"`
 }
 
@@ -2271,23 +2339,23 @@ type ListingQualityTierTier string
 
 // ListingSegment One Atlas DNA segment (e.g. `upscale-modern-2br`) with share + ADR aggregates across the scoped comp set or market.
 type ListingSegment struct {
-	AvgAdrInSegment *float32 `json:"avg_adr_in_segment,omitempty"`
+	AvgAdrInSegment *float32 `json:"avgAdrInSegment,omitempty"`
 
 	// Bedrooms Decomposed bedroom count. `0` indicates studio.
 	Bedrooms *int    `json:"bedrooms,omitempty"`
 	Currency *string `json:"currency,omitempty"`
 
 	// DesignStyle Decomposed style token (e.g. `modern`, `mid-century`).
-	DesignStyle *string `json:"design_style,omitempty"`
+	DesignStyle *string `json:"designStyle,omitempty"`
 
 	// MyListingMatch True when the source listing's `ai_segment` matches this segment.
-	MyListingMatch *bool                      `json:"my_listing_match,omitempty"`
+	MyListingMatch *bool                      `json:"myListingMatch,omitempty"`
 	Name           *string                    `json:"name,omitempty"`
-	QualityTier    *ListingSegmentQualityTier `json:"quality_tier,omitempty"`
-	SampleSize     *int                       `json:"sample_size,omitempty"`
+	QualityTier    *ListingSegmentQualityTier `json:"qualityTier,omitempty"`
+	SampleSize     *int                       `json:"sampleSize,omitempty"`
 
 	// SharePct Percent of analyzed comps in the scope that fall in this segment.
-	SharePct *float32 `json:"share_pct,omitempty"`
+	SharePct *float32 `json:"sharePct,omitempty"`
 }
 
 // ListingSegmentQualityTier defines model for ListingSegment.QualityTier.
@@ -2308,7 +2376,7 @@ type ListingSegmentRecommendationKind string
 // ListingSegmentsResponse Returned by `GET /v1/listings/{id}/segments`. Honest about DNA coverage — when no comps in the scope have been DNA-scored, returns `totalCompsAnalyzed: 0` plus a `low_dna_coverage` recommendation rather than fabricated data.
 type ListingSegmentsResponse struct {
 	Level         *ListingSegmentsResponseLevel         `json:"level,omitempty"`
-	ListingId     *int                                  `json:"listingId,omitempty"`
+	ListingId     *string                               `json:"listingId,omitempty"`
 	MyQualityTier *ListingSegmentsResponseMyQualityTier `json:"myQualityTier,omitempty"`
 
 	// MySegment The source listing's own `ai_segment` (or null if not yet scored).
@@ -2341,7 +2409,7 @@ type MapConnectBookingRoomsRequest struct {
 
 // MapConnectBookingRoomsResponse defines model for MapConnectBookingRoomsResponse.
 type MapConnectBookingRoomsResponse struct {
-	ConnectionId int `json:"connectionId"`
+	ConnectionId string `json:"connectionId"`
 
 	// Mapped Number of rooms processed (mapped + unmapped).
 	Mapped    int    `json:"mapped"`
@@ -2360,7 +2428,7 @@ type MarketBrowseCategory struct {
 
 // MarketBrowseEntry Discovery catalog entry returned by `/v1/markets/browse`.
 type MarketBrowseEntry struct {
-	AvgAdr *float32 `json:"avg_adr,omitempty"`
+	AvgAdr *float32 `json:"avgAdr,omitempty"`
 	City   *string  `json:"city,omitempty"`
 
 	// Country ISO 3166-1 alpha-2.
@@ -2377,7 +2445,7 @@ type MarketBrowseEntry struct {
 // MarketBrowseFeatured Curated featured market entry on the discovery summary. Enriched with `subscribed` so the dashboard can render "Already unlocked" pills without an extra round-trip.
 type MarketBrowseFeatured struct {
 	// AvgAdr Atlas-aggregated avg nightly rate (mixed currency, dominated by the country base).
-	AvgAdr *float32 `json:"avg_adr,omitempty"`
+	AvgAdr *float32 `json:"avgAdr,omitempty"`
 	City   *string  `json:"city,omitempty"`
 
 	// Country ISO 3166-1 alpha-2.
@@ -2388,21 +2456,12 @@ type MarketBrowseFeatured struct {
 	Subscribed *bool `json:"subscribed,omitempty"`
 }
 
-// MarketBrowsePagination defines model for MarketBrowsePagination.
-type MarketBrowsePagination struct {
-	HasMore *bool `json:"has_more,omitempty"`
-
-	// NextCursor Opaque cursor for the next page; null when no more results.
-	NextCursor *string `json:"next_cursor,omitempty"`
-
-	// TotalInFilter Total markets matching the current `q`/`country`/`min_listings` filter (ignores cursor).
-	TotalInFilter *int `json:"total_in_filter,omitempty"`
-}
-
 // MarketBrowseResponse defines model for MarketBrowseResponse.
 type MarketBrowseResponse struct {
-	Data       *[]MarketBrowseEntry    `json:"data,omitempty"`
-	Pagination *MarketBrowsePagination `json:"pagination,omitempty"`
+	Data *[]MarketBrowseEntry `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // MarketCalendarDay defines model for MarketCalendarDay.
@@ -2480,15 +2539,15 @@ type MarketDetailResponse struct {
 type MarketEvent struct {
 	Attendance   *int                `json:"attendance,omitempty"`
 	Category     *string             `json:"category,omitempty"`
-	DemandImpact *string             `json:"demand_impact,omitempty"`
-	EndDate      *openapi_types.Date `json:"end_date,omitempty"`
+	DemandImpact *string             `json:"demandImpact,omitempty"`
+	EndDate      *openapi_types.Date `json:"endDate,omitempty"`
 	Id           *string             `json:"id,omitempty"`
 	Labels       *[]string           `json:"labels,omitempty"`
 	Lat          *float32            `json:"lat,omitempty"`
 	Lng          *float32            `json:"lng,omitempty"`
-	LocalRank    *float32            `json:"local_rank,omitempty"`
+	LocalRank    *float32            `json:"localRank,omitempty"`
 	Rank         *float32            `json:"rank,omitempty"`
-	StartDate    *openapi_types.Date `json:"start_date,omitempty"`
+	StartDate    *openapi_types.Date `json:"startDate,omitempty"`
 	Title        *string             `json:"title,omitempty"`
 }
 
@@ -2498,7 +2557,7 @@ type MarketMyListing struct {
 	Blocked         *bool    `json:"blocked,omitempty"`
 	BookedNights    *int     `json:"bookedNights,omitempty"`
 	City            *string  `json:"city,omitempty"`
-	Id              *int     `json:"id,omitempty"`
+	Id              *string  `json:"id,omitempty"`
 	Lat             *float32 `json:"lat,omitempty"`
 	Lng             *float32 `json:"lng,omitempty"`
 	Name            *string  `json:"name,omitempty"`
@@ -2539,22 +2598,22 @@ type MarketSummary struct {
 // MarketTopComp defines model for MarketTopComp.
 type MarketTopComp struct {
 	Bedrooms           *int     `json:"bedrooms,omitempty"`
-	CurrentNightlyRate *float32 `json:"current_nightly_rate,omitempty"`
-	DistanceKm         *float32 `json:"distance_km,omitempty"`
-	Id                 *int     `json:"id,omitempty"`
+	CurrentNightlyRate *float32 `json:"currentNightlyRate,omitempty"`
+	DistanceKm         *float32 `json:"distanceKm,omitempty"`
+	Id                 *string  `json:"id,omitempty"`
 	Lat                *float32 `json:"lat,omitempty"`
 	Lng                *float32 `json:"lng,omitempty"`
-	MaxGuests          *int     `json:"max_guests,omitempty"`
-	PlatformListingId  *string  `json:"platform_listing_id,omitempty"`
-	PropertyType       *string  `json:"property_type,omitempty"`
+	MaxGuests          *int     `json:"maxGuests,omitempty"`
+	PlatformListingId  *string  `json:"platformListingId,omitempty"`
+	PropertyType       *string  `json:"propertyType,omitempty"`
 	Rating             *float32 `json:"rating,omitempty"`
-	ReviewCount        *int     `json:"review_count,omitempty"`
-	ThumbnailUrl       *string  `json:"thumbnail_url,omitempty"`
+	ReviewCount        *int     `json:"reviewCount,omitempty"`
+	ThumbnailUrl       *string  `json:"thumbnailUrl,omitempty"`
 	Title              *string  `json:"title,omitempty"`
 	Url                *string  `json:"url,omitempty"`
 }
 
-// MarketsOverviewResponse defines model for MarketsOverviewResponse.
+// MarketsOverviewResponse Overview of every market the customer operates in, plus auxiliary discovery slices. Wraps the canonical `{ data, pagination }` envelope around the per-city KPI list (`data`) so SDK consumers see the same shape they get from every other list endpoint. Auxiliary fields (`totals`, `myListings`, `browse`, `freeMarket`, `subscriptions`, `tier`) are returned as siblings because they are NOT paginated. The overview returns every market in one shot — `nextCursor` is always `null` and `hasMore` is always `false`.
 type MarketsOverviewResponse struct {
 	// Browse Lightweight discovery summary. Use `/v1/markets/browse` for the full paginated catalog.
 	Browse *struct {
@@ -2565,13 +2624,18 @@ type MarketsOverviewResponse struct {
 		Featured *[]MarketBrowseFeatured `json:"featured,omitempty"`
 
 		// TotalAvailable Total Atlas-tracked cities in the catalog.
-		TotalAvailable *int `json:"total_available,omitempty"`
+		TotalAvailable *int `json:"totalAvailable,omitempty"`
 	} `json:"browse,omitempty"`
 
+	// Data Per-city KPIs for every market the customer operates in.
+	Data *[]MarketSummary `json:"data,omitempty"`
+
 	// FreeMarket City auto-assigned as the customer's free market (largest by listing count). Null for customers with no listings.
-	FreeMarket *string            `json:"free_market,omitempty"`
-	Markets    *[]MarketSummary   `json:"markets,omitempty"`
+	FreeMarket *string            `json:"freeMarket,omitempty"`
 	MyListings *[]MarketMyListing `json:"myListings,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 
 	// Subscriptions Active per-market unlocks vs the tier quota.
 	Subscriptions *struct {
@@ -2591,7 +2655,7 @@ type MarketsOverviewResponse struct {
 // Message A single message inside a conversation thread. Returned by `GET /v1/conversations/{id}/messages`. `direction` is normalized to `inbound` (from the guest) / `outbound` (from the host or an automation).
 type Message struct {
 	// AiGenerated `true` when the body was authored by Vanio AI (autopilot, draft).
-	AiGenerated *bool                            `json:"ai_generated,omitempty"`
+	AiGenerated *bool                            `json:"aiGenerated,omitempty"`
 	Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
 
 	// Body Message body in the original language.
@@ -2599,44 +2663,47 @@ type Message struct {
 
 	// Channel Delivery channel — `airbnb`, `booking`, `sms`, `email`, etc.
 	Channel     *string           `json:"channel,omitempty"`
-	DeliveredAt *time.Time        `json:"delivered_at,omitempty"`
+	DeliveredAt *time.Time        `json:"deliveredAt,omitempty"`
 	Direction   *MessageDirection `json:"direction,omitempty"`
 
 	// ExternalMessageId ID assigned by the source channel (Airbnb message id, Booking message id, etc.). Stable across syncs.
-	ExternalMessageId *string `json:"external_message_id,omitempty"`
-	Id                *int    `json:"id,omitempty"`
+	ExternalMessageId *string `json:"externalMessageId,omitempty"`
+	Id                *string `json:"id,omitempty"`
 
 	// IsAutomated `true` when the message was sent by a Vanio automation (template, schedule, etc.).
-	IsAutomated  *bool      `json:"is_automated,omitempty"`
-	ReadAt       *time.Time `json:"read_at,omitempty"`
-	SenderAvatar *string    `json:"sender_avatar,omitempty"`
-	SenderName   *string    `json:"sender_name,omitempty"`
+	IsAutomated  *bool      `json:"isAutomated,omitempty"`
+	ReadAt       *time.Time `json:"readAt,omitempty"`
+	SenderAvatar *string    `json:"senderAvatar,omitempty"`
+	SenderName   *string    `json:"senderName,omitempty"`
 
 	// SenderType Free-form sender role from the channel (e.g. `guest`, `host`, `system`, `airbnb`). Use `direction` for binary inbound/outbound logic.
-	SenderType *string    `json:"sender_type,omitempty"`
-	SentAt     *time.Time `json:"sent_at,omitempty"`
+	SenderType *string    `json:"senderType,omitempty"`
+	SentAt     *time.Time `json:"sentAt,omitempty"`
 
 	// TranslatedBody English translation when the original language is non-English and a translation has been computed.
-	TranslatedBody *string `json:"translated_body,omitempty"`
+	TranslatedBody *string `json:"translatedBody,omitempty"`
 }
 
 // MessageDirection defines model for Message.Direction.
 type MessageDirection string
 
-// MessageListResponse Cursor-paginated message list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page.
+// MessageListResponse Cursor-paginated message list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page.
 type MessageListResponse struct {
 	Data *[]Message `json:"data,omitempty"`
 
-	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
-// Pagination defines model for Pagination.
+// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 type Pagination struct {
-	HasMore *bool `json:"hasMore,omitempty"`
-	Limit   *int  `json:"limit,omitempty"`
-	Offset  *int  `json:"offset,omitempty"`
-	Total   *int  `json:"total,omitempty"`
+	HasMore bool `json:"hasMore"`
+
+	// NextCursor Opaque base64 cursor — pass back as `?cursor=<value>`. `null` when there are no more pages.
+	NextCursor *string `json:"nextCursor"`
+
+	// Total Total rows matching the current filter (across all pages). Present when `?include_total=true` (the default on most endpoints). Omit `?include_total=false` to skip the COUNT(*) on very large workspaces.
+	Total *int `json:"total,omitempty"`
 }
 
 // PlumguideListing A Plumguide listing.
@@ -2648,8 +2715,10 @@ type PlumguideListing struct {
 
 // PlumguideListingListResponse defines model for PlumguideListingListResponse.
 type PlumguideListingListResponse struct {
-	Data       *[]PlumguideListing `json:"data,omitempty"`
-	Pagination *Pagination         `json:"pagination,omitempty"`
+	Data *[]PlumguideListing `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // Property A vacation rental property from a connected PMS
@@ -2665,7 +2734,7 @@ type Property struct {
 	ExternalId *string `json:"externalId,omitempty"`
 
 	// Id Internal Repull property ID
-	Id        *int     `json:"id,omitempty"`
+	Id        *string  `json:"id,omitempty"`
 	Latitude  *float32 `json:"latitude,omitempty"`
 	Longitude *float32 `json:"longitude,omitempty"`
 	MaxGuests *int     `json:"maxGuests,omitempty"`
@@ -2683,7 +2752,9 @@ type Property struct {
 
 // PropertyListResponse defines model for PropertyListResponse.
 type PropertyListResponse struct {
-	Data       *[]Property `json:"data,omitempty"`
+	Data *[]Property `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
@@ -2705,16 +2776,16 @@ type Reservation struct {
 	GuestDetails map[string]interface{} `json:"guestDetails"`
 
 	// GuestId Internal Repull guest ID. Use `GET /v1/guests/{id}` for the full profile.
-	GuestId int `json:"guestId"`
+	GuestId string `json:"guestId"`
 
 	// GuestName Pre-resolved display name (`firstName lastName`) extracted from `guestDetails`. Null when no first name is available.
 	GuestName *string `json:"guestName,omitempty"`
 
 	// Id Internal Repull reservation ID
-	Id int `json:"id"`
+	Id string `json:"id"`
 
 	// ListingId Internal Repull listing ID this reservation is on.
-	ListingId int `json:"listingId"`
+	ListingId string `json:"listingId"`
 
 	// Platform Booking source. Lowercase. May be null on legacy rows.
 	Platform *ReservationPlatform `json:"platform,omitempty"`
@@ -2730,31 +2801,12 @@ type ReservationPlatform string
 // ReservationStatus defines model for Reservation.Status.
 type ReservationStatus string
 
-// ReservationListResponse Cursor-paginated reservation list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page; stop when `pagination.has_more` is `false`. The `total` field is the count of rows matching the current filter (across all pages).
-//
-// Legacy `?offset=` consumers continue to receive `pagination.limit` + `pagination.offset` during the deprecation window. A `Deprecation: true` header (with a `Sunset` date) is set on responses that came in via `?offset=` — migrate to `?cursor=`.
+// ReservationListResponse Cursor-paginated reservation list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page; stop when `pagination.hasMore` is `false`. The `total` field is the count of rows matching the current filter (across all pages); pass `?include_total=false` to skip the COUNT(*) on very large workspaces.
 type ReservationListResponse struct {
 	Data *[]Reservation `json:"data,omitempty"`
 
-	// Pagination Hybrid pagination envelope for `/v1/reservations`. Always populates `next_cursor` + `has_more` + `total`. When the request used the deprecated `?offset=` path, also populates `limit` + `offset`.
-	Pagination *ReservationPagination `json:"pagination,omitempty"`
-}
-
-// ReservationPagination Hybrid pagination envelope for `/v1/reservations`. Always populates `next_cursor` + `has_more` + `total`. When the request used the deprecated `?offset=` path, also populates `limit` + `offset`.
-type ReservationPagination struct {
-	HasMore bool `json:"has_more"`
-
-	// Limit Deprecated — only present on responses to `?offset=` requests.
-	Limit *int `json:"limit,omitempty"`
-
-	// NextCursor Opaque base64 cursor — pass back as `?cursor=<value>`. `null` when there are no more pages.
-	NextCursor *string `json:"next_cursor"`
-
-	// Offset Deprecated — only present on responses to `?offset=` requests.
-	Offset *int `json:"offset,omitempty"`
-
-	// Total Total rows matching the current filter (across all pages).
-	Total int `json:"total"`
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // Review A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Populated from main vanio's unified `reviews` table after the per-channel backfill cron has run.
@@ -2762,46 +2814,46 @@ type Review struct {
 	Categories *[]ReviewCategory `json:"categories,omitempty"`
 
 	// ExpiresAt When the review window closes (Airbnb has a 14-day window after checkout).
-	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
 
 	// ExternalId ID in the source channel (Airbnb review id, Booking review id, etc.).
-	ExternalId  *string `json:"external_id,omitempty"`
-	GuestAvatar *string `json:"guest_avatar,omitempty"`
-	GuestId     *int    `json:"guest_id,omitempty"`
-	GuestName   *string `json:"guest_name,omitempty"`
+	ExternalId  *string `json:"externalId,omitempty"`
+	GuestAvatar *string `json:"guestAvatar,omitempty"`
+	GuestId     *string `json:"guestId,omitempty"`
+	GuestName   *string `json:"guestName,omitempty"`
 	Hidden      *bool   `json:"hidden,omitempty"`
 
 	// Id Internal Repull review id — pass back to `/v1/reviews/{id}`.
-	Id *int `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
 
 	// IsRevieweeRecommended Did the reviewer recommend the reviewee? Used for guest-side reviews.
-	IsRevieweeRecommended *bool `json:"is_reviewee_recommended,omitempty"`
+	IsRevieweeRecommended *bool `json:"isRevieweeRecommended,omitempty"`
 
 	// Language Detected language (ISO 639-1) of the review body.
 	Language *string `json:"language,omitempty"`
 
 	// ListingId Internal Repull listing id the review is attached to.
-	ListingId *int            `json:"listing_id,omitempty"`
+	ListingId *string         `json:"listingId,omitempty"`
 	Platform  *ReviewPlatform `json:"platform,omitempty"`
 
 	// PrivateFeedback Private feedback the reviewer sent only to the host.
-	PrivateFeedback *string `json:"private_feedback,omitempty"`
+	PrivateFeedback *string `json:"privateFeedback,omitempty"`
 
 	// PublicReview Public-facing review text shown on the listing page.
-	PublicReview *string `json:"public_review,omitempty"`
+	PublicReview *string `json:"publicReview,omitempty"`
 
 	// Rating Overall rating on the platform's scale (typically 1..5). May be `null` for review types that lack a numeric overall score.
 	Rating *float32 `json:"rating,omitempty"`
 
 	// ReservationConfirmationCode Channel-side confirmation code for the reservation being reviewed.
-	ReservationConfirmationCode *string         `json:"reservation_confirmation_code,omitempty"`
-	ReservationId               *int            `json:"reservation_id,omitempty"`
+	ReservationConfirmationCode *string         `json:"reservationConfirmationCode,omitempty"`
+	ReservationId               *string         `json:"reservationId,omitempty"`
 	Response                    *ReviewResponse `json:"response,omitempty"`
 
 	// ReviewerRole Who wrote the review — `guest` (about the host/property) or `host` (about the guest).
-	ReviewerRole *ReviewReviewerRole `json:"reviewer_role,omitempty"`
-	SubmittedAt  *time.Time          `json:"submitted_at,omitempty"`
-	UpdatedAt    *time.Time          `json:"updated_at,omitempty"`
+	ReviewerRole *ReviewReviewerRole `json:"reviewerRole,omitempty"`
+	SubmittedAt  *time.Time          `json:"submittedAt,omitempty"`
+	UpdatedAt    *time.Time          `json:"updatedAt,omitempty"`
 }
 
 // ReviewPlatform defines model for Review.Platform.
@@ -2819,24 +2871,18 @@ type ReviewCategory struct {
 	Rating *float32 `json:"rating,omitempty"`
 }
 
-// ReviewGetResponse defines model for ReviewGetResponse.
-type ReviewGetResponse struct {
-	// Data A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Populated from main vanio's unified `reviews` table after the per-channel backfill cron has run.
-	Data *Review `json:"data,omitempty"`
-}
-
-// ReviewListResponse Cursor-paginated review list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page.
+// ReviewListResponse Cursor-paginated review list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page.
 type ReviewListResponse struct {
 	Data *[]Review `json:"data,omitempty"`
 
-	// Pagination Cursor-based pagination. Pass `next_cursor` back as `cursor` to fetch the next page. When `has_more` is `false` you are done.
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
 // ReviewResponse Host response to a review, when present.
 type ReviewResponse struct {
 	Body        *string    `json:"body,omitempty"`
-	SubmittedAt *time.Time `json:"submitted_at,omitempty"`
+	SubmittedAt *time.Time `json:"submittedAt,omitempty"`
 }
 
 // SelectProviderResponse Returned by `POST /v1/connect/sessions/{sessionId}/select-provider`. The picker UI navigates the user to `nextUrl` to begin the per-provider handoff.
@@ -2860,8 +2906,10 @@ type VrboListing struct {
 
 // VrboListingListResponse defines model for VrboListingListResponse.
 type VrboListingListResponse struct {
-	Data       *[]VrboListing `json:"data,omitempty"`
-	Pagination *Pagination    `json:"pagination,omitempty"`
+	Data *[]VrboListing `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // VrboReservation A VRBO reservation.
@@ -2875,8 +2923,10 @@ type VrboReservation struct {
 
 // VrboReservationListResponse defines model for VrboReservationListResponse.
 type VrboReservationListResponse struct {
-	Data       *[]VrboReservation `json:"data,omitempty"`
-	Pagination *Pagination        `json:"pagination,omitempty"`
+	Data *[]VrboReservation `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // WebhookDelivery defines model for WebhookDelivery.
@@ -2915,12 +2965,10 @@ type WebhookDeliveryDetail struct {
 
 // WebhookDeliveryListResponse defines model for WebhookDeliveryListResponse.
 type WebhookDeliveryListResponse struct {
-	Data       *[]WebhookDelivery `json:"data,omitempty"`
-	Pagination *struct {
-		HasMore    *bool   `json:"hasMore,omitempty"`
-		Limit      *int    `json:"limit,omitempty"`
-		NextCursor *string `json:"nextCursor,omitempty"`
-	} `json:"pagination,omitempty"`
+	Data *[]WebhookDelivery `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // WebhookEventCatalog defines model for WebhookEventCatalog.
@@ -2940,8 +2988,10 @@ type WebhookEventCatalog struct {
 
 // WebhookListResponse defines model for WebhookListResponse.
 type WebhookListResponse struct {
-	Data       *[]WebhookSubscription `json:"data,omitempty"`
-	Pagination *Pagination            `json:"pagination,omitempty"`
+	Data *[]WebhookSubscription `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // WebhookSubscription A registered webhook endpoint. The `secret` field is only present in the response of `POST /v1/webhooks` and `POST /v1/webhooks/{id}/rotate-secret` (Stripe pattern — capture it then; it is masked everywhere else).
@@ -2969,17 +3019,44 @@ type WebhookSubscription struct {
 // WebhookSubscriptionStatus defines model for WebhookSubscription.Status.
 type WebhookSubscriptionStatus string
 
+// IncludeTotal defines model for IncludeTotal.
+type IncludeTotal = bool
+
 // XSchemaHeader defines model for XSchemaHeader.
 type XSchemaHeader = string
+
+// Cursor defines model for cursor.
+type Cursor = string
 
 // Limit defines model for limit.
 type Limit = int
 
-// Offset defines model for offset.
-type Offset = int
-
 // Provider defines model for provider.
 type Provider = string
+
+// BadRequest Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type BadRequest = Error
+
+// Conflict Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type Conflict = Error
+
+// Forbidden Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type Forbidden = Error
+
+// InternalError Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type InternalError = Error
+
+// NotFound Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type NotFound = Error
+
+// TooManyRequests Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type TooManyRequests = Error
+
+// Unauthorized Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type Unauthorized = Error
+
+// UnprocessableEntity Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type UnprocessableEntity = Error
 
 // GetAvailabilityParams defines parameters for GetAvailability.
 type GetAvailabilityParams struct {
@@ -3002,7 +3079,7 @@ type CreateBillingCheckoutJSONBodyPlan string
 
 // GetBookingListingPricingParams defines parameters for GetBookingListingPricing.
 type GetBookingListingPricingParams struct {
-	StartDate    *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+	StartDate    *openapi_types.Date `form:"startDate,omitempty" json:"startDate,omitempty"`
 	NumberOfDays *int                `form:"number_of_days,omitempty" json:"number_of_days,omitempty"`
 	RoomId       *string             `form:"room_id,omitempty" json:"room_id,omitempty"`
 
@@ -3013,7 +3090,7 @@ type GetBookingListingPricingParams struct {
 // CreateConnectSessionJSONBody defines parameters for CreateConnectSession.
 type CreateConnectSessionJSONBody struct {
 	// AllowedProviders Optional whitelist of provider IDs the picker should expose. Omit to show every channel in the registry.
-	AllowedProviders *[]string `json:"allowed_providers,omitempty"`
+	AllowedProviders *[]string `json:"allowedProviders,omitempty"`
 
 	// RedirectUrl Where to send the user after they finish (or cancel). Status query params are appended.
 	RedirectUrl string `json:"redirectUrl"`
@@ -3057,7 +3134,7 @@ type CreateConnectionJSONBodyAccessType string
 
 // ListConversationsParams defines parameters for ListConversations.
 type ListConversationsParams struct {
-	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
 	// Limit Max items per page. Hard cap is 100.
@@ -3087,7 +3164,7 @@ type GetConversationParams struct {
 
 // ListConversationMessagesParams defines parameters for ListConversationMessages.
 type ListConversationMessagesParams struct {
-	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`.
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -3103,7 +3180,7 @@ type ListConversationMessagesParamsOrder string
 
 // ListGuestsParams defines parameters for ListGuests.
 type ListGuestsParams struct {
-	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
 	// Limit Max items per page. Hard cap is 100.
@@ -3116,7 +3193,7 @@ type ListGuestsParams struct {
 	HasReservation *bool `form:"has_reservation,omitempty" json:"has_reservation,omitempty"`
 
 	// ListingId Restrict to guests with at least one reservation on the given internal Repull listing id.
-	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+	ListingId *int `form:"listingId,omitempty" json:"listingId,omitempty"`
 
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
@@ -3130,7 +3207,7 @@ type GetGuestParams struct {
 
 // ListListingsParams defines parameters for ListListings.
 type ListListingsParams struct {
-	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
 	// Limit Max items per page. Hard cap is 100.
@@ -3152,6 +3229,12 @@ type ListListingsParams struct {
 // ListListingsParamsStatus defines parameters for ListListings.
 type ListListingsParamsStatus string
 
+// GetListingParams defines parameters for GetListing.
+type GetListingParams struct {
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
+
 // ListListingCompsParams defines parameters for ListListingComps.
 type ListListingCompsParams struct {
 	// RadiusKm Bbox + haversine on lat/lng. Default 5, max 50.
@@ -3161,10 +3244,10 @@ type ListListingCompsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// StartDate Defaults to today.
-	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+	StartDate *openapi_types.Date `form:"startDate,omitempty" json:"startDate,omitempty"`
 
 	// EndDate Defaults to today + 30 days.
-	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+	EndDate *openapi_types.Date `form:"endDate,omitempty" json:"endDate,omitempty"`
 }
 
 // GetListingPricingParams defines parameters for GetListingPricing.
@@ -3179,13 +3262,13 @@ type GetListingPricingParams struct {
 // GetListingPricingHistoryParams defines parameters for GetListingPricingHistory.
 type GetListingPricingHistoryParams struct {
 	// StartDate Inclusive. Defaults to today - 90 days.
-	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+	StartDate *openapi_types.Date `form:"startDate,omitempty" json:"startDate,omitempty"`
 
 	// EndDate Inclusive. Defaults to today + 90 days.
-	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+	EndDate *openapi_types.Date `form:"endDate,omitempty" json:"endDate,omitempty"`
 	Limit   *int                `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 }
 
@@ -3212,7 +3295,7 @@ type ListMarketBrowseParams struct {
 	// MinListings Minimum comp-set size — cities with fewer active comps are excluded.
 	MinListings *int `form:"min_listings,omitempty" json:"min_listings,omitempty"`
 
-	// Cursor Opaque cursor returned by the previous page's `pagination.next_cursor`.
+	// Cursor Opaque cursor returned by the previous page's `pagination.nextCursor`.
 	Cursor *string                     `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Limit  *int                        `form:"limit,omitempty" json:"limit,omitempty"`
 	Sort   *ListMarketBrowseParamsSort `form:"sort,omitempty" json:"sort,omitempty"`
@@ -3241,33 +3324,36 @@ type GetMarketCalendarParams struct {
 
 // ListPropertiesParams defines parameters for ListProperties.
 type ListPropertiesParams struct {
-	// Limit Max items per page
-	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+	// Limit Page size (max 100). Requests over the cap return 422.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// Offset Pagination offset
-	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Provider Filter by PMS provider
-	Provider *string `form:"provider,omitempty" json:"provider,omitempty"`
+	// Status Filter by status. Default returns active only; pass `all` to include inactive.
+	Status *ListPropertiesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
+	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
 }
+
+// ListPropertiesParamsStatus defines parameters for ListProperties.
+type ListPropertiesParamsStatus string
 
 // ListReservationsParams defines parameters for ListReservations.
 type ListReservationsParams struct {
 	// Limit Page size (max 100). Requests over the cap return 422.
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
-
-	// Offset Deprecated — use `cursor` instead. Will be removed after the `Sunset` response header date.
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Platform Filter by booking platform
 	Platform *string                       `form:"platform,omitempty" json:"platform,omitempty"`
 	Status   *ListReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ListingId Filter to a single listing
-	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+	ListingId *int `form:"listingId,omitempty" json:"listingId,omitempty"`
 
 	// CheckInAfter Check-in date >= this value
 	CheckInAfter *openapi_types.Date `form:"check_in_after,omitempty" json:"check_in_after,omitempty"`
@@ -3280,6 +3366,9 @@ type ListReservationsParams struct {
 
 	// CheckInTo Deprecated alias for `check_in_before`.
 	CheckInTo *openapi_types.Date `form:"checkInTo,omitempty" json:"checkInTo,omitempty"`
+
+	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
+	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
 
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
@@ -3298,7 +3387,7 @@ type CreateReservationJSONBody struct {
 	GuestFirstName string             `json:"guestFirstName"`
 	GuestLastName  string             `json:"guestLastName"`
 	GuestPhone     *string            `json:"guestPhone,omitempty"`
-	PropertyId     int                `json:"propertyId"`
+	PropertyId     string             `json:"propertyId"`
 	TotalPrice     *float32           `json:"totalPrice,omitempty"`
 }
 
@@ -3318,13 +3407,13 @@ type UpdateReservationJSONBody struct {
 
 // ListReviewsParams defines parameters for ListReviews.
 type ListReviewsParams struct {
-	// Cursor Opaque cursor returned in the previous response's `pagination.next_cursor`.
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
 	Cursor   *string                    `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Limit    *int                       `form:"limit,omitempty" json:"limit,omitempty"`
 	Platform *ListReviewsParamsPlatform `form:"platform,omitempty" json:"platform,omitempty"`
 
 	// ListingId Restrict to one internal Repull listing.
-	ListingId *int     `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+	ListingId *int     `form:"listingId,omitempty" json:"listingId,omitempty"`
 	RatingMin *float32 `form:"rating_min,omitempty" json:"rating_min,omitempty"`
 	RatingMax *float32 `form:"rating_max,omitempty" json:"rating_max,omitempty"`
 
@@ -3332,7 +3421,7 @@ type ListReviewsParams struct {
 	Status *ListReviewsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ReviewerRole `guest` (default) — reviews written by guests about the host/property. `host` — reviews written by the host about guests. `all` — both.
-	ReviewerRole *ListReviewsParamsReviewerRole `form:"reviewer_role,omitempty" json:"reviewer_role,omitempty"`
+	ReviewerRole *ListReviewsParamsReviewerRole `form:"reviewerRole,omitempty" json:"reviewerRole,omitempty"`
 
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
@@ -3480,20 +3569,20 @@ func (a *BookingPricingResponse) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if raw, found := object["hotel_id"]; found {
+	if raw, found := object["hotelId"]; found {
 		err = json.Unmarshal(raw, &a.HotelId)
 		if err != nil {
-			return fmt.Errorf("error reading 'hotel_id': %w", err)
+			return fmt.Errorf("error reading 'hotelId': %w", err)
 		}
-		delete(object, "hotel_id")
+		delete(object, "hotelId")
 	}
 
-	if raw, found := object["listing_id"]; found {
+	if raw, found := object["listingId"]; found {
 		err = json.Unmarshal(raw, &a.ListingId)
 		if err != nil {
-			return fmt.Errorf("error reading 'listing_id': %w", err)
+			return fmt.Errorf("error reading 'listingId': %w", err)
 		}
-		delete(object, "listing_id")
+		delete(object, "listingId")
 	}
 
 	if len(object) != 0 {
@@ -3516,16 +3605,16 @@ func (a BookingPricingResponse) MarshalJSON() ([]byte, error) {
 	object := make(map[string]json.RawMessage)
 
 	if a.HotelId != nil {
-		object["hotel_id"], err = json.Marshal(a.HotelId)
+		object["hotelId"], err = json.Marshal(a.HotelId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'hotel_id': %w", err)
+			return nil, fmt.Errorf("error marshaling 'hotelId': %w", err)
 		}
 	}
 
 	if a.ListingId != nil {
-		object["listing_id"], err = json.Marshal(a.ListingId)
+		object["listingId"], err = json.Marshal(a.ListingId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'listing_id': %w", err)
+			return nil, fmt.Errorf("error marshaling 'listingId': %w", err)
 		}
 	}
 

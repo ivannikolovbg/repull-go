@@ -47,11 +47,15 @@ func main() {
 		return
 	}
 
-	if resp.JSON200.Pagination != nil {
-		fmt.Printf("Total: %d   showing: %d\n", resp.JSON200.Pagination.Total, len(data))
+	if p := resp.JSON200.Pagination; p != nil {
+		total := -1
+		if p.Total != nil {
+			total = *p.Total
+		}
+		fmt.Printf("Total: %d   showing: %d   hasMore: %t\n", total, len(data), p.HasMore)
 	}
 	for _, r := range data {
-		fmt.Printf("  %-8d  %s -> %s   %-12s  %s\n",
+		fmt.Printf("  %-12s  %s -> %s   %-12s  %s\n",
 			r.Id,
 			r.CheckIn.Format("2006-01-02"),
 			r.CheckOut.Format("2006-01-02"),

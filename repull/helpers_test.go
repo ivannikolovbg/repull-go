@@ -34,7 +34,7 @@ func TestNewAPIError_DecodesEnvelope(t *testing.T) {
 	if e.StatusCode != 401 {
 		t.Fatalf("StatusCode = %d, want 401", e.StatusCode)
 	}
-	if e.Detail == nil || e.Detail.Error == nil || e.Detail.Error.Message == nil || *e.Detail.Error.Message != "bad key" {
+	if e.Detail == nil || e.Detail.Error.Message != "bad key" {
 		t.Fatalf("envelope not decoded: %+v", e)
 	}
 	if got, want := e.Error(), "repull: 401 bad key"; got != want {

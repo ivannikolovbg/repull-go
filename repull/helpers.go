@@ -16,12 +16,12 @@
 //	)
 //	if err != nil { return err }
 //
-//	resp, err := client.GetV1ReservationsWithResponse(ctx, &repull.GetV1ReservationsParams{})
+//	resp, err := client.ListReservationsWithResponse(ctx, &repull.ListReservationsParams{})
 //	if err != nil { return err }
 //	if resp.JSON200 == nil { return repull.NewAPIError(resp.HTTPResponse.StatusCode, resp.Body) }
 //
 //	for _, r := range *resp.JSON200.Data {
-//	    fmt.Println(*r.Id, *r.Platform)
+//	    fmt.Println(r.Id, r.ConfirmationCode)
 //	}
 package repull
 
@@ -75,8 +75,8 @@ func (e *APIError) Error() string {
 	if e == nil {
 		return ""
 	}
-	if e.Detail != nil && e.Detail.Error != nil && e.Detail.Error.Message != nil {
-		return fmt.Sprintf("repull: %d %s", e.StatusCode, *e.Detail.Error.Message)
+	if e.Detail != nil && e.Detail.Error.Message != "" {
+		return fmt.Sprintf("repull: %d %s", e.StatusCode, e.Detail.Error.Message)
 	}
 	if len(e.Body) > 0 {
 		return fmt.Sprintf("repull: %d %s", e.StatusCode, string(e.Body))

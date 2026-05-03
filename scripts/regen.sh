@@ -15,7 +15,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-SPEC_URL="${REPULL_OPENAPI_URL:-https://api.repull.dev/openapi.json}"
+SPEC_URL="${REPULL_OPENAPI_URL:-https://api.repull.dev/api/repull/openapi.json}"
 SNAPSHOT="openapi/v1.json"
 
 echo "==> fetching $SPEC_URL"
