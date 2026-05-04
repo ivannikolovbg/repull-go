@@ -91,6 +91,66 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListStudioDeployments request
+	ListStudioDeployments(ctx context.Context, params *ListStudioDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateStudioDeploymentWithBody request with any body
+	CreateStudioDeploymentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateStudioDeployment(ctx context.Context, body CreateStudioDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteStudioDeployment request
+	DeleteStudioDeployment(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStudioDeployment request
+	GetStudioDeployment(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SuspendStudioDeployment request
+	SuspendStudioDeployment(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// WakeStudioDeployment request
+	WakeStudioDeployment(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GenerateStudioCompletionWithBody request with any body
+	GenerateStudioCompletionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	GenerateStudioCompletion(ctx context.Context, body GenerateStudioCompletionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListStudioProjects request
+	ListStudioProjects(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateStudioProjectWithBody request with any body
+	CreateStudioProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateStudioProject(ctx context.Context, body CreateStudioProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteStudioProject request
+	DeleteStudioProject(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStudioProject request
+	GetStudioProject(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateStudioProjectWithBody request with any body
+	UpdateStudioProjectWithBody(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateStudioProject(ctx context.Context, id openapi_types.UUID, body UpdateStudioProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListStudioProjectFiles request
+	ListStudioProjectFiles(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteStudioProjectFile request
+	DeleteStudioProjectFile(ctx context.Context, id openapi_types.UUID, path string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpsertStudioProjectFileWithBody request with any body
+	UpsertStudioProjectFileWithBody(ctx context.Context, id openapi_types.UUID, path string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpsertStudioProjectFile(ctx context.Context, id openapi_types.UUID, path string, body UpsertStudioProjectFileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateStudioProjectGenerationWithBody request with any body
+	CreateStudioProjectGenerationWithBody(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateStudioProjectGeneration(ctx context.Context, id openapi_types.UUID, body CreateStudioProjectGenerationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateAiOperationWithBody request with any body
 	CreateAiOperationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -113,13 +173,13 @@ type ClientInterface interface {
 	CreateBillingCheckout(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbListings request
-	ListAirbnbListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListAirbnbListings(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateAirbnbListing request
 	CreateAirbnbListing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAirbnbListing request
-	GetAirbnbListing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetAirbnbListing(ctx context.Context, id string, params *GetAirbnbListingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AirbnbListingAction request
 	AirbnbListingAction(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -152,7 +212,7 @@ type ClientInterface interface {
 	SendAirbnbMessage(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbReservations request
-	ListAirbnbReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListAirbnbReservations(ctx context.Context, params *ListAirbnbReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAirbnbReservation request
 	GetAirbnbReservation(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -163,8 +223,18 @@ type ClientInterface interface {
 	// ListAirbnbReviews request
 	ListAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// RespondAirbnbReview request
-	RespondAirbnbReview(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// RespondAirbnbReviewLegacy request
+	RespondAirbnbReviewLegacy(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// EditAirbnbReviewWithBody request with any body
+	EditAirbnbReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	EditAirbnbReview(ctx context.Context, id string, body EditAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RespondAirbnbReviewWithBody request with any body
+	RespondAirbnbReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RespondAirbnbReview(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SyncAirbnb request
 	SyncAirbnb(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -198,6 +268,14 @@ type ClientInterface interface {
 	// CreateBookingProperty request
 	CreateBookingProperty(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListBookingReviews request
+	ListBookingReviews(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReplyBookingReviewWithBody request with any body
+	ReplyBookingReviewWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ReplyBookingReview(ctx context.Context, body ReplyBookingReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SyncBooking request
 	SyncBooking(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -226,7 +304,7 @@ type ClientInterface interface {
 	UpdateVrboListingPricing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVrboReservations request
-	ListVrboReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListVrboReservations(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListConnections request
 	ListConnections(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -448,7 +526,271 @@ type ClientInterface interface {
 	RotateWebhookSecret(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// TestFireWebhook request
-	TestFireWebhook(ctx context.Context, id openapi_types.UUID, eventType string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	TestFireWebhook(ctx context.Context, id openapi_types.UUID, eventType WebhookEventType, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) ListStudioDeployments(ctx context.Context, params *ListStudioDeploymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListStudioDeploymentsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateStudioDeploymentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStudioDeploymentRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateStudioDeployment(ctx context.Context, body CreateStudioDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStudioDeploymentRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteStudioDeployment(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteStudioDeploymentRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStudioDeployment(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStudioDeploymentRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SuspendStudioDeployment(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSuspendStudioDeploymentRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) WakeStudioDeployment(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewWakeStudioDeploymentRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateStudioCompletionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateStudioCompletionRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateStudioCompletion(ctx context.Context, body GenerateStudioCompletionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateStudioCompletionRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListStudioProjects(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListStudioProjectsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateStudioProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStudioProjectRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateStudioProject(ctx context.Context, body CreateStudioProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStudioProjectRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteStudioProject(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteStudioProjectRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStudioProject(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStudioProjectRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateStudioProjectWithBody(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateStudioProjectRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateStudioProject(ctx context.Context, id openapi_types.UUID, body UpdateStudioProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateStudioProjectRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListStudioProjectFiles(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListStudioProjectFilesRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteStudioProjectFile(ctx context.Context, id openapi_types.UUID, path string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteStudioProjectFileRequest(c.Server, id, path)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertStudioProjectFileWithBody(ctx context.Context, id openapi_types.UUID, path string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertStudioProjectFileRequestWithBody(c.Server, id, path, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertStudioProjectFile(ctx context.Context, id openapi_types.UUID, path string, body UpsertStudioProjectFileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertStudioProjectFileRequest(c.Server, id, path, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateStudioProjectGenerationWithBody(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStudioProjectGenerationRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateStudioProjectGeneration(ctx context.Context, id openapi_types.UUID, body CreateStudioProjectGenerationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStudioProjectGenerationRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) CreateAiOperationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -547,8 +889,8 @@ func (c *Client) CreateBillingCheckout(ctx context.Context, body CreateBillingCh
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListAirbnbListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListAirbnbListingsRequest(c.Server)
+func (c *Client) ListAirbnbListings(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbListingsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -571,8 +913,8 @@ func (c *Client) CreateAirbnbListing(ctx context.Context, reqEditors ...RequestE
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetAirbnbListing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetAirbnbListingRequest(c.Server, id)
+func (c *Client) GetAirbnbListing(ctx context.Context, id string, params *GetAirbnbListingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -703,8 +1045,8 @@ func (c *Client) SendAirbnbMessage(ctx context.Context, threadId string, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListAirbnbReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListAirbnbReservationsRequest(c.Server)
+func (c *Client) ListAirbnbReservations(ctx context.Context, params *ListAirbnbReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbReservationsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -751,8 +1093,56 @@ func (c *Client) ListAirbnbReviews(ctx context.Context, reqEditors ...RequestEdi
 	return c.Client.Do(req)
 }
 
-func (c *Client) RespondAirbnbReview(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRespondAirbnbReviewRequest(c.Server)
+func (c *Client) RespondAirbnbReviewLegacy(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRespondAirbnbReviewLegacyRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditAirbnbReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditAirbnbReviewRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EditAirbnbReview(ctx context.Context, id string, body EditAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEditAirbnbReviewRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RespondAirbnbReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRespondAirbnbReviewRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RespondAirbnbReview(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRespondAirbnbReviewRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -895,6 +1285,42 @@ func (c *Client) CreateBookingProperty(ctx context.Context, reqEditors ...Reques
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListBookingReviews(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBookingReviewsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReplyBookingReviewWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReplyBookingReviewRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ReplyBookingReview(ctx context.Context, body ReplyBookingReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReplyBookingReviewRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) SyncBooking(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSyncBookingRequest(c.Server)
 	if err != nil {
@@ -1003,8 +1429,8 @@ func (c *Client) UpdateVrboListingPricing(ctx context.Context, id int, reqEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListVrboReservations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListVrboReservationsRequest(c.Server)
+func (c *Client) ListVrboReservations(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVrboReservationsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1963,7 +2389,7 @@ func (c *Client) RotateWebhookSecret(ctx context.Context, id openapi_types.UUID,
 	return c.Client.Do(req)
 }
 
-func (c *Client) TestFireWebhook(ctx context.Context, id openapi_types.UUID, eventType string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) TestFireWebhook(ctx context.Context, id openapi_types.UUID, eventType WebhookEventType, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewTestFireWebhookRequest(c.Server, id, eventType)
 	if err != nil {
 		return nil, err
@@ -1973,6 +2399,677 @@ func (c *Client) TestFireWebhook(ctx context.Context, id openapi_types.UUID, eve
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewListStudioDeploymentsRequest generates requests for ListStudioDeployments
+func NewListStudioDeploymentsRequest(server string, params *ListStudioDeploymentsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/deployments")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ProjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project_id", *params.ProjectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "uuid"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateStudioDeploymentRequest calls the generic CreateStudioDeployment builder with application/json body
+func NewCreateStudioDeploymentRequest(server string, body CreateStudioDeploymentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateStudioDeploymentRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateStudioDeploymentRequestWithBody generates requests for CreateStudioDeployment with any type of body
+func NewCreateStudioDeploymentRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/deployments")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteStudioDeploymentRequest generates requests for DeleteStudioDeployment
+func NewDeleteStudioDeploymentRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/deployments/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStudioDeploymentRequest generates requests for GetStudioDeployment
+func NewGetStudioDeploymentRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/deployments/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSuspendStudioDeploymentRequest generates requests for SuspendStudioDeployment
+func NewSuspendStudioDeploymentRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/deployments/%s/suspend", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewWakeStudioDeploymentRequest generates requests for WakeStudioDeployment
+func NewWakeStudioDeploymentRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/deployments/%s/wake", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGenerateStudioCompletionRequest calls the generic GenerateStudioCompletion builder with application/json body
+func NewGenerateStudioCompletionRequest(server string, body GenerateStudioCompletionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGenerateStudioCompletionRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGenerateStudioCompletionRequestWithBody generates requests for GenerateStudioCompletion with any type of body
+func NewGenerateStudioCompletionRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/generate")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListStudioProjectsRequest generates requests for ListStudioProjects
+func NewListStudioProjectsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateStudioProjectRequest calls the generic CreateStudioProject builder with application/json body
+func NewCreateStudioProjectRequest(server string, body CreateStudioProjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateStudioProjectRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateStudioProjectRequestWithBody generates requests for CreateStudioProject with any type of body
+func NewCreateStudioProjectRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteStudioProjectRequest generates requests for DeleteStudioProject
+func NewDeleteStudioProjectRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStudioProjectRequest generates requests for GetStudioProject
+func NewGetStudioProjectRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateStudioProjectRequest calls the generic UpdateStudioProject builder with application/json body
+func NewUpdateStudioProjectRequest(server string, id openapi_types.UUID, body UpdateStudioProjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateStudioProjectRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateStudioProjectRequestWithBody generates requests for UpdateStudioProject with any type of body
+func NewUpdateStudioProjectRequestWithBody(server string, id openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListStudioProjectFilesRequest generates requests for ListStudioProjectFiles
+func NewListStudioProjectFilesRequest(server string, id openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects/%s/files", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteStudioProjectFileRequest generates requests for DeleteStudioProjectFile
+func NewDeleteStudioProjectFileRequest(server string, id openapi_types.UUID, path string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "path", path, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects/%s/files/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpsertStudioProjectFileRequest calls the generic UpsertStudioProjectFile builder with application/json body
+func NewUpsertStudioProjectFileRequest(server string, id openapi_types.UUID, path string, body UpsertStudioProjectFileJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpsertStudioProjectFileRequestWithBody(server, id, path, "application/json", bodyReader)
+}
+
+// NewUpsertStudioProjectFileRequestWithBody generates requests for UpsertStudioProjectFile with any type of body
+func NewUpsertStudioProjectFileRequestWithBody(server string, id openapi_types.UUID, path string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "path", path, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects/%s/files/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateStudioProjectGenerationRequest calls the generic CreateStudioProjectGeneration builder with application/json body
+func NewCreateStudioProjectGenerationRequest(server string, id openapi_types.UUID, body CreateStudioProjectGenerationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateStudioProjectGenerationRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewCreateStudioProjectGenerationRequestWithBody generates requests for CreateStudioProjectGeneration with any type of body
+func NewCreateStudioProjectGenerationRequestWithBody(server string, id openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: "uuid"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/studio/projects/%s/generations", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
 }
 
 // NewCreateAiOperationRequest calls the generic CreateAiOperation builder with application/json body
@@ -2194,7 +3291,7 @@ func NewCreateBillingCheckoutRequestWithBody(server string, contentType string, 
 }
 
 // NewListAirbnbListingsRequest generates requests for ListAirbnbListings
-func NewListAirbnbListingsRequest(server string) (*http.Request, error) {
+func NewListAirbnbListingsRequest(server string, params *ListAirbnbListingsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2210,6 +3307,28 @@ func NewListAirbnbListingsRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Include != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include", *params.Include, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -2248,7 +3367,7 @@ func NewCreateAirbnbListingRequest(server string) (*http.Request, error) {
 }
 
 // NewGetAirbnbListingRequest generates requests for GetAirbnbListing
-func NewGetAirbnbListingRequest(server string, id string) (*http.Request, error) {
+func NewGetAirbnbListingRequest(server string, id string, params *GetAirbnbListingParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2271,6 +3390,28 @@ func NewGetAirbnbListingRequest(server string, id string) (*http.Request, error)
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Include != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include", *params.Include, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -2615,7 +3756,7 @@ func NewSendAirbnbMessageRequest(server string, threadId string) (*http.Request,
 }
 
 // NewListAirbnbReservationsRequest generates requests for ListAirbnbReservations
-func NewListAirbnbReservationsRequest(server string) (*http.Request, error) {
+func NewListAirbnbReservationsRequest(server string, params *ListAirbnbReservationsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2631,6 +3772,140 @@ func NewListAirbnbReservationsRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IncludeTotal != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_total", *params.IncludeTotal, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -2736,8 +4011,8 @@ func NewListAirbnbReviewsRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewRespondAirbnbReviewRequest generates requests for RespondAirbnbReview
-func NewRespondAirbnbReviewRequest(server string) (*http.Request, error) {
+// NewRespondAirbnbReviewLegacyRequest generates requests for RespondAirbnbReviewLegacy
+func NewRespondAirbnbReviewLegacyRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2759,6 +4034,100 @@ func NewRespondAirbnbReviewRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewEditAirbnbReviewRequest calls the generic EditAirbnbReview builder with application/json body
+func NewEditAirbnbReviewRequest(server string, id string, body EditAirbnbReviewJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEditAirbnbReviewRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewEditAirbnbReviewRequestWithBody generates requests for EditAirbnbReview with any type of body
+func NewEditAirbnbReviewRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/reviews/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRespondAirbnbReviewRequest calls the generic RespondAirbnbReview builder with application/json body
+func NewRespondAirbnbReviewRequest(server string, id string, body RespondAirbnbReviewJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRespondAirbnbReviewRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewRespondAirbnbReviewRequestWithBody generates requests for RespondAirbnbReview with any type of body
+func NewRespondAirbnbReviewRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/reviews/%s/respond", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -3130,6 +4499,91 @@ func NewCreateBookingPropertyRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewListBookingReviewsRequest generates requests for ListBookingReviews
+func NewListBookingReviewsRequest(server string, params *ListBookingReviewsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/reviews")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "property_id", params.PropertyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewReplyBookingReviewRequest calls the generic ReplyBookingReview builder with application/json body
+func NewReplyBookingReviewRequest(server string, body ReplyBookingReviewJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewReplyBookingReviewRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewReplyBookingReviewRequestWithBody generates requests for ReplyBookingReview with any type of body
+func NewReplyBookingReviewRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/reviews")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewSyncBookingRequest generates requests for SyncBooking
 func NewSyncBookingRequest(server string) (*http.Request, error) {
 	var err error
@@ -3388,7 +4842,7 @@ func NewUpdateVrboListingPricingRequest(server string, id int) (*http.Request, e
 }
 
 // NewListVrboReservationsRequest generates requests for ListVrboReservations
-func NewListVrboReservationsRequest(server string) (*http.Request, error) {
+func NewListVrboReservationsRequest(server string, params *ListVrboReservationsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3404,6 +4858,76 @@ func NewListVrboReservationsRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IncludeTotal != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_total", *params.IncludeTotal, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -3833,6 +5357,22 @@ func NewListConversationsRequest(server string, params *ListConversationsParams)
 
 		}
 
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
@@ -4097,6 +5637,22 @@ func NewListGuestsRequest(server string, params *ListGuestsParams) (*http.Reques
 
 		}
 
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
@@ -4288,6 +5844,22 @@ func NewListListingsRequest(server string, params *ListListingsParams) (*http.Re
 		if params.Cursor != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5275,6 +6847,22 @@ func NewListMarketBrowseRequest(server string, params *ListMarketBrowseParams) (
 
 		}
 
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
@@ -5516,9 +7104,57 @@ func NewListPropertiesRequest(server string, params *ListPropertiesParams) (*htt
 
 		}
 
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Q != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "q", *params.Q, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Status != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.LifecycleStatus != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "lifecycle_status", *params.LifecycleStatus, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5634,6 +7270,22 @@ func NewListReservationsRequest(server string, params *ListReservationsParams) (
 		if params.Cursor != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5996,6 +7648,22 @@ func NewListReviewsRequest(server string, params *ListReviewsParams) (*http.Requ
 		if params.Cursor != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6688,6 +8356,22 @@ func NewListWebhookDeliveriesRequest(server string, id openapi_types.UUID, param
 
 		}
 
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Status != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -6866,7 +8550,7 @@ func NewRotateWebhookSecretRequest(server string, id openapi_types.UUID) (*http.
 }
 
 // NewTestFireWebhookRequest generates requests for TestFireWebhook
-func NewTestFireWebhookRequest(server string, id openapi_types.UUID, eventType string) (*http.Request, error) {
+func NewTestFireWebhookRequest(server string, id openapi_types.UUID, eventType WebhookEventType) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -6949,6 +8633,66 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListStudioDeploymentsWithResponse request
+	ListStudioDeploymentsWithResponse(ctx context.Context, params *ListStudioDeploymentsParams, reqEditors ...RequestEditorFn) (*ListStudioDeploymentsClientResponse, error)
+
+	// CreateStudioDeploymentWithBodyWithResponse request with any body
+	CreateStudioDeploymentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStudioDeploymentClientResponse, error)
+
+	CreateStudioDeploymentWithResponse(ctx context.Context, body CreateStudioDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStudioDeploymentClientResponse, error)
+
+	// DeleteStudioDeploymentWithResponse request
+	DeleteStudioDeploymentWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteStudioDeploymentClientResponse, error)
+
+	// GetStudioDeploymentWithResponse request
+	GetStudioDeploymentWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetStudioDeploymentClientResponse, error)
+
+	// SuspendStudioDeploymentWithResponse request
+	SuspendStudioDeploymentWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*SuspendStudioDeploymentClientResponse, error)
+
+	// WakeStudioDeploymentWithResponse request
+	WakeStudioDeploymentWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*WakeStudioDeploymentClientResponse, error)
+
+	// GenerateStudioCompletionWithBodyWithResponse request with any body
+	GenerateStudioCompletionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateStudioCompletionClientResponse, error)
+
+	GenerateStudioCompletionWithResponse(ctx context.Context, body GenerateStudioCompletionJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateStudioCompletionClientResponse, error)
+
+	// ListStudioProjectsWithResponse request
+	ListStudioProjectsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListStudioProjectsClientResponse, error)
+
+	// CreateStudioProjectWithBodyWithResponse request with any body
+	CreateStudioProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStudioProjectClientResponse, error)
+
+	CreateStudioProjectWithResponse(ctx context.Context, body CreateStudioProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStudioProjectClientResponse, error)
+
+	// DeleteStudioProjectWithResponse request
+	DeleteStudioProjectWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteStudioProjectClientResponse, error)
+
+	// GetStudioProjectWithResponse request
+	GetStudioProjectWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetStudioProjectClientResponse, error)
+
+	// UpdateStudioProjectWithBodyWithResponse request with any body
+	UpdateStudioProjectWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateStudioProjectClientResponse, error)
+
+	UpdateStudioProjectWithResponse(ctx context.Context, id openapi_types.UUID, body UpdateStudioProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateStudioProjectClientResponse, error)
+
+	// ListStudioProjectFilesWithResponse request
+	ListStudioProjectFilesWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*ListStudioProjectFilesClientResponse, error)
+
+	// DeleteStudioProjectFileWithResponse request
+	DeleteStudioProjectFileWithResponse(ctx context.Context, id openapi_types.UUID, path string, reqEditors ...RequestEditorFn) (*DeleteStudioProjectFileClientResponse, error)
+
+	// UpsertStudioProjectFileWithBodyWithResponse request with any body
+	UpsertStudioProjectFileWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, path string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertStudioProjectFileClientResponse, error)
+
+	UpsertStudioProjectFileWithResponse(ctx context.Context, id openapi_types.UUID, path string, body UpsertStudioProjectFileJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertStudioProjectFileClientResponse, error)
+
+	// CreateStudioProjectGenerationWithBodyWithResponse request with any body
+	CreateStudioProjectGenerationWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStudioProjectGenerationClientResponse, error)
+
+	CreateStudioProjectGenerationWithResponse(ctx context.Context, id openapi_types.UUID, body CreateStudioProjectGenerationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStudioProjectGenerationClientResponse, error)
+
 	// CreateAiOperationWithBodyWithResponse request with any body
 	CreateAiOperationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAiOperationClientResponse, error)
 
@@ -6971,13 +8715,13 @@ type ClientWithResponsesInterface interface {
 	CreateBillingCheckoutWithResponse(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error)
 
 	// ListAirbnbListingsWithResponse request
-	ListAirbnbListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbListingsClientResponse, error)
+	ListAirbnbListingsWithResponse(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*ListAirbnbListingsClientResponse, error)
 
 	// CreateAirbnbListingWithResponse request
 	CreateAirbnbListingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreateAirbnbListingClientResponse, error)
 
 	// GetAirbnbListingWithResponse request
-	GetAirbnbListingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingClientResponse, error)
+	GetAirbnbListingWithResponse(ctx context.Context, id string, params *GetAirbnbListingParams, reqEditors ...RequestEditorFn) (*GetAirbnbListingClientResponse, error)
 
 	// AirbnbListingActionWithResponse request
 	AirbnbListingActionWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*AirbnbListingActionClientResponse, error)
@@ -7010,7 +8754,7 @@ type ClientWithResponsesInterface interface {
 	SendAirbnbMessageWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*SendAirbnbMessageClientResponse, error)
 
 	// ListAirbnbReservationsWithResponse request
-	ListAirbnbReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbReservationsClientResponse, error)
+	ListAirbnbReservationsWithResponse(ctx context.Context, params *ListAirbnbReservationsParams, reqEditors ...RequestEditorFn) (*ListAirbnbReservationsClientResponse, error)
 
 	// GetAirbnbReservationWithResponse request
 	GetAirbnbReservationWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*GetAirbnbReservationClientResponse, error)
@@ -7021,8 +8765,18 @@ type ClientWithResponsesInterface interface {
 	// ListAirbnbReviewsWithResponse request
 	ListAirbnbReviewsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbReviewsClientResponse, error)
 
-	// RespondAirbnbReviewWithResponse request
-	RespondAirbnbReviewWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error)
+	// RespondAirbnbReviewLegacyWithResponse request
+	RespondAirbnbReviewLegacyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewLegacyClientResponse, error)
+
+	// EditAirbnbReviewWithBodyWithResponse request with any body
+	EditAirbnbReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditAirbnbReviewClientResponse, error)
+
+	EditAirbnbReviewWithResponse(ctx context.Context, id string, body EditAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*EditAirbnbReviewClientResponse, error)
+
+	// RespondAirbnbReviewWithBodyWithResponse request with any body
+	RespondAirbnbReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error)
+
+	RespondAirbnbReviewWithResponse(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error)
 
 	// SyncAirbnbWithResponse request
 	SyncAirbnbWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SyncAirbnbClientResponse, error)
@@ -7056,6 +8810,14 @@ type ClientWithResponsesInterface interface {
 	// CreateBookingPropertyWithResponse request
 	CreateBookingPropertyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*CreateBookingPropertyClientResponse, error)
 
+	// ListBookingReviewsWithResponse request
+	ListBookingReviewsWithResponse(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*ListBookingReviewsClientResponse, error)
+
+	// ReplyBookingReviewWithBodyWithResponse request with any body
+	ReplyBookingReviewWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReplyBookingReviewClientResponse, error)
+
+	ReplyBookingReviewWithResponse(ctx context.Context, body ReplyBookingReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*ReplyBookingReviewClientResponse, error)
+
 	// SyncBookingWithResponse request
 	SyncBookingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SyncBookingClientResponse, error)
 
@@ -7084,7 +8846,7 @@ type ClientWithResponsesInterface interface {
 	UpdateVrboListingPricingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*UpdateVrboListingPricingClientResponse, error)
 
 	// ListVrboReservationsWithResponse request
-	ListVrboReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboReservationsClientResponse, error)
+	ListVrboReservationsWithResponse(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*ListVrboReservationsClientResponse, error)
 
 	// ListConnectionsWithResponse request
 	ListConnectionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectionsClientResponse, error)
@@ -7306,7 +9068,484 @@ type ClientWithResponsesInterface interface {
 	RotateWebhookSecretWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*RotateWebhookSecretClientResponse, error)
 
 	// TestFireWebhookWithResponse request
-	TestFireWebhookWithResponse(ctx context.Context, id openapi_types.UUID, eventType string, reqEditors ...RequestEditorFn) (*TestFireWebhookClientResponse, error)
+	TestFireWebhookWithResponse(ctx context.Context, id openapi_types.UUID, eventType WebhookEventType, reqEditors ...RequestEditorFn) (*TestFireWebhookClientResponse, error)
+}
+
+type ListStudioDeploymentsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *[]StudioDeployment `json:"data,omitempty"`
+
+		// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+		Pagination *Pagination `json:"pagination,omitempty"`
+	}
+	JSON401 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListStudioDeploymentsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListStudioDeploymentsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateStudioDeploymentClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *struct {
+		Data *struct {
+			DeploymentId *openapi_types.UUID                  `json:"deployment_id,omitempty"`
+			Status       *CreateStudioDeployment201DataStatus `json:"status,omitempty"`
+			Subdomain    *string                              `json:"subdomain,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	JSON400 *StudioError
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+type CreateStudioDeployment201DataStatus string
+
+// Status returns HTTPResponse.Status
+func (r CreateStudioDeploymentClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateStudioDeploymentClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteStudioDeploymentClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *struct {
+			Deleted      *bool               `json:"deleted,omitempty"`
+			DeploymentId *openapi_types.UUID `json:"deployment_id,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteStudioDeploymentClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteStudioDeploymentClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStudioDeploymentClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data A deployed instance of a Studio project, served from a `*.studio.repull.dev` subdomain.
+		Data *StudioDeployment `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStudioDeploymentClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStudioDeploymentClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SuspendStudioDeploymentClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data A deployed instance of a Studio project, served from a `*.studio.repull.dev` subdomain.
+		Data *StudioDeployment `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON404 *StudioError
+	JSON409 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r SuspendStudioDeploymentClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SuspendStudioDeploymentClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type WakeStudioDeploymentClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data A deployed instance of a Studio project, served from a `*.studio.repull.dev` subdomain.
+		Data *StudioDeployment `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON404 *StudioError
+	JSON409 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r WakeStudioDeploymentClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r WakeStudioDeploymentClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GenerateStudioCompletionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *struct {
+			// Cached True if the response was served from cache.
+			Cached *bool `json:"cached,omitempty"`
+
+			// CostUsdMicro Cost in millionths of a USD.
+			CostUsdMicro *int `json:"cost_usd_micro,omitempty"`
+
+			// Fallback True if the primary model failed and Repull AI fell back to the secondary.
+			Fallback     *bool               `json:"fallback,omitempty"`
+			GenerationId *openapi_types.UUID `json:"generation_id,omitempty"`
+			LatencyMs    *int                `json:"latency_ms,omitempty"`
+
+			// Model Model identifier that produced the response.
+			Model *string `json:"model,omitempty"`
+
+			// Text Generated completion text.
+			Text      *string `json:"text,omitempty"`
+			TokensIn  *int    `json:"tokens_in,omitempty"`
+			TokensOut *int    `json:"tokens_out,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	JSON400 *StudioError
+	JSON401 *StudioError
+	JSON429 *StudioError
+	JSON500 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r GenerateStudioCompletionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GenerateStudioCompletionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListStudioProjectsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *[]StudioProject `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON500 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListStudioProjectsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListStudioProjectsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateStudioProjectClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *struct {
+		Data *struct {
+			Id     *openapi_types.UUID               `json:"id,omitempty"`
+			Slug   *string                           `json:"slug,omitempty"`
+			Status *CreateStudioProject201DataStatus `json:"status,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	JSON400 *StudioError
+	JSON401 *StudioError
+	JSON500 *StudioError
+}
+type CreateStudioProject201DataStatus string
+
+// Status returns HTTPResponse.Status
+func (r CreateStudioProjectClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateStudioProjectClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteStudioProjectClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *struct {
+			Deleted *bool               `json:"deleted,omitempty"`
+			Id      *openapi_types.UUID `json:"id,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteStudioProjectClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteStudioProjectClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStudioProjectClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data A single Repull Studio project — a vibe-coded app generated from a prompt. Each project has its own files, generations, and deployments.
+		Data *StudioProject `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStudioProjectClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStudioProjectClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateStudioProjectClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data A single Repull Studio project — a vibe-coded app generated from a prompt. Each project has its own files, generations, and deployments.
+		Data *StudioProject `json:"data,omitempty"`
+	}
+	JSON400 *StudioError
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateStudioProjectClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateStudioProjectClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListStudioProjectFilesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *[]StudioFile `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListStudioProjectFilesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListStudioProjectFilesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteStudioProjectFileClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *struct {
+			Deleted *bool   `json:"deleted,omitempty"`
+			Path    *string `json:"path,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteStudioProjectFileClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteStudioProjectFileClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpsertStudioProjectFileClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *struct {
+			Sha256 *string `json:"sha256,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	JSON400 *StudioError
+	JSON401 *StudioError
+	JSON404 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpsertStudioProjectFileClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpsertStudioProjectFileClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateStudioProjectGenerationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *struct {
+		Data *struct {
+			GenerationId *openapi_types.UUID `json:"generation_id,omitempty"`
+			Response     *string             `json:"response,omitempty"`
+			TokensOut    *int                `json:"tokens_out,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	JSON400 *StudioError
+	JSON401 *StudioError
+	JSON404 *StudioError
+	JSON429 *StudioError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateStudioProjectGenerationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateStudioProjectGenerationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type CreateAiOperationClientResponse struct {
@@ -7784,9 +10023,61 @@ func (r ListAirbnbReviewsClientResponse) StatusCode() int {
 	return 0
 }
 
+type RespondAirbnbReviewLegacyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r RespondAirbnbReviewLegacyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RespondAirbnbReviewLegacyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EditAirbnbReviewClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AirbnbReview
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r EditAirbnbReviewClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EditAirbnbReviewClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type RespondAirbnbReviewClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *AirbnbReview
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
 }
 
 // Status returns HTTPResponse.Status
@@ -8022,6 +10313,57 @@ func (r CreateBookingPropertyClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateBookingPropertyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListBookingReviewsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBookingReviewsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBookingReviewsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ReplyBookingReviewClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Success *bool `json:"success,omitempty"`
+	}
+	JSON401 *Unauthorized
+	JSON422 *UnprocessableEntity
+	JSON502 *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ReplyBookingReviewClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReplyBookingReviewClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -9719,6 +12061,198 @@ func (r TestFireWebhookClientResponse) StatusCode() int {
 	return 0
 }
 
+// ListStudioDeploymentsWithResponse request returning *ListStudioDeploymentsClientResponse
+func (c *ClientWithResponses) ListStudioDeploymentsWithResponse(ctx context.Context, params *ListStudioDeploymentsParams, reqEditors ...RequestEditorFn) (*ListStudioDeploymentsClientResponse, error) {
+	rsp, err := c.ListStudioDeployments(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListStudioDeploymentsClientResponse(rsp)
+}
+
+// CreateStudioDeploymentWithBodyWithResponse request with arbitrary body returning *CreateStudioDeploymentClientResponse
+func (c *ClientWithResponses) CreateStudioDeploymentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStudioDeploymentClientResponse, error) {
+	rsp, err := c.CreateStudioDeploymentWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateStudioDeploymentClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateStudioDeploymentWithResponse(ctx context.Context, body CreateStudioDeploymentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStudioDeploymentClientResponse, error) {
+	rsp, err := c.CreateStudioDeployment(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateStudioDeploymentClientResponse(rsp)
+}
+
+// DeleteStudioDeploymentWithResponse request returning *DeleteStudioDeploymentClientResponse
+func (c *ClientWithResponses) DeleteStudioDeploymentWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteStudioDeploymentClientResponse, error) {
+	rsp, err := c.DeleteStudioDeployment(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteStudioDeploymentClientResponse(rsp)
+}
+
+// GetStudioDeploymentWithResponse request returning *GetStudioDeploymentClientResponse
+func (c *ClientWithResponses) GetStudioDeploymentWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetStudioDeploymentClientResponse, error) {
+	rsp, err := c.GetStudioDeployment(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStudioDeploymentClientResponse(rsp)
+}
+
+// SuspendStudioDeploymentWithResponse request returning *SuspendStudioDeploymentClientResponse
+func (c *ClientWithResponses) SuspendStudioDeploymentWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*SuspendStudioDeploymentClientResponse, error) {
+	rsp, err := c.SuspendStudioDeployment(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSuspendStudioDeploymentClientResponse(rsp)
+}
+
+// WakeStudioDeploymentWithResponse request returning *WakeStudioDeploymentClientResponse
+func (c *ClientWithResponses) WakeStudioDeploymentWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*WakeStudioDeploymentClientResponse, error) {
+	rsp, err := c.WakeStudioDeployment(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseWakeStudioDeploymentClientResponse(rsp)
+}
+
+// GenerateStudioCompletionWithBodyWithResponse request with arbitrary body returning *GenerateStudioCompletionClientResponse
+func (c *ClientWithResponses) GenerateStudioCompletionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateStudioCompletionClientResponse, error) {
+	rsp, err := c.GenerateStudioCompletionWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateStudioCompletionClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) GenerateStudioCompletionWithResponse(ctx context.Context, body GenerateStudioCompletionJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateStudioCompletionClientResponse, error) {
+	rsp, err := c.GenerateStudioCompletion(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateStudioCompletionClientResponse(rsp)
+}
+
+// ListStudioProjectsWithResponse request returning *ListStudioProjectsClientResponse
+func (c *ClientWithResponses) ListStudioProjectsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListStudioProjectsClientResponse, error) {
+	rsp, err := c.ListStudioProjects(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListStudioProjectsClientResponse(rsp)
+}
+
+// CreateStudioProjectWithBodyWithResponse request with arbitrary body returning *CreateStudioProjectClientResponse
+func (c *ClientWithResponses) CreateStudioProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStudioProjectClientResponse, error) {
+	rsp, err := c.CreateStudioProjectWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateStudioProjectClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateStudioProjectWithResponse(ctx context.Context, body CreateStudioProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStudioProjectClientResponse, error) {
+	rsp, err := c.CreateStudioProject(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateStudioProjectClientResponse(rsp)
+}
+
+// DeleteStudioProjectWithResponse request returning *DeleteStudioProjectClientResponse
+func (c *ClientWithResponses) DeleteStudioProjectWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteStudioProjectClientResponse, error) {
+	rsp, err := c.DeleteStudioProject(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteStudioProjectClientResponse(rsp)
+}
+
+// GetStudioProjectWithResponse request returning *GetStudioProjectClientResponse
+func (c *ClientWithResponses) GetStudioProjectWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetStudioProjectClientResponse, error) {
+	rsp, err := c.GetStudioProject(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStudioProjectClientResponse(rsp)
+}
+
+// UpdateStudioProjectWithBodyWithResponse request with arbitrary body returning *UpdateStudioProjectClientResponse
+func (c *ClientWithResponses) UpdateStudioProjectWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateStudioProjectClientResponse, error) {
+	rsp, err := c.UpdateStudioProjectWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateStudioProjectClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateStudioProjectWithResponse(ctx context.Context, id openapi_types.UUID, body UpdateStudioProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateStudioProjectClientResponse, error) {
+	rsp, err := c.UpdateStudioProject(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateStudioProjectClientResponse(rsp)
+}
+
+// ListStudioProjectFilesWithResponse request returning *ListStudioProjectFilesClientResponse
+func (c *ClientWithResponses) ListStudioProjectFilesWithResponse(ctx context.Context, id openapi_types.UUID, reqEditors ...RequestEditorFn) (*ListStudioProjectFilesClientResponse, error) {
+	rsp, err := c.ListStudioProjectFiles(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListStudioProjectFilesClientResponse(rsp)
+}
+
+// DeleteStudioProjectFileWithResponse request returning *DeleteStudioProjectFileClientResponse
+func (c *ClientWithResponses) DeleteStudioProjectFileWithResponse(ctx context.Context, id openapi_types.UUID, path string, reqEditors ...RequestEditorFn) (*DeleteStudioProjectFileClientResponse, error) {
+	rsp, err := c.DeleteStudioProjectFile(ctx, id, path, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteStudioProjectFileClientResponse(rsp)
+}
+
+// UpsertStudioProjectFileWithBodyWithResponse request with arbitrary body returning *UpsertStudioProjectFileClientResponse
+func (c *ClientWithResponses) UpsertStudioProjectFileWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, path string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertStudioProjectFileClientResponse, error) {
+	rsp, err := c.UpsertStudioProjectFileWithBody(ctx, id, path, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertStudioProjectFileClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpsertStudioProjectFileWithResponse(ctx context.Context, id openapi_types.UUID, path string, body UpsertStudioProjectFileJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertStudioProjectFileClientResponse, error) {
+	rsp, err := c.UpsertStudioProjectFile(ctx, id, path, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertStudioProjectFileClientResponse(rsp)
+}
+
+// CreateStudioProjectGenerationWithBodyWithResponse request with arbitrary body returning *CreateStudioProjectGenerationClientResponse
+func (c *ClientWithResponses) CreateStudioProjectGenerationWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStudioProjectGenerationClientResponse, error) {
+	rsp, err := c.CreateStudioProjectGenerationWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateStudioProjectGenerationClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateStudioProjectGenerationWithResponse(ctx context.Context, id openapi_types.UUID, body CreateStudioProjectGenerationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStudioProjectGenerationClientResponse, error) {
+	rsp, err := c.CreateStudioProjectGeneration(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateStudioProjectGenerationClientResponse(rsp)
+}
+
 // CreateAiOperationWithBodyWithResponse request with arbitrary body returning *CreateAiOperationClientResponse
 func (c *ClientWithResponses) CreateAiOperationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAiOperationClientResponse, error) {
 	rsp, err := c.CreateAiOperationWithBody(ctx, contentType, body, reqEditors...)
@@ -9789,8 +12323,8 @@ func (c *ClientWithResponses) CreateBillingCheckoutWithResponse(ctx context.Cont
 }
 
 // ListAirbnbListingsWithResponse request returning *ListAirbnbListingsClientResponse
-func (c *ClientWithResponses) ListAirbnbListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbListingsClientResponse, error) {
-	rsp, err := c.ListAirbnbListings(ctx, reqEditors...)
+func (c *ClientWithResponses) ListAirbnbListingsWithResponse(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*ListAirbnbListingsClientResponse, error) {
+	rsp, err := c.ListAirbnbListings(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -9807,8 +12341,8 @@ func (c *ClientWithResponses) CreateAirbnbListingWithResponse(ctx context.Contex
 }
 
 // GetAirbnbListingWithResponse request returning *GetAirbnbListingClientResponse
-func (c *ClientWithResponses) GetAirbnbListingWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingClientResponse, error) {
-	rsp, err := c.GetAirbnbListing(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetAirbnbListingWithResponse(ctx context.Context, id string, params *GetAirbnbListingParams, reqEditors ...RequestEditorFn) (*GetAirbnbListingClientResponse, error) {
+	rsp, err := c.GetAirbnbListing(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -9906,8 +12440,8 @@ func (c *ClientWithResponses) SendAirbnbMessageWithResponse(ctx context.Context,
 }
 
 // ListAirbnbReservationsWithResponse request returning *ListAirbnbReservationsClientResponse
-func (c *ClientWithResponses) ListAirbnbReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbReservationsClientResponse, error) {
-	rsp, err := c.ListAirbnbReservations(ctx, reqEditors...)
+func (c *ClientWithResponses) ListAirbnbReservationsWithResponse(ctx context.Context, params *ListAirbnbReservationsParams, reqEditors ...RequestEditorFn) (*ListAirbnbReservationsClientResponse, error) {
+	rsp, err := c.ListAirbnbReservations(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -9941,9 +12475,43 @@ func (c *ClientWithResponses) ListAirbnbReviewsWithResponse(ctx context.Context,
 	return ParseListAirbnbReviewsClientResponse(rsp)
 }
 
-// RespondAirbnbReviewWithResponse request returning *RespondAirbnbReviewClientResponse
-func (c *ClientWithResponses) RespondAirbnbReviewWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error) {
-	rsp, err := c.RespondAirbnbReview(ctx, reqEditors...)
+// RespondAirbnbReviewLegacyWithResponse request returning *RespondAirbnbReviewLegacyClientResponse
+func (c *ClientWithResponses) RespondAirbnbReviewLegacyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewLegacyClientResponse, error) {
+	rsp, err := c.RespondAirbnbReviewLegacy(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRespondAirbnbReviewLegacyClientResponse(rsp)
+}
+
+// EditAirbnbReviewWithBodyWithResponse request with arbitrary body returning *EditAirbnbReviewClientResponse
+func (c *ClientWithResponses) EditAirbnbReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditAirbnbReviewClientResponse, error) {
+	rsp, err := c.EditAirbnbReviewWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditAirbnbReviewClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) EditAirbnbReviewWithResponse(ctx context.Context, id string, body EditAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*EditAirbnbReviewClientResponse, error) {
+	rsp, err := c.EditAirbnbReview(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEditAirbnbReviewClientResponse(rsp)
+}
+
+// RespondAirbnbReviewWithBodyWithResponse request with arbitrary body returning *RespondAirbnbReviewClientResponse
+func (c *ClientWithResponses) RespondAirbnbReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error) {
+	rsp, err := c.RespondAirbnbReviewWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRespondAirbnbReviewClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) RespondAirbnbReviewWithResponse(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error) {
+	rsp, err := c.RespondAirbnbReview(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -10048,6 +12616,32 @@ func (c *ClientWithResponses) CreateBookingPropertyWithResponse(ctx context.Cont
 	return ParseCreateBookingPropertyClientResponse(rsp)
 }
 
+// ListBookingReviewsWithResponse request returning *ListBookingReviewsClientResponse
+func (c *ClientWithResponses) ListBookingReviewsWithResponse(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*ListBookingReviewsClientResponse, error) {
+	rsp, err := c.ListBookingReviews(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBookingReviewsClientResponse(rsp)
+}
+
+// ReplyBookingReviewWithBodyWithResponse request with arbitrary body returning *ReplyBookingReviewClientResponse
+func (c *ClientWithResponses) ReplyBookingReviewWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReplyBookingReviewClientResponse, error) {
+	rsp, err := c.ReplyBookingReviewWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReplyBookingReviewClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) ReplyBookingReviewWithResponse(ctx context.Context, body ReplyBookingReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*ReplyBookingReviewClientResponse, error) {
+	rsp, err := c.ReplyBookingReview(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReplyBookingReviewClientResponse(rsp)
+}
+
 // SyncBookingWithResponse request returning *SyncBookingClientResponse
 func (c *ClientWithResponses) SyncBookingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SyncBookingClientResponse, error) {
 	rsp, err := c.SyncBooking(ctx, reqEditors...)
@@ -10130,8 +12724,8 @@ func (c *ClientWithResponses) UpdateVrboListingPricingWithResponse(ctx context.C
 }
 
 // ListVrboReservationsWithResponse request returning *ListVrboReservationsClientResponse
-func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboReservationsClientResponse, error) {
-	rsp, err := c.ListVrboReservations(ctx, reqEditors...)
+func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*ListVrboReservationsClientResponse, error) {
+	rsp, err := c.ListVrboReservations(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -10832,12 +13426,797 @@ func (c *ClientWithResponses) RotateWebhookSecretWithResponse(ctx context.Contex
 }
 
 // TestFireWebhookWithResponse request returning *TestFireWebhookClientResponse
-func (c *ClientWithResponses) TestFireWebhookWithResponse(ctx context.Context, id openapi_types.UUID, eventType string, reqEditors ...RequestEditorFn) (*TestFireWebhookClientResponse, error) {
+func (c *ClientWithResponses) TestFireWebhookWithResponse(ctx context.Context, id openapi_types.UUID, eventType WebhookEventType, reqEditors ...RequestEditorFn) (*TestFireWebhookClientResponse, error) {
 	rsp, err := c.TestFireWebhook(ctx, id, eventType, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseTestFireWebhookClientResponse(rsp)
+}
+
+// ParseListStudioDeploymentsClientResponse parses an HTTP response from a ListStudioDeploymentsWithResponse call
+func ParseListStudioDeploymentsClientResponse(rsp *http.Response) (*ListStudioDeploymentsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListStudioDeploymentsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]StudioDeployment `json:"data,omitempty"`
+
+			// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+			Pagination *Pagination `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateStudioDeploymentClientResponse parses an HTTP response from a CreateStudioDeploymentWithResponse call
+func ParseCreateStudioDeploymentClientResponse(rsp *http.Response) (*CreateStudioDeploymentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateStudioDeploymentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			Data *struct {
+				DeploymentId *openapi_types.UUID                  `json:"deployment_id,omitempty"`
+				Status       *CreateStudioDeployment201DataStatus `json:"status,omitempty"`
+				Subdomain    *string                              `json:"subdomain,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteStudioDeploymentClientResponse parses an HTTP response from a DeleteStudioDeploymentWithResponse call
+func ParseDeleteStudioDeploymentClientResponse(rsp *http.Response) (*DeleteStudioDeploymentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteStudioDeploymentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				Deleted      *bool               `json:"deleted,omitempty"`
+				DeploymentId *openapi_types.UUID `json:"deployment_id,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStudioDeploymentClientResponse parses an HTTP response from a GetStudioDeploymentWithResponse call
+func ParseGetStudioDeploymentClientResponse(rsp *http.Response) (*GetStudioDeploymentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStudioDeploymentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data A deployed instance of a Studio project, served from a `*.studio.repull.dev` subdomain.
+			Data *StudioDeployment `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSuspendStudioDeploymentClientResponse parses an HTTP response from a SuspendStudioDeploymentWithResponse call
+func ParseSuspendStudioDeploymentClientResponse(rsp *http.Response) (*SuspendStudioDeploymentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SuspendStudioDeploymentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data A deployed instance of a Studio project, served from a `*.studio.repull.dev` subdomain.
+			Data *StudioDeployment `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseWakeStudioDeploymentClientResponse parses an HTTP response from a WakeStudioDeploymentWithResponse call
+func ParseWakeStudioDeploymentClientResponse(rsp *http.Response) (*WakeStudioDeploymentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &WakeStudioDeploymentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data A deployed instance of a Studio project, served from a `*.studio.repull.dev` subdomain.
+			Data *StudioDeployment `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGenerateStudioCompletionClientResponse parses an HTTP response from a GenerateStudioCompletionWithResponse call
+func ParseGenerateStudioCompletionClientResponse(rsp *http.Response) (*GenerateStudioCompletionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GenerateStudioCompletionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				// Cached True if the response was served from cache.
+				Cached *bool `json:"cached,omitempty"`
+
+				// CostUsdMicro Cost in millionths of a USD.
+				CostUsdMicro *int `json:"cost_usd_micro,omitempty"`
+
+				// Fallback True if the primary model failed and Repull AI fell back to the secondary.
+				Fallback     *bool               `json:"fallback,omitempty"`
+				GenerationId *openapi_types.UUID `json:"generation_id,omitempty"`
+				LatencyMs    *int                `json:"latency_ms,omitempty"`
+
+				// Model Model identifier that produced the response.
+				Model *string `json:"model,omitempty"`
+
+				// Text Generated completion text.
+				Text      *string `json:"text,omitempty"`
+				TokensIn  *int    `json:"tokens_in,omitempty"`
+				TokensOut *int    `json:"tokens_out,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListStudioProjectsClientResponse parses an HTTP response from a ListStudioProjectsWithResponse call
+func ParseListStudioProjectsClientResponse(rsp *http.Response) (*ListStudioProjectsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListStudioProjectsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]StudioProject `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateStudioProjectClientResponse parses an HTTP response from a CreateStudioProjectWithResponse call
+func ParseCreateStudioProjectClientResponse(rsp *http.Response) (*CreateStudioProjectClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateStudioProjectClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			Data *struct {
+				Id     *openapi_types.UUID               `json:"id,omitempty"`
+				Slug   *string                           `json:"slug,omitempty"`
+				Status *CreateStudioProject201DataStatus `json:"status,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteStudioProjectClientResponse parses an HTTP response from a DeleteStudioProjectWithResponse call
+func ParseDeleteStudioProjectClientResponse(rsp *http.Response) (*DeleteStudioProjectClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteStudioProjectClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				Deleted *bool               `json:"deleted,omitempty"`
+				Id      *openapi_types.UUID `json:"id,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStudioProjectClientResponse parses an HTTP response from a GetStudioProjectWithResponse call
+func ParseGetStudioProjectClientResponse(rsp *http.Response) (*GetStudioProjectClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStudioProjectClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data A single Repull Studio project — a vibe-coded app generated from a prompt. Each project has its own files, generations, and deployments.
+			Data *StudioProject `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateStudioProjectClientResponse parses an HTTP response from a UpdateStudioProjectWithResponse call
+func ParseUpdateStudioProjectClientResponse(rsp *http.Response) (*UpdateStudioProjectClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateStudioProjectClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data A single Repull Studio project — a vibe-coded app generated from a prompt. Each project has its own files, generations, and deployments.
+			Data *StudioProject `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListStudioProjectFilesClientResponse parses an HTTP response from a ListStudioProjectFilesWithResponse call
+func ParseListStudioProjectFilesClientResponse(rsp *http.Response) (*ListStudioProjectFilesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListStudioProjectFilesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]StudioFile `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteStudioProjectFileClientResponse parses an HTTP response from a DeleteStudioProjectFileWithResponse call
+func ParseDeleteStudioProjectFileClientResponse(rsp *http.Response) (*DeleteStudioProjectFileClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteStudioProjectFileClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				Deleted *bool   `json:"deleted,omitempty"`
+				Path    *string `json:"path,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpsertStudioProjectFileClientResponse parses an HTTP response from a UpsertStudioProjectFileWithResponse call
+func ParseUpsertStudioProjectFileClientResponse(rsp *http.Response) (*UpsertStudioProjectFileClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpsertStudioProjectFileClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				Sha256 *string `json:"sha256,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateStudioProjectGenerationClientResponse parses an HTTP response from a CreateStudioProjectGenerationWithResponse call
+func ParseCreateStudioProjectGenerationClientResponse(rsp *http.Response) (*CreateStudioProjectGenerationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateStudioProjectGenerationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			Data *struct {
+				GenerationId *openapi_types.UUID `json:"generation_id,omitempty"`
+				Response     *string             `json:"response,omitempty"`
+				TokensOut    *int                `json:"tokens_out,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest StudioError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseCreateAiOperationClientResponse parses an HTTP response from a CreateAiOperationWithResponse call
@@ -11295,6 +14674,76 @@ func ParseListAirbnbReviewsClientResponse(rsp *http.Response) (*ListAirbnbReview
 	return response, nil
 }
 
+// ParseRespondAirbnbReviewLegacyClientResponse parses an HTTP response from a RespondAirbnbReviewLegacyWithResponse call
+func ParseRespondAirbnbReviewLegacyClientResponse(rsp *http.Response) (*RespondAirbnbReviewLegacyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RespondAirbnbReviewLegacyClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseEditAirbnbReviewClientResponse parses an HTTP response from a EditAirbnbReviewWithResponse call
+func ParseEditAirbnbReviewClientResponse(rsp *http.Response) (*EditAirbnbReviewClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EditAirbnbReviewClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AirbnbReview
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseRespondAirbnbReviewClientResponse parses an HTTP response from a RespondAirbnbReviewWithResponse call
 func ParseRespondAirbnbReviewClientResponse(rsp *http.Response) (*RespondAirbnbReviewClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -11306,6 +14755,44 @@ func ParseRespondAirbnbReviewClientResponse(rsp *http.Response) (*RespondAirbnbR
 	response := &RespondAirbnbReviewClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AirbnbReview
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -11571,6 +15058,95 @@ func ParseCreateBookingPropertyClientResponse(rsp *http.Response) (*CreateBookin
 			return nil, err
 		}
 		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListBookingReviewsClientResponse parses an HTTP response from a ListBookingReviewsWithResponse call
+func ParseListBookingReviewsClientResponse(rsp *http.Response) (*ListBookingReviewsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBookingReviewsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReplyBookingReviewClientResponse parses an HTTP response from a ReplyBookingReviewWithResponse call
+func ParseReplyBookingReviewClientResponse(rsp *http.Response) (*ReplyBookingReviewClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReplyBookingReviewClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Success *bool `json:"success,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 

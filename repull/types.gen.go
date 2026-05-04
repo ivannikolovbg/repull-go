@@ -5,9 +5,11 @@ package repull
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
@@ -36,6 +38,90 @@ func (e AIOperationOperation) Valid() bool {
 	case AIOperationOperationRespondToGuest:
 		return true
 	case AIOperationOperationReviewResponse:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountCreatedEventType.
+const (
+	AccountCreatedEventTypeAccountCreated AccountCreatedEventType = "account.created"
+)
+
+// Valid indicates whether the value is a known member of the AccountCreatedEventType enum.
+func (e AccountCreatedEventType) Valid() bool {
+	switch e {
+	case AccountCreatedEventTypeAccountCreated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountDisconnectedEventType.
+const (
+	AccountDisconnected AccountDisconnectedEventType = "account.disconnected"
+)
+
+// Valid indicates whether the value is a known member of the AccountDisconnectedEventType enum.
+func (e AccountDisconnectedEventType) Valid() bool {
+	switch e {
+	case AccountDisconnected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountDisconnectedPayloadReason.
+const (
+	AuthExpired          AccountDisconnectedPayloadReason = "auth_expired"
+	ManualDisconnect     AccountDisconnectedPayloadReason = "manual_disconnect"
+	RefreshTokenRejected AccountDisconnectedPayloadReason = "refresh_token_rejected"
+	RevokedUpstream      AccountDisconnectedPayloadReason = "revoked_upstream"
+)
+
+// Valid indicates whether the value is a known member of the AccountDisconnectedPayloadReason enum.
+func (e AccountDisconnectedPayloadReason) Valid() bool {
+	switch e {
+	case AuthExpired:
+		return true
+	case ManualDisconnect:
+		return true
+	case RefreshTokenRejected:
+		return true
+	case RevokedUpstream:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AiOperationCompletedEventType.
+const (
+	AiOperationCompleted AiOperationCompletedEventType = "ai.operation.completed"
+)
+
+// Valid indicates whether the value is a known member of the AiOperationCompletedEventType enum.
+func (e AiOperationCompletedEventType) Valid() bool {
+	switch e {
+	case AiOperationCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AiOperationFailedEventType.
+const (
+	AiOperationFailed AiOperationFailedEventType = "ai.operation.failed"
+)
+
+// Valid indicates whether the value is a known member of the AiOperationFailedEventType enum.
+func (e AiOperationFailedEventType) Valid() bool {
+	switch e {
+	case AiOperationFailed:
 		return true
 	default:
 		return false
@@ -132,6 +218,21 @@ func (e BulkPricingRequestAction) Valid() bool {
 	}
 }
 
+// Defines values for CalendarUpdatedEventType.
+const (
+	CalendarUpdated CalendarUpdatedEventType = "calendar.updated"
+)
+
+// Valid indicates whether the value is a known member of the CalendarUpdatedEventType enum.
+func (e CalendarUpdatedEventType) Valid() bool {
+	switch e {
+	case CalendarUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectProviderCategory.
 const (
 	Ota ConnectProviderCategory = "ota"
@@ -176,19 +277,19 @@ func (e ConnectProviderConnectPattern) Valid() bool {
 
 // Defines values for ConnectProviderStatus.
 const (
-	Beta       ConnectProviderStatus = "beta"
-	ComingSoon ConnectProviderStatus = "coming-soon"
-	Live       ConnectProviderStatus = "live"
+	ConnectProviderStatusBeta       ConnectProviderStatus = "beta"
+	ConnectProviderStatusComingSoon ConnectProviderStatus = "coming-soon"
+	ConnectProviderStatusLive       ConnectProviderStatus = "live"
 )
 
 // Valid indicates whether the value is a known member of the ConnectProviderStatus enum.
 func (e ConnectProviderStatus) Valid() bool {
 	switch e {
-	case Beta:
+	case ConnectProviderStatusBeta:
 		return true
-	case ComingSoon:
+	case ConnectProviderStatusComingSoon:
 		return true
-	case Live:
+	case ConnectProviderStatusLive:
 		return true
 	default:
 		return false
@@ -366,6 +467,36 @@ func (e ListingCreateRequestCancellationPolicy) Valid() bool {
 	case Strict:
 		return true
 	case SuperStrict:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingCreatedEventType.
+const (
+	ListingCreated ListingCreatedEventType = "listing.created"
+)
+
+// Valid indicates whether the value is a known member of the ListingCreatedEventType enum.
+func (e ListingCreatedEventType) Valid() bool {
+	switch e {
+	case ListingCreated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingDeletedEventType.
+const (
+	ListingDeleted ListingDeletedEventType = "listing.deleted"
+)
+
+// Valid indicates whether the value is a known member of the ListingDeletedEventType enum.
+func (e ListingDeletedEventType) Valid() bool {
+	switch e {
+	case ListingDeleted:
 		return true
 	default:
 		return false
@@ -705,6 +836,21 @@ func (e ListingSegmentsResponseMyQualityTier) Valid() bool {
 	}
 }
 
+// Defines values for ListingUpdatedEventType.
+const (
+	ListingUpdated ListingUpdatedEventType = "listing.updated"
+)
+
+// Valid indicates whether the value is a known member of the ListingUpdatedEventType enum.
+func (e ListingUpdatedEventType) Valid() bool {
+	switch e {
+	case ListingUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for MarketMyListingType.
 const (
 	Mine MarketMyListingType = "mine"
@@ -732,6 +878,51 @@ func (e MessageDirection) Valid() bool {
 	case Inbound:
 		return true
 	case Outbound:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PaymentCompletedEventType.
+const (
+	PaymentCompleted PaymentCompletedEventType = "payment.completed"
+)
+
+// Valid indicates whether the value is a known member of the PaymentCompletedEventType enum.
+func (e PaymentCompletedEventType) Valid() bool {
+	switch e {
+	case PaymentCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PaymentRefundedEventType.
+const (
+	PaymentRefunded PaymentRefundedEventType = "payment.refunded"
+)
+
+// Valid indicates whether the value is a known member of the PaymentRefundedEventType enum.
+func (e PaymentRefundedEventType) Valid() bool {
+	switch e {
+	case PaymentRefunded:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RepullPingEventType.
+const (
+	RepullPing RepullPingEventType = "repull.ping"
+)
+
+// Valid indicates whether the value is a known member of the RepullPingEventType enum.
+func (e RepullPingEventType) Valid() bool {
+	switch e {
+	case RepullPing:
 		return true
 	default:
 		return false
@@ -792,6 +983,66 @@ func (e ReservationStatus) Valid() bool {
 	case ReservationStatusConfirmed:
 		return true
 	case ReservationStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationCancelledEventType.
+const (
+	ReservationCancelled ReservationCancelledEventType = "reservation.cancelled"
+)
+
+// Valid indicates whether the value is a known member of the ReservationCancelledEventType enum.
+func (e ReservationCancelledEventType) Valid() bool {
+	switch e {
+	case ReservationCancelled:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationCreatedEventType.
+const (
+	ReservationCreated ReservationCreatedEventType = "reservation.created"
+)
+
+// Valid indicates whether the value is a known member of the ReservationCreatedEventType enum.
+func (e ReservationCreatedEventType) Valid() bool {
+	switch e {
+	case ReservationCreated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationMessageReceivedEventType.
+const (
+	ReservationMessageReceived ReservationMessageReceivedEventType = "reservation.message.received"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageReceivedEventType enum.
+func (e ReservationMessageReceivedEventType) Valid() bool {
+	switch e {
+	case ReservationMessageReceived:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationUpdatedEventType.
+const (
+	ReservationUpdated ReservationUpdatedEventType = "reservation.updated"
+)
+
+// Valid indicates whether the value is a known member of the ReservationUpdatedEventType enum.
+func (e ReservationUpdatedEventType) Valid() bool {
+	switch e {
+	case ReservationUpdated:
 		return true
 	default:
 		return false
@@ -861,6 +1112,147 @@ func (e SelectProviderResponsePattern) Valid() bool {
 	}
 }
 
+// Defines values for StudioDeploymentStatus.
+const (
+	StudioDeploymentStatusBuilding     StudioDeploymentStatus = "building"
+	StudioDeploymentStatusFailed       StudioDeploymentStatus = "failed"
+	StudioDeploymentStatusLive         StudioDeploymentStatus = "live"
+	StudioDeploymentStatusProvisioning StudioDeploymentStatus = "provisioning"
+	StudioDeploymentStatusSuspended    StudioDeploymentStatus = "suspended"
+)
+
+// Valid indicates whether the value is a known member of the StudioDeploymentStatus enum.
+func (e StudioDeploymentStatus) Valid() bool {
+	switch e {
+	case StudioDeploymentStatusBuilding:
+		return true
+	case StudioDeploymentStatusFailed:
+		return true
+	case StudioDeploymentStatusLive:
+		return true
+	case StudioDeploymentStatusProvisioning:
+		return true
+	case StudioDeploymentStatusSuspended:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StudioProjectStatus.
+const (
+	StudioProjectStatusArchived StudioProjectStatus = "archived"
+	StudioProjectStatusBuilding StudioProjectStatus = "building"
+	StudioProjectStatusDraft    StudioProjectStatus = "draft"
+	StudioProjectStatusLive     StudioProjectStatus = "live"
+)
+
+// Valid indicates whether the value is a known member of the StudioProjectStatus enum.
+func (e StudioProjectStatus) Valid() bool {
+	switch e {
+	case StudioProjectStatusArchived:
+		return true
+	case StudioProjectStatusBuilding:
+		return true
+	case StudioProjectStatusDraft:
+		return true
+	case StudioProjectStatusLive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebhookEventCatalogEntryDomain.
+const (
+	Accounts     WebhookEventCatalogEntryDomain = "accounts"
+	Ai           WebhookEventCatalogEntryDomain = "ai"
+	Calendar     WebhookEventCatalogEntryDomain = "calendar"
+	Listings     WebhookEventCatalogEntryDomain = "listings"
+	Payments     WebhookEventCatalogEntryDomain = "payments"
+	Reservations WebhookEventCatalogEntryDomain = "reservations"
+	System       WebhookEventCatalogEntryDomain = "system"
+)
+
+// Valid indicates whether the value is a known member of the WebhookEventCatalogEntryDomain enum.
+func (e WebhookEventCatalogEntryDomain) Valid() bool {
+	switch e {
+	case Accounts:
+		return true
+	case Ai:
+		return true
+	case Calendar:
+		return true
+	case Listings:
+		return true
+	case Payments:
+		return true
+	case Reservations:
+		return true
+	case System:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebhookEventType.
+const (
+	WebhookEventTypeAccountCreated             WebhookEventType = "account.created"
+	WebhookEventTypeAccountDisconnected        WebhookEventType = "account.disconnected"
+	WebhookEventTypeAiOperationCompleted       WebhookEventType = "ai.operation.completed"
+	WebhookEventTypeAiOperationFailed          WebhookEventType = "ai.operation.failed"
+	WebhookEventTypeCalendarUpdated            WebhookEventType = "calendar.updated"
+	WebhookEventTypeListingCreated             WebhookEventType = "listing.created"
+	WebhookEventTypeListingDeleted             WebhookEventType = "listing.deleted"
+	WebhookEventTypeListingUpdated             WebhookEventType = "listing.updated"
+	WebhookEventTypePaymentCompleted           WebhookEventType = "payment.completed"
+	WebhookEventTypePaymentRefunded            WebhookEventType = "payment.refunded"
+	WebhookEventTypeRepullPing                 WebhookEventType = "repull.ping"
+	WebhookEventTypeReservationCancelled       WebhookEventType = "reservation.cancelled"
+	WebhookEventTypeReservationCreated         WebhookEventType = "reservation.created"
+	WebhookEventTypeReservationMessageReceived WebhookEventType = "reservation.message.received"
+	WebhookEventTypeReservationUpdated         WebhookEventType = "reservation.updated"
+)
+
+// Valid indicates whether the value is a known member of the WebhookEventType enum.
+func (e WebhookEventType) Valid() bool {
+	switch e {
+	case WebhookEventTypeAccountCreated:
+		return true
+	case WebhookEventTypeAccountDisconnected:
+		return true
+	case WebhookEventTypeAiOperationCompleted:
+		return true
+	case WebhookEventTypeAiOperationFailed:
+		return true
+	case WebhookEventTypeCalendarUpdated:
+		return true
+	case WebhookEventTypeListingCreated:
+		return true
+	case WebhookEventTypeListingDeleted:
+		return true
+	case WebhookEventTypeListingUpdated:
+		return true
+	case WebhookEventTypePaymentCompleted:
+		return true
+	case WebhookEventTypePaymentRefunded:
+		return true
+	case WebhookEventTypeRepullPing:
+		return true
+	case WebhookEventTypeReservationCancelled:
+		return true
+	case WebhookEventTypeReservationCreated:
+		return true
+	case WebhookEventTypeReservationMessageReceived:
+		return true
+	case WebhookEventTypeReservationUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for WebhookSubscriptionStatus.
 const (
 	WebhookSubscriptionStatusActive   WebhookSubscriptionStatus = "active"
@@ -882,6 +1274,57 @@ func (e WebhookSubscriptionStatus) Valid() bool {
 	}
 }
 
+// Defines values for ListStudioDeploymentsParamsStatus.
+const (
+	ListStudioDeploymentsParamsStatusBuilding     ListStudioDeploymentsParamsStatus = "building"
+	ListStudioDeploymentsParamsStatusFailed       ListStudioDeploymentsParamsStatus = "failed"
+	ListStudioDeploymentsParamsStatusLive         ListStudioDeploymentsParamsStatus = "live"
+	ListStudioDeploymentsParamsStatusProvisioning ListStudioDeploymentsParamsStatus = "provisioning"
+	ListStudioDeploymentsParamsStatusSuspended    ListStudioDeploymentsParamsStatus = "suspended"
+)
+
+// Valid indicates whether the value is a known member of the ListStudioDeploymentsParamsStatus enum.
+func (e ListStudioDeploymentsParamsStatus) Valid() bool {
+	switch e {
+	case ListStudioDeploymentsParamsStatusBuilding:
+		return true
+	case ListStudioDeploymentsParamsStatusFailed:
+		return true
+	case ListStudioDeploymentsParamsStatusLive:
+		return true
+	case ListStudioDeploymentsParamsStatusProvisioning:
+		return true
+	case ListStudioDeploymentsParamsStatusSuspended:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateStudioProjectJSONBodyStatus.
+const (
+	UpdateStudioProjectJSONBodyStatusArchived UpdateStudioProjectJSONBodyStatus = "archived"
+	UpdateStudioProjectJSONBodyStatusBuilding UpdateStudioProjectJSONBodyStatus = "building"
+	UpdateStudioProjectJSONBodyStatusDraft    UpdateStudioProjectJSONBodyStatus = "draft"
+	UpdateStudioProjectJSONBodyStatusLive     UpdateStudioProjectJSONBodyStatus = "live"
+)
+
+// Valid indicates whether the value is a known member of the UpdateStudioProjectJSONBodyStatus enum.
+func (e UpdateStudioProjectJSONBodyStatus) Valid() bool {
+	switch e {
+	case UpdateStudioProjectJSONBodyStatusArchived:
+		return true
+	case UpdateStudioProjectJSONBodyStatusBuilding:
+		return true
+	case UpdateStudioProjectJSONBodyStatusDraft:
+		return true
+	case UpdateStudioProjectJSONBodyStatusLive:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateBillingCheckoutJSONBodyPlan.
 const (
 	Growth  CreateBillingCheckoutJSONBodyPlan = "growth"
@@ -897,6 +1340,39 @@ func (e CreateBillingCheckoutJSONBodyPlan) Valid() bool {
 	case Scale:
 		return true
 	case Starter:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListAirbnbReservationsParamsStatus.
+const (
+	ListAirbnbReservationsParamsStatusAccepted           ListAirbnbReservationsParamsStatus = "accepted"
+	ListAirbnbReservationsParamsStatusCancelled          ListAirbnbReservationsParamsStatus = "cancelled"
+	ListAirbnbReservationsParamsStatusCompleted          ListAirbnbReservationsParamsStatus = "completed"
+	ListAirbnbReservationsParamsStatusDenied             ListAirbnbReservationsParamsStatus = "denied"
+	ListAirbnbReservationsParamsStatusFailedVerification ListAirbnbReservationsParamsStatus = "failed_verification"
+	ListAirbnbReservationsParamsStatusPending            ListAirbnbReservationsParamsStatus = "pending"
+	ListAirbnbReservationsParamsStatusRequestVoided      ListAirbnbReservationsParamsStatus = "request_voided"
+)
+
+// Valid indicates whether the value is a known member of the ListAirbnbReservationsParamsStatus enum.
+func (e ListAirbnbReservationsParamsStatus) Valid() bool {
+	switch e {
+	case ListAirbnbReservationsParamsStatusAccepted:
+		return true
+	case ListAirbnbReservationsParamsStatusCancelled:
+		return true
+	case ListAirbnbReservationsParamsStatusCompleted:
+		return true
+	case ListAirbnbReservationsParamsStatusDenied:
+		return true
+	case ListAirbnbReservationsParamsStatusFailedVerification:
+		return true
+	case ListAirbnbReservationsParamsStatusPending:
+		return true
+	case ListAirbnbReservationsParamsStatusRequestVoided:
 		return true
 	default:
 		return false
@@ -950,16 +1426,16 @@ func (e ListConversationsParamsPlatform) Valid() bool {
 
 // Defines values for ListConversationsParamsStatus.
 const (
-	ListConversationsParamsStatusArchived ListConversationsParamsStatus = "archived"
-	ListConversationsParamsStatusOpen     ListConversationsParamsStatus = "open"
+	Archived ListConversationsParamsStatus = "archived"
+	Open     ListConversationsParamsStatus = "open"
 )
 
 // Valid indicates whether the value is a known member of the ListConversationsParamsStatus enum.
 func (e ListConversationsParamsStatus) Valid() bool {
 	switch e {
-	case ListConversationsParamsStatusArchived:
+	case Archived:
 		return true
-	case ListConversationsParamsStatusOpen:
+	case Open:
 		return true
 	default:
 		return false
@@ -1043,8 +1519,9 @@ func (e ListMarketBrowseParamsSort) Valid() bool {
 
 // Defines values for ListPropertiesParamsStatus.
 const (
-	ListPropertiesParamsStatusActive ListPropertiesParamsStatus = "active"
-	ListPropertiesParamsStatusAll    ListPropertiesParamsStatus = "all"
+	ListPropertiesParamsStatusActive   ListPropertiesParamsStatus = "active"
+	ListPropertiesParamsStatusAll      ListPropertiesParamsStatus = "all"
+	ListPropertiesParamsStatusInactive ListPropertiesParamsStatus = "inactive"
 )
 
 // Valid indicates whether the value is a known member of the ListPropertiesParamsStatus enum.
@@ -1054,6 +1531,8 @@ func (e ListPropertiesParamsStatus) Valid() bool {
 		return true
 	case ListPropertiesParamsStatusAll:
 		return true
+	case ListPropertiesParamsStatusInactive:
+		return true
 	default:
 		return false
 	}
@@ -1061,22 +1540,22 @@ func (e ListPropertiesParamsStatus) Valid() bool {
 
 // Defines values for ListReservationsParamsStatus.
 const (
-	ListReservationsParamsStatusCancelled ListReservationsParamsStatus = "cancelled"
-	ListReservationsParamsStatusCompleted ListReservationsParamsStatus = "completed"
-	ListReservationsParamsStatusConfirmed ListReservationsParamsStatus = "confirmed"
-	ListReservationsParamsStatusPending   ListReservationsParamsStatus = "pending"
+	Cancelled ListReservationsParamsStatus = "cancelled"
+	Completed ListReservationsParamsStatus = "completed"
+	Confirmed ListReservationsParamsStatus = "confirmed"
+	Pending   ListReservationsParamsStatus = "pending"
 )
 
 // Valid indicates whether the value is a known member of the ListReservationsParamsStatus enum.
 func (e ListReservationsParamsStatus) Valid() bool {
 	switch e {
-	case ListReservationsParamsStatusCancelled:
+	case Cancelled:
 		return true
-	case ListReservationsParamsStatusCompleted:
+	case Completed:
 		return true
-	case ListReservationsParamsStatusConfirmed:
+	case Confirmed:
 		return true
-	case ListReservationsParamsStatusPending:
+	case Pending:
 		return true
 	default:
 		return false
@@ -1197,23 +1676,162 @@ type AIOperation struct {
 // AIOperationOperation AI operation to perform
 type AIOperationOperation string
 
-// AirbnbListing An Airbnb listing in the host account. Mirrors the Airbnb partner API shape with light normalization.
-type AirbnbListing struct {
-	Bathrooms *float32 `json:"bathrooms,omitempty"`
-	Bedrooms  *int     `json:"bedrooms,omitempty"`
+// AccountCreatedEvent defines model for AccountCreatedEvent.
+type AccountCreatedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
 
-	// Id Airbnb listing ID
-	Id        *string `json:"id,omitempty"`
-	MaxGuests *int    `json:"maxGuests,omitempty"`
+	// Data Payload for `account.created`. An OAuth or API credential connection was completed by an end user.
+	Data AccountCreatedPayload   `json:"data"`
+	Id   *openapi_types.UUID     `json:"id,omitempty"`
+	Type AccountCreatedEventType `json:"type"`
+}
+
+// AccountCreatedEventType defines model for AccountCreatedEvent.Type.
+type AccountCreatedEventType string
+
+// AccountCreatedPayload Payload for `account.created`. An OAuth or API credential connection was completed by an end user.
+type AccountCreatedPayload struct {
+	AccessType *string    `json:"accessType,omitempty"`
+	AccountId  *string    `json:"accountId,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Provider PMS or channel provider id (e.g. airbnb, booking, hostaway).
+	Provider    *string             `json:"provider,omitempty"`
+	WorkspaceId *openapi_types.UUID `json:"workspaceId,omitempty"`
+}
+
+// AccountDisconnectedEvent defines model for AccountDisconnectedEvent.
+type AccountDisconnectedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider.
+	Data AccountDisconnectedPayload   `json:"data"`
+	Id   *openapi_types.UUID          `json:"id,omitempty"`
+	Type AccountDisconnectedEventType `json:"type"`
+}
+
+// AccountDisconnectedEventType defines model for AccountDisconnectedEvent.Type.
+type AccountDisconnectedEventType string
+
+// AccountDisconnectedPayload Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider.
+type AccountDisconnectedPayload struct {
+	AccountId *string `json:"accountId,omitempty"`
+
+	// ConnectionId Stable connection identifier — alias of accountId for this event variant.
+	ConnectionId   *string    `json:"connectionId,omitempty"`
+	DisconnectedAt *time.Time `json:"disconnectedAt,omitempty"`
+	Provider       *string    `json:"provider,omitempty"`
+
+	// Reason Why the connection was lost. `refresh_token_rejected` — upstream OAuth refresh endpoint returned a hard rejection. `manual_disconnect` — host/admin disconnected via the dashboard. `auth_expired` — credentials aged out without ever being used. `revoked_upstream` — provider notified us the user revoked access.
+	Reason      *AccountDisconnectedPayloadReason `json:"reason,omitempty"`
+	WorkspaceId *openapi_types.UUID               `json:"workspaceId,omitempty"`
+}
+
+// AccountDisconnectedPayloadReason Why the connection was lost. `refresh_token_rejected` — upstream OAuth refresh endpoint returned a hard rejection. `manual_disconnect` — host/admin disconnected via the dashboard. `auth_expired` — credentials aged out without ever being used. `revoked_upstream` — provider notified us the user revoked access.
+type AccountDisconnectedPayloadReason string
+
+// AiOperationCompletedEvent defines model for AiOperationCompletedEvent.
+type AiOperationCompletedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `ai.operation.completed`. An async AI run (review response, message draft, pricing suggestion) finished.
+	Data AiOperationCompletedPayload   `json:"data"`
+	Id   *openapi_types.UUID           `json:"id,omitempty"`
+	Type AiOperationCompletedEventType `json:"type"`
+}
+
+// AiOperationCompletedEventType defines model for AiOperationCompletedEvent.Type.
+type AiOperationCompletedEventType string
+
+// AiOperationCompletedPayload Payload for `ai.operation.completed`. An async AI run (review response, message draft, pricing suggestion) finished.
+type AiOperationCompletedPayload struct {
+	CompletedAt  *time.Time `json:"completedAt,omitempty"`
+	InputSummary *string    `json:"inputSummary,omitempty"`
+	OperationId  *string    `json:"operationId,omitempty"`
+
+	// Output Operation-specific output object.
+	Output     *map[string]interface{} `json:"output,omitempty"`
+	TokensUsed *int                    `json:"tokensUsed,omitempty"`
+
+	// Type AI operation kind — e.g. respond-to-guest, price-suggestion, review-response.
+	Type *string `json:"type,omitempty"`
+}
+
+// AiOperationFailedEvent defines model for AiOperationFailedEvent.
+type AiOperationFailedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `ai.operation.failed`. An async AI run terminated with an error and will not be retried.
+	Data AiOperationFailedPayload   `json:"data"`
+	Id   *openapi_types.UUID        `json:"id,omitempty"`
+	Type AiOperationFailedEventType `json:"type"`
+}
+
+// AiOperationFailedEventType defines model for AiOperationFailedEvent.Type.
+type AiOperationFailedEventType string
+
+// AiOperationFailedPayload Payload for `ai.operation.failed`. An async AI run terminated with an error and will not be retried.
+type AiOperationFailedPayload struct {
+	Error *struct {
+		Code    *string `json:"code,omitempty"`
+		Message *string `json:"message,omitempty"`
+	} `json:"error,omitempty"`
+	FailedAt    *time.Time `json:"failedAt,omitempty"`
+	OperationId *string    `json:"operationId,omitempty"`
+	Type        *string    `json:"type,omitempty"`
+}
+
+// AirbnbConnection An Airbnb-side connection record for a Vanio listing. The same property may appear under multiple connections if it has been linked from multiple Airbnb host accounts.
+type AirbnbConnection struct {
+	// UnderscoreErrors Per-expansion failures. Present only when an `?include=` upstream call failed for this connection (others may still succeed).
+	UnderscoreErrors *map[string]struct {
+		Message *string `json:"message,omitempty"`
+		Status  *int    `json:"status,omitempty"`
+	} `json:"_errors,omitempty"`
+
+	// AccessibilityAmenities Present only when `?include=amenities` is passed.
+	AccessibilityAmenities *[]map[string]interface{} `json:"accessibility_amenities,omitempty"`
+	Active                 *bool                     `json:"active,omitempty"`
+
+	// AirbnbId Airbnb-side listing id
+	AirbnbId *string `json:"airbnbId,omitempty"`
+
+	// Amenities Present only when `?include=amenities` is passed. Sourced from `GET /v2/listings/:id/amenities` on Airbnb.
+	Amenities *[]struct {
+		Category  *string `json:"category,omitempty"`
+		Icon      *string `json:"icon,omitempty"`
+		Id        *string `json:"id,omitempty"`
+		IsPresent *bool   `json:"is_present,omitempty"`
+		Name      *string `json:"name,omitempty"`
+	} `json:"amenities,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// HostId Airbnb host user id
+	HostId *string `json:"hostId,omitempty"`
+
+	// Id Connection row id
+	Id *int `json:"id,omitempty"`
+
+	// Markup Decimal markup (e.g. "1.10" for +10%).
+	Markup      *string `json:"markup,omitempty"`
+	Primary     *bool   `json:"primary,omitempty"`
+	SyncEnabled *bool   `json:"syncEnabled,omitempty"`
+}
+
+// AirbnbListing A Vanio listing paired with its Airbnb connection rows. The list endpoint groups every `listings_airbnb` row that points at the same Vanio `listingId` under a single `connections[]` array.
+type AirbnbListing struct {
+	City        *string             `json:"city,omitempty"`
+	Connections *[]AirbnbConnection `json:"connections,omitempty"`
+
+	// ListingId Vanio (Repull) listing id
+	ListingId *int `json:"listingId,omitempty"`
 
 	// Name Listing title
-	Name         *string `json:"name,omitempty"`
-	PropertyType *string `json:"propertyType,omitempty"`
-	RoomType     *string `json:"roomType,omitempty"`
-
-	// Status Listing status (active, unlisted, etc.)
-	Status       *string `json:"status,omitempty"`
-	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // AirbnbListingListResponse defines model for AirbnbListingListResponse.
@@ -1240,12 +1858,12 @@ type AirbnbReservation struct {
 // AirbnbReservationStatus defines model for AirbnbReservation.Status.
 type AirbnbReservationStatus string
 
-// AirbnbReservationListResponse defines model for AirbnbReservationListResponse.
+// AirbnbReservationListResponse Cursor-paginated Airbnb reservation list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page; stop when `pagination.has_more` is `false`.
 type AirbnbReservationListResponse struct {
 	Data *[]AirbnbReservation `json:"data,omitempty"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
-	Pagination *Pagination `json:"pagination,omitempty"`
+	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
 // AirbnbReview An Airbnb review (guest → host or host → guest).
@@ -1496,6 +2114,32 @@ type CalendarDay struct {
 // CalendarResponse defines model for CalendarResponse.
 type CalendarResponse struct {
 	Data *[]CalendarDay `json:"data,omitempty"`
+}
+
+// CalendarUpdatedEvent defines model for CalendarUpdatedEvent.
+type CalendarUpdatedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `calendar.updated`. Availability or pricing for a listing was updated.
+	Data CalendarUpdatedPayload   `json:"data"`
+	Id   *openapi_types.UUID      `json:"id,omitempty"`
+	Type CalendarUpdatedEventType `json:"type"`
+}
+
+// CalendarUpdatedEventType defines model for CalendarUpdatedEvent.Type.
+type CalendarUpdatedEventType string
+
+// CalendarUpdatedPayload Payload for `calendar.updated`. Availability or pricing for a listing was updated.
+type CalendarUpdatedPayload struct {
+	AffectedDates       *int  `json:"affectedDates,omitempty"`
+	AvailabilityChanged *bool `json:"availabilityChanged,omitempty"`
+	ListingId           *int  `json:"listingId,omitempty"`
+	PricingChanged      *bool `json:"pricingChanged,omitempty"`
+	Range               *struct {
+		End   *openapi_types.Date `json:"end,omitempty"`
+		Start *openapi_types.Date `json:"start,omitempty"`
+	} `json:"range,omitempty"`
 }
 
 // ConnectHost Public-facing metadata about the host whose account is linked. Lets clients render an account-level card (avatar + name) instead of just an opaque ID. Email is intentionally NOT exposed for Airbnb — the partner API doesn't return host email.
@@ -2084,6 +2728,56 @@ type ListingCreateResponse struct {
 	Id *string `json:"id,omitempty"`
 }
 
+// ListingCreatedEvent defines model for ListingCreatedEvent.
+type ListingCreatedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `listing.created`. A new property was synced into Repull from a connected PMS or channel.
+	Data ListingCreatedPayload   `json:"data"`
+	Id   *openapi_types.UUID     `json:"id,omitempty"`
+	Type ListingCreatedEventType `json:"type"`
+}
+
+// ListingCreatedEventType defines model for ListingCreatedEvent.Type.
+type ListingCreatedEventType string
+
+// ListingCreatedPayload Payload for `listing.created`. A new property was synced into Repull from a connected PMS or channel.
+type ListingCreatedPayload struct {
+	Address *struct {
+		City    *string `json:"city,omitempty"`
+		Country *string `json:"country,omitempty"`
+		Region  *string `json:"region,omitempty"`
+	} `json:"address,omitempty"`
+	Bathrooms *float32   `json:"bathrooms,omitempty"`
+	Bedrooms  *int       `json:"bedrooms,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	Id        *int       `json:"id,omitempty"`
+	MaxGuests *int       `json:"maxGuests,omitempty"`
+	Title     *string    `json:"title,omitempty"`
+}
+
+// ListingDeletedEvent defines model for ListingDeletedEvent.
+type ListingDeletedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `listing.deleted`. A property was removed from Repull or the upstream PMS.
+	Data ListingDeletedPayload   `json:"data"`
+	Id   *openapi_types.UUID     `json:"id,omitempty"`
+	Type ListingDeletedEventType `json:"type"`
+}
+
+// ListingDeletedEventType defines model for ListingDeletedEvent.Type.
+type ListingDeletedEventType string
+
+// ListingDeletedPayload Payload for `listing.deleted`. A property was removed from Repull or the upstream PMS.
+type ListingDeletedPayload struct {
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
+	Id        *int       `json:"id,omitempty"`
+	Reason    *string    `json:"reason,omitempty"`
+}
+
 // ListingGenerateContentRequest defines model for ListingGenerateContentRequest.
 type ListingGenerateContentRequest struct {
 	// Persist Save the generated content to the listing (so subsequent publishes pick it up).
@@ -2401,6 +3095,28 @@ type ListingSegmentsResponseLevel string
 // ListingSegmentsResponseMyQualityTier defines model for ListingSegmentsResponse.MyQualityTier.
 type ListingSegmentsResponseMyQualityTier string
 
+// ListingUpdatedEvent defines model for ListingUpdatedEvent.
+type ListingUpdatedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `listing.updated`. Listing content, amenities, photos, or status changed.
+	Data ListingUpdatedPayload   `json:"data"`
+	Id   *openapi_types.UUID     `json:"id,omitempty"`
+	Type ListingUpdatedEventType `json:"type"`
+}
+
+// ListingUpdatedEventType defines model for ListingUpdatedEvent.Type.
+type ListingUpdatedEventType string
+
+// ListingUpdatedPayload Payload for `listing.updated`. Listing content, amenities, photos, or status changed.
+type ListingUpdatedPayload struct {
+	// Changes Map of `field` → `{ from, to }` pairs describing what changed.
+	Changes   *map[string]interface{} `json:"changes,omitempty"`
+	Id        *int                    `json:"id,omitempty"`
+	UpdatedAt *time.Time              `json:"updatedAt,omitempty"`
+}
+
 // MapConnectBookingRoomsRequest Body for `POST /v1/connect/booking/map-rooms`. Submits all room→listing assignments in one transaction; on success the Connect session is marked `completed`.
 type MapConnectBookingRoomsRequest struct {
 	Mappings  []BookingRoomMapping `json:"mappings"`
@@ -2643,7 +3359,7 @@ type MarketsOverviewResponse struct {
 		Limit  *int `json:"limit,omitempty"`
 	} `json:"subscriptions,omitempty"`
 
-	// Tier Resolved Repull tier (free / pro / scale).
+	// Tier Resolved Repull tier (free / starter / custom).
 	Tier   *string `json:"tier,omitempty"`
 	Totals *struct {
 		Markets          *int `json:"markets,omitempty"`
@@ -2706,6 +3422,54 @@ type Pagination struct {
 	Total *int `json:"total,omitempty"`
 }
 
+// PaymentCompletedEvent defines model for PaymentCompletedEvent.
+type PaymentCompletedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `payment.completed`. A guest payment was successfully captured.
+	Data PaymentCompletedPayload   `json:"data"`
+	Id   *openapi_types.UUID       `json:"id,omitempty"`
+	Type PaymentCompletedEventType `json:"type"`
+}
+
+// PaymentCompletedEventType defines model for PaymentCompletedEvent.Type.
+type PaymentCompletedEventType string
+
+// PaymentCompletedPayload Payload for `payment.completed`. A guest payment was successfully captured.
+type PaymentCompletedPayload struct {
+	Amount        *string    `json:"amount,omitempty"`
+	CapturedAt    *time.Time `json:"capturedAt,omitempty"`
+	Currency      *string    `json:"currency,omitempty"`
+	Id            *string    `json:"id,omitempty"`
+	Method        *string    `json:"method,omitempty"`
+	ReservationId *int       `json:"reservationId,omitempty"`
+}
+
+// PaymentRefundedEvent defines model for PaymentRefundedEvent.
+type PaymentRefundedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `payment.refunded`. A previous payment was refunded in part or in full.
+	Data PaymentRefundedPayload   `json:"data"`
+	Id   *openapi_types.UUID      `json:"id,omitempty"`
+	Type PaymentRefundedEventType `json:"type"`
+}
+
+// PaymentRefundedEventType defines model for PaymentRefundedEvent.Type.
+type PaymentRefundedEventType string
+
+// PaymentRefundedPayload Payload for `payment.refunded`. A previous payment was refunded in part or in full.
+type PaymentRefundedPayload struct {
+	Amount        *string    `json:"amount,omitempty"`
+	Currency      *string    `json:"currency,omitempty"`
+	Id            *string    `json:"id,omitempty"`
+	RefundId      *string    `json:"refundId,omitempty"`
+	RefundedAt    *time.Time `json:"refundedAt,omitempty"`
+	ReservationId *int       `json:"reservationId,omitempty"`
+}
+
 // PlumguideListing A Plumguide listing.
 type PlumguideListing struct {
 	Id     *string `json:"id,omitempty"`
@@ -2758,6 +3522,25 @@ type PropertyListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
+// RepullPingEvent defines model for RepullPingEvent.
+type RepullPingEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `repull.ping`. A diagnostic delivery used by the dashboard to verify endpoint reachability.
+	Data RepullPingPayload   `json:"data"`
+	Id   *openapi_types.UUID `json:"id,omitempty"`
+	Type RepullPingEventType `json:"type"`
+}
+
+// RepullPingEventType defines model for RepullPingEvent.Type.
+type RepullPingEventType string
+
+// RepullPingPayload Payload for `repull.ping`. A diagnostic delivery used by the dashboard to verify endpoint reachability.
+type RepullPingPayload struct {
+	Message *string `json:"message,omitempty"`
+}
+
 // Reservation A booking/reservation from a connected PMS. Identical shape between list-row (`GET /v1/reservations`) and detail (`GET /v1/reservations/{id}`) — SDK consumers can use the same type for both.
 type Reservation struct {
 	CheckIn  openapi_types.Date `json:"checkIn"`
@@ -2801,12 +3584,137 @@ type ReservationPlatform string
 // ReservationStatus defines model for Reservation.Status.
 type ReservationStatus string
 
+// ReservationCancelledEvent defines model for ReservationCancelledEvent.
+type ReservationCancelledEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `reservation.cancelled`. A reservation was cancelled by the guest, host, or platform.
+	Data ReservationCancelledPayload   `json:"data"`
+	Id   *openapi_types.UUID           `json:"id,omitempty"`
+	Type ReservationCancelledEventType `json:"type"`
+}
+
+// ReservationCancelledEventType defines model for ReservationCancelledEvent.Type.
+type ReservationCancelledEventType string
+
+// ReservationCancelledPayload Payload for `reservation.cancelled`. A reservation was cancelled by the guest, host, or platform.
+type ReservationCancelledPayload struct {
+	CancelledAt *time.Time `json:"cancelledAt,omitempty"`
+
+	// CancelledBy Who initiated the cancellation (guest, host, platform).
+	CancelledBy      *string `json:"cancelledBy,omitempty"`
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+	Id               *int    `json:"id,omitempty"`
+	Reason           *string `json:"reason,omitempty"`
+	Refund           *struct {
+		Amount   *string `json:"amount,omitempty"`
+		Currency *string `json:"currency,omitempty"`
+	} `json:"refund,omitempty"`
+}
+
+// ReservationCreatedEvent defines model for ReservationCreatedEvent.
+type ReservationCreatedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking.
+	Data ReservationCreatedPayload `json:"data"`
+
+	// Id Stable event id — same across delivery retries of the same logical event.
+	Id   *openapi_types.UUID         `json:"id,omitempty"`
+	Type ReservationCreatedEventType `json:"type"`
+}
+
+// ReservationCreatedEventType defines model for ReservationCreatedEvent.Type.
+type ReservationCreatedEventType string
+
+// ReservationCreatedPayload Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking.
+type ReservationCreatedPayload struct {
+	CheckIn          *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckOut         *openapi_types.Date `json:"checkOut,omitempty"`
+	ConfirmationCode *string             `json:"confirmationCode,omitempty"`
+	CreatedAt        *time.Time          `json:"createdAt,omitempty"`
+	Guests           *struct {
+		Adults   *int `json:"adults,omitempty"`
+		Children *int `json:"children,omitempty"`
+		Infants  *int `json:"infants,omitempty"`
+	} `json:"guests,omitempty"`
+	Id        *int    `json:"id,omitempty"`
+	ListingId *int    `json:"listingId,omitempty"`
+	Nights    *int    `json:"nights,omitempty"`
+	Platform  *string `json:"platform,omitempty"`
+	Pricing   *struct {
+		Currency *string `json:"currency,omitempty"`
+		Subtotal *string `json:"subtotal,omitempty"`
+		Taxes    *string `json:"taxes,omitempty"`
+		Total    *string `json:"total,omitempty"`
+	} `json:"pricing,omitempty"`
+	PrimaryGuest *struct {
+		Email     *openapi_types.Email `json:"email,omitempty"`
+		FirstName *string              `json:"firstName,omitempty"`
+		LastName  *string              `json:"lastName,omitempty"`
+	} `json:"primaryGuest,omitempty"`
+	Status *string `json:"status,omitempty"`
+}
+
 // ReservationListResponse Cursor-paginated reservation list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page; stop when `pagination.hasMore` is `false`. The `total` field is the count of rows matching the current filter (across all pages); pass `?include_total=false` to skip the COUNT(*) on very large workspaces.
 type ReservationListResponse struct {
 	Data *[]Reservation `json:"data,omitempty"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
+}
+
+// ReservationMessageReceivedEvent defines model for ReservationMessageReceivedEvent.
+type ReservationMessageReceivedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread.
+	Data ReservationMessageReceivedPayload   `json:"data"`
+	Id   *openapi_types.UUID                 `json:"id,omitempty"`
+	Type ReservationMessageReceivedEventType `json:"type"`
+}
+
+// ReservationMessageReceivedEventType defines model for ReservationMessageReceivedEvent.Type.
+type ReservationMessageReceivedEventType string
+
+// ReservationMessageReceivedPayload Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread.
+type ReservationMessageReceivedPayload struct {
+	Body *string `json:"body,omitempty"`
+	From *struct {
+		Name *string `json:"name,omitempty"`
+
+		// Type Message author (guest, host, system).
+		Type *string `json:"type,omitempty"`
+	} `json:"from,omitempty"`
+	ReservationId *int       `json:"reservationId,omitempty"`
+	SentAt        *time.Time `json:"sentAt,omitempty"`
+	ThreadId      *string    `json:"threadId,omitempty"`
+}
+
+// ReservationUpdatedEvent defines model for ReservationUpdatedEvent.
+type ReservationUpdatedEvent struct {
+	ApiVersion *string    `json:"apiVersion,omitempty"`
+	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+
+	// Data Payload for `reservation.updated`. Dates, guest count, status, or pricing changed on an existing reservation. The `changes` map carries `{ from, to }` deltas for each field that moved.
+	Data ReservationUpdatedPayload   `json:"data"`
+	Id   *openapi_types.UUID         `json:"id,omitempty"`
+	Type ReservationUpdatedEventType `json:"type"`
+}
+
+// ReservationUpdatedEventType defines model for ReservationUpdatedEvent.Type.
+type ReservationUpdatedEventType string
+
+// ReservationUpdatedPayload Payload for `reservation.updated`. Dates, guest count, status, or pricing changed on an existing reservation. The `changes` map carries `{ from, to }` deltas for each field that moved.
+type ReservationUpdatedPayload struct {
+	// Changes Map of `field` → `{ from, to }` pairs describing what changed.
+	Changes          *map[string]interface{} `json:"changes,omitempty"`
+	ConfirmationCode *string                 `json:"confirmationCode,omitempty"`
+	Id               *int                    `json:"id,omitempty"`
+	UpdatedAt        *time.Time              `json:"updatedAt,omitempty"`
 }
 
 // Review A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Populated from main vanio's unified `reviews` table after the per-channel backfill cron has run.
@@ -2897,6 +3805,116 @@ type SelectProviderResponse struct {
 // SelectProviderResponsePattern defines model for SelectProviderResponse.Pattern.
 type SelectProviderResponsePattern string
 
+// StudioDeployment A deployed instance of a Studio project, served from a `*.studio.repull.dev` subdomain.
+type StudioDeployment struct {
+	CreatedAt    *time.Time          `json:"created_at,omitempty"`
+	DeploymentId *openapi_types.UUID `json:"deployment_id,omitempty"`
+	ProjectId    *openapi_types.UUID `json:"project_id,omitempty"`
+
+	// Status Current deployment lifecycle status.
+	Status *StudioDeploymentStatus `json:"status,omitempty"`
+
+	// Subdomain Subdomain assigned to this deployment (e.g. `my-app-a1b2c3`).
+	Subdomain *string `json:"subdomain,omitempty"`
+
+	// SuspendedAt Set when the deployment is paused via `/suspend`.
+	SuspendedAt *time.Time `json:"suspended_at,omitempty"`
+
+	// Url Fully-qualified URL where the deployment is reachable when `status` is `live`.
+	Url *string `json:"url,omitempty"`
+}
+
+// StudioDeploymentStatus Current deployment lifecycle status.
+type StudioDeploymentStatus string
+
+// StudioError Repull-style structured error envelope. Surface the `fix` and `docs_url` to your end users so they can self-serve.
+type StudioError struct {
+	Error *struct {
+		// Code Stable machine-readable error code (e.g. `bad_request`, `not_found`, `rate_limited`).
+		Code string `json:"code"`
+
+		// DocsUrl Link to the docs page that explains this error.
+		DocsUrl *string `json:"docs_url,omitempty"`
+
+		// Fix Suggested next action for the caller (optional).
+		Fix *string `json:"fix,omitempty"`
+
+		// Message Human-readable description of what went wrong.
+		Message string `json:"message"`
+	} `json:"error,omitempty"`
+}
+
+// StudioFile A single source file inside a Studio project. Files are addressed by their relative `path`.
+type StudioFile struct {
+	// Content UTF-8 file contents.
+	Content *string `json:"content,omitempty"`
+
+	// Path Project-relative path, e.g. `src/app/page.tsx`.
+	Path *string `json:"path,omitempty"`
+
+	// Sha256 SHA-256 hex digest of the content — use it to detect drift before writing.
+	Sha256 *string `json:"sha256,omitempty"`
+
+	// Size Byte length of the content.
+	Size      *int       `json:"size,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// StudioGeneration A single Repull AI generation run — captures the prompt, the model output, and token accounting.
+type StudioGeneration struct {
+	CreatedAt    *time.Time          `json:"created_at,omitempty"`
+	GenerationId *openapi_types.UUID `json:"generation_id,omitempty"`
+
+	// Model Model identifier used to produce the response.
+	Model     *string             `json:"model,omitempty"`
+	ProjectId *openapi_types.UUID `json:"project_id,omitempty"`
+	Prompt    *string             `json:"prompt,omitempty"`
+
+	// Response Generated text output.
+	Response *string `json:"response,omitempty"`
+
+	// TokensIn Prompt tokens consumed.
+	TokensIn *int `json:"tokens_in,omitempty"`
+
+	// TokensOut Completion tokens produced.
+	TokensOut *int `json:"tokens_out,omitempty"`
+}
+
+// StudioProject A single Repull Studio project — a vibe-coded app generated from a prompt. Each project has its own files, generations, and deployments.
+type StudioProject struct {
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// CustomerId Owning Repull account ID.
+	CustomerId *int `json:"customer_id,omitempty"`
+
+	// DeletedAt Soft-delete timestamp. `null` for live projects.
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+
+	// Id Project UUID.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// LastActiveAt Updated whenever a file, generation, or deployment is touched.
+	LastActiveAt *time.Time `json:"last_active_at,omitempty"`
+
+	// Name Human-readable project name.
+	Name *string `json:"name,omitempty"`
+
+	// Prompt Initial prompt that seeded the project.
+	Prompt *string `json:"prompt,omitempty"`
+
+	// Slug URL-safe slug (unique within your account). Used for the deployment subdomain.
+	Slug *string `json:"slug,omitempty"`
+
+	// Status Current project lifecycle status.
+	Status *StudioProjectStatus `json:"status,omitempty"`
+
+	// TemplateId Template the project was scaffolded from, if any.
+	TemplateId *string `json:"template_id,omitempty"`
+}
+
+// StudioProjectStatus Current project lifecycle status.
+type StudioProjectStatus string
+
 // VrboListing A VRBO listing.
 type VrboListing struct {
 	Id     *string `json:"id,omitempty"`
@@ -2929,15 +3947,17 @@ type VrboReservationListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
-// WebhookDelivery defines model for WebhookDelivery.
+// WebhookDelivery A single delivery attempt for a webhook event. The actual `WebhookEvent` envelope POSTed to the subscription URL is captured on `WebhookDeliveryDetail.payload` (this list view omits the body for size).
 type WebhookDelivery struct {
 	Attempt      *int       `json:"attempt,omitempty"`
 	CreatedAt    *time.Time `json:"createdAt,omitempty"`
 	ErrorMessage *string    `json:"errorMessage,omitempty"`
 
 	// EventId Stable across retries of the same logical event.
-	EventId        *openapi_types.UUID `json:"eventId,omitempty"`
-	EventType      *string             `json:"eventType,omitempty"`
+	EventId *openapi_types.UUID `json:"eventId,omitempty"`
+
+	// EventType Canonical event type identifier. Every webhook delivery declares one of these in its `type` field; SDKs key the discriminated `WebhookEvent` union on this value.
+	EventType      *WebhookEventType   `json:"eventType,omitempty"`
 	FailedAt       *time.Time          `json:"failedAt,omitempty"`
 	Id             *openapi_types.UUID `json:"id,omitempty"`
 	ResponseTimeMs *int                `json:"responseTimeMs,omitempty"`
@@ -2946,15 +3966,19 @@ type WebhookDelivery struct {
 	Success        *bool               `json:"success,omitempty"`
 }
 
-// WebhookDeliveryDetail defines model for WebhookDeliveryDetail.
+// WebhookDeliveryDetail Full request + response capture for one delivery attempt. `payload` is the exact `WebhookEvent` envelope that was (or would have been) POSTed to the subscription URL.
 type WebhookDeliveryDetail struct {
-	Attempt         *int                    `json:"attempt,omitempty"`
-	CreatedAt       *time.Time              `json:"createdAt,omitempty"`
-	ErrorMessage    *string                 `json:"errorMessage,omitempty"`
-	EventId         *string                 `json:"eventId,omitempty"`
-	EventType       *string                 `json:"eventType,omitempty"`
-	Id              *string                 `json:"id,omitempty"`
-	Payload         *map[string]interface{} `json:"payload,omitempty"`
+	Attempt      *int       `json:"attempt,omitempty"`
+	CreatedAt    *time.Time `json:"createdAt,omitempty"`
+	ErrorMessage *string    `json:"errorMessage,omitempty"`
+	EventId      *string    `json:"eventId,omitempty"`
+
+	// EventType Canonical event type identifier. Every webhook delivery declares one of these in its `type` field; SDKs key the discriminated `WebhookEvent` union on this value.
+	EventType *WebhookEventType `json:"eventType,omitempty"`
+	Id        *string           `json:"id,omitempty"`
+
+	// Payload The full event envelope POSTed to your webhook URL. Discriminated on `type` — narrow `event.data` by switching on `event.type`. Use the matching `*Event` variant directly if your SDK lacks discriminator support.
+	Payload         *WebhookEvent           `json:"payload,omitempty"`
 	RequestHeaders  *map[string]interface{} `json:"requestHeaders,omitempty"`
 	ResponseBody    *string                 `json:"responseBody,omitempty"`
 	ResponseHeaders *map[string]interface{} `json:"responseHeaders,omitempty"`
@@ -2971,20 +3995,41 @@ type WebhookDeliveryListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
-// WebhookEventCatalog defines model for WebhookEventCatalog.
+// WebhookEvent The full event envelope POSTed to your webhook URL. Discriminated on `type` — narrow `event.data` by switching on `event.type`. Use the matching `*Event` variant directly if your SDK lacks discriminator support.
+type WebhookEvent struct {
+	union json.RawMessage
+}
+
+// WebhookEventCatalog Canonical catalog of every event the API can deliver, grouped by domain. Each entry includes a realistic `samplePayload` matching the discriminated `WebhookEvent` union — so SDKs can render docs and dashboards from this single source of truth.
 type WebhookEventCatalog struct {
 	Domains *[]struct {
-		Events *[]struct {
-			Description   *string                 `json:"description,omitempty"`
-			Domain        *string                 `json:"domain,omitempty"`
-			SamplePayload *map[string]interface{} `json:"samplePayload,omitempty"`
-			Title         *string                 `json:"title,omitempty"`
-			Type          *string                 `json:"type,omitempty"`
-		} `json:"events,omitempty"`
-		Id    *string `json:"id,omitempty"`
-		Title *string `json:"title,omitempty"`
+		Events *[]WebhookEventCatalogEntry `json:"events,omitempty"`
+		Id     *string                     `json:"id,omitempty"`
+		Title  *string                     `json:"title,omitempty"`
 	} `json:"domains,omitempty"`
+
+	// Flat All events in a flat list (same entries as `domains[].events`, ungrouped).
+	Flat *[]WebhookEventCatalogEntry `json:"flat,omitempty"`
 }
+
+// WebhookEventCatalogEntry defines model for WebhookEventCatalogEntry.
+type WebhookEventCatalogEntry struct {
+	Description *string                         `json:"description,omitempty"`
+	Domain      *WebhookEventCatalogEntryDomain `json:"domain,omitempty"`
+
+	// SamplePayload Realistic example of the `data` payload an event of this `type` will deliver. Shape matches the matching variant in the `WebhookEvent` discriminated union.
+	SamplePayload *map[string]interface{} `json:"samplePayload,omitempty"`
+	Title         *string                 `json:"title,omitempty"`
+
+	// Type Canonical event type identifier. Every webhook delivery declares one of these in its `type` field; SDKs key the discriminated `WebhookEvent` union on this value.
+	Type *WebhookEventType `json:"type,omitempty"`
+}
+
+// WebhookEventCatalogEntryDomain defines model for WebhookEventCatalogEntry.Domain.
+type WebhookEventCatalogEntryDomain string
+
+// WebhookEventType Canonical event type identifier. Every webhook delivery declares one of these in its `type` field; SDKs key the discriminated `WebhookEvent` union on this value.
+type WebhookEventType string
 
 // WebhookListResponse defines model for WebhookListResponse.
 type WebhookListResponse struct {
@@ -3001,7 +4046,7 @@ type WebhookSubscription struct {
 	CreatedAt           *time.Time          `json:"createdAt,omitempty"`
 	Description         *string             `json:"description,omitempty"`
 	DisabledAt          *time.Time          `json:"disabledAt,omitempty"`
-	Events              *[]string           `json:"events,omitempty"`
+	Events              *[]WebhookEventType `json:"events,omitempty"`
 	Id                  *openapi_types.UUID `json:"id,omitempty"`
 	LastDeliveredAt     *time.Time          `json:"lastDeliveredAt,omitempty"`
 	LastDeliveryStatus  *int                `json:"lastDeliveryStatus,omitempty"`
@@ -3021,6 +4066,9 @@ type WebhookSubscriptionStatus string
 
 // IncludeTotal defines model for IncludeTotal.
 type IncludeTotal = bool
+
+// Offset defines model for Offset.
+type Offset = int
 
 // XSchemaHeader defines model for XSchemaHeader.
 type XSchemaHeader = string
@@ -3058,6 +4106,86 @@ type Unauthorized = Error
 // UnprocessableEntity Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type UnprocessableEntity = Error
 
+// ListStudioDeploymentsParams defines parameters for ListStudioDeployments.
+type ListStudioDeploymentsParams struct {
+	// ProjectId Optional — restrict the list to a single project.
+	ProjectId *openapi_types.UUID                `form:"project_id,omitempty" json:"project_id,omitempty"`
+	Status    *ListStudioDeploymentsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+	Limit     *int                               `form:"limit,omitempty" json:"limit,omitempty"`
+	Offset    *int                               `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// ListStudioDeploymentsParamsStatus defines parameters for ListStudioDeployments.
+type ListStudioDeploymentsParamsStatus string
+
+// CreateStudioDeploymentJSONBody defines parameters for CreateStudioDeployment.
+type CreateStudioDeploymentJSONBody struct {
+	// ProjectId Project to deploy.
+	ProjectId openapi_types.UUID `json:"project_id"`
+}
+
+// GenerateStudioCompletionJSONBody defines parameters for GenerateStudioCompletion.
+type GenerateStudioCompletionJSONBody struct {
+	// MaxTokens Maximum completion tokens.
+	MaxTokens *int `json:"max_tokens,omitempty"`
+
+	// ProjectId Project the generation belongs to (used for billing + rate limits).
+	ProjectId GenerateStudioCompletionJSONBody_ProjectId `json:"project_id"`
+
+	// Prompt User prompt. Up to 32,000 characters.
+	Prompt string `json:"prompt"`
+
+	// SystemPrompt Optional system prompt to steer the response.
+	SystemPrompt *string `json:"system_prompt,omitempty"`
+
+	// Temperature Sampling temperature. Defaults to model preset.
+	Temperature *float32 `json:"temperature,omitempty"`
+}
+
+// GenerateStudioCompletionJSONBodyProjectId0 defines parameters for GenerateStudioCompletion.
+type GenerateStudioCompletionJSONBodyProjectId0 = string
+
+// GenerateStudioCompletionJSONBodyProjectId1 defines parameters for GenerateStudioCompletion.
+type GenerateStudioCompletionJSONBodyProjectId1 = int
+
+// GenerateStudioCompletionJSONBody_ProjectId defines parameters for GenerateStudioCompletion.
+type GenerateStudioCompletionJSONBody_ProjectId struct {
+	union json.RawMessage
+}
+
+// CreateStudioProjectJSONBody defines parameters for CreateStudioProject.
+type CreateStudioProjectJSONBody struct {
+	// Name Human-readable project name. Used to derive the slug.
+	Name string `json:"name"`
+
+	// Prompt Initial prompt that seeds the project. Repull AI scaffolds the first generation from this.
+	Prompt string `json:"prompt"`
+
+	// TemplateId Optional template to start from (e.g. `next-saas`). Omit to generate from prompt only.
+	TemplateId *string `json:"template_id,omitempty"`
+}
+
+// UpdateStudioProjectJSONBody defines parameters for UpdateStudioProject.
+type UpdateStudioProjectJSONBody struct {
+	Name   *string                            `json:"name,omitempty"`
+	Status *UpdateStudioProjectJSONBodyStatus `json:"status,omitempty"`
+}
+
+// UpdateStudioProjectJSONBodyStatus defines parameters for UpdateStudioProject.
+type UpdateStudioProjectJSONBodyStatus string
+
+// UpsertStudioProjectFileJSONBody defines parameters for UpsertStudioProjectFile.
+type UpsertStudioProjectFileJSONBody struct {
+	// Content Full UTF-8 file contents — partial updates are not supported.
+	Content string `json:"content"`
+}
+
+// CreateStudioProjectGenerationJSONBody defines parameters for CreateStudioProjectGeneration.
+type CreateStudioProjectGenerationJSONBody struct {
+	// Prompt Prompt to send to Repull AI.
+	Prompt string `json:"prompt"`
+}
+
 // GetAvailabilityParams defines parameters for GetAvailability.
 type GetAvailabilityParams struct {
 	StartDate openapi_types.Date `form:"startDate" json:"startDate"`
@@ -3077,6 +4205,54 @@ type CreateBillingCheckoutJSONBody struct {
 // CreateBillingCheckoutJSONBodyPlan defines parameters for CreateBillingCheckout.
 type CreateBillingCheckoutJSONBodyPlan string
 
+// ListAirbnbListingsParams defines parameters for ListAirbnbListings.
+type ListAirbnbListingsParams struct {
+	// Include Comma-separated expansions. Currently supported: `amenities` (adds `amenities` and `accessibility_amenities` arrays to each connection). Each expansion adds one upstream Airbnb call per unique listing id.
+	Include *string `form:"include,omitempty" json:"include,omitempty"`
+}
+
+// GetAirbnbListingParams defines parameters for GetAirbnbListing.
+type GetAirbnbListingParams struct {
+	// Include Comma-separated expansions. Currently supported: `amenities`.
+	Include *string `form:"include,omitempty" json:"include,omitempty"`
+}
+
+// ListAirbnbReservationsParams defines parameters for ListAirbnbReservations.
+type ListAirbnbReservationsParams struct {
+	// Cursor Opaque cursor returned by the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit Max items per page. Hard cap is 100.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// ListingId Filter to one Airbnb listing id (numeric string).
+	ListingId *string `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+
+	// Status Filter by reservation status. Omit to receive all statuses.
+	Status *ListAirbnbReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// StartDate ISO 8601 (YYYY-MM-DD) lower bound on Airbnb's date range filter.
+	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+
+	// EndDate ISO 8601 (YYYY-MM-DD) upper bound on Airbnb's date range filter.
+	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+
+	// IncludeTotal Whether to include `pagination.total`. Always populated when Airbnb returns a total count (effectively always); accepted for shape symmetry with the rest of the API.
+	IncludeTotal *bool `form:"include_total,omitempty" json:"include_total,omitempty"`
+}
+
+// ListAirbnbReservationsParamsStatus defines parameters for ListAirbnbReservations.
+type ListAirbnbReservationsParamsStatus string
+
+// RespondAirbnbReviewJSONBody defines parameters for RespondAirbnbReview.
+type RespondAirbnbReviewJSONBody struct {
+	// Response Public response text. Capped at 1000 characters.
+	Response string `json:"response"`
+}
+
 // GetBookingListingPricingParams defines parameters for GetBookingListingPricing.
 type GetBookingListingPricingParams struct {
 	StartDate    *openapi_types.Date `form:"startDate,omitempty" json:"startDate,omitempty"`
@@ -3085,6 +4261,37 @@ type GetBookingListingPricingParams struct {
 
 	// RoomLevel When true, returns room-level (vs rate-plan-level) availability.
 	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
+}
+
+// ListBookingReviewsParams defines parameters for ListBookingReviews.
+type ListBookingReviewsParams struct {
+	// PropertyId Booking.com hotel/property id.
+	PropertyId string `form:"property_id" json:"property_id"`
+}
+
+// ReplyBookingReviewJSONBody defines parameters for ReplyBookingReview.
+type ReplyBookingReviewJSONBody struct {
+	// PropertyId Booking.com hotel/property id.
+	PropertyId string `json:"property_id"`
+
+	// Response Public host reply text.
+	Response string `json:"response"`
+
+	// ReviewId Booking.com review id (from `GET /v1/channels/booking/reviews`).
+	ReviewId string `json:"review_id"`
+}
+
+// ListVrboReservationsParams defines parameters for ListVrboReservations.
+type ListVrboReservationsParams struct {
+	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
+	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
 }
 
 // CreateConnectSessionJSONBody defines parameters for CreateConnectSession.
@@ -3137,6 +4344,9 @@ type ListConversationsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+
 	// Limit Max items per page. Hard cap is 100.
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -3183,6 +4393,9 @@ type ListGuestsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+
 	// Limit Max items per page. Hard cap is 100.
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -3209,6 +4422,9 @@ type GetGuestParams struct {
 type ListListingsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Limit Max items per page. Hard cap is 100.
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -3296,7 +4512,10 @@ type ListMarketBrowseParams struct {
 	MinListings *int `form:"min_listings,omitempty" json:"min_listings,omitempty"`
 
 	// Cursor Opaque cursor returned by the previous page's `pagination.nextCursor`.
-	Cursor *string                     `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset                     `form:"offset,omitempty" json:"offset,omitempty"`
 	Limit  *int                        `form:"limit,omitempty" json:"limit,omitempty"`
 	Sort   *ListMarketBrowseParamsSort `form:"sort,omitempty" json:"sort,omitempty"`
 }
@@ -3330,8 +4549,17 @@ type ListPropertiesParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Status Filter by status. Default returns active only; pass `all` to include inactive.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Q Case-insensitive substring search on name, street, or city.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// Status Filter by status. Default returns active only; pass `inactive` to invert or `all` to include both.
 	Status *ListPropertiesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// LifecycleStatus Filter by lifecycle status (e.g. `live`, `draft`, `archived`). Pass `all` to disable the filter.
+	LifecycleStatus *string `form:"lifecycle_status,omitempty" json:"lifecycle_status,omitempty"`
 
 	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
 	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
@@ -3347,6 +4575,9 @@ type ListReservationsParams struct {
 
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Platform Filter by booking platform
 	Platform *string                       `form:"platform,omitempty" json:"platform,omitempty"`
@@ -3408,7 +4639,10 @@ type UpdateReservationJSONBody struct {
 // ListReviewsParams defines parameters for ListReviews.
 type ListReviewsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
-	Cursor   *string                    `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset   *Offset                    `form:"offset,omitempty" json:"offset,omitempty"`
 	Limit    *int                       `form:"limit,omitempty" json:"limit,omitempty"`
 	Platform *ListReviewsParamsPlatform `form:"platform,omitempty" json:"platform,omitempty"`
 
@@ -3444,23 +4678,24 @@ type GetReviewParams struct {
 
 // CreateWebhookJSONBody defines parameters for CreateWebhook.
 type CreateWebhookJSONBody struct {
-	ApiVersion  *string  `json:"apiVersion,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	Events      []string `json:"events"`
-	Url         string   `json:"url"`
+	ApiVersion  *string            `json:"apiVersion,omitempty"`
+	Description *string            `json:"description,omitempty"`
+	Events      []WebhookEventType `json:"events"`
+	Url         string             `json:"url"`
 }
 
 // TestWebhookJSONBody defines parameters for TestWebhook.
 type TestWebhookJSONBody struct {
-	EventType     *string `json:"event_type,omitempty"`
-	SigningSecret *string `json:"signing_secret,omitempty"`
-	Url           *string `json:"url,omitempty"`
+	// EventType Canonical event type identifier. Every webhook delivery declares one of these in its `type` field; SDKs key the discriminated `WebhookEvent` union on this value.
+	EventType     *WebhookEventType `json:"event_type,omitempty"`
+	SigningSecret *string           `json:"signing_secret,omitempty"`
+	Url           *string           `json:"url,omitempty"`
 }
 
 // UpdateWebhookJSONBody defines parameters for UpdateWebhook.
 type UpdateWebhookJSONBody struct {
 	Description *string                      `json:"description,omitempty"`
-	Events      *[]string                    `json:"events,omitempty"`
+	Events      *[]WebhookEventType          `json:"events,omitempty"`
 	Status      *UpdateWebhookJSONBodyStatus `json:"status,omitempty"`
 	Url         *string                      `json:"url,omitempty"`
 }
@@ -3470,13 +4705,34 @@ type UpdateWebhookJSONBodyStatus string
 
 // ListWebhookDeliveriesParams defines parameters for ListWebhookDeliveries.
 type ListWebhookDeliveriesParams struct {
-	Limit  *int                               `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor *string                            `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset                            `form:"offset,omitempty" json:"offset,omitempty"`
 	Status *ListWebhookDeliveriesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 }
 
 // ListWebhookDeliveriesParamsStatus defines parameters for ListWebhookDeliveries.
 type ListWebhookDeliveriesParamsStatus string
+
+// CreateStudioDeploymentJSONRequestBody defines body for CreateStudioDeployment for application/json ContentType.
+type CreateStudioDeploymentJSONRequestBody CreateStudioDeploymentJSONBody
+
+// GenerateStudioCompletionJSONRequestBody defines body for GenerateStudioCompletion for application/json ContentType.
+type GenerateStudioCompletionJSONRequestBody GenerateStudioCompletionJSONBody
+
+// CreateStudioProjectJSONRequestBody defines body for CreateStudioProject for application/json ContentType.
+type CreateStudioProjectJSONRequestBody CreateStudioProjectJSONBody
+
+// UpdateStudioProjectJSONRequestBody defines body for UpdateStudioProject for application/json ContentType.
+type UpdateStudioProjectJSONRequestBody UpdateStudioProjectJSONBody
+
+// UpsertStudioProjectFileJSONRequestBody defines body for UpsertStudioProjectFile for application/json ContentType.
+type UpsertStudioProjectFileJSONRequestBody UpsertStudioProjectFileJSONBody
+
+// CreateStudioProjectGenerationJSONRequestBody defines body for CreateStudioProjectGeneration for application/json ContentType.
+type CreateStudioProjectGenerationJSONRequestBody CreateStudioProjectGenerationJSONBody
 
 // CreateAiOperationJSONRequestBody defines body for CreateAiOperation for application/json ContentType.
 type CreateAiOperationJSONRequestBody = AIOperation
@@ -3487,8 +4743,17 @@ type UpdateAvailabilityJSONRequestBody UpdateAvailabilityJSONBody
 // CreateBillingCheckoutJSONRequestBody defines body for CreateBillingCheckout for application/json ContentType.
 type CreateBillingCheckoutJSONRequestBody CreateBillingCheckoutJSONBody
 
+// EditAirbnbReviewJSONRequestBody defines body for EditAirbnbReview for application/json ContentType.
+type EditAirbnbReviewJSONRequestBody = AirbnbReview
+
+// RespondAirbnbReviewJSONRequestBody defines body for RespondAirbnbReview for application/json ContentType.
+type RespondAirbnbReviewJSONRequestBody RespondAirbnbReviewJSONBody
+
 // UpdateBookingListingPricingJSONRequestBody defines body for UpdateBookingListingPricing for application/json ContentType.
 type UpdateBookingListingPricingJSONRequestBody = BookingPricingUpdateRequest
+
+// ReplyBookingReviewJSONRequestBody defines body for ReplyBookingReview for application/json ContentType.
+type ReplyBookingReviewJSONRequestBody ReplyBookingReviewJSONBody
 
 // CreateConnectSessionJSONRequestBody defines body for CreateConnectSession for application/json ContentType.
 type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
@@ -3625,4 +4890,483 @@ func (a BookingPricingResponse) MarshalJSON() ([]byte, error) {
 		}
 	}
 	return json.Marshal(object)
+}
+
+// AsReservationCreatedEvent returns the union data inside the WebhookEvent as a ReservationCreatedEvent
+func (t WebhookEvent) AsReservationCreatedEvent() (ReservationCreatedEvent, error) {
+	var body ReservationCreatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationCreatedEvent overwrites any union data inside the WebhookEvent as the provided ReservationCreatedEvent
+func (t *WebhookEvent) FromReservationCreatedEvent(v ReservationCreatedEvent) error {
+	v.Type = "reservation.created"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeReservationCreatedEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationCreatedEvent
+func (t *WebhookEvent) MergeReservationCreatedEvent(v ReservationCreatedEvent) error {
+	v.Type = "reservation.created"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReservationUpdatedEvent returns the union data inside the WebhookEvent as a ReservationUpdatedEvent
+func (t WebhookEvent) AsReservationUpdatedEvent() (ReservationUpdatedEvent, error) {
+	var body ReservationUpdatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationUpdatedEvent overwrites any union data inside the WebhookEvent as the provided ReservationUpdatedEvent
+func (t *WebhookEvent) FromReservationUpdatedEvent(v ReservationUpdatedEvent) error {
+	v.Type = "reservation.updated"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeReservationUpdatedEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationUpdatedEvent
+func (t *WebhookEvent) MergeReservationUpdatedEvent(v ReservationUpdatedEvent) error {
+	v.Type = "reservation.updated"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReservationCancelledEvent returns the union data inside the WebhookEvent as a ReservationCancelledEvent
+func (t WebhookEvent) AsReservationCancelledEvent() (ReservationCancelledEvent, error) {
+	var body ReservationCancelledEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationCancelledEvent overwrites any union data inside the WebhookEvent as the provided ReservationCancelledEvent
+func (t *WebhookEvent) FromReservationCancelledEvent(v ReservationCancelledEvent) error {
+	v.Type = "reservation.cancelled"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeReservationCancelledEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationCancelledEvent
+func (t *WebhookEvent) MergeReservationCancelledEvent(v ReservationCancelledEvent) error {
+	v.Type = "reservation.cancelled"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReservationMessageReceivedEvent returns the union data inside the WebhookEvent as a ReservationMessageReceivedEvent
+func (t WebhookEvent) AsReservationMessageReceivedEvent() (ReservationMessageReceivedEvent, error) {
+	var body ReservationMessageReceivedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationMessageReceivedEvent overwrites any union data inside the WebhookEvent as the provided ReservationMessageReceivedEvent
+func (t *WebhookEvent) FromReservationMessageReceivedEvent(v ReservationMessageReceivedEvent) error {
+	v.Type = "reservation.message.received"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeReservationMessageReceivedEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationMessageReceivedEvent
+func (t *WebhookEvent) MergeReservationMessageReceivedEvent(v ReservationMessageReceivedEvent) error {
+	v.Type = "reservation.message.received"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsListingCreatedEvent returns the union data inside the WebhookEvent as a ListingCreatedEvent
+func (t WebhookEvent) AsListingCreatedEvent() (ListingCreatedEvent, error) {
+	var body ListingCreatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingCreatedEvent overwrites any union data inside the WebhookEvent as the provided ListingCreatedEvent
+func (t *WebhookEvent) FromListingCreatedEvent(v ListingCreatedEvent) error {
+	v.Type = "listing.created"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListingCreatedEvent performs a merge with any union data inside the WebhookEvent, using the provided ListingCreatedEvent
+func (t *WebhookEvent) MergeListingCreatedEvent(v ListingCreatedEvent) error {
+	v.Type = "listing.created"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsListingUpdatedEvent returns the union data inside the WebhookEvent as a ListingUpdatedEvent
+func (t WebhookEvent) AsListingUpdatedEvent() (ListingUpdatedEvent, error) {
+	var body ListingUpdatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingUpdatedEvent overwrites any union data inside the WebhookEvent as the provided ListingUpdatedEvent
+func (t *WebhookEvent) FromListingUpdatedEvent(v ListingUpdatedEvent) error {
+	v.Type = "listing.updated"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListingUpdatedEvent performs a merge with any union data inside the WebhookEvent, using the provided ListingUpdatedEvent
+func (t *WebhookEvent) MergeListingUpdatedEvent(v ListingUpdatedEvent) error {
+	v.Type = "listing.updated"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsListingDeletedEvent returns the union data inside the WebhookEvent as a ListingDeletedEvent
+func (t WebhookEvent) AsListingDeletedEvent() (ListingDeletedEvent, error) {
+	var body ListingDeletedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingDeletedEvent overwrites any union data inside the WebhookEvent as the provided ListingDeletedEvent
+func (t *WebhookEvent) FromListingDeletedEvent(v ListingDeletedEvent) error {
+	v.Type = "listing.deleted"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListingDeletedEvent performs a merge with any union data inside the WebhookEvent, using the provided ListingDeletedEvent
+func (t *WebhookEvent) MergeListingDeletedEvent(v ListingDeletedEvent) error {
+	v.Type = "listing.deleted"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCalendarUpdatedEvent returns the union data inside the WebhookEvent as a CalendarUpdatedEvent
+func (t WebhookEvent) AsCalendarUpdatedEvent() (CalendarUpdatedEvent, error) {
+	var body CalendarUpdatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCalendarUpdatedEvent overwrites any union data inside the WebhookEvent as the provided CalendarUpdatedEvent
+func (t *WebhookEvent) FromCalendarUpdatedEvent(v CalendarUpdatedEvent) error {
+	v.Type = "calendar.updated"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCalendarUpdatedEvent performs a merge with any union data inside the WebhookEvent, using the provided CalendarUpdatedEvent
+func (t *WebhookEvent) MergeCalendarUpdatedEvent(v CalendarUpdatedEvent) error {
+	v.Type = "calendar.updated"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAccountCreatedEvent returns the union data inside the WebhookEvent as a AccountCreatedEvent
+func (t WebhookEvent) AsAccountCreatedEvent() (AccountCreatedEvent, error) {
+	var body AccountCreatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAccountCreatedEvent overwrites any union data inside the WebhookEvent as the provided AccountCreatedEvent
+func (t *WebhookEvent) FromAccountCreatedEvent(v AccountCreatedEvent) error {
+	v.Type = "account.created"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAccountCreatedEvent performs a merge with any union data inside the WebhookEvent, using the provided AccountCreatedEvent
+func (t *WebhookEvent) MergeAccountCreatedEvent(v AccountCreatedEvent) error {
+	v.Type = "account.created"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAccountDisconnectedEvent returns the union data inside the WebhookEvent as a AccountDisconnectedEvent
+func (t WebhookEvent) AsAccountDisconnectedEvent() (AccountDisconnectedEvent, error) {
+	var body AccountDisconnectedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAccountDisconnectedEvent overwrites any union data inside the WebhookEvent as the provided AccountDisconnectedEvent
+func (t *WebhookEvent) FromAccountDisconnectedEvent(v AccountDisconnectedEvent) error {
+	v.Type = "account.disconnected"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAccountDisconnectedEvent performs a merge with any union data inside the WebhookEvent, using the provided AccountDisconnectedEvent
+func (t *WebhookEvent) MergeAccountDisconnectedEvent(v AccountDisconnectedEvent) error {
+	v.Type = "account.disconnected"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAiOperationCompletedEvent returns the union data inside the WebhookEvent as a AiOperationCompletedEvent
+func (t WebhookEvent) AsAiOperationCompletedEvent() (AiOperationCompletedEvent, error) {
+	var body AiOperationCompletedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAiOperationCompletedEvent overwrites any union data inside the WebhookEvent as the provided AiOperationCompletedEvent
+func (t *WebhookEvent) FromAiOperationCompletedEvent(v AiOperationCompletedEvent) error {
+	v.Type = "ai.operation.completed"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAiOperationCompletedEvent performs a merge with any union data inside the WebhookEvent, using the provided AiOperationCompletedEvent
+func (t *WebhookEvent) MergeAiOperationCompletedEvent(v AiOperationCompletedEvent) error {
+	v.Type = "ai.operation.completed"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAiOperationFailedEvent returns the union data inside the WebhookEvent as a AiOperationFailedEvent
+func (t WebhookEvent) AsAiOperationFailedEvent() (AiOperationFailedEvent, error) {
+	var body AiOperationFailedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAiOperationFailedEvent overwrites any union data inside the WebhookEvent as the provided AiOperationFailedEvent
+func (t *WebhookEvent) FromAiOperationFailedEvent(v AiOperationFailedEvent) error {
+	v.Type = "ai.operation.failed"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAiOperationFailedEvent performs a merge with any union data inside the WebhookEvent, using the provided AiOperationFailedEvent
+func (t *WebhookEvent) MergeAiOperationFailedEvent(v AiOperationFailedEvent) error {
+	v.Type = "ai.operation.failed"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPaymentCompletedEvent returns the union data inside the WebhookEvent as a PaymentCompletedEvent
+func (t WebhookEvent) AsPaymentCompletedEvent() (PaymentCompletedEvent, error) {
+	var body PaymentCompletedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPaymentCompletedEvent overwrites any union data inside the WebhookEvent as the provided PaymentCompletedEvent
+func (t *WebhookEvent) FromPaymentCompletedEvent(v PaymentCompletedEvent) error {
+	v.Type = "payment.completed"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePaymentCompletedEvent performs a merge with any union data inside the WebhookEvent, using the provided PaymentCompletedEvent
+func (t *WebhookEvent) MergePaymentCompletedEvent(v PaymentCompletedEvent) error {
+	v.Type = "payment.completed"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPaymentRefundedEvent returns the union data inside the WebhookEvent as a PaymentRefundedEvent
+func (t WebhookEvent) AsPaymentRefundedEvent() (PaymentRefundedEvent, error) {
+	var body PaymentRefundedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPaymentRefundedEvent overwrites any union data inside the WebhookEvent as the provided PaymentRefundedEvent
+func (t *WebhookEvent) FromPaymentRefundedEvent(v PaymentRefundedEvent) error {
+	v.Type = "payment.refunded"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePaymentRefundedEvent performs a merge with any union data inside the WebhookEvent, using the provided PaymentRefundedEvent
+func (t *WebhookEvent) MergePaymentRefundedEvent(v PaymentRefundedEvent) error {
+	v.Type = "payment.refunded"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsRepullPingEvent returns the union data inside the WebhookEvent as a RepullPingEvent
+func (t WebhookEvent) AsRepullPingEvent() (RepullPingEvent, error) {
+	var body RepullPingEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRepullPingEvent overwrites any union data inside the WebhookEvent as the provided RepullPingEvent
+func (t *WebhookEvent) FromRepullPingEvent(v RepullPingEvent) error {
+	v.Type = "repull.ping"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRepullPingEvent performs a merge with any union data inside the WebhookEvent, using the provided RepullPingEvent
+func (t *WebhookEvent) MergeRepullPingEvent(v RepullPingEvent) error {
+	v.Type = "repull.ping"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t WebhookEvent) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "account.created":
+		return t.AsAccountCreatedEvent()
+	case "account.disconnected":
+		return t.AsAccountDisconnectedEvent()
+	case "ai.operation.completed":
+		return t.AsAiOperationCompletedEvent()
+	case "ai.operation.failed":
+		return t.AsAiOperationFailedEvent()
+	case "calendar.updated":
+		return t.AsCalendarUpdatedEvent()
+	case "listing.created":
+		return t.AsListingCreatedEvent()
+	case "listing.deleted":
+		return t.AsListingDeletedEvent()
+	case "listing.updated":
+		return t.AsListingUpdatedEvent()
+	case "payment.completed":
+		return t.AsPaymentCompletedEvent()
+	case "payment.refunded":
+		return t.AsPaymentRefundedEvent()
+	case "repull.ping":
+		return t.AsRepullPingEvent()
+	case "reservation.cancelled":
+		return t.AsReservationCancelledEvent()
+	case "reservation.created":
+		return t.AsReservationCreatedEvent()
+	case "reservation.message.received":
+		return t.AsReservationMessageReceivedEvent()
+	case "reservation.updated":
+		return t.AsReservationUpdatedEvent()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t WebhookEvent) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *WebhookEvent) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
 }

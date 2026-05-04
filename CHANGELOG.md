@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.2.1 — 2026-05-04
+
+### Added — Studio routes (16 ops)
+
+Repull Studio is now reachable from the Go SDK. The generated `repull` package
+gains 16 new client methods spanning 10 paths under `/api/studio/*`:
+
+- `ListStudioProjects`, `CreateStudioProject`, `GetStudioProject`,
+  `UpdateStudioProject`, `DeleteStudioProject`
+- `ListStudioProjectFiles`, `UpsertStudioProjectFile`,
+  `DeleteStudioProjectFile`
+- `CreateStudioProjectGeneration`, `GenerateStudioCompletion`
+- `ListStudioDeployments`, `CreateStudioDeployment`,
+  `GetStudioDeployment`, `DeleteStudioDeployment`,
+  `SuspendStudioDeployment`, `WakeStudioDeployment`
+
+New types: `StudioProject`, `StudioFile`, `StudioGeneration`,
+`StudioDeployment`, `StudioError`.
+
 ## v0.2.0 — 2026-05-02
 
 **MAJOR — coordinated breaking-change release across the Repull SDK fleet (TS, Python, PHP, Ruby, .NET, Go).** The Repull API converged on a single canonical envelope shape, camelCase field names, and string-typed IDs. This version of the Go SDK regenerates against that converged spec.
