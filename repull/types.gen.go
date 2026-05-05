@@ -811,25 +811,25 @@ func (e ListingSegmentsResponseLevel) Valid() bool {
 
 // Defines values for ListingSegmentsResponseMyQualityTier.
 const (
-	Budget      ListingSegmentsResponseMyQualityTier = "budget"
-	LessThannil ListingSegmentsResponseMyQualityTier = "<nil>"
-	Luxury      ListingSegmentsResponseMyQualityTier = "luxury"
-	Standard    ListingSegmentsResponseMyQualityTier = "standard"
-	Upscale     ListingSegmentsResponseMyQualityTier = "upscale"
+	ListingSegmentsResponseMyQualityTierBudget      ListingSegmentsResponseMyQualityTier = "budget"
+	ListingSegmentsResponseMyQualityTierLessThannil ListingSegmentsResponseMyQualityTier = "<nil>"
+	ListingSegmentsResponseMyQualityTierLuxury      ListingSegmentsResponseMyQualityTier = "luxury"
+	ListingSegmentsResponseMyQualityTierStandard    ListingSegmentsResponseMyQualityTier = "standard"
+	ListingSegmentsResponseMyQualityTierUpscale     ListingSegmentsResponseMyQualityTier = "upscale"
 )
 
 // Valid indicates whether the value is a known member of the ListingSegmentsResponseMyQualityTier enum.
 func (e ListingSegmentsResponseMyQualityTier) Valid() bool {
 	switch e {
-	case Budget:
+	case ListingSegmentsResponseMyQualityTierBudget:
 		return true
-	case LessThannil:
+	case ListingSegmentsResponseMyQualityTierLessThannil:
 		return true
-	case Luxury:
+	case ListingSegmentsResponseMyQualityTierLuxury:
 		return true
-	case Standard:
+	case ListingSegmentsResponseMyQualityTierStandard:
 		return true
-	case Upscale:
+	case ListingSegmentsResponseMyQualityTierUpscale:
 		return true
 	default:
 		return false
@@ -965,6 +965,42 @@ func (e ReservationPlatform) Valid() bool {
 	}
 }
 
+// Defines values for ReservationSource.
+const (
+	ReservationSourceAirbnb      ReservationSource = "airbnb"
+	ReservationSourceBookingCom  ReservationSource = "booking.com"
+	ReservationSourceDirect      ReservationSource = "direct"
+	ReservationSourceLessThannil ReservationSource = "<nil>"
+	ReservationSourceOther       ReservationSource = "other"
+	ReservationSourceOwner       ReservationSource = "owner"
+	ReservationSourceVrbo        ReservationSource = "vrbo"
+	ReservationSourceWebsite     ReservationSource = "website"
+)
+
+// Valid indicates whether the value is a known member of the ReservationSource enum.
+func (e ReservationSource) Valid() bool {
+	switch e {
+	case ReservationSourceAirbnb:
+		return true
+	case ReservationSourceBookingCom:
+		return true
+	case ReservationSourceDirect:
+		return true
+	case ReservationSourceLessThannil:
+		return true
+	case ReservationSourceOther:
+		return true
+	case ReservationSourceOwner:
+		return true
+	case ReservationSourceVrbo:
+		return true
+	case ReservationSourceWebsite:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationStatus.
 const (
 	ReservationStatusCancelled ReservationStatus = "cancelled"
@@ -998,6 +1034,27 @@ const (
 func (e ReservationCancelledEventType) Valid() bool {
 	switch e {
 	case ReservationCancelled:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationCancelledPayloadCancelledBy.
+const (
+	ReservationCancelledPayloadCancelledByGuest    ReservationCancelledPayloadCancelledBy = "guest"
+	ReservationCancelledPayloadCancelledByHost     ReservationCancelledPayloadCancelledBy = "host"
+	ReservationCancelledPayloadCancelledByPlatform ReservationCancelledPayloadCancelledBy = "platform"
+)
+
+// Valid indicates whether the value is a known member of the ReservationCancelledPayloadCancelledBy enum.
+func (e ReservationCancelledPayloadCancelledBy) Valid() bool {
+	switch e {
+	case ReservationCancelledPayloadCancelledByGuest:
+		return true
+	case ReservationCancelledPayloadCancelledByHost:
+		return true
+	case ReservationCancelledPayloadCancelledByPlatform:
 		return true
 	default:
 		return false
@@ -2783,7 +2840,7 @@ type ListingGenerateContentRequest struct {
 	// Persist Save the generated content to the listing (so subsequent publishes pick it up).
 	Persist *bool `json:"persist,omitempty"`
 
-	// Photos Up to 8 reference photos. When present, Kimi K2 vision is used for grounded copy.
+	// Photos Up to 8 reference photos. When present, Repull AI vision is used for grounded copy.
 	Photos *[]string                           `json:"photos,omitempty"`
 	Style  *ListingGenerateContentRequestStyle `json:"style,omitempty"`
 }
@@ -3542,7 +3599,11 @@ type RepullPingPayload struct {
 }
 
 // Reservation A booking/reservation from a connected PMS. Identical shape between list-row (`GET /v1/reservations`) and detail (`GET /v1/reservations/{id}`) — SDK consumers can use the same type for both.
+//
+// The canonical (post-2026-05) shape uses nested `primaryGuest`, `occupancy`, `financials` blocks. The legacy flat fields (`guestId`, `totalPrice`, `currency`, `guestDetails`) remain populated for back-compat and are marked `deprecated` here. New consumers should read from the nested blocks; existing consumers continue to work unchanged.
 type Reservation struct {
+	// BookedAt When the booking was made on the source channel (when reported by the channel).
+	BookedAt *time.Time         `json:"bookedAt,omitempty"`
 	CheckIn  openapi_types.Date `json:"checkIn"`
 	CheckOut openapi_types.Date `json:"checkOut"`
 
@@ -3552,16 +3613,22 @@ type Reservation struct {
 	// CreatedAt When the reservation row was created in Repull (not the booking-on-channel timestamp).
 	CreatedAt time.Time `json:"createdAt"`
 
-	// Currency ISO 4217 currency code.
-	Currency string `json:"currency"`
+	// Currency DEPRECATED — use `financials.currency`. ISO 4217 currency code.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	Currency *string `json:"currency,omitempty"`
 
-	// GuestDetails Raw guest details from the source channel (firstName, lastName, email, phone, count, etc.). Shape varies by platform — use the dedicated guest endpoint for a normalized profile.
-	GuestDetails map[string]interface{} `json:"guestDetails"`
+	// Financials Normalized money block. Always populated for paid reservations.
+	Financials *ReservationFinancials `json:"financials,omitempty"`
 
-	// GuestId Internal Repull guest ID. Use `GET /v1/guests/{id}` for the full profile.
-	GuestId string `json:"guestId"`
+	// GuestDetails DEPRECATED — use `occupancy` for normalized counts and `primaryGuest` for guest identity. Raw guest details from the source channel; shape varies by platform.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
 
-	// GuestName Pre-resolved display name (`firstName lastName`) extracted from `guestDetails`. Null when no first name is available.
+	// GuestId DEPRECATED — use `primaryGuest.id`. Internal Repull guest ID. Kept populated for back-compat.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	GuestId *string `json:"guestId,omitempty"`
+
+	// GuestName Pre-resolved display name (`firstName lastName`) from the joined guest row. Undefined when no first name is available.
 	GuestName *string `json:"guestName,omitempty"`
 
 	// Id Internal Repull reservation ID
@@ -3570,16 +3637,30 @@ type Reservation struct {
 	// ListingId Internal Repull listing ID this reservation is on.
 	ListingId string `json:"listingId"`
 
-	// Platform Booking source. Lowercase. May be null on legacy rows.
-	Platform *ReservationPlatform `json:"platform,omitempty"`
-	Status   ReservationStatus    `json:"status"`
+	// Occupancy Normalized guest counts. May be undefined when the source channel did not provide counts.
+	Occupancy *ReservationOccupancy `json:"occupancy,omitempty"`
 
-	// TotalPrice Decimal-as-string (precision 10, scale 2) to preserve precision across mixed-currency totals.
-	TotalPrice string `json:"totalPrice"`
+	// Platform DEPRECATED alias for `source`. Same value, kept for back-compat.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	Platform *ReservationPlatform `json:"platform,omitempty"`
+
+	// PrimaryGuest Inline guest summary. May be undefined for owner-blocks / pre-arrival rows.
+	PrimaryGuest *ReservationPrimaryGuest `json:"primaryGuest,omitempty"`
+
+	// Source Booking source / channel. Lowercase. May be null on legacy rows. Canonical name as of 2026-05; `platform` is kept as an alias.
+	Source *ReservationSource `json:"source,omitempty"`
+	Status ReservationStatus  `json:"status"`
+
+	// TotalPrice DEPRECATED — use `financials.totalPrice` (a number). Decimal-as-string (precision 10, scale 2) kept for back-compat.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	TotalPrice *string `json:"totalPrice,omitempty"`
 }
 
-// ReservationPlatform Booking source. Lowercase. May be null on legacy rows.
+// ReservationPlatform DEPRECATED alias for `source`. Same value, kept for back-compat.
 type ReservationPlatform string
+
+// ReservationSource Booking source / channel. Lowercase. May be null on legacy rows. Canonical name as of 2026-05; `platform` is kept as an alias.
+type ReservationSource string
 
 // ReservationStatus defines model for Reservation.Status.
 type ReservationStatus string
@@ -3589,7 +3670,7 @@ type ReservationCancelledEvent struct {
 	ApiVersion *string    `json:"apiVersion,omitempty"`
 	CreatedAt  *time.Time `json:"createdAt,omitempty"`
 
-	// Data Payload for `reservation.cancelled`. A reservation was cancelled by the guest, host, or platform.
+	// Data Payload for `reservation.cancelled`. A reservation was cancelled by the guest, host, or platform. `data.object` reflects the post-cancel snapshot (status will be `cancelled`); top-level fields capture cancellation metadata.
 	Data ReservationCancelledPayload   `json:"data"`
 	Id   *openapi_types.UUID           `json:"id,omitempty"`
 	Type ReservationCancelledEventType `json:"type"`
@@ -3598,27 +3679,30 @@ type ReservationCancelledEvent struct {
 // ReservationCancelledEventType defines model for ReservationCancelledEvent.Type.
 type ReservationCancelledEventType string
 
-// ReservationCancelledPayload Payload for `reservation.cancelled`. A reservation was cancelled by the guest, host, or platform.
+// ReservationCancelledPayload Payload for `reservation.cancelled`. A reservation was cancelled by the guest, host, or platform. `data.object` reflects the post-cancel snapshot (status will be `cancelled`); top-level fields capture cancellation metadata.
 type ReservationCancelledPayload struct {
+	// CancelledAt When the cancellation was recorded.
 	CancelledAt *time.Time `json:"cancelledAt,omitempty"`
 
-	// CancelledBy Who initiated the cancellation (guest, host, platform).
-	CancelledBy      *string `json:"cancelledBy,omitempty"`
-	ConfirmationCode *string `json:"confirmationCode,omitempty"`
-	Id               *int    `json:"id,omitempty"`
-	Reason           *string `json:"reason,omitempty"`
-	Refund           *struct {
-		Amount   *string `json:"amount,omitempty"`
-		Currency *string `json:"currency,omitempty"`
-	} `json:"refund,omitempty"`
+	// CancelledBy Who initiated the cancellation.
+	CancelledBy *ReservationCancelledPayloadCancelledBy `json:"cancelledBy,omitempty"`
+
+	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	Object ReservationWebhookObject `json:"object"`
+
+	// Reason Free-form cancellation reason from the source channel, if available.
+	Reason *string `json:"reason,omitempty"`
 }
+
+// ReservationCancelledPayloadCancelledBy Who initiated the cancellation.
+type ReservationCancelledPayloadCancelledBy string
 
 // ReservationCreatedEvent defines model for ReservationCreatedEvent.
 type ReservationCreatedEvent struct {
 	ApiVersion *string    `json:"apiVersion,omitempty"`
 	CreatedAt  *time.Time `json:"createdAt,omitempty"`
 
-	// Data Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking.
+	// Data Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking. Stripe-pattern envelope: `data.object` carries the reservation snapshot.
 	Data ReservationCreatedPayload `json:"data"`
 
 	// Id Stable event id — same across delivery retries of the same logical event.
@@ -3629,33 +3713,22 @@ type ReservationCreatedEvent struct {
 // ReservationCreatedEventType defines model for ReservationCreatedEvent.Type.
 type ReservationCreatedEventType string
 
-// ReservationCreatedPayload Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking.
+// ReservationCreatedPayload Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking. Stripe-pattern envelope: `data.object` carries the reservation snapshot.
 type ReservationCreatedPayload struct {
-	CheckIn          *openapi_types.Date `json:"checkIn,omitempty"`
-	CheckOut         *openapi_types.Date `json:"checkOut,omitempty"`
-	ConfirmationCode *string             `json:"confirmationCode,omitempty"`
-	CreatedAt        *time.Time          `json:"createdAt,omitempty"`
-	Guests           *struct {
-		Adults   *int `json:"adults,omitempty"`
-		Children *int `json:"children,omitempty"`
-		Infants  *int `json:"infants,omitempty"`
-	} `json:"guests,omitempty"`
-	Id        *int    `json:"id,omitempty"`
-	ListingId *int    `json:"listingId,omitempty"`
-	Nights    *int    `json:"nights,omitempty"`
-	Platform  *string `json:"platform,omitempty"`
-	Pricing   *struct {
-		Currency *string `json:"currency,omitempty"`
-		Subtotal *string `json:"subtotal,omitempty"`
-		Taxes    *string `json:"taxes,omitempty"`
-		Total    *string `json:"total,omitempty"`
-	} `json:"pricing,omitempty"`
-	PrimaryGuest *struct {
-		Email     *openapi_types.Email `json:"email,omitempty"`
-		FirstName *string              `json:"firstName,omitempty"`
-		LastName  *string              `json:"lastName,omitempty"`
-	} `json:"primaryGuest,omitempty"`
-	Status *string `json:"status,omitempty"`
+	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	Object ReservationWebhookObject `json:"object"`
+}
+
+// ReservationFinancials Normalized money block. `totalPrice` is a `number` (NOT a decimal-as-string) — the legacy top-level `totalPrice` string field is kept on the parent for back-compat but is deprecated.
+type ReservationFinancials struct {
+	// Currency ISO 4217 currency code.
+	Currency *string `json:"currency,omitempty"`
+
+	// PaymentStatus Payment lifecycle status (e.g. `pending`, `paid`, `refunded`).
+	PaymentStatus *string `json:"paymentStatus,omitempty"`
+
+	// TotalPrice Stay total in `currency`. Number, not string.
+	TotalPrice *float32 `json:"totalPrice,omitempty"`
 }
 
 // ReservationListResponse Cursor-paginated reservation list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page; stop when `pagination.hasMore` is `false`. The `total` field is the count of rows matching the current filter (across all pages); pass `?include_total=false` to skip the COUNT(*) on very large workspaces.
@@ -3694,12 +3767,40 @@ type ReservationMessageReceivedPayload struct {
 	ThreadId      *string    `json:"threadId,omitempty"`
 }
 
+// ReservationOccupancy Normalized guest counts for the stay. Mirrors the legacy `guestDetails.numberOf*` fields under canonical short names. Omitted when no count fields are present on the reservation.
+type ReservationOccupancy struct {
+	Adults   *int `json:"adults,omitempty"`
+	Children *int `json:"children,omitempty"`
+	Infants  *int `json:"infants,omitempty"`
+	Pets     *int `json:"pets,omitempty"`
+
+	// Total Total guests (sum across all categories as reported by the source channel).
+	Total *int `json:"total,omitempty"`
+}
+
+// ReservationPrimaryGuest Inline guest summary resolved by JOIN-ing the `guests` table. Populated for every reservation that has a linked guest row; OMITTED entirely (not null) for owner-blocks / pre-arrival rows / partial-sync gaps. Always optional-chain in SDK consumers.
+type ReservationPrimaryGuest struct {
+	// Email Primary email contact (or first non-primary if no primary set).
+	Email     *openapi_types.Email `json:"email,omitempty"`
+	FirstName *string              `json:"firstName,omitempty"`
+
+	// Id Internal Repull guest ID. Use `GET /v1/guests/{id}` for the full profile.
+	Id *string `json:"id,omitempty"`
+
+	// Language Guest's preferred language (BCP-47 / ISO 639-1).
+	Language *string `json:"language,omitempty"`
+	LastName *string `json:"lastName,omitempty"`
+
+	// Phone Primary phone contact (or first non-primary if no primary set).
+	Phone *string `json:"phone,omitempty"`
+}
+
 // ReservationUpdatedEvent defines model for ReservationUpdatedEvent.
 type ReservationUpdatedEvent struct {
 	ApiVersion *string    `json:"apiVersion,omitempty"`
 	CreatedAt  *time.Time `json:"createdAt,omitempty"`
 
-	// Data Payload for `reservation.updated`. Dates, guest count, status, or pricing changed on an existing reservation. The `changes` map carries `{ from, to }` deltas for each field that moved.
+	// Data Payload for `reservation.updated`. Dates, status, or any tracked field changed on an existing reservation. `data.object` is the post-change snapshot; `data.previousAttributes` lists ONLY the fields that actually moved, with their prior values. Fields not in `previousAttributes` did not change.
 	Data ReservationUpdatedPayload   `json:"data"`
 	Id   *openapi_types.UUID         `json:"id,omitempty"`
 	Type ReservationUpdatedEventType `json:"type"`
@@ -3708,13 +3809,40 @@ type ReservationUpdatedEvent struct {
 // ReservationUpdatedEventType defines model for ReservationUpdatedEvent.Type.
 type ReservationUpdatedEventType string
 
-// ReservationUpdatedPayload Payload for `reservation.updated`. Dates, guest count, status, or pricing changed on an existing reservation. The `changes` map carries `{ from, to }` deltas for each field that moved.
+// ReservationUpdatedPayload Payload for `reservation.updated`. Dates, status, or any tracked field changed on an existing reservation. `data.object` is the post-change snapshot; `data.previousAttributes` lists ONLY the fields that actually moved, with their prior values. Fields not in `previousAttributes` did not change.
 type ReservationUpdatedPayload struct {
-	// Changes Map of `field` → `{ from, to }` pairs describing what changed.
-	Changes          *map[string]interface{} `json:"changes,omitempty"`
-	ConfirmationCode *string                 `json:"confirmationCode,omitempty"`
-	Id               *int                    `json:"id,omitempty"`
-	UpdatedAt        *time.Time              `json:"updatedAt,omitempty"`
+	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	Object ReservationWebhookObject `json:"object"`
+
+	// PreviousAttributes Sparse map: every key here is a field on the reservation snapshot whose value changed in this event, mapped to its prior value. Mirrors the keys of `ReservationWebhookObject` (e.g. `checkinDate`, `checkoutDate`, `status`). Receivers can diff `object[k]` vs `previousAttributes[k]` to know what moved.
+	PreviousAttributes *map[string]interface{} `json:"previousAttributes,omitempty"`
+}
+
+// ReservationWebhookObject Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+type ReservationWebhookObject struct {
+	// Channel Source channel — `airbnb`, `booking`, `vrbo`, `direct`, `owner`, `mid_stay_clean`, etc.
+	Channel string `json:"channel"`
+
+	// CheckinDate Check-in date (local property date, no timezone).
+	CheckinDate openapi_types.Date `json:"checkinDate"`
+
+	// CheckoutDate Check-out date (local property date, no timezone).
+	CheckoutDate openapi_types.Date `json:"checkoutDate"`
+
+	// CustomerId Workspace (customer) id this reservation belongs to.
+	CustomerId int `json:"customerId"`
+
+	// Id Repull-internal reservation id. Pass to `GET /v1/reservations/{id}`.
+	Id int `json:"id"`
+
+	// ListingId Repull listing id this reservation is on.
+	ListingId int `json:"listingId"`
+
+	// Status Lifecycle status — typically `confirmed`, `cancelled`, `pending`, `inquiry`.
+	Status string `json:"status"`
+
+	// Uid Channel-side confirmation code (Airbnb HM-prefixed, Booking.com numeric, etc.). Stable across the lifetime of the reservation.
+	Uid string `json:"uid"`
 }
 
 // Review A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Populated from main vanio's unified `reviews` table after the per-channel backfill cron has run.
@@ -4376,6 +4504,9 @@ type GetConversationParams struct {
 type ListConversationMessagesParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Order `desc` (default) returns newest first. `asc` returns chronological replay.
@@ -4486,6 +4617,9 @@ type GetListingPricingHistoryParams struct {
 
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // GetListingSegmentsParams defines parameters for GetListingSegments.
@@ -4592,11 +4726,29 @@ type ListReservationsParams struct {
 	// CheckInBefore Check-in date <= this value
 	CheckInBefore *openapi_types.Date `form:"check_in_before,omitempty" json:"check_in_before,omitempty"`
 
+	// CheckOutAfter Check-out date >= this value
+	CheckOutAfter *openapi_types.Date `form:"check_out_after,omitempty" json:"check_out_after,omitempty"`
+
+	// CheckOutBefore Check-out date <= this value
+	CheckOutBefore *openapi_types.Date `form:"check_out_before,omitempty" json:"check_out_before,omitempty"`
+
 	// CheckInFrom Deprecated alias for `check_in_after`.
 	CheckInFrom *openapi_types.Date `form:"checkInFrom,omitempty" json:"checkInFrom,omitempty"`
 
 	// CheckInTo Deprecated alias for `check_in_before`.
 	CheckInTo *openapi_types.Date `form:"checkInTo,omitempty" json:"checkInTo,omitempty"`
+
+	// CheckInAfterCamel Use `check_in_after` (snake_case) instead.
+	CheckInAfterCamel *openapi_types.Date `form:"checkInAfter,omitempty" json:"checkInAfter,omitempty"`
+
+	// CheckInBeforeCamel Use `check_in_before` (snake_case) instead.
+	CheckInBeforeCamel *openapi_types.Date `form:"checkInBefore,omitempty" json:"checkInBefore,omitempty"`
+
+	// CheckOutAfterCamel Use `check_out_after` (snake_case) instead.
+	CheckOutAfterCamel *openapi_types.Date `form:"checkOutAfter,omitempty" json:"checkOutAfter,omitempty"`
+
+	// CheckOutBeforeCamel Use `check_out_before` (snake_case) instead.
+	CheckOutBeforeCamel *openapi_types.Date `form:"checkOutBefore,omitempty" json:"checkOutBefore,omitempty"`
 
 	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
 	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
