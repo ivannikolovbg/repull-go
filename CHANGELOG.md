@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.2 — 2026-05-07
+
+### Additive
+
+- **`?include=amenities` on `GET /v1/listings/{id}` and `GET /v1/properties/{id}`.** Both endpoints now expose an `Include` query param with the canonical `amenities` value. When passed, responses populate the new `Amenities *[]ListingAmenity` field on `Listing` and `Property` from the unified `listings_amenities` cache. Unknown include values return 422.
+- **New `ListingAmenity` type.** Single amenity row from the unified `listings_amenities` table, with `amenityKey`, `isPresent`, and optional metadata. Surfaced on listing + property detail endpoints when `?include=amenities` is requested.
+
+Refs: vanio-repull-api #59 (listings include), vanio-repull-api #61 (properties include).
+
 ## v0.2.0 — 2026-05-02
 
 **MAJOR — coordinated breaking-change release across the Repull SDK fleet (TS, Python, PHP, Ruby, .NET, Go).** The Repull API converged on a single canonical envelope shape, camelCase field names, and string-typed IDs. This version of the Go SDK regenerates against that converged spec.
