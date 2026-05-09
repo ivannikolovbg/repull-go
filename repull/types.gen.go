@@ -128,6 +128,30 @@ func (e AiOperationFailedEventType) Valid() bool {
 	}
 }
 
+// Defines values for AirbnbConnectionSummaryStatus.
+const (
+	Connected         AirbnbConnectionSummaryStatus = "connected"
+	Disconnected      AirbnbConnectionSummaryStatus = "disconnected"
+	NeverConnected    AirbnbConnectionSummaryStatus = "never_connected"
+	ReconnectRequired AirbnbConnectionSummaryStatus = "reconnect_required"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbConnectionSummaryStatus enum.
+func (e AirbnbConnectionSummaryStatus) Valid() bool {
+	switch e {
+	case Connected:
+		return true
+	case Disconnected:
+		return true
+	case NeverConnected:
+		return true
+	case ReconnectRequired:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AirbnbReservationStatus.
 const (
 	AirbnbReservationStatusAccepted  AirbnbReservationStatus = "accepted"
@@ -1538,6 +1562,21 @@ func (e ListListingsParamsStatus) Valid() bool {
 	}
 }
 
+// Defines values for GetListingParamsInclude.
+const (
+	GetListingParamsIncludeAmenities GetListingParamsInclude = "amenities"
+)
+
+// Valid indicates whether the value is a known member of the GetListingParamsInclude enum.
+func (e GetListingParamsInclude) Valid() bool {
+	switch e {
+	case GetListingParamsIncludeAmenities:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetListingSegmentsParamsLevel.
 const (
 	GetListingSegmentsParamsLevelCompSet GetListingSegmentsParamsLevel = "comp_set"
@@ -1589,6 +1628,21 @@ func (e ListPropertiesParamsStatus) Valid() bool {
 	case ListPropertiesParamsStatusAll:
 		return true
 	case ListPropertiesParamsStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetPropertyParamsInclude.
+const (
+	GetPropertyParamsIncludeAmenities GetPropertyParamsInclude = "amenities"
+)
+
+// Valid indicates whether the value is a known member of the GetPropertyParamsInclude enum.
+func (e GetPropertyParamsInclude) Valid() bool {
+	switch e {
+	case GetPropertyParamsIncludeAmenities:
 		return true
 	default:
 		return false
@@ -1844,26 +1898,26 @@ type AiOperationFailedPayload struct {
 
 // AirbnbConnection An Airbnb-side connection record for a Vanio listing. The same property may appear under multiple connections if it has been linked from multiple Airbnb host accounts.
 type AirbnbConnection struct {
-	// UnderscoreErrors Per-expansion failures. Present only when an `?include=` upstream call failed for this connection (others may still succeed).
-	UnderscoreErrors *map[string]struct {
-		Message *string `json:"message,omitempty"`
-		Status  *int    `json:"status,omitempty"`
-	} `json:"_errors,omitempty"`
-
-	// AccessibilityAmenities Present only when `?include=amenities` is passed.
-	AccessibilityAmenities *[]map[string]interface{} `json:"accessibility_amenities,omitempty"`
-	Active                 *bool                     `json:"active,omitempty"`
+	// AccessibilityAmenities Present only when `?include=amenities` is passed. Accessibility-tagged subset of the local amenity cache (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Returns an empty array when amenities synced but none qualify as accessibility; returns `null` when the cache is empty for this connection (use `data_freshness` to disambiguate "never synced" from "fresh and genuinely empty").
+	AccessibilityAmenities *[]struct {
+		// Id Airbnb amenity id (e.g. `wheelchair_accessible`, `home_step_free_access`).
+		Id          *string `json:"id,omitempty"`
+		Instruction *string `json:"instruction,omitempty"`
+		IsPresent   *bool   `json:"is_present,omitempty"`
+	} `json:"accessibility_amenities,omitempty"`
+	Active *bool `json:"active,omitempty"`
 
 	// AirbnbId Airbnb-side listing id
 	AirbnbId *string `json:"airbnbId,omitempty"`
 
-	// Amenities Present only when `?include=amenities` is passed. Sourced from `GET /v2/listings/:id/amenities` on Airbnb.
+	// Amenities Present only when `?include=amenities` is passed. Sourced from the local `listings_airbnb_amenities` cache (populated by the Airbnb sync worker). Returns `null` when the cache is empty for this connection — see the top-level `data_freshness` envelope to disambiguate "never synced" vs "host disconnected" vs "fresh and genuinely empty".
 	Amenities *[]struct {
-		Category  *string `json:"category,omitempty"`
-		Icon      *string `json:"icon,omitempty"`
-		Id        *string `json:"id,omitempty"`
-		IsPresent *bool   `json:"is_present,omitempty"`
-		Name      *string `json:"name,omitempty"`
+		// Id Airbnb amenity id (e.g. `wifi`, `kitchen`).
+		Id *string `json:"id,omitempty"`
+
+		// Instruction Host-supplied instruction for the amenity (e.g. "WiFi password is on the fridge").
+		Instruction *string `json:"instruction,omitempty"`
+		IsPresent   *bool   `json:"is_present,omitempty"`
 	} `json:"amenities,omitempty"`
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 
@@ -1877,6 +1931,60 @@ type AirbnbConnection struct {
 	Markup      *string `json:"markup,omitempty"`
 	Primary     *bool   `json:"primary,omitempty"`
 	SyncEnabled *bool   `json:"syncEnabled,omitempty"`
+}
+
+// AirbnbConnectionHost One Airbnb host record under the workspace, decorated with its most recent disconnect reason from `airbnb_host_events` (backfill events excluded).
+type AirbnbConnectionHost struct {
+	// AirbnbUserId Upstream Airbnb user id.
+	AirbnbUserId string `json:"airbnbUserId"`
+
+	// DeactivatedAt When the host was last marked inactive. Null on currently-connected hosts.
+	DeactivatedAt *time.Time `json:"deactivatedAt"`
+	IsConnected   bool       `json:"isConnected"`
+
+	// LastDisconnectReason Reason of the most recent non-backfill disconnect event. Common values: `token_refresh_rejected`, `auth_expired`, `user_revoked`. Null when the host has no recorded disconnects.
+	LastDisconnectReason *string `json:"lastDisconnectReason"`
+
+	// LastSyncedAt When the host record was last touched (token refresh / activation / restriction). Closest available proxy for "last successful sync".
+	LastSyncedAt *time.Time `json:"lastSyncedAt"`
+
+	// Name Display name (preferred form, falling back to legal first name). Null when both fields are empty.
+	Name *string `json:"name"`
+}
+
+// AirbnbConnectionResponse defines model for AirbnbConnectionResponse.
+type AirbnbConnectionResponse struct {
+	// Data Workspace-level Airbnb connection state. The dedicated answer to "is my Airbnb still connected?" — emit one summary instead of inferring from per-listing 401s.
+	Data AirbnbConnectionSummary `json:"data"`
+}
+
+// AirbnbConnectionSummary Workspace-level Airbnb connection state. The dedicated answer to "is my Airbnb still connected?" — emit one summary instead of inferring from per-listing 401s.
+type AirbnbConnectionSummary struct {
+	// FixUrl Self-serve recovery URL. Set whenever `status` is anything other than `connected`. Points at the dashboard surface where the host re-authorizes (or initiates the first OAuth flow for `never_connected` workspaces).
+	FixUrl    *string                `json:"fixUrl,omitempty"`
+	HostCount int                    `json:"hostCount"`
+	Hosts     []AirbnbConnectionHost `json:"hosts"`
+
+	// Status `connected` — every host is currently connected. `reconnect_required` — at least one host is connected, at least one is not. `disconnected` — every host has been disconnected. `never_connected` — the workspace has never linked an Airbnb account.
+	Status AirbnbConnectionSummaryStatus `json:"status"`
+}
+
+// AirbnbConnectionSummaryStatus `connected` — every host is currently connected. `reconnect_required` — at least one host is connected, at least one is not. `disconnected` — every host has been disconnected. `never_connected` — the workspace has never linked an Airbnb account.
+type AirbnbConnectionSummaryStatus string
+
+// AirbnbDataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+type AirbnbDataFreshness struct {
+	// FixUrl Dashboard URL the consumer can open to resolve the staleness (typically the Airbnb reconnect screen). Omitted when `stale` is `false`.
+	FixUrl *string `json:"fix_url,omitempty"`
+
+	// LastSyncedAt Most recent sync timestamp across the rows in the response. `null` when nothing has ever synced for this customer.
+	LastSyncedAt *time.Time `json:"last_synced_at"`
+
+	// Reason Why the data is stale. One of `host_disconnected_since_<iso>`, `sync_lag_>_24h`, `never_synced`. Omitted when `stale` is `false`.
+	Reason *string `json:"reason,omitempty"`
+
+	// Stale `true` when any host is disconnected, when the local cache is empty, or when the cache hasn't been refreshed in 24h+. `false` when hosts are healthy and sync is fresh.
+	Stale bool `json:"stale"`
 }
 
 // AirbnbListing A Vanio listing paired with its Airbnb connection rows. The list endpoint groups every `listings_airbnb` row that points at the same Vanio `listingId` under a single `connections[]` array.
@@ -1893,10 +2001,13 @@ type AirbnbListing struct {
 
 // AirbnbListingListResponse defines model for AirbnbListingListResponse.
 type AirbnbListingListResponse struct {
-	Data *[]AirbnbListing `json:"data,omitempty"`
+	Data []AirbnbListing `json:"data"`
+
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
-	Pagination *Pagination `json:"pagination,omitempty"`
+	Pagination Pagination `json:"pagination"`
 }
 
 // AirbnbReservation An Airbnb reservation as returned by the channel API. Use `confirmationCode` to address it in Airbnb operations.
@@ -2658,6 +2769,9 @@ type Listing struct {
 		Street *string `json:"street,omitempty"`
 	} `json:"address,omitempty"`
 
+	// Amenities Amenity rows for the listing. **Only present when the caller passes `?include=amenities`.** Empty array (`[]`) when the listing has no amenity rows.
+	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
+
 	// Channels Channels (Airbnb, Booking, VRBO, etc.) the listing is connected to.
 	Channels  *[]ListingChannel `json:"channels,omitempty"`
 	CreatedAt *time.Time        `json:"createdAt,omitempty"`
@@ -2672,6 +2786,21 @@ type Listing struct {
 
 // ListingStatus defines model for Listing.Status.
 type ListingStatus string
+
+// ListingAmenity A single amenity row from the unified `listings_amenities` table. Surfaced on `GET /v1/listings/{id}` and `GET /v1/properties/{id}` only when the caller passes `?include=amenities`.
+type ListingAmenity struct {
+	// AmenityKey Canonical amenity key (e.g. `wifi`, `pool`, `parking`).
+	AmenityKey string `json:"amenityKey"`
+
+	// Category Optional grouping (e.g. `essentials`, `safety`).
+	Category *string `json:"category,omitempty"`
+
+	// Instruction Optional free-form instruction for the guest (e.g. WiFi password, parking notes).
+	Instruction *string `json:"instruction,omitempty"`
+
+	// IsPresent `true` when the listing has this amenity, `false` when it has been explicitly opted out.
+	IsPresent bool `json:"isPresent"`
+}
 
 // ListingChannel Per-platform connection for a listing — one row per channel the listing is published to.
 type ListingChannel struct {
@@ -3071,10 +3200,29 @@ type ListingPublishStatusChannel struct {
 // ListingPublishStatusChannelPushStatus defines model for ListingPublishStatusChannel.PushStatus.
 type ListingPublishStatusChannelPushStatus string
 
+// ListingPublishStatusConnection Per-channel connection state. Distinct from `channels` (sync activity) — a listing can be connected here yet have empty `channels` if it has never been pushed.
+type ListingPublishStatusConnection struct {
+	// Channel Channel name: airbnb, booking, vrbo, etc.
+	Channel *string `json:"channel,omitempty"`
+
+	// Connected True when the link is active (not disconnected/suspended).
+	Connected *bool `json:"connected,omitempty"`
+
+	// Since ISO timestamp the connection was first established.
+	Since *time.Time `json:"since,omitempty"`
+
+	// SyncEnabled True when sync writes are enabled for this channel.
+	SyncEnabled *bool `json:"syncEnabled,omitempty"`
+}
+
 // ListingPublishStatusResponse defines model for ListingPublishStatusResponse.
 type ListingPublishStatusResponse struct {
-	Channels  *[]ListingPublishStatusChannel `json:"channels,omitempty"`
-	ListingId *string                        `json:"listingId,omitempty"`
+	// Channels Sync activity per channel — empty if the listing has never been pushed/pulled. Empty does NOT mean "not connected"; check `connections` for that.
+	Channels *[]ListingPublishStatusChannel `json:"channels,omitempty"`
+
+	// Connections Connection state per channel. Populated even when `channels` is empty so callers can distinguish "owned, never pushed" from "owned, never connected".
+	Connections *[]ListingPublishStatusConnection `json:"connections,omitempty"`
+	ListingId   *string                           `json:"listingId,omitempty"`
 }
 
 // ListingQualityTier defines model for ListingQualityTier.
@@ -3545,11 +3693,14 @@ type PlumguideListingListResponse struct {
 // Property A vacation rental property from a connected PMS
 type Property struct {
 	// Address Full address
-	Address   *string  `json:"address,omitempty"`
-	Bathrooms *float32 `json:"bathrooms,omitempty"`
-	Bedrooms  *int     `json:"bedrooms,omitempty"`
-	City      *string  `json:"city,omitempty"`
-	Country   *string  `json:"country,omitempty"`
+	Address *string `json:"address,omitempty"`
+
+	// Amenities Amenity rows for the property. **Only present when the caller passes `?include=amenities`.** Empty array (`[]`) when the property has no amenity rows.
+	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
+	Bathrooms *float32          `json:"bathrooms,omitempty"`
+	Bedrooms  *int              `json:"bedrooms,omitempty"`
+	City      *string           `json:"city,omitempty"`
+	Country   *string           `json:"country,omitempty"`
 
 	// ExternalId ID in the source PMS
 	ExternalId *string `json:"externalId,omitempty"`
@@ -3649,7 +3800,9 @@ type Reservation struct {
 
 	// Source Booking source / channel. Lowercase. May be null on legacy rows. Canonical name as of 2026-05; `platform` is kept as an alias.
 	Source *ReservationSource `json:"source,omitempty"`
-	Status ReservationStatus  `json:"status"`
+
+	// Status Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`.
+	Status ReservationStatus `json:"status"`
 
 	// TotalPrice DEPRECATED — use `financials.totalPrice` (a number). Decimal-as-string (precision 10, scale 2) kept for back-compat.
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
@@ -3662,7 +3815,7 @@ type ReservationPlatform string
 // ReservationSource Booking source / channel. Lowercase. May be null on legacy rows. Canonical name as of 2026-05; `platform` is kept as an alias.
 type ReservationSource string
 
-// ReservationStatus defines model for Reservation.Status.
+// ReservationStatus Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`.
 type ReservationStatus string
 
 // ReservationCancelledEvent defines model for ReservationCancelledEvent.
@@ -4335,7 +4488,7 @@ type CreateBillingCheckoutJSONBodyPlan string
 
 // ListAirbnbListingsParams defines parameters for ListAirbnbListings.
 type ListAirbnbListingsParams struct {
-	// Include Comma-separated expansions. Currently supported: `amenities` (adds `amenities` and `accessibility_amenities` arrays to each connection). Each expansion adds one upstream Airbnb call per unique listing id.
+	// Include Comma-separated expansions. Currently supported: `amenities` (adds `amenities` and `accessibility_amenities` arrays to each connection, sourced from the local `listings_airbnb_amenities` cache).
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 }
 
@@ -4549,6 +4702,47 @@ type GetGuestParams struct {
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
+// ClearKvParams defines parameters for ClearKv.
+type ClearKvParams struct {
+	ProjectId *string `form:"project_id,omitempty" json:"project_id,omitempty"`
+
+	// Prefix Required. Keys starting with this string are deleted.
+	Prefix string `form:"prefix" json:"prefix"`
+}
+
+// ListKvParams defines parameters for ListKv.
+type ListKvParams struct {
+	// ProjectId Project namespace. Defaults to `default`. Free-form string the customer chooses (typically the Studio project id).
+	ProjectId *string `form:"project_id,omitempty" json:"project_id,omitempty"`
+
+	// Prefix Restrict to keys starting with this string. `LIKE` wildcards (`%`, `_`) are escaped — pass them literally.
+	Prefix *string `form:"prefix,omitempty" json:"prefix,omitempty"`
+}
+
+// DeleteKvParams defines parameters for DeleteKv.
+type DeleteKvParams struct {
+	ProjectId *string `form:"project_id,omitempty" json:"project_id,omitempty"`
+}
+
+// GetKvParams defines parameters for GetKv.
+type GetKvParams struct {
+	ProjectId *string `form:"project_id,omitempty" json:"project_id,omitempty"`
+}
+
+// SetKvJSONBody defines parameters for SetKv.
+type SetKvJSONBody struct {
+	// TtlSeconds Optional TTL in seconds. The row's `ttl_at` is set to `now() + ttl_seconds`. Past-`ttl_at` rows are filtered from reads. Pass a positive integer; `0` is rejected.
+	TtlSeconds *int `json:"ttl_seconds,omitempty"`
+
+	// Value Any JSON-serializable value. Stored verbatim.
+	Value interface{} `json:"value"`
+}
+
+// SetKvParams defines parameters for SetKv.
+type SetKvParams struct {
+	ProjectId *string `form:"project_id,omitempty" json:"project_id,omitempty"`
+}
+
 // ListListingsParams defines parameters for ListListings.
 type ListListingsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
@@ -4578,9 +4772,15 @@ type ListListingsParamsStatus string
 
 // GetListingParams defines parameters for GetListing.
 type GetListingParams struct {
+	// Include Comma-separated optional expansions. Currently supported: `amenities`. Unknown values return 422.
+	Include *GetListingParamsInclude `form:"include,omitempty" json:"include,omitempty"`
+
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
+
+// GetListingParamsInclude defines parameters for GetListing.
+type GetListingParamsInclude string
 
 // ListListingCompsParams defines parameters for ListListingComps.
 type ListListingCompsParams struct {
@@ -4702,6 +4902,15 @@ type ListPropertiesParams struct {
 // ListPropertiesParamsStatus defines parameters for ListProperties.
 type ListPropertiesParamsStatus string
 
+// GetPropertyParams defines parameters for GetProperty.
+type GetPropertyParams struct {
+	// Include Comma-separated optional expansions. Currently supported: `amenities`. Unknown values return 422.
+	Include *GetPropertyParamsInclude `form:"include,omitempty" json:"include,omitempty"`
+}
+
+// GetPropertyParamsInclude defines parameters for GetProperty.
+type GetPropertyParamsInclude string
+
 // ListReservationsParams defines parameters for ListReservations.
 type ListReservationsParams struct {
 	// Limit Page size (max 100). Requests over the cap return 422.
@@ -4714,8 +4923,10 @@ type ListReservationsParams struct {
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Platform Filter by booking platform
-	Platform *string                       `form:"platform,omitempty" json:"platform,omitempty"`
-	Status   *ListReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+	Platform *string `form:"platform,omitempty" json:"platform,omitempty"`
+
+	// Status Filter by lifecycle status. **Case-insensitive** — `confirmed`, `Confirmed`, and `CONFIRMED` all match. Each public value expands to the full set of internal sub-states server-side: `confirmed` matches `accept`/`confirmed`/`modified`, `cancelled` matches every cancellation sub-state (`cancelled_by_host`, `declined`, `expired`, etc.), `pending` includes `inquiry`/`awaiting_payment`. `completed` is a derived state — combine `status=confirmed` with `check_out_before=<today>` to filter for past stays.
+	Status *ListReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ListingId Filter to a single listing
 	ListingId *int `form:"listingId,omitempty" json:"listingId,omitempty"`
@@ -4921,6 +5132,9 @@ type SelectConnectProviderJSONRequestBody SelectConnectProviderJSONBody
 
 // CreateConnectionJSONRequestBody defines body for CreateConnection for application/json ContentType.
 type CreateConnectionJSONRequestBody CreateConnectionJSONBody
+
+// SetKvJSONRequestBody defines body for SetKv for application/json ContentType.
+type SetKvJSONRequestBody SetKvJSONBody
 
 // CreateListingJSONRequestBody defines body for CreateListing for application/json ContentType.
 type CreateListingJSONRequestBody = ListingCreateRequest

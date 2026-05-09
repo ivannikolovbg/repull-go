@@ -172,6 +172,9 @@ type ClientInterface interface {
 
 	CreateBillingCheckout(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetAirbnbConnection request
+	GetAirbnbConnection(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAirbnbListings request
 	ListAirbnbListings(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -364,6 +367,23 @@ type ClientInterface interface {
 	// GetHealth request
 	GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ClearKv request
+	ClearKv(ctx context.Context, params *ClearKvParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListKv request
+	ListKv(ctx context.Context, params *ListKvParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteKv request
+	DeleteKv(ctx context.Context, key string, params *DeleteKvParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetKv request
+	GetKv(ctx context.Context, key string, params *GetKvParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetKvWithBody request with any body
+	SetKvWithBody(ctx context.Context, key string, params *SetKvParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	SetKv(ctx context.Context, key string, params *SetKvParams, body SetKvJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListListings request
 	ListListings(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -437,7 +457,7 @@ type ClientInterface interface {
 	ListProperties(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProperty request
-	GetProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetProperty(ctx context.Context, id int, params *GetPropertyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListReservations request
 	ListReservations(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -879,6 +899,18 @@ func (c *Client) CreateBillingCheckoutWithBody(ctx context.Context, contentType 
 
 func (c *Client) CreateBillingCheckout(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateBillingCheckoutRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbConnection(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbConnectionRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -1693,6 +1725,78 @@ func (c *Client) GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (
 	return c.Client.Do(req)
 }
 
+func (c *Client) ClearKv(ctx context.Context, params *ClearKvParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewClearKvRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListKv(ctx context.Context, params *ListKvParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListKvRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteKv(ctx context.Context, key string, params *DeleteKvParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteKvRequest(c.Server, key, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetKv(ctx context.Context, key string, params *GetKvParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetKvRequest(c.Server, key, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SetKvWithBody(ctx context.Context, key string, params *SetKvParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetKvRequestWithBody(c.Server, key, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SetKv(ctx context.Context, key string, params *SetKvParams, body SetKvJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetKvRequest(c.Server, key, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListListings(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListListingsRequest(c.Server, params)
 	if err != nil {
@@ -2005,8 +2109,8 @@ func (c *Client) ListProperties(ctx context.Context, params *ListPropertiesParam
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPropertyRequest(c.Server, id)
+func (c *Client) GetProperty(ctx context.Context, id int, params *GetPropertyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPropertyRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3286,6 +3390,33 @@ func NewCreateBillingCheckoutRequestWithBody(server string, contentType string, 
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetAirbnbConnectionRequest generates requests for GetAirbnbConnection
+func NewGetAirbnbConnectionRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/connection")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -5835,6 +5966,313 @@ func NewGetHealthRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewClearKvRequest generates requests for ClearKv
+func NewClearKvRequest(server string, params *ClearKvParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/kv")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ProjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project_id", *params.ProjectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "prefix", params.Prefix, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListKvRequest generates requests for ListKv
+func NewListKvRequest(server string, params *ListKvParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/kv")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ProjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project_id", *params.ProjectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Prefix != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "prefix", *params.Prefix, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteKvRequest generates requests for DeleteKv
+func NewDeleteKvRequest(server string, key string, params *DeleteKvParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "key", key, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/kv/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ProjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project_id", *params.ProjectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetKvRequest generates requests for GetKv
+func NewGetKvRequest(server string, key string, params *GetKvParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "key", key, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/kv/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ProjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project_id", *params.ProjectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSetKvRequest calls the generic SetKv builder with application/json body
+func NewSetKvRequest(server string, key string, params *SetKvParams, body SetKvJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSetKvRequestWithBody(server, key, params, "application/json", bodyReader)
+}
+
+// NewSetKvRequestWithBody generates requests for SetKv with any type of body
+func NewSetKvRequestWithBody(server string, key string, params *SetKvParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "key", key, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/kv/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ProjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "project_id", *params.ProjectId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListListingsRequest generates requests for ListListings
 func NewListListingsRequest(server string, params *ListListingsParams) (*http.Request, error) {
 	var err error
@@ -6083,6 +6521,28 @@ func NewGetListingRequest(server string, id int, params *GetListingParams) (*htt
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Include != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include", *params.Include, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -7228,7 +7688,7 @@ func NewListPropertiesRequest(server string, params *ListPropertiesParams) (*htt
 }
 
 // NewGetPropertyRequest generates requests for GetProperty
-func NewGetPropertyRequest(server string, id int) (*http.Request, error) {
+func NewGetPropertyRequest(server string, id int, params *GetPropertyParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -7251,6 +7711,28 @@ func NewGetPropertyRequest(server string, id int) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Include != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include", *params.Include, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -8842,6 +9324,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateBillingCheckoutWithResponse(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error)
 
+	// GetAirbnbConnectionWithResponse request
+	GetAirbnbConnectionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAirbnbConnectionClientResponse, error)
+
 	// ListAirbnbListingsWithResponse request
 	ListAirbnbListingsWithResponse(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*ListAirbnbListingsClientResponse, error)
 
@@ -9034,6 +9519,23 @@ type ClientWithResponsesInterface interface {
 	// GetHealthWithResponse request
 	GetHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthClientResponse, error)
 
+	// ClearKvWithResponse request
+	ClearKvWithResponse(ctx context.Context, params *ClearKvParams, reqEditors ...RequestEditorFn) (*ClearKvClientResponse, error)
+
+	// ListKvWithResponse request
+	ListKvWithResponse(ctx context.Context, params *ListKvParams, reqEditors ...RequestEditorFn) (*ListKvClientResponse, error)
+
+	// DeleteKvWithResponse request
+	DeleteKvWithResponse(ctx context.Context, key string, params *DeleteKvParams, reqEditors ...RequestEditorFn) (*DeleteKvClientResponse, error)
+
+	// GetKvWithResponse request
+	GetKvWithResponse(ctx context.Context, key string, params *GetKvParams, reqEditors ...RequestEditorFn) (*GetKvClientResponse, error)
+
+	// SetKvWithBodyWithResponse request with any body
+	SetKvWithBodyWithResponse(ctx context.Context, key string, params *SetKvParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetKvClientResponse, error)
+
+	SetKvWithResponse(ctx context.Context, key string, params *SetKvParams, body SetKvJSONRequestBody, reqEditors ...RequestEditorFn) (*SetKvClientResponse, error)
+
 	// ListListingsWithResponse request
 	ListListingsWithResponse(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*ListListingsClientResponse, error)
 
@@ -9107,7 +9609,7 @@ type ClientWithResponsesInterface interface {
 	ListPropertiesWithResponse(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*ListPropertiesClientResponse, error)
 
 	// GetPropertyWithResponse request
-	GetPropertyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetPropertyClientResponse, error)
+	GetPropertyWithResponse(ctx context.Context, id int, params *GetPropertyParams, reqEditors ...RequestEditorFn) (*GetPropertyClientResponse, error)
 
 	// ListReservationsWithResponse request
 	ListReservationsWithResponse(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*ListReservationsClientResponse, error)
@@ -9780,6 +10282,30 @@ func (r CreateBillingCheckoutClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateBillingCheckoutClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAirbnbConnectionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AirbnbConnectionResponse
+	JSON401      *Unauthorized
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbConnectionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbConnectionClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -11110,6 +11636,151 @@ func (r GetHealthClientResponse) StatusCode() int {
 	return 0
 }
 
+type ClearKvClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Deleted *int `json:"deleted,omitempty"`
+	}
+	JSON401 *Unauthorized
+	JSON422 *UnprocessableEntity
+}
+
+// Status returns HTTPResponse.Status
+func (r ClearKvClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ClearKvClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListKvClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *[]struct {
+			Key       *string     `json:"key,omitempty"`
+			TtlAt     *time.Time  `json:"ttl_at,omitempty"`
+			UpdatedAt *time.Time  `json:"updated_at,omitempty"`
+			Value     interface{} `json:"value,omitempty"`
+		} `json:"data,omitempty"`
+		Pagination *struct {
+			HasMore *bool `json:"has_more,omitempty"`
+			Total   *int  `json:"total,omitempty"`
+		} `json:"pagination,omitempty"`
+	}
+	JSON401 *Unauthorized
+}
+
+// Status returns HTTPResponse.Status
+func (r ListKvClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListKvClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteKvClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Deleted *bool `json:"deleted,omitempty"`
+	}
+	JSON401 *Unauthorized
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteKvClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteKvClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetKvClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Key       *string     `json:"key,omitempty"`
+		TtlAt     *time.Time  `json:"ttl_at,omitempty"`
+		UpdatedAt *time.Time  `json:"updated_at,omitempty"`
+		Value     interface{} `json:"value,omitempty"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+}
+
+// Status returns HTTPResponse.Status
+func (r GetKvClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetKvClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SetKvClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Key       *string     `json:"key,omitempty"`
+		TtlAt     *time.Time  `json:"ttl_at,omitempty"`
+		UpdatedAt *time.Time  `json:"updated_at,omitempty"`
+		Value     interface{} `json:"value,omitempty"`
+	}
+	JSON400 *BadRequest
+	JSON401 *Unauthorized
+	JSON413 *Error
+	JSON422 *UnprocessableEntity
+}
+
+// Status returns HTTPResponse.Status
+func (r SetKvClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetKvClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListListingsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -11382,6 +12053,8 @@ type GetListingPublishStatusClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListingPublishStatusResponse
+	JSON404      *NotFound
+	JSON429      *TooManyRequests
 }
 
 // Status returns HTTPResponse.Status
@@ -11594,6 +12267,7 @@ type GetPropertyClientResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Property
 	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
 }
 
 // Status returns HTTPResponse.Status
@@ -12450,6 +13124,15 @@ func (c *ClientWithResponses) CreateBillingCheckoutWithResponse(ctx context.Cont
 	return ParseCreateBillingCheckoutClientResponse(rsp)
 }
 
+// GetAirbnbConnectionWithResponse request returning *GetAirbnbConnectionClientResponse
+func (c *ClientWithResponses) GetAirbnbConnectionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAirbnbConnectionClientResponse, error) {
+	rsp, err := c.GetAirbnbConnection(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbConnectionClientResponse(rsp)
+}
+
 // ListAirbnbListingsWithResponse request returning *ListAirbnbListingsClientResponse
 func (c *ClientWithResponses) ListAirbnbListingsWithResponse(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*ListAirbnbListingsClientResponse, error) {
 	rsp, err := c.ListAirbnbListings(ctx, params, reqEditors...)
@@ -13044,6 +13727,59 @@ func (c *ClientWithResponses) GetHealthWithResponse(ctx context.Context, reqEdit
 	return ParseGetHealthClientResponse(rsp)
 }
 
+// ClearKvWithResponse request returning *ClearKvClientResponse
+func (c *ClientWithResponses) ClearKvWithResponse(ctx context.Context, params *ClearKvParams, reqEditors ...RequestEditorFn) (*ClearKvClientResponse, error) {
+	rsp, err := c.ClearKv(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseClearKvClientResponse(rsp)
+}
+
+// ListKvWithResponse request returning *ListKvClientResponse
+func (c *ClientWithResponses) ListKvWithResponse(ctx context.Context, params *ListKvParams, reqEditors ...RequestEditorFn) (*ListKvClientResponse, error) {
+	rsp, err := c.ListKv(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListKvClientResponse(rsp)
+}
+
+// DeleteKvWithResponse request returning *DeleteKvClientResponse
+func (c *ClientWithResponses) DeleteKvWithResponse(ctx context.Context, key string, params *DeleteKvParams, reqEditors ...RequestEditorFn) (*DeleteKvClientResponse, error) {
+	rsp, err := c.DeleteKv(ctx, key, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteKvClientResponse(rsp)
+}
+
+// GetKvWithResponse request returning *GetKvClientResponse
+func (c *ClientWithResponses) GetKvWithResponse(ctx context.Context, key string, params *GetKvParams, reqEditors ...RequestEditorFn) (*GetKvClientResponse, error) {
+	rsp, err := c.GetKv(ctx, key, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetKvClientResponse(rsp)
+}
+
+// SetKvWithBodyWithResponse request with arbitrary body returning *SetKvClientResponse
+func (c *ClientWithResponses) SetKvWithBodyWithResponse(ctx context.Context, key string, params *SetKvParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetKvClientResponse, error) {
+	rsp, err := c.SetKvWithBody(ctx, key, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetKvClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) SetKvWithResponse(ctx context.Context, key string, params *SetKvParams, body SetKvJSONRequestBody, reqEditors ...RequestEditorFn) (*SetKvClientResponse, error) {
+	rsp, err := c.SetKv(ctx, key, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetKvClientResponse(rsp)
+}
+
 // ListListingsWithResponse request returning *ListListingsClientResponse
 func (c *ClientWithResponses) ListListingsWithResponse(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*ListListingsClientResponse, error) {
 	rsp, err := c.ListListings(ctx, params, reqEditors...)
@@ -13273,8 +14009,8 @@ func (c *ClientWithResponses) ListPropertiesWithResponse(ctx context.Context, pa
 }
 
 // GetPropertyWithResponse request returning *GetPropertyClientResponse
-func (c *ClientWithResponses) GetPropertyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetPropertyClientResponse, error) {
-	rsp, err := c.GetProperty(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetPropertyWithResponse(ctx context.Context, id int, params *GetPropertyParams, reqEditors ...RequestEditorFn) (*GetPropertyClientResponse, error) {
+	rsp, err := c.GetProperty(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -14445,6 +15181,46 @@ func ParseCreateBillingCheckoutClientResponse(rsp *http.Response) (*CreateBillin
 	response := &CreateBillingCheckoutClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbConnectionClientResponse parses an HTTP response from a GetAirbnbConnectionWithResponse call
+func ParseGetAirbnbConnectionClientResponse(rsp *http.Response) (*GetAirbnbConnectionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbConnectionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AirbnbConnectionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -16201,6 +16977,231 @@ func ParseGetHealthClientResponse(rsp *http.Response) (*GetHealthClientResponse,
 	return response, nil
 }
 
+// ParseClearKvClientResponse parses an HTTP response from a ClearKvWithResponse call
+func ParseClearKvClientResponse(rsp *http.Response) (*ClearKvClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ClearKvClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Deleted *int `json:"deleted,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListKvClientResponse parses an HTTP response from a ListKvWithResponse call
+func ParseListKvClientResponse(rsp *http.Response) (*ListKvClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListKvClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]struct {
+				Key       *string     `json:"key,omitempty"`
+				TtlAt     *time.Time  `json:"ttl_at,omitempty"`
+				UpdatedAt *time.Time  `json:"updated_at,omitempty"`
+				Value     interface{} `json:"value,omitempty"`
+			} `json:"data,omitempty"`
+			Pagination *struct {
+				HasMore *bool `json:"has_more,omitempty"`
+				Total   *int  `json:"total,omitempty"`
+			} `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteKvClientResponse parses an HTTP response from a DeleteKvWithResponse call
+func ParseDeleteKvClientResponse(rsp *http.Response) (*DeleteKvClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteKvClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Deleted *bool `json:"deleted,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetKvClientResponse parses an HTTP response from a GetKvWithResponse call
+func ParseGetKvClientResponse(rsp *http.Response) (*GetKvClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetKvClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Key       *string     `json:"key,omitempty"`
+			TtlAt     *time.Time  `json:"ttl_at,omitempty"`
+			UpdatedAt *time.Time  `json:"updated_at,omitempty"`
+			Value     interface{} `json:"value,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetKvClientResponse parses an HTTP response from a SetKvWithResponse call
+func ParseSetKvClientResponse(rsp *http.Response) (*SetKvClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetKvClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Key       *string     `json:"key,omitempty"`
+			TtlAt     *time.Time  `json:"ttl_at,omitempty"`
+			UpdatedAt *time.Time  `json:"updated_at,omitempty"`
+			Value     interface{} `json:"value,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 413:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON413 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListListingsClientResponse parses an HTTP response from a ListListingsWithResponse call
 func ParseListListingsClientResponse(rsp *http.Response) (*ListListingsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -16678,6 +17679,20 @@ func ParseGetListingPublishStatusClientResponse(rsp *http.Response) (*GetListing
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest TooManyRequests
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	}
 
 	return response, nil
@@ -17009,6 +18024,13 @@ func ParseGetPropertyClientResponse(rsp *http.Response) (*GetPropertyClientRespo
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
