@@ -1562,21 +1562,6 @@ func (e ListListingsParamsStatus) Valid() bool {
 	}
 }
 
-// Defines values for GetListingParamsInclude.
-const (
-	GetListingParamsIncludeAmenities GetListingParamsInclude = "amenities"
-)
-
-// Valid indicates whether the value is a known member of the GetListingParamsInclude enum.
-func (e GetListingParamsInclude) Valid() bool {
-	switch e {
-	case GetListingParamsIncludeAmenities:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for GetListingSegmentsParamsLevel.
 const (
 	GetListingSegmentsParamsLevelCompSet GetListingSegmentsParamsLevel = "comp_set"
@@ -1636,13 +1621,13 @@ func (e ListPropertiesParamsStatus) Valid() bool {
 
 // Defines values for GetPropertyParamsInclude.
 const (
-	GetPropertyParamsIncludeAmenities GetPropertyParamsInclude = "amenities"
+	Amenities GetPropertyParamsInclude = "amenities"
 )
 
 // Valid indicates whether the value is a known member of the GetPropertyParamsInclude enum.
 func (e GetPropertyParamsInclude) Valid() bool {
 	switch e {
-	case GetPropertyParamsIncludeAmenities:
+	case Amenities:
 		return true
 	default:
 		return false
@@ -2773,8 +2758,14 @@ type Listing struct {
 	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
 
 	// Channels Channels (Airbnb, Booking, VRBO, etc.) the listing is connected to.
-	Channels  *[]ListingChannel `json:"channels,omitempty"`
-	CreatedAt *time.Time        `json:"createdAt,omitempty"`
+	Channels *[]ListingChannel `json:"channels,omitempty"`
+
+	// Content **Only present when the caller passes `?include=content`.** Sourced from `listings_descriptions` for the `en` locale. `null` when the listing has no description row stored (vs the field being absent — that signals the caller did not opt into the expansion).
+	Content   *ListingContent `json:"content,omitempty"`
+	CreatedAt *time.Time      `json:"createdAt,omitempty"`
+
+	// Details **Only present when the caller passes `?include=details`.** Sourced from `listings_details`. `null` when the listing has no details row stored (vs the field being absent — that signals the caller did not opt into the expansion).
+	Details *ListingDetails `json:"details,omitempty"`
 
 	// Id Repull listing id
 	Id           *string        `json:"id,omitempty"`
@@ -2862,18 +2853,30 @@ type ListingCompsResponse struct {
 	Warning *string `json:"warning,omitempty"`
 }
 
-// ListingContent defines model for ListingContent.
+// ListingContent Rich multilingual content slab for a listing — guest-facing copy sourced from `listings_descriptions` (the `en` row when surfaced via `?include=content`). Also returned as the AI-generated payload from `POST /v1/listings/{id}/generate-content` (where `title` and `amenities` are populated). All fields are individually nullable.
 type ListingContent struct {
-	Amenities            *[]string `json:"amenities,omitempty"`
-	Description          *string   `json:"description,omitempty"`
-	GuestAccess          *string   `json:"guestAccess,omitempty"`
-	HouseRules           *string   `json:"houseRules,omitempty"`
-	NeighborhoodOverview *string   `json:"neighborhoodOverview,omitempty"`
-	Notes                *string   `json:"notes,omitempty"`
-	Space                *string   `json:"space,omitempty"`
-	Summary              *string   `json:"summary,omitempty"`
-	Title                *string   `json:"title,omitempty"`
-	Transit              *string   `json:"transit,omitempty"`
+	// AdditionalRules Structured supplementary rules (JSON; shape evolves with the listings_descriptions schema).
+	AdditionalRules interface{} `json:"additionalRules,omitempty"`
+
+	// Amenities Free-text amenity strings. Populated only by `generate-content`; the `?include=amenities` expansion returns the structured `ListingAmenity[]` instead.
+	Amenities   *[]string `json:"amenities,omitempty"`
+	Description *string   `json:"description,omitempty"`
+
+	// GettingAround Free-text directions for getting to + around the property (e.g. "Take Highway 95 north for 12 miles").
+	GettingAround *string `json:"gettingAround,omitempty"`
+	GuestAccess   *string `json:"guestAccess,omitempty"`
+	HouseRules    *string `json:"houseRules,omitempty"`
+
+	// InteractionWithGuests Host’s description of how they engage with guests (e.g. "Self check-in, available via message").
+	InteractionWithGuests *string `json:"interactionWithGuests,omitempty"`
+	NeighborhoodOverview  *string `json:"neighborhoodOverview,omitempty"`
+	Notes                 *string `json:"notes,omitempty"`
+	Space                 *string `json:"space,omitempty"`
+	Summary               *string `json:"summary,omitempty"`
+
+	// Title Public listing title. Populated only by `generate-content`; not stored on `listings_descriptions`.
+	Title   *string `json:"title,omitempty"`
+	Transit *string `json:"transit,omitempty"`
 }
 
 // ListingCreateRequest Inputs for `POST /v1/listings`. Provide enough address detail (street + city + lat/lng) for downstream Airbnb publish to work.
@@ -2964,6 +2967,61 @@ type ListingDeletedPayload struct {
 	Reason    *string    `json:"reason,omitempty"`
 }
 
+// ListingDetails Structural detail slab for a listing — bedrooms/bathrooms/beds, person capacity, check-in window, wifi credentials, house manual, directions. Sourced from `listings_details` (one row per listing). Surfaced on `GET /v1/listings/{id}` and `GET /v1/listings` only when the caller passes `?include=details`. All fields are individually nullable.
+type ListingDetails struct {
+	// AdvanceBookingDays How far in advance bookings are allowed.
+	AdvanceBookingDays *int `json:"advanceBookingDays,omitempty"`
+
+	// Bathrooms Numeric value carried as a string to preserve fractional bathrooms (e.g. `"1.5"`).
+	Bathrooms *string `json:"bathrooms,omitempty"`
+	Bedrooms  *int    `json:"bedrooms,omitempty"`
+	Beds      *int    `json:"beds,omitempty"`
+
+	// CheckInTimeEnd Latest check-in time.
+	CheckInTimeEnd *string `json:"checkInTimeEnd,omitempty"`
+
+	// CheckInTimeStart Earliest check-in time, free-form (e.g. `"15:00"`, `"3 PM"`, `"flexible"`).
+	CheckInTimeStart *string `json:"checkInTimeStart,omitempty"`
+
+	// CheckOutTime Check-out time.
+	CheckOutTime *string `json:"checkOutTime,omitempty"`
+
+	// Directions Long-form arrival directions.
+	Directions *string `json:"directions,omitempty"`
+
+	// HouseManual Long-form house manual / welcome guide.
+	HouseManual *string `json:"houseManual,omitempty"`
+
+	// ListingFloor Which floor the listing is on.
+	ListingFloor *int `json:"listingFloor,omitempty"`
+	MaxNights    *int `json:"maxNights,omitempty"`
+	MinNights    *int `json:"minNights,omitempty"`
+
+	// NumberOfFloors Total floors in the building.
+	NumberOfFloors *int `json:"numberOfFloors,omitempty"`
+
+	// PersonCapacity Maximum guest capacity.
+	PersonCapacity *int `json:"personCapacity,omitempty"`
+
+	// PropertySize Structured size info (JSON; e.g. `{ "value": 65, "unit": "sqm" }`). Shape evolves with the listings_details schema.
+	PropertySize interface{} `json:"propertySize,omitempty"`
+
+	// PropertyType Specific property type (e.g. `apartment`, `townhouse`, `cabin`).
+	PropertyType *string `json:"propertyType,omitempty"`
+
+	// PropertyTypeCategory Coarser grouping above propertyType (e.g. `house`, `apartment`).
+	PropertyTypeCategory *string `json:"propertyTypeCategory,omitempty"`
+
+	// RoomTypeCategory Sleeping arrangement (e.g. `entire_home`, `private_room`, `shared_room`).
+	RoomTypeCategory *string `json:"roomTypeCategory,omitempty"`
+
+	// TurnoverDays Required gap (in days) between consecutive bookings.
+	TurnoverDays *int    `json:"turnoverDays,omitempty"`
+	WifiNetwork  *string `json:"wifiNetwork,omitempty"`
+	WifiPassword *string `json:"wifiPassword,omitempty"`
+	YearBuilt    *int    `json:"yearBuilt,omitempty"`
+}
+
 // ListingGenerateContentRequest defines model for ListingGenerateContentRequest.
 type ListingGenerateContentRequest struct {
 	// Persist Save the generated content to the listing (so subsequent publishes pick it up).
@@ -2979,6 +3037,7 @@ type ListingGenerateContentRequestStyle string
 
 // ListingGenerateContentResponse defines model for ListingGenerateContentResponse.
 type ListingGenerateContentResponse struct {
+	// Content Rich multilingual content slab for a listing — guest-facing copy sourced from `listings_descriptions` (the `en` row when surfaced via `?include=content`). Also returned as the AI-generated payload from `POST /v1/listings/{id}/generate-content` (where `title` and `amenities` are populated). All fields are individually nullable.
 	Content   *ListingContent `json:"content,omitempty"`
 	ListingId *string         `json:"listingId,omitempty"`
 	Persisted *bool           `json:"persisted,omitempty"`
@@ -4763,6 +4822,9 @@ type ListListingsParams struct {
 	// Channel Restrict to listings published on the given channel (`airbnb`, `booking`, `vrbo`, etc.). Joins through `listing_platform_links` and matches active links only.
 	Channel *string `form:"channel,omitempty" json:"channel,omitempty"`
 
+	// Include Comma-separated optional expansions. Currently supported: `content`, `details`. Unknown values return 422 with a `valid_values` envelope. (Note: `amenities` is not yet supported on the list endpoint — use the detail endpoint to fetch amenity rows for a single listing.)
+	Include *string `form:"include,omitempty" json:"include,omitempty"`
+
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
@@ -4772,15 +4834,12 @@ type ListListingsParamsStatus string
 
 // GetListingParams defines parameters for GetListing.
 type GetListingParams struct {
-	// Include Comma-separated optional expansions. Currently supported: `amenities`. Unknown values return 422.
-	Include *GetListingParamsInclude `form:"include,omitempty" json:"include,omitempty"`
+	// Include Comma-separated optional expansions. Currently supported: `amenities`, `content`, `details`. Unknown values return 422 with a `valid_values` envelope.
+	Include *string `form:"include,omitempty" json:"include,omitempty"`
 
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
-
-// GetListingParamsInclude defines parameters for GetListing.
-type GetListingParamsInclude string
 
 // ListListingCompsParams defines parameters for ListListingComps.
 type ListListingCompsParams struct {
