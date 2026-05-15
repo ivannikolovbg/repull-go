@@ -4437,6 +4437,9 @@ type InternalError = Error
 // NotFound Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type NotFound = Error
 
+// PaymentRequired Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type PaymentRequired = Error
+
 // TooManyRequests Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type TooManyRequests = Error
 

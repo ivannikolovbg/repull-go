@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.4 — 2026-05-15
+
+### Additive
+
+- **`PaymentRequired` type added.** New 402 error envelope type alias (`type PaymentRequired = Error`) generated alongside the existing `BadRequest` / `Unauthorized` / `NotFound` / `TooManyRequests` aliases. Surfaces when the API returns `402 Payment Required` with `error.code = "listings_limit_exceeded"` for over-cap customers. Unlike 429, 402 is NOT a "wait and retry" condition — `Retry-After` is not set. Recovery: `DELETE` listings under the cap or upgrade at `repull.dev/dashboard/billing`. `/v1/health`, `/v1/usage/*`, and any `DELETE` are exempt. The 402 envelope mirrors `rate_limit_exceeded` and adds `tier`, `limit`, `active_listings`, `upgrade_url`. Tracks vanio-repull-api PR #66.
+
 ## v0.2.2 — 2026-05-07
 
 ### Additive
