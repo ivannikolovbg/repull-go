@@ -1463,6 +1463,7 @@ func (e ListAirbnbReservationsParamsStatus) Valid() bool {
 // Defines values for CreateConnectionJSONBodyAccessType.
 const (
 	FullAccess CreateConnectionJSONBodyAccessType = "full_access"
+	Messaging  CreateConnectionJSONBodyAccessType = "messaging"
 	ReadOnly   CreateConnectionJSONBodyAccessType = "read_only"
 )
 
@@ -1470,6 +1471,8 @@ const (
 func (e CreateConnectionJSONBodyAccessType) Valid() bool {
 	switch e {
 	case FullAccess:
+		return true
+	case Messaging:
 		return true
 	case ReadOnly:
 		return true
@@ -4663,7 +4666,7 @@ type SelectConnectProviderJSONBody struct {
 
 // CreateConnectionJSONBody defines parameters for CreateConnection.
 type CreateConnectionJSONBody struct {
-	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants calendar-only access; 'full_access' grants full host scopes (default).
+	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants read-only scopes; 'messaging' grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; 'full_access' (default) grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it).
 	AccessType *CreateConnectionJSONBodyAccessType `json:"accessType,omitempty"`
 
 	// ApiKey PMS providers — API key.

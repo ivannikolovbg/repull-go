@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.5 — 2026-06-24
+
+### Additive
+
+- Add `messaging` Airbnb Connect access scope (read + send guest messages, no property management). Regenerated against the live spec; `CreateConnectionJSONBodyAccessType` now includes the `Messaging` value alongside `ReadOnly` and `FullAccess`. Unlike `full_access`, the `messaging` scope does not hold exclusive property management, so it can coexist with another app (e.g. an existing PMS) on the same Airbnb account.
+
 ## v0.2.4 — 2026-05-15
 
 ### Additive
