@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.6 — 2026-06-25
+
+### Additive
+
+- **Booking.com hosted Connect.** `POST /v1/connect/{provider}` (`CreateConnection`) now supports `provider = booking` for the hosted connect session, alongside the existing room-mapping helpers (`MapConnectBookingRooms`, `ListConnectBookingRooms`, plus the `/verify` and `/rooms` flows). `CreateConnectionJSONBody.RedirectUrl` is documented as Airbnb + Booking.com — where to redirect the user after the hosted connect flow completes.
+- **`channel` filter on `GET /v1/properties`.** New `ListPropertiesParams.Channel` query param (`ListPropertiesParamsChannel`: `airbnb` / `booking` / `vrbo`) restricts results to properties with an active link on the given OTA. Omit to include every channel.
+- **`channels` on `Property`.** New `Channels *[]string` field listing the OTAs each property is actively published on (e.g. `airbnb`, `booking`, `vrbo`); empty when the property has no active channel links.
+
+### Note
+
+- Regenerating against the new channel enum caused oapi-codegen to prefix the `ListReviewsParamsPlatform` constants. If you referenced the bare `Airbnb` / `Booking` / `Vrbo` constants for `ListReviews`, switch to `ListReviewsParamsPlatformAirbnb` / `...Booking` / `...Vrbo`. The enum values (`"airbnb"`, etc.) are unchanged.
+
 ## v0.2.5 — 2026-06-24
 
 ### Additive

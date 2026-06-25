@@ -1622,6 +1622,27 @@ func (e ListPropertiesParamsStatus) Valid() bool {
 	}
 }
 
+// Defines values for ListPropertiesParamsChannel.
+const (
+	ListPropertiesParamsChannelAirbnb  ListPropertiesParamsChannel = "airbnb"
+	ListPropertiesParamsChannelBooking ListPropertiesParamsChannel = "booking"
+	ListPropertiesParamsChannelVrbo    ListPropertiesParamsChannel = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the ListPropertiesParamsChannel enum.
+func (e ListPropertiesParamsChannel) Valid() bool {
+	switch e {
+	case ListPropertiesParamsChannelAirbnb:
+		return true
+	case ListPropertiesParamsChannelBooking:
+		return true
+	case ListPropertiesParamsChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetPropertyParamsInclude.
 const (
 	Amenities GetPropertyParamsInclude = "amenities"
@@ -1663,19 +1684,19 @@ func (e ListReservationsParamsStatus) Valid() bool {
 
 // Defines values for ListReviewsParamsPlatform.
 const (
-	Airbnb  ListReviewsParamsPlatform = "airbnb"
-	Booking ListReviewsParamsPlatform = "booking"
-	Vrbo    ListReviewsParamsPlatform = "vrbo"
+	ListReviewsParamsPlatformAirbnb  ListReviewsParamsPlatform = "airbnb"
+	ListReviewsParamsPlatformBooking ListReviewsParamsPlatform = "booking"
+	ListReviewsParamsPlatformVrbo    ListReviewsParamsPlatform = "vrbo"
 )
 
 // Valid indicates whether the value is a known member of the ListReviewsParamsPlatform enum.
 func (e ListReviewsParamsPlatform) Valid() bool {
 	switch e {
-	case Airbnb:
+	case ListReviewsParamsPlatformAirbnb:
 		return true
-	case Booking:
+	case ListReviewsParamsPlatformBooking:
 		return true
-	case Vrbo:
+	case ListReviewsParamsPlatformVrbo:
 		return true
 	default:
 		return false
@@ -3761,8 +3782,11 @@ type Property struct {
 	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
 	Bathrooms *float32          `json:"bathrooms,omitempty"`
 	Bedrooms  *int              `json:"bedrooms,omitempty"`
-	City      *string           `json:"city,omitempty"`
-	Country   *string           `json:"country,omitempty"`
+
+	// Channels OTAs/channels this property is actively published on (e.g. `airbnb`, `booking`, `vrbo`). Empty array when the property has no active channel links.
+	Channels *[]string `json:"channels,omitempty"`
+	City     *string   `json:"city,omitempty"`
+	Country  *string   `json:"country,omitempty"`
 
 	// ExternalId ID in the source PMS
 	ExternalId *string `json:"externalId,omitempty"`
@@ -4678,7 +4702,7 @@ type CreateConnectionJSONBody struct {
 	// ClientSecret Plumguide — client secret.
 	ClientSecret *string `json:"clientSecret,omitempty"`
 
-	// RedirectUrl Airbnb only — where to redirect the user after the OAuth flow completes.
+	// RedirectUrl Airbnb + Booking.com — where to redirect the user after they finish the hosted connect flow.
 	RedirectUrl *string `json:"redirectUrl,omitempty"`
 }
 
@@ -4960,12 +4984,18 @@ type ListPropertiesParams struct {
 	// LifecycleStatus Filter by lifecycle status (e.g. `live`, `draft`, `archived`). Pass `all` to disable the filter.
 	LifecycleStatus *string `form:"lifecycle_status,omitempty" json:"lifecycle_status,omitempty"`
 
+	// Channel Filter to properties with an active link on the given OTA/channel (airbnb, booking, vrbo). Omit to include every channel. Each property also returns a `channels` array listing the OTAs it is published on.
+	Channel *ListPropertiesParamsChannel `form:"channel,omitempty" json:"channel,omitempty"`
+
 	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
 	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
 }
 
 // ListPropertiesParamsStatus defines parameters for ListProperties.
 type ListPropertiesParamsStatus string
+
+// ListPropertiesParamsChannel defines parameters for ListProperties.
+type ListPropertiesParamsChannel string
 
 // GetPropertyParams defines parameters for GetProperty.
 type GetPropertyParams struct {
