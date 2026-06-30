@@ -4669,6 +4669,9 @@ type CreateConnectSessionJSONBody struct {
 	// AllowedProviders Optional whitelist of provider IDs the picker should expose. Omit to show every channel in the registry.
 	AllowedProviders *[]string `json:"allowedProviders,omitempty"`
 
+	// Locale Optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`). When set it pins the language for the whole flow, overriding the workspace `default_language`. Unknown codes are ignored and the page falls back to the workspace default, then `Accept-Language`, then `en`. The end user can still override per-visit with a `?locale=` query param on the hosted page.
+	Locale *string `json:"locale,omitempty"`
+
 	// RedirectUrl Where to send the user after they finish (or cancel). Status query params are appended.
 	RedirectUrl string `json:"redirectUrl"`
 
@@ -4701,6 +4704,9 @@ type CreateConnectionJSONBody struct {
 
 	// ClientSecret Plumguide — client secret.
 	ClientSecret *string `json:"clientSecret,omitempty"`
+
+	// Locale Airbnb only — optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`); unknown codes are ignored and resolution falls back to the workspace `default_language`, then `Accept-Language`, then `en`.
+	Locale *string `json:"locale,omitempty"`
 
 	// RedirectUrl Airbnb + Booking.com — where to redirect the user after they finish the hosted connect flow.
 	RedirectUrl *string `json:"redirectUrl,omitempty"`
