@@ -2802,6 +2802,21 @@ type Listing struct {
 // ListingStatus defines model for Listing.Status.
 type ListingStatus string
 
+// ListingActiveRequest defines model for ListingActiveRequest.
+type ListingActiveRequest struct {
+	// Active Target active state. `false` deactivates (excludes) the listing; `true` reactivates it (subject to the plan-listings cap).
+	Active bool `json:"active"`
+}
+
+// ListingActiveResponse defines model for ListingActiveResponse.
+type ListingActiveResponse struct {
+	// Active The resulting active state after the toggle.
+	Active *bool `json:"active,omitempty"`
+
+	// Id The listing id (id fields are serialized as strings to preserve precision).
+	Id *string `json:"id,omitempty"`
+}
+
 // ListingAmenity A single amenity row from the unified `listings_amenities` table. Surfaced on `GET /v1/listings/{id}` and `GET /v1/properties/{id}` only when the caller passes `?include=amenities`.
 type ListingAmenity struct {
 	// AmenityKey Canonical amenity key (e.g. `wifi`, `pool`, `parking`).
@@ -5242,6 +5257,9 @@ type CreateListingJSONRequestBody = ListingCreateRequest
 
 // BulkApplyPricingJSONRequestBody defines body for BulkApplyPricing for application/json ContentType.
 type BulkApplyPricingJSONRequestBody = BulkPricingRequest
+
+// UpdateListingActiveJSONRequestBody defines body for UpdateListingActive for application/json ContentType.
+type UpdateListingActiveJSONRequestBody = ListingActiveRequest
 
 // GenerateListingContentJSONRequestBody defines body for GenerateListingContent for application/json ContentType.
 type GenerateListingContentJSONRequestBody = ListingGenerateContentRequest

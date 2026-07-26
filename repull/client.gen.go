@@ -397,8 +397,16 @@ type ClientInterface interface {
 
 	BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeactivateListing request
+	DeactivateListing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetListing request
 	GetListing(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateListingActiveWithBody request with any body
+	UpdateListingActiveWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateListingActive(ctx context.Context, id int, body UpdateListingActiveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListListingComps request
 	ListListingComps(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1857,8 +1865,44 @@ func (c *Client) BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSON
 	return c.Client.Do(req)
 }
 
+func (c *Client) DeactivateListing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeactivateListingRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetListing(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetListingRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateListingActiveWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateListingActiveRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateListingActive(ctx context.Context, id int, body UpdateListingActiveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateListingActiveRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6513,6 +6557,40 @@ func NewBulkApplyPricingRequestWithBody(server string, contentType string, body 
 	return req, nil
 }
 
+// NewDeactivateListingRequest generates requests for DeactivateListing
+func NewDeactivateListingRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetListingRequest generates requests for GetListing
 func NewGetListingRequest(server string, id int, params *GetListingParams) (*http.Request, error) {
 	var err error
@@ -6580,6 +6658,53 @@ func NewGetListingRequest(server string, id int, params *GetListingParams) (*htt
 		}
 
 	}
+
+	return req, nil
+}
+
+// NewUpdateListingActiveRequest calls the generic UpdateListingActive builder with application/json body
+func NewUpdateListingActiveRequest(server string, id int, body UpdateListingActiveJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateListingActiveRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateListingActiveRequestWithBody generates requests for UpdateListingActive with any type of body
+func NewUpdateListingActiveRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -9581,8 +9706,16 @@ type ClientWithResponsesInterface interface {
 
 	BulkApplyPricingWithResponse(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkApplyPricingClientResponse, error)
 
+	// DeactivateListingWithResponse request
+	DeactivateListingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeactivateListingClientResponse, error)
+
 	// GetListingWithResponse request
 	GetListingWithResponse(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*GetListingClientResponse, error)
+
+	// UpdateListingActiveWithBodyWithResponse request with any body
+	UpdateListingActiveWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListingActiveClientResponse, error)
+
+	UpdateListingActiveWithResponse(ctx context.Context, id int, body UpdateListingActiveJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListingActiveClientResponse, error)
 
 	// ListListingCompsWithResponse request
 	ListListingCompsWithResponse(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*ListListingCompsClientResponse, error)
@@ -11842,6 +11975,7 @@ type CreateListingClientResponse struct {
 	HTTPResponse *http.Response
 	JSON201      *ListingCreateResponse
 	JSON400      *BadRequest
+	JSON402      *PaymentRequired
 }
 
 // Status returns HTTPResponse.Status
@@ -11886,6 +12020,31 @@ func (r BulkApplyPricingClientResponse) StatusCode() int {
 	return 0
 }
 
+type DeactivateListingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingActiveResponse
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+}
+
+// Status returns HTTPResponse.Status
+func (r DeactivateListingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeactivateListingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetListingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -11905,6 +12064,32 @@ func (r GetListingClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetListingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateListingActiveClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListingActiveResponse
+	JSON401      *Unauthorized
+	JSON402      *PaymentRequired
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateListingActiveClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateListingActiveClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -13855,6 +14040,15 @@ func (c *ClientWithResponses) BulkApplyPricingWithResponse(ctx context.Context, 
 	return ParseBulkApplyPricingClientResponse(rsp)
 }
 
+// DeactivateListingWithResponse request returning *DeactivateListingClientResponse
+func (c *ClientWithResponses) DeactivateListingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeactivateListingClientResponse, error) {
+	rsp, err := c.DeactivateListing(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeactivateListingClientResponse(rsp)
+}
+
 // GetListingWithResponse request returning *GetListingClientResponse
 func (c *ClientWithResponses) GetListingWithResponse(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*GetListingClientResponse, error) {
 	rsp, err := c.GetListing(ctx, id, params, reqEditors...)
@@ -13862,6 +14056,23 @@ func (c *ClientWithResponses) GetListingWithResponse(ctx context.Context, id int
 		return nil, err
 	}
 	return ParseGetListingClientResponse(rsp)
+}
+
+// UpdateListingActiveWithBodyWithResponse request with arbitrary body returning *UpdateListingActiveClientResponse
+func (c *ClientWithResponses) UpdateListingActiveWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListingActiveClientResponse, error) {
+	rsp, err := c.UpdateListingActiveWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateListingActiveClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateListingActiveWithResponse(ctx context.Context, id int, body UpdateListingActiveJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListingActiveClientResponse, error) {
+	rsp, err := c.UpdateListingActive(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateListingActiveClientResponse(rsp)
 }
 
 // ListListingCompsWithResponse request returning *ListListingCompsClientResponse
@@ -17302,6 +17513,13 @@ func ParseCreateListingClientResponse(rsp *http.Response) (*CreateListingClientR
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PaymentRequired
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
 	}
 
 	return response, nil
@@ -17361,6 +17579,53 @@ func ParseBulkApplyPricingClientResponse(rsp *http.Response) (*BulkApplyPricingC
 	return response, nil
 }
 
+// ParseDeactivateListingClientResponse parses an HTTP response from a DeactivateListingWithResponse call
+func ParseDeactivateListingClientResponse(rsp *http.Response) (*DeactivateListingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeactivateListingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingActiveResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetListingClientResponse parses an HTTP response from a GetListingWithResponse call
 func ParseGetListingClientResponse(rsp *http.Response) (*GetListingClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -17388,6 +17653,60 @@ func ParseGetListingClientResponse(rsp *http.Response) (*GetListingClientRespons
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateListingActiveClientResponse parses an HTTP response from a UpdateListingActiveWithResponse call
+func ParseUpdateListingActiveClientResponse(rsp *http.Response) (*UpdateListingActiveClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateListingActiveClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingActiveResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PaymentRequired
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
