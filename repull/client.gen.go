@@ -91,10 +91,24 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// GetAvailability request
+	GetAvailability(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateBillingCheckoutWithBody request with any body
 	CreateBillingCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateBillingCheckout(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListAirbnbAlterations request
+	ListAirbnbAlterations(ctx context.Context, params *ListAirbnbAlterationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAirbnbAlterationWithBody request with any body
+	CreateAirbnbAlterationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAirbnbAlteration(ctx context.Context, body CreateAirbnbAlterationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbAlteration request
+	GetAirbnbAlteration(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAirbnbConnection request
 	GetAirbnbConnection(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -115,6 +129,9 @@ type ClientInterface interface {
 
 	AirbnbListingAction(ctx context.Context, id string, body AirbnbListingActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListAirbnbListingAmenities request
+	ListAirbnbListingAmenities(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetAirbnbListingAvailability request
 	GetAirbnbListingAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -122,6 +139,21 @@ type ClientInterface interface {
 	UpdateAirbnbListingAvailabilityWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateAirbnbListingAvailability(ctx context.Context, id string, body UpdateAirbnbListingAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbCheckinGuide request
+	GetAirbnbCheckinGuide(ctx context.Context, id string, params *GetAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbCheckinGuide request
+	UpdateAirbnbCheckinGuide(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbCheckoutGuide request
+	GetAirbnbCheckoutGuide(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListAirbnbListingDescriptions request
+	ListAirbnbListingDescriptions(ctx context.Context, id string, params *ListAirbnbListingDescriptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAirbnbListingPhoto request
+	DeleteAirbnbListingPhoto(ctx context.Context, id string, params *DeleteAirbnbListingPhotoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbListingPhotos request
 	ListAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -137,14 +169,47 @@ type ClientInterface interface {
 
 	UpdateAirbnbListingPricing(ctx context.Context, id string, body UpdateAirbnbListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetAirbnbListingQuality request
+	GetAirbnbListingQuality(ctx context.Context, id string, params *GetAirbnbListingQualityParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAirbnbListingRoom request
+	DeleteAirbnbListingRoom(ctx context.Context, id string, params *DeleteAirbnbListingRoomParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListAirbnbListingRooms request
+	ListAirbnbListingRooms(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAirbnbListingRoomWithBody request with any body
+	CreateAirbnbListingRoomWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAirbnbListingRoom(ctx context.Context, id string, body CreateAirbnbListingRoomJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbListingSettings request
+	GetAirbnbListingSettings(ctx context.Context, id string, params *GetAirbnbListingSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAirbnbThreads request
 	ListAirbnbThreads(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbThread request
+	GetAirbnbThread(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbThreadMessages request
 	ListAirbnbThreadMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SendAirbnbMessage request
 	SendAirbnbMessage(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbMessageWithBody request with any body
+	UpdateAirbnbMessageWithBody(ctx context.Context, threadId string, messageId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAirbnbMessage(ctx context.Context, threadId string, messageId string, body UpdateAirbnbMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// WithdrawAirbnbOffer request
+	WithdrawAirbnbOffer(ctx context.Context, params *WithdrawAirbnbOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateAirbnbOfferWithBody request with any body
+	CreateAirbnbOfferWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAirbnbOffer(ctx context.Context, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbReservations request
 	ListAirbnbReservations(ctx context.Context, params *ListAirbnbReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -171,10 +236,21 @@ type ClientInterface interface {
 
 	RespondAirbnbReview(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListAirbnbTransactions request
+	ListAirbnbTransactions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// UpdateBookingAvailabilityWithBody request with any body
 	UpdateBookingAvailabilityWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateBookingAvailability(ctx context.Context, body UpdateBookingAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetBookingCharges request
+	GetBookingCharges(ctx context.Context, params *GetBookingChargesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateBookingChargesWithBody request with any body
+	UpdateBookingChargesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateBookingCharges(ctx context.Context, body UpdateBookingChargesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetBookingContent request
 	GetBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -199,6 +275,17 @@ type ClientInterface interface {
 	// ListBookingProperties request
 	ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetBookingProperty request
+	GetBookingProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListBookingReservations request
+	ListBookingReservations(ctx context.Context, params *ListBookingReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AcknowledgeBookingReservationsWithBody request with any body
+	AcknowledgeBookingReservationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AcknowledgeBookingReservations(ctx context.Context, body AcknowledgeBookingReservationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListBookingReviews request
 	ListBookingReviews(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -207,11 +294,30 @@ type ClientInterface interface {
 
 	ReplyBookingReview(ctx context.Context, body ReplyBookingReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// BookingSetupWithBody request with any body
+	BookingSetupWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BookingSetup(ctx context.Context, body BookingSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteBookingWebhook request
+	DeleteBookingWebhook(ctx context.Context, params *DeleteBookingWebhookParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListBookingWebhooks request
+	ListBookingWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateBookingWebhookWithBody request with any body
+	CreateBookingWebhookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateBookingWebhook(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetPlumguideAvailability request
 	GetPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdatePlumguideAvailability request
 	UpdatePlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListPlumguideBookings request
+	ListPlumguideBookings(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListPlumguideListings request
 	ListPlumguideListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -221,6 +327,17 @@ type ClientInterface interface {
 
 	// UpdatePlumguidePricing request
 	UpdatePlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeletePlumguideWebhooks request
+	DeletePlumguideWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetPlumguideWebhooks request
+	GetPlumguideWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdatePlumguideWebhooksWithBody request with any body
+	UpdatePlumguideWebhooksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdatePlumguideWebhooks(ctx context.Context, body UpdatePlumguideWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVrboListings request
 	ListVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -428,6 +545,15 @@ type ClientInterface interface {
 
 	UpdateCustomSchema(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetUsageLogs request
+	GetUsageLogs(ctx context.Context, params *GetUsageLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUsageSummary request
+	GetUsageSummary(ctx context.Context, params *GetUsageSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUsageTier request
+	GetUsageTier(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListWebhooks request
 	ListWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -474,6 +600,18 @@ type ClientInterface interface {
 	TestFireWebhook(ctx context.Context, id openapi_types.UUID, eventType WebhookEventType, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
+func (c *Client) GetAvailability(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAvailabilityRequest(c.Server, propertyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateBillingCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateBillingCheckoutRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -488,6 +626,54 @@ func (c *Client) CreateBillingCheckoutWithBody(ctx context.Context, contentType 
 
 func (c *Client) CreateBillingCheckout(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateBillingCheckoutRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbAlterations(ctx context.Context, params *ListAirbnbAlterationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbAlterationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAirbnbAlterationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbAlterationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAirbnbAlteration(ctx context.Context, body CreateAirbnbAlterationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbAlterationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbAlteration(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbAlterationRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -582,6 +768,18 @@ func (c *Client) AirbnbListingAction(ctx context.Context, id string, body Airbnb
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListAirbnbListingAmenities(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbListingAmenitiesRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetAirbnbListingAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbListingAvailabilityRequest(c.Server, id)
 	if err != nil {
@@ -608,6 +806,66 @@ func (c *Client) UpdateAirbnbListingAvailabilityWithBody(ctx context.Context, id
 
 func (c *Client) UpdateAirbnbListingAvailability(ctx context.Context, id string, body UpdateAirbnbListingAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateAirbnbListingAvailabilityRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbCheckinGuide(ctx context.Context, id string, params *GetAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbCheckinGuideRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAirbnbCheckinGuide(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbCheckinGuideRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbCheckoutGuide(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbCheckoutGuideRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbListingDescriptions(ctx context.Context, id string, params *ListAirbnbListingDescriptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbListingDescriptionsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAirbnbListingPhoto(ctx context.Context, id string, params *DeleteAirbnbListingPhotoParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAirbnbListingPhotoRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -678,8 +936,92 @@ func (c *Client) UpdateAirbnbListingPricing(ctx context.Context, id string, body
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetAirbnbListingQuality(ctx context.Context, id string, params *GetAirbnbListingQualityParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingQualityRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAirbnbListingRoom(ctx context.Context, id string, params *DeleteAirbnbListingRoomParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAirbnbListingRoomRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAirbnbListingRooms(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbListingRoomsRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAirbnbListingRoomWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbListingRoomRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAirbnbListingRoom(ctx context.Context, id string, body CreateAirbnbListingRoomJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbListingRoomRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbListingSettings(ctx context.Context, id string, params *GetAirbnbListingSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingSettingsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListAirbnbThreads(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAirbnbThreadsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAirbnbThread(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbThreadRequest(c.Server, threadId)
 	if err != nil {
 		return nil, err
 	}
@@ -704,6 +1046,66 @@ func (c *Client) ListAirbnbThreadMessages(ctx context.Context, threadId string, 
 
 func (c *Client) SendAirbnbMessage(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSendAirbnbMessageRequest(c.Server, threadId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAirbnbMessageWithBody(ctx context.Context, threadId string, messageId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbMessageRequestWithBody(c.Server, threadId, messageId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAirbnbMessage(ctx context.Context, threadId string, messageId string, body UpdateAirbnbMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbMessageRequest(c.Server, threadId, messageId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) WithdrawAirbnbOffer(ctx context.Context, params *WithdrawAirbnbOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewWithdrawAirbnbOfferRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAirbnbOfferWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbOfferRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAirbnbOffer(ctx context.Context, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbOfferRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -822,6 +1224,18 @@ func (c *Client) RespondAirbnbReview(ctx context.Context, id string, body Respon
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListAirbnbTransactions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbTransactionsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) UpdateBookingAvailabilityWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateBookingAvailabilityRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -836,6 +1250,42 @@ func (c *Client) UpdateBookingAvailabilityWithBody(ctx context.Context, contentT
 
 func (c *Client) UpdateBookingAvailability(ctx context.Context, body UpdateBookingAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateBookingAvailabilityRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBookingCharges(ctx context.Context, params *GetBookingChargesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBookingChargesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBookingChargesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingChargesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBookingCharges(ctx context.Context, body UpdateBookingChargesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingChargesRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -942,6 +1392,54 @@ func (c *Client) ListBookingProperties(ctx context.Context, reqEditors ...Reques
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetBookingProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBookingPropertyRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListBookingReservations(ctx context.Context, params *ListBookingReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBookingReservationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AcknowledgeBookingReservationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcknowledgeBookingReservationsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AcknowledgeBookingReservations(ctx context.Context, body AcknowledgeBookingReservationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcknowledgeBookingReservationsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListBookingReviews(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBookingReviewsRequest(c.Server, params)
 	if err != nil {
@@ -978,6 +1476,78 @@ func (c *Client) ReplyBookingReview(ctx context.Context, body ReplyBookingReview
 	return c.Client.Do(req)
 }
 
+func (c *Client) BookingSetupWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBookingSetupRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BookingSetup(ctx context.Context, body BookingSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBookingSetupRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteBookingWebhook(ctx context.Context, params *DeleteBookingWebhookParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteBookingWebhookRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListBookingWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBookingWebhooksRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBookingWebhookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBookingWebhookRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBookingWebhook(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBookingWebhookRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPlumguideAvailabilityRequest(c.Server)
 	if err != nil {
@@ -992,6 +1562,18 @@ func (c *Client) GetPlumguideAvailability(ctx context.Context, reqEditors ...Req
 
 func (c *Client) UpdatePlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdatePlumguideAvailabilityRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListPlumguideBookings(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListPlumguideBookingsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1028,6 +1610,54 @@ func (c *Client) GetPlumguidePricing(ctx context.Context, reqEditors ...RequestE
 
 func (c *Client) UpdatePlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdatePlumguidePricingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeletePlumguideWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeletePlumguideWebhooksRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPlumguideWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPlumguideWebhooksRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePlumguideWebhooksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdatePlumguideWebhooksRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePlumguideWebhooks(ctx context.Context, body UpdatePlumguideWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdatePlumguideWebhooksRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1926,6 +2556,42 @@ func (c *Client) UpdateCustomSchema(ctx context.Context, id openapi_types.UUID, 
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetUsageLogs(ctx context.Context, params *GetUsageLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUsageLogsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUsageSummary(ctx context.Context, params *GetUsageSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUsageSummaryRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUsageTier(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUsageTierRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListWebhooksRequest(c.Server)
 	if err != nil {
@@ -2118,6 +2784,70 @@ func (c *Client) TestFireWebhook(ctx context.Context, id openapi_types.UUID, eve
 	return c.Client.Do(req)
 }
 
+// NewGetAvailabilityRequest generates requests for GetAvailability
+func NewGetAvailabilityRequest(server string, propertyId int, params *GetAvailabilityParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "propertyId", propertyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/availability/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "from", params.From, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "to", params.To, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateBillingCheckoutRequest calls the generic CreateBillingCheckout builder with application/json body
 func NewCreateBillingCheckoutRequest(server string, body CreateBillingCheckoutJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -2154,6 +2884,145 @@ func NewCreateBillingCheckoutRequestWithBody(server string, contentType string, 
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListAirbnbAlterationsRequest generates requests for ListAirbnbAlterations
+func NewListAirbnbAlterationsRequest(server string, params *ListAirbnbAlterationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/alterations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ReservationCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "reservation_code", *params.ReservationCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAirbnbAlterationRequest calls the generic CreateAirbnbAlteration builder with application/json body
+func NewCreateAirbnbAlterationRequest(server string, body CreateAirbnbAlterationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAirbnbAlterationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateAirbnbAlterationRequestWithBody generates requests for CreateAirbnbAlteration with any type of body
+func NewCreateAirbnbAlterationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/alterations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetAirbnbAlterationRequest generates requests for GetAirbnbAlteration
+func NewGetAirbnbAlterationRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/alterations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -2377,6 +3246,40 @@ func NewAirbnbListingActionRequestWithBody(server string, id string, contentType
 	return req, nil
 }
 
+// NewListAirbnbListingAmenitiesRequest generates requests for ListAirbnbListingAmenities
+func NewListAirbnbListingAmenitiesRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/amenities", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetAirbnbListingAvailabilityRequest generates requests for GetAirbnbListingAvailability
 func NewGetAirbnbListingAvailabilityRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -2454,6 +3357,276 @@ func NewUpdateAirbnbListingAvailabilityRequestWithBody(server string, id string,
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetAirbnbCheckinGuideRequest generates requests for GetAirbnbCheckinGuide
+func NewGetAirbnbCheckinGuideRequest(server string, id string, params *GetAirbnbCheckinGuideParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/checkin-guide", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAirbnbCheckinGuideRequest generates requests for UpdateAirbnbCheckinGuide
+func NewUpdateAirbnbCheckinGuideRequest(server string, id string, params *UpdateAirbnbCheckinGuideParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/checkin-guide", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAirbnbCheckoutGuideRequest generates requests for GetAirbnbCheckoutGuide
+func NewGetAirbnbCheckoutGuideRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/checkout-guide", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListAirbnbListingDescriptionsRequest generates requests for ListAirbnbListingDescriptions
+func NewListAirbnbListingDescriptionsRequest(server string, id string, params *ListAirbnbListingDescriptionsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/descriptions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Country != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "country", *params.Country, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteAirbnbListingPhotoRequest generates requests for DeleteAirbnbListingPhoto
+func NewDeleteAirbnbListingPhotoRequest(server string, id string, params *DeleteAirbnbListingPhotoParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/photos", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "photoId", params.PhotoId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -2607,6 +3780,251 @@ func NewUpdateAirbnbListingPricingRequestWithBody(server string, id string, cont
 	return req, nil
 }
 
+// NewGetAirbnbListingQualityRequest generates requests for GetAirbnbListingQuality
+func NewGetAirbnbListingQualityRequest(server string, id string, params *GetAirbnbListingQualityParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/quality", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteAirbnbListingRoomRequest generates requests for DeleteAirbnbListingRoom
+func NewDeleteAirbnbListingRoomRequest(server string, id string, params *DeleteAirbnbListingRoomParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/rooms", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "roomId", params.RoomId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListAirbnbListingRoomsRequest generates requests for ListAirbnbListingRooms
+func NewListAirbnbListingRoomsRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/rooms", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAirbnbListingRoomRequest calls the generic CreateAirbnbListingRoom builder with application/json body
+func NewCreateAirbnbListingRoomRequest(server string, id string, body CreateAirbnbListingRoomJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAirbnbListingRoomRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewCreateAirbnbListingRoomRequestWithBody generates requests for CreateAirbnbListingRoom with any type of body
+func NewCreateAirbnbListingRoomRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/rooms", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetAirbnbListingSettingsRequest generates requests for GetAirbnbListingSettings
+func NewGetAirbnbListingSettingsRequest(server string, id string, params *GetAirbnbListingSettingsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListAirbnbThreadsRequest generates requests for ListAirbnbThreads
 func NewListAirbnbThreadsRequest(server string) (*http.Request, error) {
 	var err error
@@ -2617,6 +4035,40 @@ func NewListAirbnbThreadsRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/v1/channels/airbnb/messaging")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAirbnbThreadRequest generates requests for GetAirbnbThread
+func NewGetAirbnbThreadRequest(server string, threadId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "threadId", threadId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/messaging/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -2698,6 +4150,145 @@ func NewSendAirbnbMessageRequest(server string, threadId string) (*http.Request,
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateAirbnbMessageRequest calls the generic UpdateAirbnbMessage builder with application/json body
+func NewUpdateAirbnbMessageRequest(server string, threadId string, messageId string, body UpdateAirbnbMessageJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAirbnbMessageRequestWithBody(server, threadId, messageId, "application/json", bodyReader)
+}
+
+// NewUpdateAirbnbMessageRequestWithBody generates requests for UpdateAirbnbMessage with any type of body
+func NewUpdateAirbnbMessageRequestWithBody(server string, threadId string, messageId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "threadId", threadId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "messageId", messageId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/messaging/%s/messages/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewWithdrawAirbnbOfferRequest generates requests for WithdrawAirbnbOffer
+func NewWithdrawAirbnbOfferRequest(server string, params *WithdrawAirbnbOfferParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/offers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offerId", params.OfferId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAirbnbOfferRequest calls the generic CreateAirbnbOffer builder with application/json body
+func NewCreateAirbnbOfferRequest(server string, body CreateAirbnbOfferJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAirbnbOfferRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateAirbnbOfferRequestWithBody generates requests for CreateAirbnbOffer with any type of body
+func NewCreateAirbnbOfferRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/offers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -3079,6 +4670,33 @@ func NewRespondAirbnbReviewRequestWithBody(server string, id string, contentType
 	return req, nil
 }
 
+// NewListAirbnbTransactionsRequest generates requests for ListAirbnbTransactions
+func NewListAirbnbTransactionsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/transactions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewUpdateBookingAvailabilityRequest calls the generic UpdateBookingAvailability builder with application/json body
 func NewUpdateBookingAvailabilityRequest(server string, body UpdateBookingAvailabilityJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3100,6 +4718,91 @@ func NewUpdateBookingAvailabilityRequestWithBody(server string, contentType stri
 	}
 
 	operationPath := fmt.Sprintf("/v1/channels/booking/availability")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetBookingChargesRequest generates requests for GetBookingCharges
+func NewGetBookingChargesRequest(server string, params *GetBookingChargesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/charges")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "property_id", params.PropertyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateBookingChargesRequest calls the generic UpdateBookingCharges builder with application/json body
+func NewUpdateBookingChargesRequest(server string, body UpdateBookingChargesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateBookingChargesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewUpdateBookingChargesRequestWithBody generates requests for UpdateBookingCharges with any type of body
+func NewUpdateBookingChargesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/charges")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3405,6 +5108,161 @@ func NewListBookingPropertiesRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewGetBookingPropertyRequest generates requests for GetBookingProperty
+func NewGetBookingPropertyRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/properties/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListBookingReservationsRequest generates requests for ListBookingReservations
+func NewListBookingReservationsRequest(server string, params *ListBookingReservationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/reservations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ReservationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "reservation_id", *params.ReservationId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAcknowledgeBookingReservationsRequest calls the generic AcknowledgeBookingReservations builder with application/json body
+func NewAcknowledgeBookingReservationsRequest(server string, body AcknowledgeBookingReservationsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAcknowledgeBookingReservationsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAcknowledgeBookingReservationsRequestWithBody generates requests for AcknowledgeBookingReservations with any type of body
+func NewAcknowledgeBookingReservationsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/reservations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListBookingReviewsRequest generates requests for ListBookingReviews
 func NewListBookingReviewsRequest(server string, params *ListBookingReviewsParams) (*http.Request, error) {
 	var err error
@@ -3490,6 +5348,158 @@ func NewReplyBookingReviewRequestWithBody(server string, contentType string, bod
 	return req, nil
 }
 
+// NewBookingSetupRequest calls the generic BookingSetup builder with application/json body
+func NewBookingSetupRequest(server string, body BookingSetupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBookingSetupRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBookingSetupRequestWithBody generates requests for BookingSetup with any type of body
+func NewBookingSetupRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/setup")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteBookingWebhookRequest generates requests for DeleteBookingWebhook
+func NewDeleteBookingWebhookRequest(server string, params *DeleteBookingWebhookParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/webhooks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "notification_type", params.NotificationType, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListBookingWebhooksRequest generates requests for ListBookingWebhooks
+func NewListBookingWebhooksRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/webhooks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateBookingWebhookRequest calls the generic CreateBookingWebhook builder with application/json body
+func NewCreateBookingWebhookRequest(server string, body CreateBookingWebhookJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateBookingWebhookRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateBookingWebhookRequestWithBody generates requests for CreateBookingWebhook with any type of body
+func NewCreateBookingWebhookRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/webhooks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetPlumguideAvailabilityRequest generates requests for GetPlumguideAvailability
 func NewGetPlumguideAvailabilityRequest(server string) (*http.Request, error) {
 	var err error
@@ -3537,6 +5547,71 @@ func NewUpdatePlumguideAvailabilityRequest(server string) (*http.Request, error)
 	}
 
 	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListPlumguideBookingsRequest generates requests for ListPlumguideBookings
+func NewListPlumguideBookingsRequest(server string, params *ListPlumguideBookingsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/plumguide/bookings")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.BookingCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "booking_code", *params.BookingCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -3621,6 +5696,100 @@ func NewUpdatePlumguidePricingRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewDeletePlumguideWebhooksRequest generates requests for DeletePlumguideWebhooks
+func NewDeletePlumguideWebhooksRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/plumguide/webhooks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetPlumguideWebhooksRequest generates requests for GetPlumguideWebhooks
+func NewGetPlumguideWebhooksRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/plumguide/webhooks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdatePlumguideWebhooksRequest calls the generic UpdatePlumguideWebhooks builder with application/json body
+func NewUpdatePlumguideWebhooksRequest(server string, body UpdatePlumguideWebhooksJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdatePlumguideWebhooksRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewUpdatePlumguideWebhooksRequestWithBody generates requests for UpdatePlumguideWebhooks with any type of body
+func NewUpdatePlumguideWebhooksRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/plumguide/webhooks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -7429,6 +9598,243 @@ func NewUpdateCustomSchemaRequestWithBody(server string, id openapi_types.UUID, 
 	return req, nil
 }
 
+// NewGetUsageLogsRequest generates requests for GetUsageLogs
+func NewGetUsageLogsRequest(server string, params *GetUsageLogsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/usage/logs")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Range != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "range", *params.Range, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Operation != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "operation", *params.Operation, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Q != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "q", *params.Q, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.IncludeTotal != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_total", *params.IncludeTotal, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetUsageSummaryRequest generates requests for GetUsageSummary
+func NewGetUsageSummaryRequest(server string, params *GetUsageSummaryParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/usage/summary")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Range != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "range", *params.Range, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetUsageTierRequest generates requests for GetUsageTier
+func NewGetUsageTierRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/usage/tier")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListWebhooksRequest generates requests for ListWebhooks
 func NewListWebhooksRequest(server string) (*http.Request, error) {
 	var err error
@@ -8016,10 +10422,24 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// GetAvailabilityWithResponse request
+	GetAvailabilityWithResponse(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*GetAvailabilityClientResponse, error)
+
 	// CreateBillingCheckoutWithBodyWithResponse request with any body
 	CreateBillingCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error)
 
 	CreateBillingCheckoutWithResponse(ctx context.Context, body CreateBillingCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error)
+
+	// ListAirbnbAlterationsWithResponse request
+	ListAirbnbAlterationsWithResponse(ctx context.Context, params *ListAirbnbAlterationsParams, reqEditors ...RequestEditorFn) (*ListAirbnbAlterationsClientResponse, error)
+
+	// CreateAirbnbAlterationWithBodyWithResponse request with any body
+	CreateAirbnbAlterationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbAlterationClientResponse, error)
+
+	CreateAirbnbAlterationWithResponse(ctx context.Context, body CreateAirbnbAlterationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbAlterationClientResponse, error)
+
+	// GetAirbnbAlterationWithResponse request
+	GetAirbnbAlterationWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbAlterationClientResponse, error)
 
 	// GetAirbnbConnectionWithResponse request
 	GetAirbnbConnectionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAirbnbConnectionClientResponse, error)
@@ -8040,6 +10460,9 @@ type ClientWithResponsesInterface interface {
 
 	AirbnbListingActionWithResponse(ctx context.Context, id string, body AirbnbListingActionJSONRequestBody, reqEditors ...RequestEditorFn) (*AirbnbListingActionClientResponse, error)
 
+	// ListAirbnbListingAmenitiesWithResponse request
+	ListAirbnbListingAmenitiesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListAirbnbListingAmenitiesClientResponse, error)
+
 	// GetAirbnbListingAvailabilityWithResponse request
 	GetAirbnbListingAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingAvailabilityClientResponse, error)
 
@@ -8047,6 +10470,21 @@ type ClientWithResponsesInterface interface {
 	UpdateAirbnbListingAvailabilityWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingAvailabilityClientResponse, error)
 
 	UpdateAirbnbListingAvailabilityWithResponse(ctx context.Context, id string, body UpdateAirbnbListingAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingAvailabilityClientResponse, error)
+
+	// GetAirbnbCheckinGuideWithResponse request
+	GetAirbnbCheckinGuideWithResponse(ctx context.Context, id string, params *GetAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*GetAirbnbCheckinGuideClientResponse, error)
+
+	// UpdateAirbnbCheckinGuideWithResponse request
+	UpdateAirbnbCheckinGuideWithResponse(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*UpdateAirbnbCheckinGuideClientResponse, error)
+
+	// GetAirbnbCheckoutGuideWithResponse request
+	GetAirbnbCheckoutGuideWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbCheckoutGuideClientResponse, error)
+
+	// ListAirbnbListingDescriptionsWithResponse request
+	ListAirbnbListingDescriptionsWithResponse(ctx context.Context, id string, params *ListAirbnbListingDescriptionsParams, reqEditors ...RequestEditorFn) (*ListAirbnbListingDescriptionsClientResponse, error)
+
+	// DeleteAirbnbListingPhotoWithResponse request
+	DeleteAirbnbListingPhotoWithResponse(ctx context.Context, id string, params *DeleteAirbnbListingPhotoParams, reqEditors ...RequestEditorFn) (*DeleteAirbnbListingPhotoClientResponse, error)
 
 	// ListAirbnbListingPhotosWithResponse request
 	ListAirbnbListingPhotosWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListAirbnbListingPhotosClientResponse, error)
@@ -8062,14 +10500,47 @@ type ClientWithResponsesInterface interface {
 
 	UpdateAirbnbListingPricingWithResponse(ctx context.Context, id string, body UpdateAirbnbListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingPricingClientResponse, error)
 
+	// GetAirbnbListingQualityWithResponse request
+	GetAirbnbListingQualityWithResponse(ctx context.Context, id string, params *GetAirbnbListingQualityParams, reqEditors ...RequestEditorFn) (*GetAirbnbListingQualityClientResponse, error)
+
+	// DeleteAirbnbListingRoomWithResponse request
+	DeleteAirbnbListingRoomWithResponse(ctx context.Context, id string, params *DeleteAirbnbListingRoomParams, reqEditors ...RequestEditorFn) (*DeleteAirbnbListingRoomClientResponse, error)
+
+	// ListAirbnbListingRoomsWithResponse request
+	ListAirbnbListingRoomsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListAirbnbListingRoomsClientResponse, error)
+
+	// CreateAirbnbListingRoomWithBodyWithResponse request with any body
+	CreateAirbnbListingRoomWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbListingRoomClientResponse, error)
+
+	CreateAirbnbListingRoomWithResponse(ctx context.Context, id string, body CreateAirbnbListingRoomJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbListingRoomClientResponse, error)
+
+	// GetAirbnbListingSettingsWithResponse request
+	GetAirbnbListingSettingsWithResponse(ctx context.Context, id string, params *GetAirbnbListingSettingsParams, reqEditors ...RequestEditorFn) (*GetAirbnbListingSettingsClientResponse, error)
+
 	// ListAirbnbThreadsWithResponse request
 	ListAirbnbThreadsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbThreadsClientResponse, error)
+
+	// GetAirbnbThreadWithResponse request
+	GetAirbnbThreadWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*GetAirbnbThreadClientResponse, error)
 
 	// ListAirbnbThreadMessagesWithResponse request
 	ListAirbnbThreadMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*ListAirbnbThreadMessagesClientResponse, error)
 
 	// SendAirbnbMessageWithResponse request
 	SendAirbnbMessageWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*SendAirbnbMessageClientResponse, error)
+
+	// UpdateAirbnbMessageWithBodyWithResponse request with any body
+	UpdateAirbnbMessageWithBodyWithResponse(ctx context.Context, threadId string, messageId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbMessageClientResponse, error)
+
+	UpdateAirbnbMessageWithResponse(ctx context.Context, threadId string, messageId string, body UpdateAirbnbMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbMessageClientResponse, error)
+
+	// WithdrawAirbnbOfferWithResponse request
+	WithdrawAirbnbOfferWithResponse(ctx context.Context, params *WithdrawAirbnbOfferParams, reqEditors ...RequestEditorFn) (*WithdrawAirbnbOfferClientResponse, error)
+
+	// CreateAirbnbOfferWithBodyWithResponse request with any body
+	CreateAirbnbOfferWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error)
+
+	CreateAirbnbOfferWithResponse(ctx context.Context, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error)
 
 	// ListAirbnbReservationsWithResponse request
 	ListAirbnbReservationsWithResponse(ctx context.Context, params *ListAirbnbReservationsParams, reqEditors ...RequestEditorFn) (*ListAirbnbReservationsClientResponse, error)
@@ -8096,10 +10567,21 @@ type ClientWithResponsesInterface interface {
 
 	RespondAirbnbReviewWithResponse(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error)
 
+	// ListAirbnbTransactionsWithResponse request
+	ListAirbnbTransactionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbTransactionsClientResponse, error)
+
 	// UpdateBookingAvailabilityWithBodyWithResponse request with any body
 	UpdateBookingAvailabilityWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingAvailabilityClientResponse, error)
 
 	UpdateBookingAvailabilityWithResponse(ctx context.Context, body UpdateBookingAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingAvailabilityClientResponse, error)
+
+	// GetBookingChargesWithResponse request
+	GetBookingChargesWithResponse(ctx context.Context, params *GetBookingChargesParams, reqEditors ...RequestEditorFn) (*GetBookingChargesClientResponse, error)
+
+	// UpdateBookingChargesWithBodyWithResponse request with any body
+	UpdateBookingChargesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingChargesClientResponse, error)
+
+	UpdateBookingChargesWithResponse(ctx context.Context, body UpdateBookingChargesJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingChargesClientResponse, error)
 
 	// GetBookingContentWithResponse request
 	GetBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBookingContentClientResponse, error)
@@ -8124,6 +10606,17 @@ type ClientWithResponsesInterface interface {
 	// ListBookingPropertiesWithResponse request
 	ListBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingPropertiesClientResponse, error)
 
+	// GetBookingPropertyWithResponse request
+	GetBookingPropertyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetBookingPropertyClientResponse, error)
+
+	// ListBookingReservationsWithResponse request
+	ListBookingReservationsWithResponse(ctx context.Context, params *ListBookingReservationsParams, reqEditors ...RequestEditorFn) (*ListBookingReservationsClientResponse, error)
+
+	// AcknowledgeBookingReservationsWithBodyWithResponse request with any body
+	AcknowledgeBookingReservationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcknowledgeBookingReservationsClientResponse, error)
+
+	AcknowledgeBookingReservationsWithResponse(ctx context.Context, body AcknowledgeBookingReservationsJSONRequestBody, reqEditors ...RequestEditorFn) (*AcknowledgeBookingReservationsClientResponse, error)
+
 	// ListBookingReviewsWithResponse request
 	ListBookingReviewsWithResponse(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*ListBookingReviewsClientResponse, error)
 
@@ -8132,11 +10625,30 @@ type ClientWithResponsesInterface interface {
 
 	ReplyBookingReviewWithResponse(ctx context.Context, body ReplyBookingReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*ReplyBookingReviewClientResponse, error)
 
+	// BookingSetupWithBodyWithResponse request with any body
+	BookingSetupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BookingSetupClientResponse, error)
+
+	BookingSetupWithResponse(ctx context.Context, body BookingSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*BookingSetupClientResponse, error)
+
+	// DeleteBookingWebhookWithResponse request
+	DeleteBookingWebhookWithResponse(ctx context.Context, params *DeleteBookingWebhookParams, reqEditors ...RequestEditorFn) (*DeleteBookingWebhookClientResponse, error)
+
+	// ListBookingWebhooksWithResponse request
+	ListBookingWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingWebhooksClientResponse, error)
+
+	// CreateBookingWebhookWithBodyWithResponse request with any body
+	CreateBookingWebhookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error)
+
+	CreateBookingWebhookWithResponse(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error)
+
 	// GetPlumguideAvailabilityWithResponse request
 	GetPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideAvailabilityClientResponse, error)
 
 	// UpdatePlumguideAvailabilityWithResponse request
 	UpdatePlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguideAvailabilityClientResponse, error)
+
+	// ListPlumguideBookingsWithResponse request
+	ListPlumguideBookingsWithResponse(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*ListPlumguideBookingsClientResponse, error)
 
 	// ListPlumguideListingsWithResponse request
 	ListPlumguideListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListPlumguideListingsClientResponse, error)
@@ -8146,6 +10658,17 @@ type ClientWithResponsesInterface interface {
 
 	// UpdatePlumguidePricingWithResponse request
 	UpdatePlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguidePricingClientResponse, error)
+
+	// DeletePlumguideWebhooksWithResponse request
+	DeletePlumguideWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeletePlumguideWebhooksClientResponse, error)
+
+	// GetPlumguideWebhooksWithResponse request
+	GetPlumguideWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideWebhooksClientResponse, error)
+
+	// UpdatePlumguideWebhooksWithBodyWithResponse request with any body
+	UpdatePlumguideWebhooksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePlumguideWebhooksClientResponse, error)
+
+	UpdatePlumguideWebhooksWithResponse(ctx context.Context, body UpdatePlumguideWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePlumguideWebhooksClientResponse, error)
 
 	// ListVrboListingsWithResponse request
 	ListVrboListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboListingsClientResponse, error)
@@ -8353,6 +10876,15 @@ type ClientWithResponsesInterface interface {
 
 	UpdateCustomSchemaWithResponse(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomSchemaClientResponse, error)
 
+	// GetUsageLogsWithResponse request
+	GetUsageLogsWithResponse(ctx context.Context, params *GetUsageLogsParams, reqEditors ...RequestEditorFn) (*GetUsageLogsClientResponse, error)
+
+	// GetUsageSummaryWithResponse request
+	GetUsageSummaryWithResponse(ctx context.Context, params *GetUsageSummaryParams, reqEditors ...RequestEditorFn) (*GetUsageSummaryClientResponse, error)
+
+	// GetUsageTierWithResponse request
+	GetUsageTierWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUsageTierClientResponse, error)
+
 	// ListWebhooksWithResponse request
 	ListWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListWebhooksClientResponse, error)
 
@@ -8399,6 +10931,30 @@ type ClientWithResponsesInterface interface {
 	TestFireWebhookWithResponse(ctx context.Context, id openapi_types.UUID, eventType WebhookEventType, reqEditors ...RequestEditorFn) (*TestFireWebhookClientResponse, error)
 }
 
+type GetAvailabilityClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PropertyAvailability
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAvailabilityClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAvailabilityClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateBillingCheckoutClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8414,6 +10970,90 @@ func (r CreateBillingCheckoutClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateBillingCheckoutClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListAirbnbAlterationsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data []AirbnbAlteration `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbAlterationsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbAlterationsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAirbnbAlterationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAirbnbAlterationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAirbnbAlterationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAirbnbAlterationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data An Airbnb reservation alteration request (date change, guest-count change, or price change), mirrored locally in `reservation_alterations`. Additional Airbnb-side fields may be present.
+		Data AirbnbAlteration `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbAlterationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbAlterationClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -8535,6 +11175,40 @@ func (r AirbnbListingActionClientResponse) StatusCode() int {
 	return 0
 }
 
+type ListAirbnbListingAmenitiesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data struct {
+			AccessibilityAmenities *[]AirbnbAmenity `json:"accessibility_amenities,omitempty"`
+			Amenities              *[]AirbnbAmenity `json:"amenities,omitempty"`
+		} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbListingAmenitiesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbListingAmenitiesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetAirbnbListingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8571,6 +11245,150 @@ func (r UpdateAirbnbListingAvailabilityClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateAirbnbListingAvailabilityClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAirbnbCheckinGuideClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data []map[string]interface{} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbCheckinGuideClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbCheckinGuideClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateAirbnbCheckinGuideClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAirbnbCheckinGuideClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAirbnbCheckinGuideClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAirbnbCheckoutGuideClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data []map[string]interface{} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbCheckoutGuideClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbCheckoutGuideClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListAirbnbListingDescriptionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data []map[string]interface{} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbListingDescriptionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbListingDescriptionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAirbnbListingPhotoClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Deleted *bool `json:"deleted,omitempty"`
+	}
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAirbnbListingPhotoClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAirbnbListingPhotoClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -8661,6 +11479,153 @@ func (r UpdateAirbnbListingPricingClientResponse) StatusCode() int {
 	return 0
 }
 
+type GetAirbnbListingQualityClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data Shape depends on `type`: an object `{ standards, issues }` for `all`/`standards`, or an array for `issues`/`stats`.
+		Data interface{} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbListingQualityClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbListingQualityClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAirbnbListingRoomClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Deleted *bool `json:"deleted,omitempty"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAirbnbListingRoomClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAirbnbListingRoomClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListAirbnbListingRoomsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data []map[string]interface{} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbListingRoomsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbListingRoomsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAirbnbListingRoomClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAirbnbListingRoomClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAirbnbListingRoomClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAirbnbListingSettingsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data Shape depends on `type`: `{ hosts, locales }` for `all`, or an array for `hosts`/`permits`/`locales`.
+		Data interface{} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbListingSettingsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbListingSettingsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListAirbnbThreadsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8677,6 +11642,37 @@ func (r ListAirbnbThreadsClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListAirbnbThreadsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAirbnbThreadClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// Data An Airbnb message thread.
+		Data AirbnbThread `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON404 *NotFound
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbThreadClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbThreadClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -8720,6 +11716,81 @@ func (r SendAirbnbMessageClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r SendAirbnbMessageClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateAirbnbMessageClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAirbnbMessageClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAirbnbMessageClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type WithdrawAirbnbOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r WithdrawAirbnbOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r WithdrawAirbnbOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAirbnbOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON422      *UnprocessableEntity
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAirbnbOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAirbnbOfferClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -8886,6 +11957,35 @@ func (r RespondAirbnbReviewClientResponse) StatusCode() int {
 	return 0
 }
 
+type ListAirbnbTransactionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data []map[string]interface{} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	}
+	JSON401 *Unauthorized
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbTransactionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbTransactionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type UpdateBookingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8905,6 +12005,56 @@ func (r UpdateBookingAvailabilityClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateBookingAvailabilityClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetBookingChargesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBookingChargesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBookingChargesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateBookingChargesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateBookingChargesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateBookingChargesClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -9070,6 +12220,81 @@ func (r ListBookingPropertiesClientResponse) StatusCode() int {
 	return 0
 }
 
+type GetBookingPropertyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBookingPropertyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBookingPropertyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListBookingReservationsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBookingReservationsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBookingReservationsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AcknowledgeBookingReservationsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r AcknowledgeBookingReservationsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AcknowledgeBookingReservationsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListBookingReviewsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -9121,6 +12346,105 @@ func (r ReplyBookingReviewClientResponse) StatusCode() int {
 	return 0
 }
 
+type BookingSetupClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r BookingSetupClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BookingSetupClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteBookingWebhookClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteBookingWebhookClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteBookingWebhookClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListBookingWebhooksClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBookingWebhooksClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBookingWebhooksClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateBookingWebhookClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateBookingWebhookClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateBookingWebhookClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetPlumguideAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -9157,6 +12481,30 @@ func (r UpdatePlumguideAvailabilityClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdatePlumguideAvailabilityClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListPlumguideBookingsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListPlumguideBookingsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListPlumguideBookingsClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -9221,6 +12569,79 @@ func (r UpdatePlumguidePricingClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdatePlumguidePricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeletePlumguideWebhooksClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeletePlumguideWebhooksClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeletePlumguideWebhooksClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPlumguideWebhooksClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPlumguideWebhooksClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPlumguideWebhooksClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdatePlumguideWebhooksClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON500      *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdatePlumguideWebhooksClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdatePlumguideWebhooksClientResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -10667,6 +14088,158 @@ func (r UpdateCustomSchemaClientResponse) StatusCode() int {
 	return 0
 }
 
+type GetUsageLogsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Data *[]struct {
+			CreatedAt     *time.Time `json:"createdAt,omitempty"`
+			ErrorCode     *string    `json:"errorCode,omitempty"`
+			Id            *string    `json:"id,omitempty"`
+			IpAddress     *string    `json:"ipAddress,omitempty"`
+			LatencyMs     *int       `json:"latencyMs,omitempty"`
+			Method        *string    `json:"method,omitempty"`
+			OperationId   *string    `json:"operationId,omitempty"`
+			Path          *string    `json:"path,omitempty"`
+			RequestBytes  *int       `json:"requestBytes,omitempty"`
+			RequestId     *string    `json:"requestId,omitempty"`
+			ResponseBytes *int       `json:"responseBytes,omitempty"`
+			StatusCode    *int       `json:"statusCode,omitempty"`
+			UserAgent     *string    `json:"userAgent,omitempty"`
+		} `json:"data,omitempty"`
+		Pagination *struct {
+			HasMore    *bool   `json:"has_more,omitempty"`
+			NextCursor *string `json:"next_cursor,omitempty"`
+			Total      *int    `json:"total,omitempty"`
+		} `json:"pagination,omitempty"`
+		Range *string `json:"range,omitempty"`
+	}
+	JSON401 *Unauthorized
+	JSON422 *UnprocessableEntity
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUsageLogsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUsageLogsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetUsageSummaryClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Breakdown *[]struct {
+			AvgLatencyMs *int     `json:"avgLatencyMs,omitempty"`
+			ErrorCount   *int     `json:"errorCount,omitempty"`
+			ErrorRate    *float32 `json:"errorRate,omitempty"`
+			OperationId  *string  `json:"operationId,omitempty"`
+			RequestCount *int     `json:"requestCount,omitempty"`
+		} `json:"breakdown,omitempty"`
+		Limits *struct {
+			DailyAiRequests *int `json:"daily_ai_requests,omitempty"`
+			MonthlyRequests *int `json:"monthly_requests,omitempty"`
+		} `json:"limits,omitempty"`
+		Range     *string `json:"range,omitempty"`
+		Remaining *struct {
+			DailyAi *int `json:"daily_ai,omitempty"`
+			Monthly *int `json:"monthly,omitempty"`
+		} `json:"remaining,omitempty"`
+		ResetsAt           *time.Time `json:"resets_at,omitempty"`
+		StatusDistribution *struct {
+			N2xx *int `json:"2xx,omitempty"`
+			N3xx *int `json:"3xx,omitempty"`
+			N4xx *int `json:"4xx,omitempty"`
+			N5xx *int `json:"5xx,omitempty"`
+		} `json:"statusDistribution,omitempty"`
+		Tier     *string `json:"tier,omitempty"`
+		Timeline *[]struct {
+			Day          *string `json:"day,omitempty"`
+			ErrorCount   *int    `json:"errorCount,omitempty"`
+			RequestCount *int    `json:"requestCount,omitempty"`
+		} `json:"timeline,omitempty"`
+		Totals *struct {
+			AvgLatencyMs *int `json:"avgLatencyMs,omitempty"`
+			Errors       *int `json:"errors,omitempty"`
+			Requests     *int `json:"requests,omitempty"`
+		} `json:"totals,omitempty"`
+		Used *struct {
+			DailyAi *int `json:"daily_ai,omitempty"`
+			Monthly *int `json:"monthly,omitempty"`
+		} `json:"used,omitempty"`
+	}
+	JSON401 *Unauthorized
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUsageSummaryClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUsageSummaryClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetUsageTierClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Limits *struct {
+			DailyAiRequests        *int `json:"daily_ai_requests,omitempty"`
+			DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+			MonthlyRequests        *int `json:"monthly_requests,omitempty"`
+		} `json:"limits,omitempty"`
+		Remaining *struct {
+			DailyAi                *int `json:"daily_ai,omitempty"`
+			DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+			Monthly                *int `json:"monthly,omitempty"`
+		} `json:"remaining,omitempty"`
+		ResetsAt *time.Time `json:"resets_at,omitempty"`
+		Tier     *string    `json:"tier,omitempty"`
+		Used     *struct {
+			DailyAi                *int `json:"daily_ai,omitempty"`
+			DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+			Monthly                *int `json:"monthly,omitempty"`
+		} `json:"used,omitempty"`
+	}
+	JSON401 *Unauthorized
+	JSON500 *InternalError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUsageTierClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUsageTierClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListWebhooksClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -10952,6 +14525,15 @@ func (r TestFireWebhookClientResponse) StatusCode() int {
 	return 0
 }
 
+// GetAvailabilityWithResponse request returning *GetAvailabilityClientResponse
+func (c *ClientWithResponses) GetAvailabilityWithResponse(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*GetAvailabilityClientResponse, error) {
+	rsp, err := c.GetAvailability(ctx, propertyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAvailabilityClientResponse(rsp)
+}
+
 // CreateBillingCheckoutWithBodyWithResponse request with arbitrary body returning *CreateBillingCheckoutClientResponse
 func (c *ClientWithResponses) CreateBillingCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error) {
 	rsp, err := c.CreateBillingCheckoutWithBody(ctx, contentType, body, reqEditors...)
@@ -10967,6 +14549,41 @@ func (c *ClientWithResponses) CreateBillingCheckoutWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseCreateBillingCheckoutClientResponse(rsp)
+}
+
+// ListAirbnbAlterationsWithResponse request returning *ListAirbnbAlterationsClientResponse
+func (c *ClientWithResponses) ListAirbnbAlterationsWithResponse(ctx context.Context, params *ListAirbnbAlterationsParams, reqEditors ...RequestEditorFn) (*ListAirbnbAlterationsClientResponse, error) {
+	rsp, err := c.ListAirbnbAlterations(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbAlterationsClientResponse(rsp)
+}
+
+// CreateAirbnbAlterationWithBodyWithResponse request with arbitrary body returning *CreateAirbnbAlterationClientResponse
+func (c *ClientWithResponses) CreateAirbnbAlterationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbAlterationClientResponse, error) {
+	rsp, err := c.CreateAirbnbAlterationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAirbnbAlterationClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAirbnbAlterationWithResponse(ctx context.Context, body CreateAirbnbAlterationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbAlterationClientResponse, error) {
+	rsp, err := c.CreateAirbnbAlteration(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAirbnbAlterationClientResponse(rsp)
+}
+
+// GetAirbnbAlterationWithResponse request returning *GetAirbnbAlterationClientResponse
+func (c *ClientWithResponses) GetAirbnbAlterationWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbAlterationClientResponse, error) {
+	rsp, err := c.GetAirbnbAlteration(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbAlterationClientResponse(rsp)
 }
 
 // GetAirbnbConnectionWithResponse request returning *GetAirbnbConnectionClientResponse
@@ -11030,6 +14647,15 @@ func (c *ClientWithResponses) AirbnbListingActionWithResponse(ctx context.Contex
 	return ParseAirbnbListingActionClientResponse(rsp)
 }
 
+// ListAirbnbListingAmenitiesWithResponse request returning *ListAirbnbListingAmenitiesClientResponse
+func (c *ClientWithResponses) ListAirbnbListingAmenitiesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListAirbnbListingAmenitiesClientResponse, error) {
+	rsp, err := c.ListAirbnbListingAmenities(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbListingAmenitiesClientResponse(rsp)
+}
+
 // GetAirbnbListingAvailabilityWithResponse request returning *GetAirbnbListingAvailabilityClientResponse
 func (c *ClientWithResponses) GetAirbnbListingAvailabilityWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingAvailabilityClientResponse, error) {
 	rsp, err := c.GetAirbnbListingAvailability(ctx, id, reqEditors...)
@@ -11054,6 +14680,51 @@ func (c *ClientWithResponses) UpdateAirbnbListingAvailabilityWithResponse(ctx co
 		return nil, err
 	}
 	return ParseUpdateAirbnbListingAvailabilityClientResponse(rsp)
+}
+
+// GetAirbnbCheckinGuideWithResponse request returning *GetAirbnbCheckinGuideClientResponse
+func (c *ClientWithResponses) GetAirbnbCheckinGuideWithResponse(ctx context.Context, id string, params *GetAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*GetAirbnbCheckinGuideClientResponse, error) {
+	rsp, err := c.GetAirbnbCheckinGuide(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbCheckinGuideClientResponse(rsp)
+}
+
+// UpdateAirbnbCheckinGuideWithResponse request returning *UpdateAirbnbCheckinGuideClientResponse
+func (c *ClientWithResponses) UpdateAirbnbCheckinGuideWithResponse(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*UpdateAirbnbCheckinGuideClientResponse, error) {
+	rsp, err := c.UpdateAirbnbCheckinGuide(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbCheckinGuideClientResponse(rsp)
+}
+
+// GetAirbnbCheckoutGuideWithResponse request returning *GetAirbnbCheckoutGuideClientResponse
+func (c *ClientWithResponses) GetAirbnbCheckoutGuideWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbCheckoutGuideClientResponse, error) {
+	rsp, err := c.GetAirbnbCheckoutGuide(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbCheckoutGuideClientResponse(rsp)
+}
+
+// ListAirbnbListingDescriptionsWithResponse request returning *ListAirbnbListingDescriptionsClientResponse
+func (c *ClientWithResponses) ListAirbnbListingDescriptionsWithResponse(ctx context.Context, id string, params *ListAirbnbListingDescriptionsParams, reqEditors ...RequestEditorFn) (*ListAirbnbListingDescriptionsClientResponse, error) {
+	rsp, err := c.ListAirbnbListingDescriptions(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbListingDescriptionsClientResponse(rsp)
+}
+
+// DeleteAirbnbListingPhotoWithResponse request returning *DeleteAirbnbListingPhotoClientResponse
+func (c *ClientWithResponses) DeleteAirbnbListingPhotoWithResponse(ctx context.Context, id string, params *DeleteAirbnbListingPhotoParams, reqEditors ...RequestEditorFn) (*DeleteAirbnbListingPhotoClientResponse, error) {
+	rsp, err := c.DeleteAirbnbListingPhoto(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAirbnbListingPhotoClientResponse(rsp)
 }
 
 // ListAirbnbListingPhotosWithResponse request returning *ListAirbnbListingPhotosClientResponse
@@ -11100,6 +14771,59 @@ func (c *ClientWithResponses) UpdateAirbnbListingPricingWithResponse(ctx context
 	return ParseUpdateAirbnbListingPricingClientResponse(rsp)
 }
 
+// GetAirbnbListingQualityWithResponse request returning *GetAirbnbListingQualityClientResponse
+func (c *ClientWithResponses) GetAirbnbListingQualityWithResponse(ctx context.Context, id string, params *GetAirbnbListingQualityParams, reqEditors ...RequestEditorFn) (*GetAirbnbListingQualityClientResponse, error) {
+	rsp, err := c.GetAirbnbListingQuality(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbListingQualityClientResponse(rsp)
+}
+
+// DeleteAirbnbListingRoomWithResponse request returning *DeleteAirbnbListingRoomClientResponse
+func (c *ClientWithResponses) DeleteAirbnbListingRoomWithResponse(ctx context.Context, id string, params *DeleteAirbnbListingRoomParams, reqEditors ...RequestEditorFn) (*DeleteAirbnbListingRoomClientResponse, error) {
+	rsp, err := c.DeleteAirbnbListingRoom(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAirbnbListingRoomClientResponse(rsp)
+}
+
+// ListAirbnbListingRoomsWithResponse request returning *ListAirbnbListingRoomsClientResponse
+func (c *ClientWithResponses) ListAirbnbListingRoomsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListAirbnbListingRoomsClientResponse, error) {
+	rsp, err := c.ListAirbnbListingRooms(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbListingRoomsClientResponse(rsp)
+}
+
+// CreateAirbnbListingRoomWithBodyWithResponse request with arbitrary body returning *CreateAirbnbListingRoomClientResponse
+func (c *ClientWithResponses) CreateAirbnbListingRoomWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbListingRoomClientResponse, error) {
+	rsp, err := c.CreateAirbnbListingRoomWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAirbnbListingRoomClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAirbnbListingRoomWithResponse(ctx context.Context, id string, body CreateAirbnbListingRoomJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbListingRoomClientResponse, error) {
+	rsp, err := c.CreateAirbnbListingRoom(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAirbnbListingRoomClientResponse(rsp)
+}
+
+// GetAirbnbListingSettingsWithResponse request returning *GetAirbnbListingSettingsClientResponse
+func (c *ClientWithResponses) GetAirbnbListingSettingsWithResponse(ctx context.Context, id string, params *GetAirbnbListingSettingsParams, reqEditors ...RequestEditorFn) (*GetAirbnbListingSettingsClientResponse, error) {
+	rsp, err := c.GetAirbnbListingSettings(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbListingSettingsClientResponse(rsp)
+}
+
 // ListAirbnbThreadsWithResponse request returning *ListAirbnbThreadsClientResponse
 func (c *ClientWithResponses) ListAirbnbThreadsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbThreadsClientResponse, error) {
 	rsp, err := c.ListAirbnbThreads(ctx, reqEditors...)
@@ -11107,6 +14831,15 @@ func (c *ClientWithResponses) ListAirbnbThreadsWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseListAirbnbThreadsClientResponse(rsp)
+}
+
+// GetAirbnbThreadWithResponse request returning *GetAirbnbThreadClientResponse
+func (c *ClientWithResponses) GetAirbnbThreadWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*GetAirbnbThreadClientResponse, error) {
+	rsp, err := c.GetAirbnbThread(ctx, threadId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbThreadClientResponse(rsp)
 }
 
 // ListAirbnbThreadMessagesWithResponse request returning *ListAirbnbThreadMessagesClientResponse
@@ -11125,6 +14858,49 @@ func (c *ClientWithResponses) SendAirbnbMessageWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseSendAirbnbMessageClientResponse(rsp)
+}
+
+// UpdateAirbnbMessageWithBodyWithResponse request with arbitrary body returning *UpdateAirbnbMessageClientResponse
+func (c *ClientWithResponses) UpdateAirbnbMessageWithBodyWithResponse(ctx context.Context, threadId string, messageId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbMessageClientResponse, error) {
+	rsp, err := c.UpdateAirbnbMessageWithBody(ctx, threadId, messageId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbMessageClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAirbnbMessageWithResponse(ctx context.Context, threadId string, messageId string, body UpdateAirbnbMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbMessageClientResponse, error) {
+	rsp, err := c.UpdateAirbnbMessage(ctx, threadId, messageId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbMessageClientResponse(rsp)
+}
+
+// WithdrawAirbnbOfferWithResponse request returning *WithdrawAirbnbOfferClientResponse
+func (c *ClientWithResponses) WithdrawAirbnbOfferWithResponse(ctx context.Context, params *WithdrawAirbnbOfferParams, reqEditors ...RequestEditorFn) (*WithdrawAirbnbOfferClientResponse, error) {
+	rsp, err := c.WithdrawAirbnbOffer(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseWithdrawAirbnbOfferClientResponse(rsp)
+}
+
+// CreateAirbnbOfferWithBodyWithResponse request with arbitrary body returning *CreateAirbnbOfferClientResponse
+func (c *ClientWithResponses) CreateAirbnbOfferWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error) {
+	rsp, err := c.CreateAirbnbOfferWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAirbnbOfferClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAirbnbOfferWithResponse(ctx context.Context, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error) {
+	rsp, err := c.CreateAirbnbOffer(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAirbnbOfferClientResponse(rsp)
 }
 
 // ListAirbnbReservationsWithResponse request returning *ListAirbnbReservationsClientResponse
@@ -11206,6 +14982,15 @@ func (c *ClientWithResponses) RespondAirbnbReviewWithResponse(ctx context.Contex
 	return ParseRespondAirbnbReviewClientResponse(rsp)
 }
 
+// ListAirbnbTransactionsWithResponse request returning *ListAirbnbTransactionsClientResponse
+func (c *ClientWithResponses) ListAirbnbTransactionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAirbnbTransactionsClientResponse, error) {
+	rsp, err := c.ListAirbnbTransactions(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbTransactionsClientResponse(rsp)
+}
+
 // UpdateBookingAvailabilityWithBodyWithResponse request with arbitrary body returning *UpdateBookingAvailabilityClientResponse
 func (c *ClientWithResponses) UpdateBookingAvailabilityWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingAvailabilityClientResponse, error) {
 	rsp, err := c.UpdateBookingAvailabilityWithBody(ctx, contentType, body, reqEditors...)
@@ -11221,6 +15006,32 @@ func (c *ClientWithResponses) UpdateBookingAvailabilityWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseUpdateBookingAvailabilityClientResponse(rsp)
+}
+
+// GetBookingChargesWithResponse request returning *GetBookingChargesClientResponse
+func (c *ClientWithResponses) GetBookingChargesWithResponse(ctx context.Context, params *GetBookingChargesParams, reqEditors ...RequestEditorFn) (*GetBookingChargesClientResponse, error) {
+	rsp, err := c.GetBookingCharges(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBookingChargesClientResponse(rsp)
+}
+
+// UpdateBookingChargesWithBodyWithResponse request with arbitrary body returning *UpdateBookingChargesClientResponse
+func (c *ClientWithResponses) UpdateBookingChargesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingChargesClientResponse, error) {
+	rsp, err := c.UpdateBookingChargesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBookingChargesClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateBookingChargesWithResponse(ctx context.Context, body UpdateBookingChargesJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingChargesClientResponse, error) {
+	rsp, err := c.UpdateBookingCharges(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBookingChargesClientResponse(rsp)
 }
 
 // GetBookingContentWithResponse request returning *GetBookingContentClientResponse
@@ -11294,6 +15105,41 @@ func (c *ClientWithResponses) ListBookingPropertiesWithResponse(ctx context.Cont
 	return ParseListBookingPropertiesClientResponse(rsp)
 }
 
+// GetBookingPropertyWithResponse request returning *GetBookingPropertyClientResponse
+func (c *ClientWithResponses) GetBookingPropertyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetBookingPropertyClientResponse, error) {
+	rsp, err := c.GetBookingProperty(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBookingPropertyClientResponse(rsp)
+}
+
+// ListBookingReservationsWithResponse request returning *ListBookingReservationsClientResponse
+func (c *ClientWithResponses) ListBookingReservationsWithResponse(ctx context.Context, params *ListBookingReservationsParams, reqEditors ...RequestEditorFn) (*ListBookingReservationsClientResponse, error) {
+	rsp, err := c.ListBookingReservations(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBookingReservationsClientResponse(rsp)
+}
+
+// AcknowledgeBookingReservationsWithBodyWithResponse request with arbitrary body returning *AcknowledgeBookingReservationsClientResponse
+func (c *ClientWithResponses) AcknowledgeBookingReservationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcknowledgeBookingReservationsClientResponse, error) {
+	rsp, err := c.AcknowledgeBookingReservationsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcknowledgeBookingReservationsClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) AcknowledgeBookingReservationsWithResponse(ctx context.Context, body AcknowledgeBookingReservationsJSONRequestBody, reqEditors ...RequestEditorFn) (*AcknowledgeBookingReservationsClientResponse, error) {
+	rsp, err := c.AcknowledgeBookingReservations(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcknowledgeBookingReservationsClientResponse(rsp)
+}
+
 // ListBookingReviewsWithResponse request returning *ListBookingReviewsClientResponse
 func (c *ClientWithResponses) ListBookingReviewsWithResponse(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*ListBookingReviewsClientResponse, error) {
 	rsp, err := c.ListBookingReviews(ctx, params, reqEditors...)
@@ -11320,6 +15166,58 @@ func (c *ClientWithResponses) ReplyBookingReviewWithResponse(ctx context.Context
 	return ParseReplyBookingReviewClientResponse(rsp)
 }
 
+// BookingSetupWithBodyWithResponse request with arbitrary body returning *BookingSetupClientResponse
+func (c *ClientWithResponses) BookingSetupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BookingSetupClientResponse, error) {
+	rsp, err := c.BookingSetupWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBookingSetupClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) BookingSetupWithResponse(ctx context.Context, body BookingSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*BookingSetupClientResponse, error) {
+	rsp, err := c.BookingSetup(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBookingSetupClientResponse(rsp)
+}
+
+// DeleteBookingWebhookWithResponse request returning *DeleteBookingWebhookClientResponse
+func (c *ClientWithResponses) DeleteBookingWebhookWithResponse(ctx context.Context, params *DeleteBookingWebhookParams, reqEditors ...RequestEditorFn) (*DeleteBookingWebhookClientResponse, error) {
+	rsp, err := c.DeleteBookingWebhook(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteBookingWebhookClientResponse(rsp)
+}
+
+// ListBookingWebhooksWithResponse request returning *ListBookingWebhooksClientResponse
+func (c *ClientWithResponses) ListBookingWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingWebhooksClientResponse, error) {
+	rsp, err := c.ListBookingWebhooks(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBookingWebhooksClientResponse(rsp)
+}
+
+// CreateBookingWebhookWithBodyWithResponse request with arbitrary body returning *CreateBookingWebhookClientResponse
+func (c *ClientWithResponses) CreateBookingWebhookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error) {
+	rsp, err := c.CreateBookingWebhookWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBookingWebhookClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateBookingWebhookWithResponse(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error) {
+	rsp, err := c.CreateBookingWebhook(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBookingWebhookClientResponse(rsp)
+}
+
 // GetPlumguideAvailabilityWithResponse request returning *GetPlumguideAvailabilityClientResponse
 func (c *ClientWithResponses) GetPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideAvailabilityClientResponse, error) {
 	rsp, err := c.GetPlumguideAvailability(ctx, reqEditors...)
@@ -11336,6 +15234,15 @@ func (c *ClientWithResponses) UpdatePlumguideAvailabilityWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseUpdatePlumguideAvailabilityClientResponse(rsp)
+}
+
+// ListPlumguideBookingsWithResponse request returning *ListPlumguideBookingsClientResponse
+func (c *ClientWithResponses) ListPlumguideBookingsWithResponse(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*ListPlumguideBookingsClientResponse, error) {
+	rsp, err := c.ListPlumguideBookings(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListPlumguideBookingsClientResponse(rsp)
 }
 
 // ListPlumguideListingsWithResponse request returning *ListPlumguideListingsClientResponse
@@ -11363,6 +15270,41 @@ func (c *ClientWithResponses) UpdatePlumguidePricingWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseUpdatePlumguidePricingClientResponse(rsp)
+}
+
+// DeletePlumguideWebhooksWithResponse request returning *DeletePlumguideWebhooksClientResponse
+func (c *ClientWithResponses) DeletePlumguideWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeletePlumguideWebhooksClientResponse, error) {
+	rsp, err := c.DeletePlumguideWebhooks(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeletePlumguideWebhooksClientResponse(rsp)
+}
+
+// GetPlumguideWebhooksWithResponse request returning *GetPlumguideWebhooksClientResponse
+func (c *ClientWithResponses) GetPlumguideWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideWebhooksClientResponse, error) {
+	rsp, err := c.GetPlumguideWebhooks(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPlumguideWebhooksClientResponse(rsp)
+}
+
+// UpdatePlumguideWebhooksWithBodyWithResponse request with arbitrary body returning *UpdatePlumguideWebhooksClientResponse
+func (c *ClientWithResponses) UpdatePlumguideWebhooksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePlumguideWebhooksClientResponse, error) {
+	rsp, err := c.UpdatePlumguideWebhooksWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePlumguideWebhooksClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdatePlumguideWebhooksWithResponse(ctx context.Context, body UpdatePlumguideWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePlumguideWebhooksClientResponse, error) {
+	rsp, err := c.UpdatePlumguideWebhooks(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePlumguideWebhooksClientResponse(rsp)
 }
 
 // ListVrboListingsWithResponse request returning *ListVrboListingsClientResponse
@@ -12015,6 +15957,33 @@ func (c *ClientWithResponses) UpdateCustomSchemaWithResponse(ctx context.Context
 	return ParseUpdateCustomSchemaClientResponse(rsp)
 }
 
+// GetUsageLogsWithResponse request returning *GetUsageLogsClientResponse
+func (c *ClientWithResponses) GetUsageLogsWithResponse(ctx context.Context, params *GetUsageLogsParams, reqEditors ...RequestEditorFn) (*GetUsageLogsClientResponse, error) {
+	rsp, err := c.GetUsageLogs(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUsageLogsClientResponse(rsp)
+}
+
+// GetUsageSummaryWithResponse request returning *GetUsageSummaryClientResponse
+func (c *ClientWithResponses) GetUsageSummaryWithResponse(ctx context.Context, params *GetUsageSummaryParams, reqEditors ...RequestEditorFn) (*GetUsageSummaryClientResponse, error) {
+	rsp, err := c.GetUsageSummary(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUsageSummaryClientResponse(rsp)
+}
+
+// GetUsageTierWithResponse request returning *GetUsageTierClientResponse
+func (c *ClientWithResponses) GetUsageTierWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetUsageTierClientResponse, error) {
+	rsp, err := c.GetUsageTier(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUsageTierClientResponse(rsp)
+}
+
 // ListWebhooksWithResponse request returning *ListWebhooksClientResponse
 func (c *ClientWithResponses) ListWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListWebhooksClientResponse, error) {
 	rsp, err := c.ListWebhooks(ctx, reqEditors...)
@@ -12156,6 +16125,46 @@ func (c *ClientWithResponses) TestFireWebhookWithResponse(ctx context.Context, i
 	return ParseTestFireWebhookClientResponse(rsp)
 }
 
+// ParseGetAvailabilityClientResponse parses an HTTP response from a GetAvailabilityWithResponse call
+func ParseGetAvailabilityClientResponse(rsp *http.Response) (*GetAvailabilityClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PropertyAvailability
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateBillingCheckoutClientResponse parses an HTTP response from a CreateBillingCheckoutWithResponse call
 func ParseCreateBillingCheckoutClientResponse(rsp *http.Response) (*CreateBillingCheckoutClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -12167,6 +16176,144 @@ func ParseCreateBillingCheckoutClientResponse(rsp *http.Response) (*CreateBillin
 	response := &CreateBillingCheckoutClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListAirbnbAlterationsClientResponse parses an HTTP response from a ListAirbnbAlterationsWithResponse call
+func ParseListAirbnbAlterationsClientResponse(rsp *http.Response) (*ListAirbnbAlterationsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbAlterationsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []AirbnbAlteration `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAirbnbAlterationClientResponse parses an HTTP response from a CreateAirbnbAlterationWithResponse call
+func ParseCreateAirbnbAlterationClientResponse(rsp *http.Response) (*CreateAirbnbAlterationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAirbnbAlterationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbAlterationClientResponse parses an HTTP response from a GetAirbnbAlterationWithResponse call
+func ParseGetAirbnbAlterationClientResponse(rsp *http.Response) (*GetAirbnbAlterationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbAlterationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data An Airbnb reservation alteration request (date change, guest-count change, or price change), mirrored locally in `reservation_alterations`. Additional Airbnb-side fields may be present.
+			Data AirbnbAlteration `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -12337,6 +16484,68 @@ func ParseAirbnbListingActionClientResponse(rsp *http.Response) (*AirbnbListingA
 	return response, nil
 }
 
+// ParseListAirbnbListingAmenitiesClientResponse parses an HTTP response from a ListAirbnbListingAmenitiesWithResponse call
+func ParseListAirbnbListingAmenitiesClientResponse(rsp *http.Response) (*ListAirbnbListingAmenitiesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbListingAmenitiesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data struct {
+				AccessibilityAmenities *[]AirbnbAmenity `json:"accessibility_amenities,omitempty"`
+				Amenities              *[]AirbnbAmenity `json:"amenities,omitempty"`
+			} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetAirbnbListingAvailabilityClientResponse parses an HTTP response from a GetAirbnbListingAvailabilityWithResponse call
 func ParseGetAirbnbListingAvailabilityClientResponse(rsp *http.Response) (*GetAirbnbListingAvailabilityClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -12364,6 +16573,272 @@ func ParseUpdateAirbnbListingAvailabilityClientResponse(rsp *http.Response) (*Up
 	response := &UpdateAirbnbListingAvailabilityClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbCheckinGuideClientResponse parses an HTTP response from a GetAirbnbCheckinGuideWithResponse call
+func ParseGetAirbnbCheckinGuideClientResponse(rsp *http.Response) (*GetAirbnbCheckinGuideClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbCheckinGuideClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []map[string]interface{} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAirbnbCheckinGuideClientResponse parses an HTTP response from a UpdateAirbnbCheckinGuideWithResponse call
+func ParseUpdateAirbnbCheckinGuideClientResponse(rsp *http.Response) (*UpdateAirbnbCheckinGuideClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAirbnbCheckinGuideClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbCheckoutGuideClientResponse parses an HTTP response from a GetAirbnbCheckoutGuideWithResponse call
+func ParseGetAirbnbCheckoutGuideClientResponse(rsp *http.Response) (*GetAirbnbCheckoutGuideClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbCheckoutGuideClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []map[string]interface{} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListAirbnbListingDescriptionsClientResponse parses an HTTP response from a ListAirbnbListingDescriptionsWithResponse call
+func ParseListAirbnbListingDescriptionsClientResponse(rsp *http.Response) (*ListAirbnbListingDescriptionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbListingDescriptionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []map[string]interface{} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAirbnbListingPhotoClientResponse parses an HTTP response from a DeleteAirbnbListingPhotoWithResponse call
+func ParseDeleteAirbnbListingPhotoClientResponse(rsp *http.Response) (*DeleteAirbnbListingPhotoClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAirbnbListingPhotoClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Deleted *bool `json:"deleted,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -12433,6 +16908,281 @@ func ParseUpdateAirbnbListingPricingClientResponse(rsp *http.Response) (*UpdateA
 	return response, nil
 }
 
+// ParseGetAirbnbListingQualityClientResponse parses an HTTP response from a GetAirbnbListingQualityWithResponse call
+func ParseGetAirbnbListingQualityClientResponse(rsp *http.Response) (*GetAirbnbListingQualityClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbListingQualityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data Shape depends on `type`: an object `{ standards, issues }` for `all`/`standards`, or an array for `issues`/`stats`.
+			Data interface{} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAirbnbListingRoomClientResponse parses an HTTP response from a DeleteAirbnbListingRoomWithResponse call
+func ParseDeleteAirbnbListingRoomClientResponse(rsp *http.Response) (*DeleteAirbnbListingRoomClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAirbnbListingRoomClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Deleted *bool `json:"deleted,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListAirbnbListingRoomsClientResponse parses an HTTP response from a ListAirbnbListingRoomsWithResponse call
+func ParseListAirbnbListingRoomsClientResponse(rsp *http.Response) (*ListAirbnbListingRoomsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbListingRoomsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []map[string]interface{} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAirbnbListingRoomClientResponse parses an HTTP response from a CreateAirbnbListingRoomWithResponse call
+func ParseCreateAirbnbListingRoomClientResponse(rsp *http.Response) (*CreateAirbnbListingRoomClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAirbnbListingRoomClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbListingSettingsClientResponse parses an HTTP response from a GetAirbnbListingSettingsWithResponse call
+func ParseGetAirbnbListingSettingsClientResponse(rsp *http.Response) (*GetAirbnbListingSettingsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbListingSettingsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data Shape depends on `type`: `{ hosts, locales }` for `all`, or an array for `hosts`/`permits`/`locales`.
+			Data interface{} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListAirbnbThreadsClientResponse parses an HTTP response from a ListAirbnbThreadsWithResponse call
 func ParseListAirbnbThreadsClientResponse(rsp *http.Response) (*ListAirbnbThreadsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -12453,6 +17203,59 @@ func ParseListAirbnbThreadsClientResponse(rsp *http.Response) (*ListAirbnbThread
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbThreadClientResponse parses an HTTP response from a GetAirbnbThreadWithResponse call
+func ParseGetAirbnbThreadClientResponse(rsp *http.Response) (*GetAirbnbThreadClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbThreadClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data An Airbnb message thread.
+			Data AirbnbThread `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
@@ -12496,6 +17299,147 @@ func ParseSendAirbnbMessageClientResponse(rsp *http.Response) (*SendAirbnbMessag
 	response := &SendAirbnbMessageClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAirbnbMessageClientResponse parses an HTTP response from a UpdateAirbnbMessageWithResponse call
+func ParseUpdateAirbnbMessageClientResponse(rsp *http.Response) (*UpdateAirbnbMessageClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAirbnbMessageClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseWithdrawAirbnbOfferClientResponse parses an HTTP response from a WithdrawAirbnbOfferWithResponse call
+func ParseWithdrawAirbnbOfferClientResponse(rsp *http.Response) (*WithdrawAirbnbOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &WithdrawAirbnbOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAirbnbOfferClientResponse parses an HTTP response from a CreateAirbnbOfferWithResponse call
+func ParseCreateAirbnbOfferClientResponse(rsp *http.Response) (*CreateAirbnbOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAirbnbOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -12719,6 +17663,51 @@ func ParseRespondAirbnbReviewClientResponse(rsp *http.Response) (*RespondAirbnbR
 	return response, nil
 }
 
+// ParseListAirbnbTransactionsClientResponse parses an HTTP response from a ListAirbnbTransactionsWithResponse call
+func ParseListAirbnbTransactionsClientResponse(rsp *http.Response) (*ListAirbnbTransactionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbTransactionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []map[string]interface{} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseUpdateBookingAvailabilityClientResponse parses an HTTP response from a UpdateBookingAvailabilityWithResponse call
 func ParseUpdateBookingAvailabilityClientResponse(rsp *http.Response) (*UpdateBookingAvailabilityClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -12728,6 +17717,100 @@ func ParseUpdateBookingAvailabilityClientResponse(rsp *http.Response) (*UpdateBo
 	}
 
 	response := &UpdateBookingAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBookingChargesClientResponse parses an HTTP response from a GetBookingChargesWithResponse call
+func ParseGetBookingChargesClientResponse(rsp *http.Response) (*GetBookingChargesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBookingChargesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateBookingChargesClientResponse parses an HTTP response from a UpdateBookingChargesWithResponse call
+func ParseUpdateBookingChargesClientResponse(rsp *http.Response) (*UpdateBookingChargesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateBookingChargesClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -12974,6 +18057,147 @@ func ParseListBookingPropertiesClientResponse(rsp *http.Response) (*ListBookingP
 	return response, nil
 }
 
+// ParseGetBookingPropertyClientResponse parses an HTTP response from a GetBookingPropertyWithResponse call
+func ParseGetBookingPropertyClientResponse(rsp *http.Response) (*GetBookingPropertyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBookingPropertyClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListBookingReservationsClientResponse parses an HTTP response from a ListBookingReservationsWithResponse call
+func ParseListBookingReservationsClientResponse(rsp *http.Response) (*ListBookingReservationsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBookingReservationsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAcknowledgeBookingReservationsClientResponse parses an HTTP response from a AcknowledgeBookingReservationsWithResponse call
+func ParseAcknowledgeBookingReservationsClientResponse(rsp *http.Response) (*AcknowledgeBookingReservationsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AcknowledgeBookingReservationsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListBookingReviewsClientResponse parses an HTTP response from a ListBookingReviewsWithResponse call
 func ParseListBookingReviewsClientResponse(rsp *http.Response) (*ListBookingReviewsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -13063,6 +18287,187 @@ func ParseReplyBookingReviewClientResponse(rsp *http.Response) (*ReplyBookingRev
 	return response, nil
 }
 
+// ParseBookingSetupClientResponse parses an HTTP response from a BookingSetupWithResponse call
+func ParseBookingSetupClientResponse(rsp *http.Response) (*BookingSetupClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BookingSetupClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteBookingWebhookClientResponse parses an HTTP response from a DeleteBookingWebhookWithResponse call
+func ParseDeleteBookingWebhookClientResponse(rsp *http.Response) (*DeleteBookingWebhookClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteBookingWebhookClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListBookingWebhooksClientResponse parses an HTTP response from a ListBookingWebhooksWithResponse call
+func ParseListBookingWebhooksClientResponse(rsp *http.Response) (*ListBookingWebhooksClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBookingWebhooksClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateBookingWebhookClientResponse parses an HTTP response from a CreateBookingWebhookWithResponse call
+func ParseCreateBookingWebhookClientResponse(rsp *http.Response) (*CreateBookingWebhookClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateBookingWebhookClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetPlumguideAvailabilityClientResponse parses an HTTP response from a GetPlumguideAvailabilityWithResponse call
 func ParseGetPlumguideAvailabilityClientResponse(rsp *http.Response) (*GetPlumguideAvailabilityClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -13090,6 +18495,46 @@ func ParseUpdatePlumguideAvailabilityClientResponse(rsp *http.Response) (*Update
 	response := &UpdatePlumguideAvailabilityClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListPlumguideBookingsClientResponse parses an HTTP response from a ListPlumguideBookingsWithResponse call
+func ParseListPlumguideBookingsClientResponse(rsp *http.Response) (*ListPlumguideBookingsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListPlumguideBookingsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -13148,6 +18593,133 @@ func ParseUpdatePlumguidePricingClientResponse(rsp *http.Response) (*UpdatePlumg
 	response := &UpdatePlumguidePricingClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeletePlumguideWebhooksClientResponse parses an HTTP response from a DeletePlumguideWebhooksWithResponse call
+func ParseDeletePlumguideWebhooksClientResponse(rsp *http.Response) (*DeletePlumguideWebhooksClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeletePlumguideWebhooksClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPlumguideWebhooksClientResponse parses an HTTP response from a GetPlumguideWebhooksWithResponse call
+func ParseGetPlumguideWebhooksClientResponse(rsp *http.Response) (*GetPlumguideWebhooksClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPlumguideWebhooksClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdatePlumguideWebhooksClientResponse parses an HTTP response from a UpdatePlumguideWebhooksWithResponse call
+func ParseUpdatePlumguideWebhooksClientResponse(rsp *http.Response) (*UpdatePlumguideWebhooksClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdatePlumguideWebhooksClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
@@ -15620,6 +21192,212 @@ func ParseUpdateCustomSchemaClientResponse(rsp *http.Response) (*UpdateCustomSch
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUsageLogsClientResponse parses an HTTP response from a GetUsageLogsWithResponse call
+func ParseGetUsageLogsClientResponse(rsp *http.Response) (*GetUsageLogsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUsageLogsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]struct {
+				CreatedAt     *time.Time `json:"createdAt,omitempty"`
+				ErrorCode     *string    `json:"errorCode,omitempty"`
+				Id            *string    `json:"id,omitempty"`
+				IpAddress     *string    `json:"ipAddress,omitempty"`
+				LatencyMs     *int       `json:"latencyMs,omitempty"`
+				Method        *string    `json:"method,omitempty"`
+				OperationId   *string    `json:"operationId,omitempty"`
+				Path          *string    `json:"path,omitempty"`
+				RequestBytes  *int       `json:"requestBytes,omitempty"`
+				RequestId     *string    `json:"requestId,omitempty"`
+				ResponseBytes *int       `json:"responseBytes,omitempty"`
+				StatusCode    *int       `json:"statusCode,omitempty"`
+				UserAgent     *string    `json:"userAgent,omitempty"`
+			} `json:"data,omitempty"`
+			Pagination *struct {
+				HasMore    *bool   `json:"has_more,omitempty"`
+				NextCursor *string `json:"next_cursor,omitempty"`
+				Total      *int    `json:"total,omitempty"`
+			} `json:"pagination,omitempty"`
+			Range *string `json:"range,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUsageSummaryClientResponse parses an HTTP response from a GetUsageSummaryWithResponse call
+func ParseGetUsageSummaryClientResponse(rsp *http.Response) (*GetUsageSummaryClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUsageSummaryClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Breakdown *[]struct {
+				AvgLatencyMs *int     `json:"avgLatencyMs,omitempty"`
+				ErrorCount   *int     `json:"errorCount,omitempty"`
+				ErrorRate    *float32 `json:"errorRate,omitempty"`
+				OperationId  *string  `json:"operationId,omitempty"`
+				RequestCount *int     `json:"requestCount,omitempty"`
+			} `json:"breakdown,omitempty"`
+			Limits *struct {
+				DailyAiRequests *int `json:"daily_ai_requests,omitempty"`
+				MonthlyRequests *int `json:"monthly_requests,omitempty"`
+			} `json:"limits,omitempty"`
+			Range     *string `json:"range,omitempty"`
+			Remaining *struct {
+				DailyAi *int `json:"daily_ai,omitempty"`
+				Monthly *int `json:"monthly,omitempty"`
+			} `json:"remaining,omitempty"`
+			ResetsAt           *time.Time `json:"resets_at,omitempty"`
+			StatusDistribution *struct {
+				N2xx *int `json:"2xx,omitempty"`
+				N3xx *int `json:"3xx,omitempty"`
+				N4xx *int `json:"4xx,omitempty"`
+				N5xx *int `json:"5xx,omitempty"`
+			} `json:"statusDistribution,omitempty"`
+			Tier     *string `json:"tier,omitempty"`
+			Timeline *[]struct {
+				Day          *string `json:"day,omitempty"`
+				ErrorCount   *int    `json:"errorCount,omitempty"`
+				RequestCount *int    `json:"requestCount,omitempty"`
+			} `json:"timeline,omitempty"`
+			Totals *struct {
+				AvgLatencyMs *int `json:"avgLatencyMs,omitempty"`
+				Errors       *int `json:"errors,omitempty"`
+				Requests     *int `json:"requests,omitempty"`
+			} `json:"totals,omitempty"`
+			Used *struct {
+				DailyAi *int `json:"daily_ai,omitempty"`
+				Monthly *int `json:"monthly,omitempty"`
+			} `json:"used,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUsageTierClientResponse parses an HTTP response from a GetUsageTierWithResponse call
+func ParseGetUsageTierClientResponse(rsp *http.Response) (*GetUsageTierClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUsageTierClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Limits *struct {
+				DailyAiRequests        *int `json:"daily_ai_requests,omitempty"`
+				DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+				MonthlyRequests        *int `json:"monthly_requests,omitempty"`
+			} `json:"limits,omitempty"`
+			Remaining *struct {
+				DailyAi                *int `json:"daily_ai,omitempty"`
+				DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+				Monthly                *int `json:"monthly,omitempty"`
+			} `json:"remaining,omitempty"`
+			ResetsAt *time.Time `json:"resets_at,omitempty"`
+			Tier     *string    `json:"tier,omitempty"`
+			Used     *struct {
+				DailyAi                *int `json:"daily_ai,omitempty"`
+				DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+				Monthly                *int `json:"monthly,omitempty"`
+			} `json:"used,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 

@@ -1550,6 +1550,114 @@ func (e CreateBillingCheckoutJSONBodyPlan) Valid() bool {
 	}
 }
 
+// Defines values for ListAirbnbAlterationsParamsType.
+const (
+	ListAirbnbAlterationsParamsTypeAll     ListAirbnbAlterationsParamsType = "all"
+	ListAirbnbAlterationsParamsTypePending ListAirbnbAlterationsParamsType = "pending"
+)
+
+// Valid indicates whether the value is a known member of the ListAirbnbAlterationsParamsType enum.
+func (e ListAirbnbAlterationsParamsType) Valid() bool {
+	switch e {
+	case ListAirbnbAlterationsParamsTypeAll:
+		return true
+	case ListAirbnbAlterationsParamsTypePending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAirbnbListingQualityParamsType.
+const (
+	GetAirbnbListingQualityParamsTypeAll       GetAirbnbListingQualityParamsType = "all"
+	GetAirbnbListingQualityParamsTypeIssues    GetAirbnbListingQualityParamsType = "issues"
+	GetAirbnbListingQualityParamsTypeStandards GetAirbnbListingQualityParamsType = "standards"
+	GetAirbnbListingQualityParamsTypeStats     GetAirbnbListingQualityParamsType = "stats"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbListingQualityParamsType enum.
+func (e GetAirbnbListingQualityParamsType) Valid() bool {
+	switch e {
+	case GetAirbnbListingQualityParamsTypeAll:
+		return true
+	case GetAirbnbListingQualityParamsTypeIssues:
+		return true
+	case GetAirbnbListingQualityParamsTypeStandards:
+		return true
+	case GetAirbnbListingQualityParamsTypeStats:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAirbnbListingSettingsParamsType.
+const (
+	GetAirbnbListingSettingsParamsTypeAll     GetAirbnbListingSettingsParamsType = "all"
+	GetAirbnbListingSettingsParamsTypeHosts   GetAirbnbListingSettingsParamsType = "hosts"
+	GetAirbnbListingSettingsParamsTypeLocales GetAirbnbListingSettingsParamsType = "locales"
+	GetAirbnbListingSettingsParamsTypePermits GetAirbnbListingSettingsParamsType = "permits"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbListingSettingsParamsType enum.
+func (e GetAirbnbListingSettingsParamsType) Valid() bool {
+	switch e {
+	case GetAirbnbListingSettingsParamsTypeAll:
+		return true
+	case GetAirbnbListingSettingsParamsTypeHosts:
+		return true
+	case GetAirbnbListingSettingsParamsTypeLocales:
+		return true
+	case GetAirbnbListingSettingsParamsTypePermits:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbMessageJSONBodyAction.
+const (
+	Edit   UpdateAirbnbMessageJSONBodyAction = "edit"
+	React  UpdateAirbnbMessageJSONBodyAction = "react"
+	Read   UpdateAirbnbMessageJSONBodyAction = "read"
+	Unsend UpdateAirbnbMessageJSONBodyAction = "unsend"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbMessageJSONBodyAction enum.
+func (e UpdateAirbnbMessageJSONBodyAction) Valid() bool {
+	switch e {
+	case Edit:
+		return true
+	case React:
+		return true
+	case Read:
+		return true
+	case Unsend:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateAirbnbOfferJSONBodyType.
+const (
+	Offer       CreateAirbnbOfferJSONBodyType = "offer"
+	Preapproval CreateAirbnbOfferJSONBodyType = "preapproval"
+)
+
+// Valid indicates whether the value is a known member of the CreateAirbnbOfferJSONBodyType enum.
+func (e CreateAirbnbOfferJSONBodyType) Valid() bool {
+	switch e {
+	case Offer:
+		return true
+	case Preapproval:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListAirbnbReservationsParamsStatus.
 const (
 	ListAirbnbReservationsParamsStatusAccepted           ListAirbnbReservationsParamsStatus = "accepted"
@@ -1577,6 +1685,57 @@ func (e ListAirbnbReservationsParamsStatus) Valid() bool {
 	case ListAirbnbReservationsParamsStatusPending:
 		return true
 	case ListAirbnbReservationsParamsStatusRequestVoided:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListBookingReservationsParamsType.
+const (
+	Details  ListBookingReservationsParamsType = "details"
+	Modified ListBookingReservationsParamsType = "modified"
+	New      ListBookingReservationsParamsType = "new"
+)
+
+// Valid indicates whether the value is a known member of the ListBookingReservationsParamsType enum.
+func (e ListBookingReservationsParamsType) Valid() bool {
+	switch e {
+	case Details:
+		return true
+	case Modified:
+		return true
+	case New:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingSetupJSONBodyAction.
+const (
+	CheckLegalStatus  BookingSetupJSONBodyAction = "check-legal-status"
+	CheckReadiness    BookingSetupJSONBodyAction = "check-readiness"
+	CreateLegalEntity BookingSetupJSONBodyAction = "create-legal-entity"
+	OpenProperty      BookingSetupJSONBodyAction = "open-property"
+	SetContacts       BookingSetupJSONBodyAction = "set-contacts"
+	SetPolicies       BookingSetupJSONBodyAction = "set-policies"
+)
+
+// Valid indicates whether the value is a known member of the BookingSetupJSONBodyAction enum.
+func (e BookingSetupJSONBodyAction) Valid() bool {
+	switch e {
+	case CheckLegalStatus:
+		return true
+	case CheckReadiness:
+		return true
+	case CreateLegalEntity:
+		return true
+	case OpenProperty:
+		return true
+	case SetContacts:
+		return true
+	case SetPolicies:
 		return true
 	default:
 		return false
@@ -1783,22 +1942,22 @@ func (e GetPropertyParamsInclude) Valid() bool {
 
 // Defines values for ListReservationsParamsStatus.
 const (
-	Cancelled ListReservationsParamsStatus = "cancelled"
-	Completed ListReservationsParamsStatus = "completed"
-	Confirmed ListReservationsParamsStatus = "confirmed"
-	Pending   ListReservationsParamsStatus = "pending"
+	ListReservationsParamsStatusCancelled ListReservationsParamsStatus = "cancelled"
+	ListReservationsParamsStatusCompleted ListReservationsParamsStatus = "completed"
+	ListReservationsParamsStatusConfirmed ListReservationsParamsStatus = "confirmed"
+	ListReservationsParamsStatusPending   ListReservationsParamsStatus = "pending"
 )
 
 // Valid indicates whether the value is a known member of the ListReservationsParamsStatus enum.
 func (e ListReservationsParamsStatus) Valid() bool {
 	switch e {
-	case Cancelled:
+	case ListReservationsParamsStatusCancelled:
 		return true
-	case Completed:
+	case ListReservationsParamsStatusCompleted:
 		return true
-	case Confirmed:
+	case ListReservationsParamsStatusConfirmed:
 		return true
-	case Pending:
+	case ListReservationsParamsStatusPending:
 		return true
 	default:
 		return false
@@ -1862,6 +2021,75 @@ func (e ListReviewsParamsReviewerRole) Valid() bool {
 	case ListReviewsParamsReviewerRoleGuest:
 		return true
 	case ListReviewsParamsReviewerRoleHost:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetUsageLogsParamsRange.
+const (
+	GetUsageLogsParamsRangeN1h  GetUsageLogsParamsRange = "1h"
+	GetUsageLogsParamsRangeN24h GetUsageLogsParamsRange = "24h"
+	GetUsageLogsParamsRangeN30d GetUsageLogsParamsRange = "30d"
+	GetUsageLogsParamsRangeN7d  GetUsageLogsParamsRange = "7d"
+)
+
+// Valid indicates whether the value is a known member of the GetUsageLogsParamsRange enum.
+func (e GetUsageLogsParamsRange) Valid() bool {
+	switch e {
+	case GetUsageLogsParamsRangeN1h:
+		return true
+	case GetUsageLogsParamsRangeN24h:
+		return true
+	case GetUsageLogsParamsRangeN30d:
+		return true
+	case GetUsageLogsParamsRangeN7d:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetUsageLogsParamsStatus.
+const (
+	N2xx GetUsageLogsParamsStatus = "2xx"
+	N3xx GetUsageLogsParamsStatus = "3xx"
+	N4xx GetUsageLogsParamsStatus = "4xx"
+	N5xx GetUsageLogsParamsStatus = "5xx"
+)
+
+// Valid indicates whether the value is a known member of the GetUsageLogsParamsStatus enum.
+func (e GetUsageLogsParamsStatus) Valid() bool {
+	switch e {
+	case N2xx:
+		return true
+	case N3xx:
+		return true
+	case N4xx:
+		return true
+	case N5xx:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetUsageSummaryParamsRange.
+const (
+	GetUsageSummaryParamsRangeN30d GetUsageSummaryParamsRange = "30d"
+	GetUsageSummaryParamsRangeN7d  GetUsageSummaryParamsRange = "7d"
+	GetUsageSummaryParamsRangeN90d GetUsageSummaryParamsRange = "90d"
+)
+
+// Valid indicates whether the value is a known member of the GetUsageSummaryParamsRange enum.
+func (e GetUsageSummaryParamsRange) Valid() bool {
+	switch e {
+	case GetUsageSummaryParamsRangeN30d:
+		return true
+	case GetUsageSummaryParamsRangeN7d:
+		return true
+	case GetUsageSummaryParamsRangeN90d:
 		return true
 	default:
 		return false
@@ -2026,6 +2254,33 @@ type AiOperationFailedPayload struct {
 	FailedAt    *time.Time `json:"failedAt,omitempty"`
 	OperationId *string    `json:"operationId,omitempty"`
 	Type        *string    `json:"type,omitempty"`
+}
+
+// AirbnbAlteration An Airbnb reservation alteration request (date change, guest-count change, or price change), mirrored locally in `reservation_alterations`. Additional Airbnb-side fields may be present.
+type AirbnbAlteration struct {
+	// AlterationId Airbnb alteration id.
+	AlterationId *string    `json:"alterationId,omitempty"`
+	CreatedAt    *time.Time `json:"createdAt,omitempty"`
+	Platform     *string    `json:"platform,omitempty"`
+
+	// ReservationId Repull reservation id the alteration belongs to.
+	ReservationId *int `json:"reservationId,omitempty"`
+
+	// Status Alteration status (e.g. `pending`).
+	Status               *string                `json:"status,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// AirbnbAmenity A single Airbnb amenity from the local cache.
+type AirbnbAmenity struct {
+	// Id Airbnb amenity id (e.g. `wifi`, `bathroom_step_free_access`).
+	Id *string `json:"id,omitempty"`
+
+	// Instruction Optional host-supplied instruction for the amenity.
+	Instruction *string `json:"instruction,omitempty"`
+
+	// IsPresent Whether the amenity is present on the listing.
+	IsPresent *bool `json:"is_present,omitempty"`
 }
 
 // AirbnbAvailabilityWriteRequest Body for `PUT /v1/channels/airbnb/listings/{id}/availability`. `type: "calendar"` carries per-date restrictions (min/max nights, closed-to-arrival/departure, stop-sell); `type: "rules"` carries listing-level availability rules (default min/max nights, booking lead time, turnover days).
@@ -4283,6 +4538,33 @@ type Property struct {
 // PropertyStatus Derived from `listings.active`.
 type PropertyStatus string
 
+// PropertyAvailability Channel-agnostic availability calendar for a property over the requested window. Every date in `[from, to]` (inclusive) is present in `days`; dates with no explicit calendar row fall back to available at the default price.
+type PropertyAvailability struct {
+	// Currency ISO 4217 currency code for the nightly prices in `days`.
+	Currency string `json:"currency"`
+
+	// Days Dense per-date calendar for the requested window (capped at 366 days), ordered ascending by date.
+	Days []PropertyAvailabilityDay `json:"days"`
+
+	// PropertyId Repull property id (equal to `listings.id`), emitted as a string like every other id in the API.
+	PropertyId string `json:"propertyId"`
+}
+
+// PropertyAvailabilityDay One calendar day in the availability window.
+type PropertyAvailabilityDay struct {
+	// Available Whether the property is bookable on this date. `false` when the channel calendar marks the date unavailable (stop-sell / blocked).
+	Available bool `json:"available"`
+
+	// Date The calendar date, ISO `YYYY-MM-DD`.
+	Date openapi_types.Date `json:"date"`
+
+	// MinNights Minimum-stay requirement for a stay starting on this date.
+	MinNights int `json:"minNights"`
+
+	// Price Nightly price for this date in the property currency. Falls back to the property's default nightly price for dates with no explicit calendar override.
+	Price float32 `json:"price"`
+}
+
 // PropertyListResponse defines model for PropertyListResponse.
 type PropertyListResponse struct {
 	Data *[]Property `json:"data,omitempty"`
@@ -4988,6 +5270,15 @@ type Unauthorized = Error
 // UnprocessableEntity Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type UnprocessableEntity = Error
 
+// GetAvailabilityParams defines parameters for GetAvailability.
+type GetAvailabilityParams struct {
+	// From Start of the window (inclusive), ISO `YYYY-MM-DD`. Required — missing/malformed returns 422. `startDate` is accepted as an alias.
+	From openapi_types.Date `form:"from" json:"from"`
+
+	// To End of the window (inclusive), ISO `YYYY-MM-DD`. Required — missing/malformed returns 422. `endDate` is accepted as an alias.
+	To openapi_types.Date `form:"to" json:"to"`
+}
+
 // CreateBillingCheckoutJSONBody defines parameters for CreateBillingCheckout.
 type CreateBillingCheckoutJSONBody struct {
 	Plan *CreateBillingCheckoutJSONBodyPlan `json:"plan,omitempty"`
@@ -4995,6 +5286,34 @@ type CreateBillingCheckoutJSONBody struct {
 
 // CreateBillingCheckoutJSONBodyPlan defines parameters for CreateBillingCheckout.
 type CreateBillingCheckoutJSONBodyPlan string
+
+// ListAirbnbAlterationsParams defines parameters for ListAirbnbAlterations.
+type ListAirbnbAlterationsParams struct {
+	// Type Scope: `pending` (default) returns only alterations awaiting a decision; `all` returns every alteration.
+	Type *ListAirbnbAlterationsParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// ReservationCode Airbnb confirmation code — restricts results to a single reservation. Returns an empty array when no reservation matches within your workspace.
+	ReservationCode *string `form:"reservation_code,omitempty" json:"reservation_code,omitempty"`
+}
+
+// ListAirbnbAlterationsParamsType defines parameters for ListAirbnbAlterations.
+type ListAirbnbAlterationsParamsType string
+
+// CreateAirbnbAlterationJSONBody defines parameters for CreateAirbnbAlteration.
+type CreateAirbnbAlterationJSONBody struct {
+	// CheckIn New check-in date (YYYY-MM-DD).
+	CheckIn *openapi_types.Date `json:"check_in,omitempty"`
+
+	// CheckOut New check-out date (YYYY-MM-DD).
+	CheckOut *openapi_types.Date `json:"check_out,omitempty"`
+
+	// ConfirmationCode Airbnb confirmation code of the reservation to alter.
+	ConfirmationCode string `json:"confirmation_code"`
+
+	// NumberOfGuests New guest count.
+	NumberOfGuests       *int                   `json:"number_of_guests,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
 
 // ListAirbnbListingsParams defines parameters for ListAirbnbListings.
 type ListAirbnbListingsParams struct {
@@ -5007,6 +5326,97 @@ type GetAirbnbListingParams struct {
 	// Include Comma-separated expansions. Currently supported: `amenities`.
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 }
+
+// GetAirbnbCheckinGuideParams defines parameters for GetAirbnbCheckinGuide.
+type GetAirbnbCheckinGuideParams struct {
+	// Locale Filter to a single locale (prefix match, case-insensitive).
+	Locale *string `form:"locale,omitempty" json:"locale,omitempty"`
+}
+
+// UpdateAirbnbCheckinGuideParams defines parameters for UpdateAirbnbCheckinGuide.
+type UpdateAirbnbCheckinGuideParams struct {
+	// Locale Locale to upsert. Defaults to `en`.
+	Locale *string `form:"locale,omitempty" json:"locale,omitempty"`
+}
+
+// ListAirbnbListingDescriptionsParams defines parameters for ListAirbnbListingDescriptions.
+type ListAirbnbListingDescriptionsParams struct {
+	// Locale Filter to a single locale (prefix match, case-insensitive).
+	Locale *string `form:"locale,omitempty" json:"locale,omitempty"`
+
+	// Country Legacy alias for `locale`. Prefer `locale`.
+	Country *string `form:"country,omitempty" json:"country,omitempty"`
+}
+
+// DeleteAirbnbListingPhotoParams defines parameters for DeleteAirbnbListingPhoto.
+type DeleteAirbnbListingPhotoParams struct {
+	// PhotoId Airbnb-side photo id to delete.
+	PhotoId string `form:"photoId" json:"photoId"`
+}
+
+// GetAirbnbListingQualityParams defines parameters for GetAirbnbListingQuality.
+type GetAirbnbListingQualityParams struct {
+	// Type Which quality slice to return. `all` returns `{ standards, issues }`.
+	Type *GetAirbnbListingQualityParamsType `form:"type,omitempty" json:"type,omitempty"`
+}
+
+// GetAirbnbListingQualityParamsType defines parameters for GetAirbnbListingQuality.
+type GetAirbnbListingQualityParamsType string
+
+// DeleteAirbnbListingRoomParams defines parameters for DeleteAirbnbListingRoom.
+type DeleteAirbnbListingRoomParams struct {
+	// RoomId Airbnb-side room id to delete.
+	RoomId string `form:"roomId" json:"roomId"`
+}
+
+// CreateAirbnbListingRoomJSONBody defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBody map[string]interface{}
+
+// GetAirbnbListingSettingsParams defines parameters for GetAirbnbListingSettings.
+type GetAirbnbListingSettingsParams struct {
+	// Type Which settings slice to return. `all` returns `{ hosts, locales }`.
+	Type *GetAirbnbListingSettingsParamsType `form:"type,omitempty" json:"type,omitempty"`
+}
+
+// GetAirbnbListingSettingsParamsType defines parameters for GetAirbnbListingSettings.
+type GetAirbnbListingSettingsParamsType string
+
+// UpdateAirbnbMessageJSONBody defines parameters for UpdateAirbnbMessage.
+type UpdateAirbnbMessageJSONBody struct {
+	// Action Operation to perform on the message.
+	Action UpdateAirbnbMessageJSONBodyAction `json:"action"`
+
+	// Message New message text. Required when `action` is `edit`.
+	Message *string `json:"message,omitempty"`
+
+	// Reaction Reaction to add. Required when `action` is `react`.
+	Reaction *string `json:"reaction,omitempty"`
+}
+
+// UpdateAirbnbMessageJSONBodyAction defines parameters for UpdateAirbnbMessage.
+type UpdateAirbnbMessageJSONBodyAction string
+
+// WithdrawAirbnbOfferParams defines parameters for WithdrawAirbnbOffer.
+type WithdrawAirbnbOfferParams struct {
+	// OfferId Airbnb special-offer id to withdraw.
+	OfferId string `form:"offerId" json:"offerId"`
+}
+
+// CreateAirbnbOfferJSONBody defines parameters for CreateAirbnbOffer.
+type CreateAirbnbOfferJSONBody struct {
+	// BlockInstantBooking For `preapproval` — whether to block instant booking.
+	BlockInstantBooking *bool `json:"blockInstantBooking,omitempty"`
+
+	// ThreadId Airbnb thread id. Required when `type` is `preapproval`.
+	ThreadId *string `json:"threadId,omitempty"`
+
+	// Type Which kind of offer to create.
+	Type                 CreateAirbnbOfferJSONBodyType `json:"type"`
+	AdditionalProperties map[string]interface{}        `json:"-"`
+}
+
+// CreateAirbnbOfferJSONBodyType defines parameters for CreateAirbnbOffer.
+type CreateAirbnbOfferJSONBodyType string
 
 // ListAirbnbReservationsParams defines parameters for ListAirbnbReservations.
 type ListAirbnbReservationsParams struct {
@@ -5044,6 +5454,21 @@ type RespondAirbnbReviewJSONBody struct {
 	Response string `json:"response"`
 }
 
+// GetBookingChargesParams defines parameters for GetBookingCharges.
+type GetBookingChargesParams struct {
+	// PropertyId Booking.com hotel/property id.
+	PropertyId string `form:"property_id" json:"property_id"`
+}
+
+// UpdateBookingChargesJSONBody defines parameters for UpdateBookingCharges.
+type UpdateBookingChargesJSONBody struct {
+	// Charges Full charge set to apply.
+	Charges []map[string]interface{} `json:"charges"`
+
+	// PropertyId Booking.com hotel/property id.
+	PropertyId string `json:"property_id"`
+}
+
 // GetBookingListingPricingParams defines parameters for GetBookingListingPricing.
 type GetBookingListingPricingParams struct {
 	StartDate    *openapi_types.Date `form:"startDate,omitempty" json:"startDate,omitempty"`
@@ -5052,6 +5477,27 @@ type GetBookingListingPricingParams struct {
 
 	// RoomLevel When true, returns room-level (vs rate-plan-level) availability.
 	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
+}
+
+// ListBookingReservationsParams defines parameters for ListBookingReservations.
+type ListBookingReservationsParams struct {
+	// Type Which set to pull. `details` requires `reservation_id` + `hotel_id`.
+	Type *ListBookingReservationsParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// HotelId Booking.com hotel id — filters `new`/`modified`, and is required with `reservation_id` for details.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
+
+	// ReservationId Booking.com reservation id — with `hotel_id`, returns that reservation's details.
+	ReservationId *string `form:"reservation_id,omitempty" json:"reservation_id,omitempty"`
+}
+
+// ListBookingReservationsParamsType defines parameters for ListBookingReservations.
+type ListBookingReservationsParamsType string
+
+// AcknowledgeBookingReservationsJSONBody defines parameters for AcknowledgeBookingReservations.
+type AcknowledgeBookingReservationsJSONBody struct {
+	// ReservationIds Booking.com reservation ids to acknowledge.
+	ReservationIds []string `json:"reservation_ids"`
 }
 
 // ListBookingReviewsParams defines parameters for ListBookingReviews.
@@ -5071,6 +5517,51 @@ type ReplyBookingReviewJSONBody struct {
 	// ReviewId Booking.com review id (from `GET /v1/channels/booking/reviews`).
 	ReviewId string `json:"review_id"`
 }
+
+// BookingSetupJSONBody defines parameters for BookingSetup.
+type BookingSetupJSONBody struct {
+	Action BookingSetupJSONBodyAction `json:"action"`
+
+	// Contacts Contacts payload for `set-contacts`.
+	Contacts *[]map[string]interface{} `json:"contacts,omitempty"`
+
+	// Leid Legal entity id — required for `check-legal-status`.
+	Leid *int `json:"leid,omitempty"`
+
+	// PropertyId Booking.com property id — required for readiness/open/contacts/policies actions.
+	PropertyId           *string                `json:"property_id,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// BookingSetupJSONBodyAction defines parameters for BookingSetup.
+type BookingSetupJSONBodyAction string
+
+// DeleteBookingWebhookParams defines parameters for DeleteBookingWebhook.
+type DeleteBookingWebhookParams struct {
+	// NotificationType Booking.com CNS notification type to unsubscribe.
+	NotificationType string `form:"notification_type" json:"notification_type"`
+}
+
+// CreateBookingWebhookJSONBody defines parameters for CreateBookingWebhook.
+type CreateBookingWebhookJSONBody struct {
+	// CallbackUrl HTTPS endpoint Booking.com pushes notifications to.
+	CallbackUrl string `json:"callback_url"`
+
+	// NotificationType Booking.com CNS notification type.
+	NotificationType string `json:"notification_type"`
+}
+
+// ListPlumguideBookingsParams defines parameters for ListPlumguideBookings.
+type ListPlumguideBookingsParams struct {
+	// ListingId Filter to a single Plumguide listing.
+	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+
+	// BookingCode Fetch a single booking by its Plumguide booking code.
+	BookingCode *string `form:"booking_code,omitempty" json:"booking_code,omitempty"`
+}
+
+// UpdatePlumguideWebhooksJSONBody defines parameters for UpdatePlumguideWebhooks.
+type UpdatePlumguideWebhooksJSONBody map[string]interface{}
 
 // ListVrboReservationsParams defines parameters for ListVrboReservations.
 type ListVrboReservationsParams struct {
@@ -5539,6 +6030,48 @@ type GetReviewParams struct {
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
+// GetUsageLogsParams defines parameters for GetUsageLogs.
+type GetUsageLogsParams struct {
+	// Range Time window ending now.
+	Range *GetUsageLogsParamsRange `form:"range,omitempty" json:"range,omitempty"`
+
+	// Operation Comma-separated `operation_id` filter.
+	Operation *string `form:"operation,omitempty" json:"operation,omitempty"`
+
+	// Status Status-class filter.
+	Status *GetUsageLogsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Q Free-text match on path / operation / request id.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// Limit Page size (max 200).
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque cursor from the previous response's `pagination.next_cursor`.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
+	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
+}
+
+// GetUsageLogsParamsRange defines parameters for GetUsageLogs.
+type GetUsageLogsParamsRange string
+
+// GetUsageLogsParamsStatus defines parameters for GetUsageLogs.
+type GetUsageLogsParamsStatus string
+
+// GetUsageSummaryParams defines parameters for GetUsageSummary.
+type GetUsageSummaryParams struct {
+	// Range Aggregation window ending now.
+	Range *GetUsageSummaryParamsRange `form:"range,omitempty" json:"range,omitempty"`
+}
+
+// GetUsageSummaryParamsRange defines parameters for GetUsageSummary.
+type GetUsageSummaryParamsRange string
+
 // CreateWebhookJSONBody defines parameters for CreateWebhook.
 type CreateWebhookJSONBody struct {
 	ApiVersion  *string            `json:"apiVersion,omitempty"`
@@ -5582,6 +6115,9 @@ type ListWebhookDeliveriesParamsStatus string
 // CreateBillingCheckoutJSONRequestBody defines body for CreateBillingCheckout for application/json ContentType.
 type CreateBillingCheckoutJSONRequestBody CreateBillingCheckoutJSONBody
 
+// CreateAirbnbAlterationJSONRequestBody defines body for CreateAirbnbAlteration for application/json ContentType.
+type CreateAirbnbAlterationJSONRequestBody CreateAirbnbAlterationJSONBody
+
 // MapAirbnbListingJSONRequestBody defines body for MapAirbnbListing for application/json ContentType.
 type MapAirbnbListingJSONRequestBody = MapAirbnbListingRequest
 
@@ -5594,6 +6130,15 @@ type UpdateAirbnbListingAvailabilityJSONRequestBody = AirbnbAvailabilityWriteReq
 // UpdateAirbnbListingPricingJSONRequestBody defines body for UpdateAirbnbListingPricing for application/json ContentType.
 type UpdateAirbnbListingPricingJSONRequestBody = AirbnbPricingWriteRequest
 
+// CreateAirbnbListingRoomJSONRequestBody defines body for CreateAirbnbListingRoom for application/json ContentType.
+type CreateAirbnbListingRoomJSONRequestBody CreateAirbnbListingRoomJSONBody
+
+// UpdateAirbnbMessageJSONRequestBody defines body for UpdateAirbnbMessage for application/json ContentType.
+type UpdateAirbnbMessageJSONRequestBody UpdateAirbnbMessageJSONBody
+
+// CreateAirbnbOfferJSONRequestBody defines body for CreateAirbnbOffer for application/json ContentType.
+type CreateAirbnbOfferJSONRequestBody CreateAirbnbOfferJSONBody
+
 // EditAirbnbReviewJSONRequestBody defines body for EditAirbnbReview for application/json ContentType.
 type EditAirbnbReviewJSONRequestBody = AirbnbReview
 
@@ -5603,11 +6148,26 @@ type RespondAirbnbReviewJSONRequestBody RespondAirbnbReviewJSONBody
 // UpdateBookingAvailabilityJSONRequestBody defines body for UpdateBookingAvailability for application/json ContentType.
 type UpdateBookingAvailabilityJSONRequestBody = BookingAvailabilityUpdateRequest
 
+// UpdateBookingChargesJSONRequestBody defines body for UpdateBookingCharges for application/json ContentType.
+type UpdateBookingChargesJSONRequestBody UpdateBookingChargesJSONBody
+
 // UpdateBookingListingPricingJSONRequestBody defines body for UpdateBookingListingPricing for application/json ContentType.
 type UpdateBookingListingPricingJSONRequestBody = BookingPricingUpdateRequest
 
+// AcknowledgeBookingReservationsJSONRequestBody defines body for AcknowledgeBookingReservations for application/json ContentType.
+type AcknowledgeBookingReservationsJSONRequestBody AcknowledgeBookingReservationsJSONBody
+
 // ReplyBookingReviewJSONRequestBody defines body for ReplyBookingReview for application/json ContentType.
 type ReplyBookingReviewJSONRequestBody ReplyBookingReviewJSONBody
+
+// BookingSetupJSONRequestBody defines body for BookingSetup for application/json ContentType.
+type BookingSetupJSONRequestBody BookingSetupJSONBody
+
+// CreateBookingWebhookJSONRequestBody defines body for CreateBookingWebhook for application/json ContentType.
+type CreateBookingWebhookJSONRequestBody CreateBookingWebhookJSONBody
+
+// UpdatePlumguideWebhooksJSONRequestBody defines body for UpdatePlumguideWebhooks for application/json ContentType.
+type UpdatePlumguideWebhooksJSONRequestBody UpdatePlumguideWebhooksJSONBody
 
 // CreateConnectSessionJSONRequestBody defines body for CreateConnectSession for application/json ContentType.
 type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
@@ -5665,6 +6225,452 @@ type TestWebhookJSONRequestBody TestWebhookJSONBody
 
 // UpdateWebhookJSONRequestBody defines body for UpdateWebhook for application/json ContentType.
 type UpdateWebhookJSONRequestBody UpdateWebhookJSONBody
+
+// Getter for additional properties for CreateAirbnbAlterationJSONBody. Returns the specified
+// element and whether it was found
+func (a CreateAirbnbAlterationJSONBody) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for CreateAirbnbAlterationJSONBody
+func (a *CreateAirbnbAlterationJSONBody) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for CreateAirbnbAlterationJSONBody to handle AdditionalProperties
+func (a *CreateAirbnbAlterationJSONBody) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["check_in"]; found {
+		err = json.Unmarshal(raw, &a.CheckIn)
+		if err != nil {
+			return fmt.Errorf("error reading 'check_in': %w", err)
+		}
+		delete(object, "check_in")
+	}
+
+	if raw, found := object["check_out"]; found {
+		err = json.Unmarshal(raw, &a.CheckOut)
+		if err != nil {
+			return fmt.Errorf("error reading 'check_out': %w", err)
+		}
+		delete(object, "check_out")
+	}
+
+	if raw, found := object["confirmation_code"]; found {
+		err = json.Unmarshal(raw, &a.ConfirmationCode)
+		if err != nil {
+			return fmt.Errorf("error reading 'confirmation_code': %w", err)
+		}
+		delete(object, "confirmation_code")
+	}
+
+	if raw, found := object["number_of_guests"]; found {
+		err = json.Unmarshal(raw, &a.NumberOfGuests)
+		if err != nil {
+			return fmt.Errorf("error reading 'number_of_guests': %w", err)
+		}
+		delete(object, "number_of_guests")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for CreateAirbnbAlterationJSONBody to handle AdditionalProperties
+func (a CreateAirbnbAlterationJSONBody) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.CheckIn != nil {
+		object["check_in"], err = json.Marshal(a.CheckIn)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'check_in': %w", err)
+		}
+	}
+
+	if a.CheckOut != nil {
+		object["check_out"], err = json.Marshal(a.CheckOut)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'check_out': %w", err)
+		}
+	}
+
+	object["confirmation_code"], err = json.Marshal(a.ConfirmationCode)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'confirmation_code': %w", err)
+	}
+
+	if a.NumberOfGuests != nil {
+		object["number_of_guests"], err = json.Marshal(a.NumberOfGuests)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'number_of_guests': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for CreateAirbnbOfferJSONBody. Returns the specified
+// element and whether it was found
+func (a CreateAirbnbOfferJSONBody) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for CreateAirbnbOfferJSONBody
+func (a *CreateAirbnbOfferJSONBody) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for CreateAirbnbOfferJSONBody to handle AdditionalProperties
+func (a *CreateAirbnbOfferJSONBody) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["blockInstantBooking"]; found {
+		err = json.Unmarshal(raw, &a.BlockInstantBooking)
+		if err != nil {
+			return fmt.Errorf("error reading 'blockInstantBooking': %w", err)
+		}
+		delete(object, "blockInstantBooking")
+	}
+
+	if raw, found := object["threadId"]; found {
+		err = json.Unmarshal(raw, &a.ThreadId)
+		if err != nil {
+			return fmt.Errorf("error reading 'threadId': %w", err)
+		}
+		delete(object, "threadId")
+	}
+
+	if raw, found := object["type"]; found {
+		err = json.Unmarshal(raw, &a.Type)
+		if err != nil {
+			return fmt.Errorf("error reading 'type': %w", err)
+		}
+		delete(object, "type")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for CreateAirbnbOfferJSONBody to handle AdditionalProperties
+func (a CreateAirbnbOfferJSONBody) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.BlockInstantBooking != nil {
+		object["blockInstantBooking"], err = json.Marshal(a.BlockInstantBooking)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'blockInstantBooking': %w", err)
+		}
+	}
+
+	if a.ThreadId != nil {
+		object["threadId"], err = json.Marshal(a.ThreadId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'threadId': %w", err)
+		}
+	}
+
+	object["type"], err = json.Marshal(a.Type)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'type': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for BookingSetupJSONBody. Returns the specified
+// element and whether it was found
+func (a BookingSetupJSONBody) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for BookingSetupJSONBody
+func (a *BookingSetupJSONBody) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for BookingSetupJSONBody to handle AdditionalProperties
+func (a *BookingSetupJSONBody) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["action"]; found {
+		err = json.Unmarshal(raw, &a.Action)
+		if err != nil {
+			return fmt.Errorf("error reading 'action': %w", err)
+		}
+		delete(object, "action")
+	}
+
+	if raw, found := object["contacts"]; found {
+		err = json.Unmarshal(raw, &a.Contacts)
+		if err != nil {
+			return fmt.Errorf("error reading 'contacts': %w", err)
+		}
+		delete(object, "contacts")
+	}
+
+	if raw, found := object["leid"]; found {
+		err = json.Unmarshal(raw, &a.Leid)
+		if err != nil {
+			return fmt.Errorf("error reading 'leid': %w", err)
+		}
+		delete(object, "leid")
+	}
+
+	if raw, found := object["property_id"]; found {
+		err = json.Unmarshal(raw, &a.PropertyId)
+		if err != nil {
+			return fmt.Errorf("error reading 'property_id': %w", err)
+		}
+		delete(object, "property_id")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for BookingSetupJSONBody to handle AdditionalProperties
+func (a BookingSetupJSONBody) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["action"], err = json.Marshal(a.Action)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'action': %w", err)
+	}
+
+	if a.Contacts != nil {
+		object["contacts"], err = json.Marshal(a.Contacts)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'contacts': %w", err)
+		}
+	}
+
+	if a.Leid != nil {
+		object["leid"], err = json.Marshal(a.Leid)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'leid': %w", err)
+		}
+	}
+
+	if a.PropertyId != nil {
+		object["property_id"], err = json.Marshal(a.PropertyId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'property_id': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for AirbnbAlteration. Returns the specified
+// element and whether it was found
+func (a AirbnbAlteration) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for AirbnbAlteration
+func (a *AirbnbAlteration) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for AirbnbAlteration to handle AdditionalProperties
+func (a *AirbnbAlteration) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["alterationId"]; found {
+		err = json.Unmarshal(raw, &a.AlterationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'alterationId': %w", err)
+		}
+		delete(object, "alterationId")
+	}
+
+	if raw, found := object["createdAt"]; found {
+		err = json.Unmarshal(raw, &a.CreatedAt)
+		if err != nil {
+			return fmt.Errorf("error reading 'createdAt': %w", err)
+		}
+		delete(object, "createdAt")
+	}
+
+	if raw, found := object["platform"]; found {
+		err = json.Unmarshal(raw, &a.Platform)
+		if err != nil {
+			return fmt.Errorf("error reading 'platform': %w", err)
+		}
+		delete(object, "platform")
+	}
+
+	if raw, found := object["reservationId"]; found {
+		err = json.Unmarshal(raw, &a.ReservationId)
+		if err != nil {
+			return fmt.Errorf("error reading 'reservationId': %w", err)
+		}
+		delete(object, "reservationId")
+	}
+
+	if raw, found := object["status"]; found {
+		err = json.Unmarshal(raw, &a.Status)
+		if err != nil {
+			return fmt.Errorf("error reading 'status': %w", err)
+		}
+		delete(object, "status")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for AirbnbAlteration to handle AdditionalProperties
+func (a AirbnbAlteration) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.AlterationId != nil {
+		object["alterationId"], err = json.Marshal(a.AlterationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'alterationId': %w", err)
+		}
+	}
+
+	if a.CreatedAt != nil {
+		object["createdAt"], err = json.Marshal(a.CreatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'createdAt': %w", err)
+		}
+	}
+
+	if a.Platform != nil {
+		object["platform"], err = json.Marshal(a.Platform)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'platform': %w", err)
+		}
+	}
+
+	if a.ReservationId != nil {
+		object["reservationId"], err = json.Marshal(a.ReservationId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'reservationId': %w", err)
+		}
+	}
+
+	if a.Status != nil {
+		object["status"], err = json.Marshal(a.Status)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'status': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
 
 // Getter for additional properties for BookingPricingResponse. Returns the specified
 // element and whether it was found
