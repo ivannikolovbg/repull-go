@@ -128,6 +128,45 @@ func (e AiOperationFailedEventType) Valid() bool {
 	}
 }
 
+// Defines values for AirbnbAvailabilityWriteRequestType.
+const (
+	AirbnbAvailabilityWriteRequestTypeCalendar AirbnbAvailabilityWriteRequestType = "calendar"
+	AirbnbAvailabilityWriteRequestTypeRules    AirbnbAvailabilityWriteRequestType = "rules"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbAvailabilityWriteRequestType enum.
+func (e AirbnbAvailabilityWriteRequestType) Valid() bool {
+	switch e {
+	case AirbnbAvailabilityWriteRequestTypeCalendar:
+		return true
+	case AirbnbAvailabilityWriteRequestTypeRules:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbCalendarOperationAvailability.
+const (
+	AirbnbCalendarOperationAvailabilityAvailable   AirbnbCalendarOperationAvailability = "available"
+	AirbnbCalendarOperationAvailabilityDefault     AirbnbCalendarOperationAvailability = "default"
+	AirbnbCalendarOperationAvailabilityUnavailable AirbnbCalendarOperationAvailability = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbCalendarOperationAvailability enum.
+func (e AirbnbCalendarOperationAvailability) Valid() bool {
+	switch e {
+	case AirbnbCalendarOperationAvailabilityAvailable:
+		return true
+	case AirbnbCalendarOperationAvailabilityDefault:
+		return true
+	case AirbnbCalendarOperationAvailabilityUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AirbnbConnectionSummaryStatus.
 const (
 	Connected         AirbnbConnectionSummaryStatus = "connected"
@@ -146,6 +185,63 @@ func (e AirbnbConnectionSummaryStatus) Valid() bool {
 	case NeverConnected:
 		return true
 	case ReconnectRequired:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbListingActionRequestAction.
+const (
+	Delete  AirbnbListingActionRequestAction = "delete"
+	Publish AirbnbListingActionRequestAction = "publish"
+	Push    AirbnbListingActionRequestAction = "push"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbListingActionRequestAction enum.
+func (e AirbnbListingActionRequestAction) Valid() bool {
+	switch e {
+	case Delete:
+		return true
+	case Publish:
+		return true
+	case Push:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbPricingWriteRequestType.
+const (
+	AirbnbPricingWriteRequestTypeCalendar AirbnbPricingWriteRequestType = "calendar"
+	AirbnbPricingWriteRequestTypeCurrency AirbnbPricingWriteRequestType = "currency"
+	AirbnbPricingWriteRequestTypeFees     AirbnbPricingWriteRequestType = "fees"
+	AirbnbPricingWriteRequestTypeLos      AirbnbPricingWriteRequestType = "los"
+	AirbnbPricingWriteRequestTypeModel    AirbnbPricingWriteRequestType = "model"
+	AirbnbPricingWriteRequestTypeRatePlan AirbnbPricingWriteRequestType = "rate-plan"
+	AirbnbPricingWriteRequestTypeRule     AirbnbPricingWriteRequestType = "rule"
+	AirbnbPricingWriteRequestTypeStandard AirbnbPricingWriteRequestType = "standard"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbPricingWriteRequestType enum.
+func (e AirbnbPricingWriteRequestType) Valid() bool {
+	switch e {
+	case AirbnbPricingWriteRequestTypeCalendar:
+		return true
+	case AirbnbPricingWriteRequestTypeCurrency:
+		return true
+	case AirbnbPricingWriteRequestTypeFees:
+		return true
+	case AirbnbPricingWriteRequestTypeLos:
+		return true
+	case AirbnbPricingWriteRequestTypeModel:
+		return true
+	case AirbnbPricingWriteRequestTypeRatePlan:
+		return true
+	case AirbnbPricingWriteRequestTypeRule:
+		return true
+	case AirbnbPricingWriteRequestTypeStandard:
 		return true
 	default:
 		return false
@@ -173,6 +269,48 @@ func (e AirbnbReservationStatus) Valid() bool {
 	case AirbnbReservationStatusInquiry:
 		return true
 	case AirbnbReservationStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingAvailabilityUpdateStatus.
+const (
+	BookingAvailabilityUpdateStatusAvailable   BookingAvailabilityUpdateStatus = "available"
+	BookingAvailabilityUpdateStatusOnRequest   BookingAvailabilityUpdateStatus = "on_request"
+	BookingAvailabilityUpdateStatusUnavailable BookingAvailabilityUpdateStatus = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the BookingAvailabilityUpdateStatus enum.
+func (e BookingAvailabilityUpdateStatus) Valid() bool {
+	switch e {
+	case BookingAvailabilityUpdateStatusAvailable:
+		return true
+	case BookingAvailabilityUpdateStatusOnRequest:
+		return true
+	case BookingAvailabilityUpdateStatusUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingAvailabilityUpdateRequestType.
+const (
+	Availability   BookingAvailabilityUpdateRequestType = "availability"
+	DerivedPricing BookingAvailabilityUpdateRequestType = "derived-pricing"
+	Rates          BookingAvailabilityUpdateRequestType = "rates"
+)
+
+// Valid indicates whether the value is a known member of the BookingAvailabilityUpdateRequestType enum.
+func (e BookingAvailabilityUpdateRequestType) Valid() bool {
+	switch e {
+	case Availability:
+		return true
+	case DerivedPricing:
+		return true
+	case Rates:
 		return true
 	default:
 		return false
@@ -467,6 +605,24 @@ func (e ListingStatus) Valid() bool {
 	case ListingStatusArchived:
 		return true
 	case ListingStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingContentUpdateRequestPhotosMode.
+const (
+	Append  ListingContentUpdateRequestPhotosMode = "append"
+	Replace ListingContentUpdateRequestPhotosMode = "replace"
+)
+
+// Valid indicates whether the value is a known member of the ListingContentUpdateRequestPhotosMode enum.
+func (e ListingContentUpdateRequestPhotosMode) Valid() bool {
+	switch e {
+	case Append:
+		return true
+	case Replace:
 		return true
 	default:
 		return false
@@ -938,6 +1094,24 @@ func (e PaymentRefundedEventType) Valid() bool {
 	}
 }
 
+// Defines values for PropertyStatus.
+const (
+	PropertyStatusActive   PropertyStatus = "active"
+	PropertyStatusInactive PropertyStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the PropertyStatus enum.
+func (e PropertyStatus) Valid() bool {
+	switch e {
+	case PropertyStatusActive:
+		return true
+	case PropertyStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RepullPingEventType.
 const (
 	RepullPing RepullPingEventType = "repull.ping"
@@ -1355,57 +1529,6 @@ func (e WebhookSubscriptionStatus) Valid() bool {
 	}
 }
 
-// Defines values for ListStudioDeploymentsParamsStatus.
-const (
-	ListStudioDeploymentsParamsStatusBuilding     ListStudioDeploymentsParamsStatus = "building"
-	ListStudioDeploymentsParamsStatusFailed       ListStudioDeploymentsParamsStatus = "failed"
-	ListStudioDeploymentsParamsStatusLive         ListStudioDeploymentsParamsStatus = "live"
-	ListStudioDeploymentsParamsStatusProvisioning ListStudioDeploymentsParamsStatus = "provisioning"
-	ListStudioDeploymentsParamsStatusSuspended    ListStudioDeploymentsParamsStatus = "suspended"
-)
-
-// Valid indicates whether the value is a known member of the ListStudioDeploymentsParamsStatus enum.
-func (e ListStudioDeploymentsParamsStatus) Valid() bool {
-	switch e {
-	case ListStudioDeploymentsParamsStatusBuilding:
-		return true
-	case ListStudioDeploymentsParamsStatusFailed:
-		return true
-	case ListStudioDeploymentsParamsStatusLive:
-		return true
-	case ListStudioDeploymentsParamsStatusProvisioning:
-		return true
-	case ListStudioDeploymentsParamsStatusSuspended:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for UpdateStudioProjectJSONBodyStatus.
-const (
-	UpdateStudioProjectJSONBodyStatusArchived UpdateStudioProjectJSONBodyStatus = "archived"
-	UpdateStudioProjectJSONBodyStatusBuilding UpdateStudioProjectJSONBodyStatus = "building"
-	UpdateStudioProjectJSONBodyStatusDraft    UpdateStudioProjectJSONBodyStatus = "draft"
-	UpdateStudioProjectJSONBodyStatusLive     UpdateStudioProjectJSONBodyStatus = "live"
-)
-
-// Valid indicates whether the value is a known member of the UpdateStudioProjectJSONBodyStatus enum.
-func (e UpdateStudioProjectJSONBodyStatus) Valid() bool {
-	switch e {
-	case UpdateStudioProjectJSONBodyStatusArchived:
-		return true
-	case UpdateStudioProjectJSONBodyStatusBuilding:
-		return true
-	case UpdateStudioProjectJSONBodyStatusDraft:
-		return true
-	case UpdateStudioProjectJSONBodyStatusLive:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for CreateBillingCheckoutJSONBodyPlan.
 const (
 	Growth  CreateBillingCheckoutJSONBodyPlan = "growth"
@@ -1510,16 +1633,16 @@ func (e ListConversationsParamsPlatform) Valid() bool {
 
 // Defines values for ListConversationsParamsStatus.
 const (
-	Archived ListConversationsParamsStatus = "archived"
-	Open     ListConversationsParamsStatus = "open"
+	ListConversationsParamsStatusArchived ListConversationsParamsStatus = "archived"
+	ListConversationsParamsStatusOpen     ListConversationsParamsStatus = "open"
 )
 
 // Valid indicates whether the value is a known member of the ListConversationsParamsStatus enum.
 func (e ListConversationsParamsStatus) Valid() bool {
 	switch e {
-	case Archived:
+	case ListConversationsParamsStatusArchived:
 		return true
-	case Open:
+	case ListConversationsParamsStatusOpen:
 		return true
 	default:
 		return false
@@ -1905,6 +2028,53 @@ type AiOperationFailedPayload struct {
 	Type        *string    `json:"type,omitempty"`
 }
 
+// AirbnbAvailabilityWriteRequest Body for `PUT /v1/channels/airbnb/listings/{id}/availability`. `type: "calendar"` carries per-date restrictions (min/max nights, closed-to-arrival/departure, stop-sell); `type: "rules"` carries listing-level availability rules (default min/max nights, booking lead time, turnover days).
+type AirbnbAvailabilityWriteRequest struct {
+	// Operations Required when `type: "calendar"`. Batch of per-date restriction operations.
+	Operations *[]AirbnbCalendarOperation `json:"operations,omitempty"`
+
+	// Rules Required when `type: "rules"`. Airbnb availability-rules object — `default_min_nights`, `default_max_nights`, `booking_lead_time`, `turnover_days`, `day_of_week_min_nights`, `seasonal_min_nights`, etc.
+	Rules *map[string]interface{}            `json:"rules,omitempty"`
+	Type  AirbnbAvailabilityWriteRequestType `json:"type"`
+}
+
+// AirbnbAvailabilityWriteRequestType defines model for AirbnbAvailabilityWriteRequest.Type.
+type AirbnbAvailabilityWriteRequestType string
+
+// AirbnbCalendarOperation One calendar operation. Supply either `start_date` + `end_date` OR a `dates` array. Every restriction here is forwarded verbatim to Airbnb's batch calendar API.
+type AirbnbCalendarOperation struct {
+	// Availability Stop-sell is expressed here: `unavailable` blocks the date(s); `available` re-opens; `default` reverts to rule-based availability.
+	Availability *AirbnbCalendarOperationAvailability `json:"availability,omitempty"`
+
+	// ClosedToArrival Closed-to-arrival — no check-ins on the affected date(s).
+	ClosedToArrival *bool `json:"closed_to_arrival,omitempty"`
+
+	// ClosedToDeparture Closed-to-departure — no check-outs on the affected date(s).
+	ClosedToDeparture *bool `json:"closed_to_departure,omitempty"`
+
+	// DailyPrice Nightly price override.
+	DailyPrice *float32 `json:"daily_price,omitempty"`
+
+	// Dates Explicit date or `start:end` range strings, as an alternative to `start_date`/`end_date`.
+	Dates *[]string `json:"dates,omitempty"`
+
+	// EndDate Inclusive range end (pair with `start_date`).
+	EndDate *openapi_types.Date `json:"end_date,omitempty"`
+
+	// MaxNights Maximum length of stay for the date(s).
+	MaxNights *int `json:"max_nights,omitempty"`
+
+	// MinNights Minimum length of stay for the date(s).
+	MinNights *int    `json:"min_nights,omitempty"`
+	Notes     *string `json:"notes,omitempty"`
+
+	// StartDate Inclusive range start (pair with `end_date`).
+	StartDate *openapi_types.Date `json:"start_date,omitempty"`
+}
+
+// AirbnbCalendarOperationAvailability Stop-sell is expressed here: `unavailable` blocks the date(s); `available` re-opens; `default` reverts to rule-based availability.
+type AirbnbCalendarOperationAvailability string
+
 // AirbnbConnection An Airbnb-side connection record for a Vanio listing. The same property may appear under multiple connections if it has been linked from multiple Airbnb host accounts.
 type AirbnbConnection struct {
 	// AccessibilityAmenities Present only when `?include=amenities` is passed. Accessibility-tagged subset of the local amenity cache (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Returns an empty array when amenities synced but none qualify as accessibility; returns `null` when the cache is empty for this connection (use `data_freshness` to disambiguate "never synced" from "fresh and genuinely empty").
@@ -2008,6 +2178,24 @@ type AirbnbListing struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// AirbnbListingActionRequest Body for `POST /v1/channels/airbnb/listings/{id}`.
+type AirbnbListingActionRequest struct {
+	// Action `delete` deactivates the Repull record. `push`/`publish` push content to Airbnb.
+	Action AirbnbListingActionRequestAction `json:"action"`
+
+	// AirbnbConnectionId For `push`/`publish`: the Airbnb connection to update (from `GET /v1/channels/airbnb/listings/{id}`). Pass this OR `hostId`.
+	AirbnbConnectionId *string `json:"airbnbConnectionId,omitempty"`
+
+	// Force For `push`/`publish`: re-push every field, ignoring dirty-field tracking.
+	Force *bool `json:"force,omitempty"`
+
+	// HostId For `push`/`publish`: create + publish a new Airbnb listing under this host. Pass this OR `airbnbConnectionId`.
+	HostId *string `json:"hostId,omitempty"`
+}
+
+// AirbnbListingActionRequestAction `delete` deactivates the Repull record. `push`/`publish` push content to Airbnb.
+type AirbnbListingActionRequestAction string
+
 // AirbnbListingListResponse defines model for AirbnbListingListResponse.
 type AirbnbListingListResponse struct {
 	Data []AirbnbListing `json:"data"`
@@ -2018,6 +2206,31 @@ type AirbnbListingListResponse struct {
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination Pagination `json:"pagination"`
 }
+
+// AirbnbPricingWriteRequest Body for `PUT /v1/channels/airbnb/listings/{id}/pricing`. The `type` discriminator selects the pricing sub-resource. `type: "calendar"` shares the same per-date restriction shape as the availability endpoint (min/max nights, closed-to-arrival/departure, stop-sell via `availability: "unavailable"`).
+type AirbnbPricingWriteRequest struct {
+	// Currency Required for `type: "currency"` — ISO 4217 code.
+	Currency *string `json:"currency,omitempty"`
+
+	// ModelType Required when `type: "model"` — the pricing-availability model to switch the listing to.
+	ModelType *string `json:"modelType,omitempty"`
+
+	// Operations Required when `type: "calendar"`. Batch of per-date price + restriction operations.
+	Operations *[]AirbnbCalendarOperation `json:"operations,omitempty"`
+
+	// Records Required for `type: "los"` — length-of-stay records.
+	Records *[]map[string]interface{} `json:"records,omitempty"`
+
+	// Rule Required for `type: "rule"` — a single pricing rule appended to the listing.
+	Rule *map[string]interface{} `json:"rule,omitempty"`
+
+	// Settings Required for `type: "standard" | "rate-plan" | "fees"` — the pricing-settings object to PUT.
+	Settings *map[string]interface{}       `json:"settings,omitempty"`
+	Type     AirbnbPricingWriteRequestType `json:"type"`
+}
+
+// AirbnbPricingWriteRequestType defines model for AirbnbPricingWriteRequest.Type.
+type AirbnbPricingWriteRequestType string
 
 // AirbnbReservation An Airbnb reservation as returned by the channel API. Use `confirmationCode` to address it in Airbnb operations.
 type AirbnbReservation struct {
@@ -2076,6 +2289,63 @@ type AirbnbThreadListResponse struct {
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
+}
+
+// BookingAvailabilityUpdate One (room, rate-plan, date-range) availability update. Carries inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same length-of-stay / arrival restrictions as a rate update.
+type BookingAvailabilityUpdate struct {
+	// AvailableRooms Rooms to sell (`roomstosell`). `0` blocks the room for the range.
+	AvailableRooms int `json:"availableRooms"`
+
+	// Closed Dedicated stop-sell flag (`<closed>` in Booking's XML). `true` fully stops sale for the room/date-range regardless of `availableRooms`.
+	Closed    *bool `json:"closed,omitempty"`
+	DateRange struct {
+		End   openapi_types.Date `json:"end"`
+		Start openapi_types.Date `json:"start"`
+	} `json:"dateRange"`
+
+	// RateId Booking.com rate-plan id.
+	RateId string `json:"rateId"`
+
+	// Restrictions Optional length-of-stay / availability restrictions for one rate update. Every field here is forwarded verbatim into Booking.com's rates XML (`minimumstay`, `maximumstay`, `closedonarrival`, `closedondeparture`, …) — omit a field to leave that restriction untouched.
+	Restrictions *BookingPricingRateUpdateRestrictions `json:"restrictions,omitempty"`
+
+	// RoomId Booking.com room id.
+	RoomId string                           `json:"roomId"`
+	Status *BookingAvailabilityUpdateStatus `json:"status,omitempty"`
+}
+
+// BookingAvailabilityUpdateStatus defines model for BookingAvailabilityUpdate.Status.
+type BookingAvailabilityUpdateStatus string
+
+// BookingAvailabilityUpdateRequest Body for `PUT /v1/channels/booking/availability`. Selects one of Booking's three ARI write paths via `type` and forwards `updates` verbatim to the connector.
+type BookingAvailabilityUpdateRequest struct {
+	// PropertyId Booking.com hotel/property id (numeric; accepted as int or numeric string).
+	PropertyId BookingAvailabilityUpdateRequest_PropertyId `json:"property_id"`
+
+	// Type `rates` → price + restrictions (`updateRates`); `availability` → inventory + stop-sell + restrictions (`updateAvailability`); `derived-pricing` → occupancy-derived pricing rules (`updateDerivedPricing`).
+	Type BookingAvailabilityUpdateRequestType `json:"type"`
+
+	// Updates For `type: "rates"` each item is a `BookingPricingRateUpdate`; for `type: "availability"` a `BookingAvailabilityUpdate`; for `type: "derived-pricing"` a derived-price rule set.
+	Updates []BookingAvailabilityUpdateRequest_Updates_Item `json:"updates"`
+}
+
+// BookingAvailabilityUpdateRequestPropertyId0 defines model for .
+type BookingAvailabilityUpdateRequestPropertyId0 = int
+
+// BookingAvailabilityUpdateRequestPropertyId1 defines model for .
+type BookingAvailabilityUpdateRequestPropertyId1 = string
+
+// BookingAvailabilityUpdateRequest_PropertyId Booking.com hotel/property id (numeric; accepted as int or numeric string).
+type BookingAvailabilityUpdateRequest_PropertyId struct {
+	union json.RawMessage
+}
+
+// BookingAvailabilityUpdateRequestType `rates` → price + restrictions (`updateRates`); `availability` → inventory + stop-sell + restrictions (`updateAvailability`); `derived-pricing` → occupancy-derived pricing rules (`updateDerivedPricing`).
+type BookingAvailabilityUpdateRequestType string
+
+// BookingAvailabilityUpdateRequest_Updates_Item defines model for BookingAvailabilityUpdateRequest.updates.Item.
+type BookingAvailabilityUpdateRequest_Updates_Item struct {
+	union json.RawMessage
 }
 
 // BookingConnectListingOption A Repull listing the customer can map a Booking room to. Mirrors the minimal shape needed for a select dropdown.
@@ -2145,21 +2415,45 @@ type BookingPricingRateUpdate struct {
 	// RateId Booking.com rate-plan ID.
 	RateId string `json:"rateId"`
 
-	// Restrictions Optional length-of-stay / availability restrictions for one rate update.
+	// Restrictions Optional length-of-stay / availability restrictions for one rate update. Every field here is forwarded verbatim into Booking.com's rates XML (`minimumstay`, `maximumstay`, `closedonarrival`, `closedondeparture`, …) — omit a field to leave that restriction untouched.
 	Restrictions *BookingPricingRateUpdateRestrictions `json:"restrictions,omitempty"`
 
 	// RoomId Booking.com room ID for the rate plan. Comes from `listings_booking_rooms` mapping.
-	RoomId      string   `json:"roomId"`
+	RoomId string `json:"roomId"`
+
+	// RoomsToSell Rooms to sell for the date range. Set to `0` to stop-sell this room/rate on the rates endpoint (Booking's dedicated `<closed>` stop-sell flag lives on the availability endpoint — see `BookingAvailabilityUpdate.closed`).
 	RoomsToSell *int     `json:"roomsToSell,omitempty"`
 	SinglePrice *float32 `json:"singlePrice,omitempty"`
 }
 
-// BookingPricingRateUpdateRestrictions Optional length-of-stay / availability restrictions for one rate update.
+// BookingPricingRateUpdateRestrictions Optional length-of-stay / availability restrictions for one rate update. Every field here is forwarded verbatim into Booking.com's rates XML (`minimumstay`, `maximumstay`, `closedonarrival`, `closedondeparture`, …) — omit a field to leave that restriction untouched.
 type BookingPricingRateUpdateRestrictions struct {
-	ClosedToArrival   *bool `json:"closedToArrival,omitempty"`
+	// ClosedToArrival Closed-to-arrival — guests may not check in on the affected dates (`closedonarrival`).
+	ClosedToArrival *bool `json:"closedToArrival,omitempty"`
+
+	// ClosedToDeparture Closed-to-departure — guests may not check out on the affected dates (`closedondeparture`).
 	ClosedToDeparture *bool `json:"closedToDeparture,omitempty"`
-	MaxStay           *int  `json:"maxStay,omitempty"`
-	MinStay           *int  `json:"minStay,omitempty"`
+
+	// ExactStayArrival Arrival-based exact length of stay (`exactstay_arrival`).
+	ExactStayArrival *int `json:"exactStayArrival,omitempty"`
+
+	// MaxAdvanceRes Maximum advance-reservation window, format `XDY` (X days Y hours) — `max_advance_res`.
+	MaxAdvanceRes *string `json:"maxAdvanceRes,omitempty"`
+
+	// MaxStay Maximum length of stay (`maximumstay`).
+	MaxStay *int `json:"maxStay,omitempty"`
+
+	// MaxStayArrival Arrival-based maximum length of stay (`maximumstay_arrival`).
+	MaxStayArrival *int `json:"maxStayArrival,omitempty"`
+
+	// MinAdvanceRes Minimum advance-reservation window, format `XDY` (X days Y hours) — `min_advance_res`.
+	MinAdvanceRes *string `json:"minAdvanceRes,omitempty"`
+
+	// MinStay Minimum length of stay (`minimumstay`).
+	MinStay *int `json:"minStay,omitempty"`
+
+	// MinStayArrival Arrival-based minimum length of stay (`minimumstay_arrival`).
+	MinStayArrival *int `json:"minStayArrival,omitempty"`
 }
 
 // BookingPricingResponse Returned by `GET /v1/channels/booking/listings/{id}/pricing`. Mirrors Booking's `getRoomRateAvailability` response with `hotelId` and `listingId` echoed back for SDK consumers.
@@ -2918,6 +3212,128 @@ type ListingContent struct {
 	Transit *string `json:"transit,omitempty"`
 }
 
+// ListingContentUpdateRequest Canonical PMS-owned listing content. Every field is optional — this is a partial update, only the fields you send are written; absent fields are left untouched. This is a LOCAL write only: it does NOT push to Airbnb/Booking.com. Distribution is a separate explicit publish step. `photos` are ingested by URL and attached to the listing in order (full-replace by default, or append via `photosMode`).
+type ListingContentUpdateRequest struct {
+	// Address Partial address. Only provided sub-fields are written.
+	Address *struct {
+		City *string `json:"city,omitempty"`
+
+		// CountryCode ISO-3166 alpha-2 country code.
+		CountryCode *string  `json:"countryCode,omitempty"`
+		Lat         *float32 `json:"lat,omitempty"`
+		Lng         *float32 `json:"lng,omitempty"`
+		Street      *string  `json:"street,omitempty"`
+	} `json:"address,omitempty"`
+
+	// Amenities FULL replacement of the amenity set. Accepts canonical keys as a string[] or structured rows. Omit to leave amenities untouched; send `[]` to clear them.
+	Amenities *ListingContentUpdateRequest_Amenities `json:"amenities,omitempty"`
+
+	// Description Long-form listing description.
+	Description *string `json:"description,omitempty"`
+
+	// Name Alias for `title`.
+	Name      *string `json:"name,omitempty"`
+	Occupancy *struct {
+		// Bathrooms Decimal, e.g. 1.5.
+		Bathrooms *float32 `json:"bathrooms,omitempty"`
+		Bedrooms  *int     `json:"bedrooms,omitempty"`
+		Beds      *int     `json:"beds,omitempty"`
+		MaxGuests *int     `json:"maxGuests,omitempty"`
+	} `json:"occupancy,omitempty"`
+
+	// Photos Photo set — full replacement by default (pass `photosMode: "append"` to add after existing photos, or `[]` to clear; omit to leave untouched). Each entry is a hosted image URL (string) or a structured ref. URL-ingest only: the URL is persisted and attached to the listing in order — the OTA push downloads it at publish time. Binary/multipart upload is a follow-up. A non-empty array with no valid http(s) URL is reported in `deferred` (existing photos left untouched).
+	Photos *[]ListingContentUpdateRequest_Photos_Item `json:"photos,omitempty"`
+
+	// PhotosMode How `photos` is applied: `replace` (full replacement of the photo set) or `append` (add after the existing photos). Ignored when `photos` is absent.
+	PhotosMode *ListingContentUpdateRequestPhotosMode `json:"photosMode,omitempty"`
+	Policies   *struct {
+		AllowsChildren *bool `json:"allowsChildren,omitempty"`
+		AllowsEvents   *bool `json:"allowsEvents,omitempty"`
+		AllowsInfants  *bool `json:"allowsInfants,omitempty"`
+		AllowsPets     *bool `json:"allowsPets,omitempty"`
+		AllowsSmoking  *bool `json:"allowsSmoking,omitempty"`
+
+		// Cancellation Alias for `cancellationPolicy`.
+		Cancellation *string `json:"cancellation,omitempty"`
+
+		// CancellationPolicy Cancellation policy slug/label.
+		CancellationPolicy *string `json:"cancellationPolicy,omitempty"`
+		CheckInTimeEnd     *string `json:"checkInTimeEnd,omitempty"`
+
+		// CheckInTimeStart e.g. "15" (3pm).
+		CheckInTimeStart *string `json:"checkInTimeStart,omitempty"`
+
+		// CheckOutTime e.g. "11" (11am).
+		CheckOutTime *string `json:"checkOutTime,omitempty"`
+
+		// HouseRules Free-text house rules.
+		HouseRules *string `json:"houseRules,omitempty"`
+	} `json:"policies,omitempty"`
+
+	// Summary Short summary / tagline.
+	Summary *string `json:"summary,omitempty"`
+
+	// Title Guest-facing title. Written to the listing name and the `en` description.
+	Title *string `json:"title,omitempty"`
+}
+
+// ListingContentUpdateRequestAmenities0 defines model for .
+type ListingContentUpdateRequestAmenities0 = []string
+
+// ListingContentUpdateRequestAmenities1 defines model for .
+type ListingContentUpdateRequestAmenities1 = []struct {
+	AmenityKey  string  `json:"amenityKey"`
+	Category    *string `json:"category,omitempty"`
+	Instruction *string `json:"instruction,omitempty"`
+	IsPresent   *bool   `json:"isPresent,omitempty"`
+}
+
+// ListingContentUpdateRequest_Amenities FULL replacement of the amenity set. Accepts canonical keys as a string[] or structured rows. Omit to leave amenities untouched; send `[]` to clear them.
+type ListingContentUpdateRequest_Amenities struct {
+	union json.RawMessage
+}
+
+// ListingContentUpdateRequestPhotos0 Hosted image URL (http/https).
+type ListingContentUpdateRequestPhotos0 = string
+
+// ListingContentUpdateRequestPhotos1 defines model for .
+type ListingContentUpdateRequestPhotos1 struct {
+	Caption  *string `json:"caption,omitempty"`
+	Category *string `json:"category,omitempty"`
+	Height   *int    `json:"height,omitempty"`
+
+	// SortOrder Explicit position; defaults to the array index.
+	SortOrder *int `json:"sortOrder,omitempty"`
+
+	// SourceUrl Provenance URL; defaults to `url`.
+	SourceUrl    *string `json:"sourceUrl,omitempty"`
+	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
+
+	// Url Hosted image URL (http/https).
+	Url   string `json:"url"`
+	Width *int   `json:"width,omitempty"`
+}
+
+// ListingContentUpdateRequest_Photos_Item defines model for ListingContentUpdateRequest.photos.Item.
+type ListingContentUpdateRequest_Photos_Item struct {
+	union json.RawMessage
+}
+
+// ListingContentUpdateRequestPhotosMode How `photos` is applied: `replace` (full replacement of the photo set) or `append` (add after the existing photos). Ignored when `photos` is absent.
+type ListingContentUpdateRequestPhotosMode string
+
+// ListingContentUpdateResponse defines model for ListingContentUpdateResponse.
+type ListingContentUpdateResponse struct {
+	// Changed Content slabs that were actually written, e.g. ["title","occupancy","amenities"].
+	Changed *[]string `json:"changed,omitempty"`
+
+	// Deferred Provided-but-not-applied fields — e.g. "photos" when a non-empty photos array carried no valid http(s) URL.
+	Deferred *[]string `json:"deferred,omitempty"`
+
+	// Id The listing id (serialized as a string to preserve precision).
+	Id *string `json:"id,omitempty"`
+}
+
 // ListingCreateRequest Inputs for `POST /v1/listings`. Provide enough address detail (street + city + lat/lng) for downstream Airbnb publish to work.
 type ListingCreateRequest struct {
 	AllowsChildren     *bool                                   `json:"allowsChildren,omitempty"`
@@ -3420,6 +3836,41 @@ type ListingUpdatedPayload struct {
 	UpdatedAt *time.Time              `json:"updatedAt,omitempty"`
 }
 
+// MapAirbnbListingRequest Body for `POST /v1/channels/airbnb/listings/map`.
+type MapAirbnbListingRequest struct {
+	// AirbnbId The Airbnb listing id to map. Discover it via `GET /v1/channels/airbnb/listings`.
+	AirbnbId string `json:"airbnbId"`
+
+	// HostId Optional. When present, must match the Airbnb listing's host id — guards against mapping the wrong host's listing.
+	HostId *string `json:"hostId,omitempty"`
+
+	// ListingId Canonical Repull listing id to link the Airbnb listing to. Must belong to your workspace. A numeric string is also accepted.
+	ListingId int `json:"listingId"`
+
+	// SyncEnabled Whether the resulting platform link has sync enabled.
+	SyncEnabled *bool `json:"syncEnabled,omitempty"`
+}
+
+// MapAirbnbListingResponse Id fields are strings (API-wide convention — bigint ids are stringified to avoid 53-bit JS-number precision loss).
+type MapAirbnbListingResponse struct {
+	AirbnbId string `json:"airbnbId"`
+
+	// AlreadyMapped True when the Airbnb listing was already mapped to this listing (no-op).
+	AlreadyMapped bool   `json:"alreadyMapped"`
+	HostId        string `json:"hostId"`
+
+	// ListingAirbnbId Internal id of the `listings_airbnb` record.
+	ListingAirbnbId string `json:"listingAirbnbId"`
+	ListingId       string `json:"listingId"`
+
+	// PlatformLinkId Internal id of the resulting `listing_platform_links` row.
+	PlatformLinkId string `json:"platformLinkId"`
+
+	// PreviousListingId The listing the Airbnb record pointed at before this call. Omitted on a no-op.
+	PreviousListingId *string `json:"previousListingId,omitempty"`
+	Success           bool    `json:"success"`
+}
+
 // MapConnectBookingRoomsRequest Body for `POST /v1/connect/booking/map-rooms`. Submits all room→listing assignments in one transaction; on success the Connect session is marked `completed`.
 type MapConnectBookingRoomsRequest struct {
 	Mappings  []BookingRoomMapping `json:"mappings"`
@@ -3788,40 +4239,49 @@ type PlumguideListingListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
-// Property A vacation rental property from a connected PMS
+// Property A vacation rental property in your Repull workspace. Backed by the core `listings` row — enriched per-PMS fields (bedrooms, property type, provider id, etc.) live in provider-specific detail tables and are NOT returned here.
+//
+// Field availability differs by endpoint:
+// - `channels` is returned by the list endpoint (`GET /v1/properties`) only.
+// - `latitude`, `longitude`, `createdAt`, and `amenities` are returned by the detail endpoint (`GET /v1/properties/{id}`) only. `amenities` requires `?include=amenities`.
 type Property struct {
-	// Address Full address
+	// Address Street address (from the listing's `street` field).
 	Address *string `json:"address,omitempty"`
 
-	// Amenities Amenity rows for the property. **Only present when the caller passes `?include=amenities`.** Empty array (`[]`) when the property has no amenity rows.
+	// Amenities Amenity rows for the property. Detail endpoint only, and **only present when the caller passes `?include=amenities`.** Empty array (`[]`) when the property has no amenity rows.
 	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
-	Bathrooms *float32          `json:"bathrooms,omitempty"`
-	Bedrooms  *int              `json:"bedrooms,omitempty"`
 
-	// Channels OTAs/channels this property is actively published on (e.g. `airbnb`, `booking`, `vrbo`). Empty array when the property has no active channel links.
+	// Channels OTAs/channels this property is actively published on, as channel-name strings (e.g. `airbnb`, `booking`, `vrbo`). Empty array when the property has no active channel links. List endpoint (`GET /v1/properties`) only.
 	Channels *[]string `json:"channels,omitempty"`
 	City     *string   `json:"city,omitempty"`
-	Country  *string   `json:"country,omitempty"`
 
-	// ExternalId ID in the source PMS
-	ExternalId *string `json:"externalId,omitempty"`
+	// CreatedAt When the property was created. Detail endpoint only.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
 
-	// Id Internal Repull property ID
-	Id        *string  `json:"id,omitempty"`
-	Latitude  *float32 `json:"latitude,omitempty"`
+	// Currency ISO 4217 currency code for this property's pricing.
+	Currency *string `json:"currency,omitempty"`
+
+	// Id Internal Repull property ID. Equal to the listing id (`listings.id`); the same integer is used as `listingId` on reservations and `propertyId` on availability.
+	Id *string `json:"id,omitempty"`
+
+	// Latitude Detail endpoint only.
+	Latitude *float32 `json:"latitude,omitempty"`
+
+	// LifecycleStatus The listing's lifecycle state (e.g. `live`, `draft`, `archived`).
+	LifecycleStatus *string `json:"lifecycleStatus,omitempty"`
+
+	// Longitude Detail endpoint only.
 	Longitude *float32 `json:"longitude,omitempty"`
-	MaxGuests *int     `json:"maxGuests,omitempty"`
 
 	// Name Property name
 	Name *string `json:"name,omitempty"`
 
-	// Provider Source PMS
-	Provider *string `json:"provider,omitempty"`
-	State    *string `json:"state,omitempty"`
-
-	// Thumbnail Primary photo URL
-	Thumbnail *string `json:"thumbnail,omitempty"`
+	// Status Derived from `listings.active`.
+	Status *PropertyStatus `json:"status,omitempty"`
 }
+
+// PropertyStatus Derived from `listings.active`.
+type PropertyStatus string
 
 // PropertyListResponse defines model for PropertyListResponse.
 type PropertyListResponse struct {
@@ -3908,6 +4368,9 @@ type Reservation struct {
 	// TotalPrice DEPRECATED — use `financials.totalPrice` (a number). Decimal-as-string (precision 10, scale 2) kept for back-compat.
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	TotalPrice *string `json:"totalPrice,omitempty"`
+
+	// UpdatedAt Last time this reservation was modified (dates, status, price, or guest details). Advances on every amendment or cancellation — poll or compare this value to reconcile changes instead of fingerprinting individual fields.
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // ReservationPlatform DEPRECATED alias for `source`. Same value, kept for back-compat.
@@ -4173,6 +4636,40 @@ type ReviewListResponse struct {
 type ReviewResponse struct {
 	Body        *string    `json:"body,omitempty"`
 	SubmittedAt *time.Time `json:"submittedAt,omitempty"`
+}
+
+// SandboxFixtureRef A seeded fixture: its stable reference key plus the synthetic id the read endpoints return for it.
+type SandboxFixtureRef struct {
+	// Id Synthetic id (>= 900,000,000). Reference it against GET /v1/listings, /v1/reservations, /v1/connect.
+	Id string `json:"id"`
+
+	// Ref Stable reference key — constant across re-seeds.
+	Ref string `json:"ref"`
+}
+
+// SandboxResetResult Result of clearing the sandbox fixture set. Only ever deletes rows in the isolated sandbox data space.
+type SandboxResetResult struct {
+	CustomerId string `json:"customerId"`
+	Deleted    struct {
+		Connections  int `json:"connections"`
+		Listings     int `json:"listings"`
+		Reservations int `json:"reservations"`
+	} `json:"deleted"`
+	ResetAt time.Time `json:"resetAt"`
+}
+
+// SandboxSeedResult Result of provisioning the sandbox fixture set.
+type SandboxSeedResult struct {
+	// Connections 2 fake connected provider accounts: Airbnb + Booking.com.
+	Connections []SandboxFixtureRef `json:"connections"`
+	CustomerId  string              `json:"customerId"`
+
+	// Listings 3 sample listings.
+	Listings []SandboxFixtureRef `json:"listings"`
+
+	// Reservations 5 reservations across the lifecycle: created, modified, cancelled, date-changed, pending.
+	Reservations []SandboxFixtureRef `json:"reservations"`
+	SeededAt     time.Time           `json:"seededAt"`
 }
 
 // SelectProviderResponse Returned by `POST /v1/connect/sessions/{sessionId}/select-provider`. The picker UI navigates the user to `nextUrl` to begin the per-provider handoff.
@@ -4490,97 +4987,6 @@ type Unauthorized = Error
 
 // UnprocessableEntity Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type UnprocessableEntity = Error
-
-// ListStudioDeploymentsParams defines parameters for ListStudioDeployments.
-type ListStudioDeploymentsParams struct {
-	// ProjectId Optional — restrict the list to a single project.
-	ProjectId *openapi_types.UUID                `form:"project_id,omitempty" json:"project_id,omitempty"`
-	Status    *ListStudioDeploymentsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
-	Limit     *int                               `form:"limit,omitempty" json:"limit,omitempty"`
-	Offset    *int                               `form:"offset,omitempty" json:"offset,omitempty"`
-}
-
-// ListStudioDeploymentsParamsStatus defines parameters for ListStudioDeployments.
-type ListStudioDeploymentsParamsStatus string
-
-// CreateStudioDeploymentJSONBody defines parameters for CreateStudioDeployment.
-type CreateStudioDeploymentJSONBody struct {
-	// ProjectId Project to deploy.
-	ProjectId openapi_types.UUID `json:"project_id"`
-}
-
-// GenerateStudioCompletionJSONBody defines parameters for GenerateStudioCompletion.
-type GenerateStudioCompletionJSONBody struct {
-	// MaxTokens Maximum completion tokens.
-	MaxTokens *int `json:"max_tokens,omitempty"`
-
-	// ProjectId Project the generation belongs to (used for billing + rate limits).
-	ProjectId GenerateStudioCompletionJSONBody_ProjectId `json:"project_id"`
-
-	// Prompt User prompt. Up to 32,000 characters.
-	Prompt string `json:"prompt"`
-
-	// SystemPrompt Optional system prompt to steer the response.
-	SystemPrompt *string `json:"system_prompt,omitempty"`
-
-	// Temperature Sampling temperature. Defaults to model preset.
-	Temperature *float32 `json:"temperature,omitempty"`
-}
-
-// GenerateStudioCompletionJSONBodyProjectId0 defines parameters for GenerateStudioCompletion.
-type GenerateStudioCompletionJSONBodyProjectId0 = string
-
-// GenerateStudioCompletionJSONBodyProjectId1 defines parameters for GenerateStudioCompletion.
-type GenerateStudioCompletionJSONBodyProjectId1 = int
-
-// GenerateStudioCompletionJSONBody_ProjectId defines parameters for GenerateStudioCompletion.
-type GenerateStudioCompletionJSONBody_ProjectId struct {
-	union json.RawMessage
-}
-
-// CreateStudioProjectJSONBody defines parameters for CreateStudioProject.
-type CreateStudioProjectJSONBody struct {
-	// Name Human-readable project name. Used to derive the slug.
-	Name string `json:"name"`
-
-	// Prompt Initial prompt that seeds the project. Repull AI scaffolds the first generation from this.
-	Prompt string `json:"prompt"`
-
-	// TemplateId Optional template to start from (e.g. `next-saas`). Omit to generate from prompt only.
-	TemplateId *string `json:"template_id,omitempty"`
-}
-
-// UpdateStudioProjectJSONBody defines parameters for UpdateStudioProject.
-type UpdateStudioProjectJSONBody struct {
-	Name   *string                            `json:"name,omitempty"`
-	Status *UpdateStudioProjectJSONBodyStatus `json:"status,omitempty"`
-}
-
-// UpdateStudioProjectJSONBodyStatus defines parameters for UpdateStudioProject.
-type UpdateStudioProjectJSONBodyStatus string
-
-// UpsertStudioProjectFileJSONBody defines parameters for UpsertStudioProjectFile.
-type UpsertStudioProjectFileJSONBody struct {
-	// Content Full UTF-8 file contents — partial updates are not supported.
-	Content string `json:"content"`
-}
-
-// CreateStudioProjectGenerationJSONBody defines parameters for CreateStudioProjectGeneration.
-type CreateStudioProjectGenerationJSONBody struct {
-	// Prompt Prompt to send to Repull AI.
-	Prompt string `json:"prompt"`
-}
-
-// GetAvailabilityParams defines parameters for GetAvailability.
-type GetAvailabilityParams struct {
-	StartDate openapi_types.Date `form:"startDate" json:"startDate"`
-	EndDate   openapi_types.Date `form:"endDate" json:"endDate"`
-}
-
-// UpdateAvailabilityJSONBody defines parameters for UpdateAvailability.
-type UpdateAvailabilityJSONBody struct {
-	Dates *[]CalendarDay `json:"dates,omitempty"`
-}
 
 // CreateBillingCheckoutJSONBody defines parameters for CreateBillingCheckout.
 type CreateBillingCheckoutJSONBody struct {
@@ -5087,32 +5493,10 @@ type ListReservationsParams struct {
 // ListReservationsParamsStatus defines parameters for ListReservations.
 type ListReservationsParamsStatus string
 
-// CreateReservationJSONBody defines parameters for CreateReservation.
-type CreateReservationJSONBody struct {
-	CheckIn        openapi_types.Date `json:"checkIn"`
-	CheckOut       openapi_types.Date `json:"checkOut"`
-	Currency       *string            `json:"currency,omitempty"`
-	GuestCount     *int               `json:"guestCount,omitempty"`
-	GuestEmail     *string            `json:"guestEmail,omitempty"`
-	GuestFirstName string             `json:"guestFirstName"`
-	GuestLastName  string             `json:"guestLastName"`
-	GuestPhone     *string            `json:"guestPhone,omitempty"`
-	PropertyId     string             `json:"propertyId"`
-	TotalPrice     *float32           `json:"totalPrice,omitempty"`
-}
-
 // GetReservationParams defines parameters for GetReservation.
 type GetReservationParams struct {
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
-}
-
-// UpdateReservationJSONBody defines parameters for UpdateReservation.
-type UpdateReservationJSONBody struct {
-	CheckIn    *openapi_types.Date `json:"checkIn,omitempty"`
-	CheckOut   *openapi_types.Date `json:"checkOut,omitempty"`
-	Status     *string             `json:"status,omitempty"`
-	TotalPrice *float32            `json:"totalPrice,omitempty"`
 }
 
 // ListReviewsParams defines parameters for ListReviews.
@@ -5195,38 +5579,29 @@ type ListWebhookDeliveriesParams struct {
 // ListWebhookDeliveriesParamsStatus defines parameters for ListWebhookDeliveries.
 type ListWebhookDeliveriesParamsStatus string
 
-// CreateStudioDeploymentJSONRequestBody defines body for CreateStudioDeployment for application/json ContentType.
-type CreateStudioDeploymentJSONRequestBody CreateStudioDeploymentJSONBody
-
-// GenerateStudioCompletionJSONRequestBody defines body for GenerateStudioCompletion for application/json ContentType.
-type GenerateStudioCompletionJSONRequestBody GenerateStudioCompletionJSONBody
-
-// CreateStudioProjectJSONRequestBody defines body for CreateStudioProject for application/json ContentType.
-type CreateStudioProjectJSONRequestBody CreateStudioProjectJSONBody
-
-// UpdateStudioProjectJSONRequestBody defines body for UpdateStudioProject for application/json ContentType.
-type UpdateStudioProjectJSONRequestBody UpdateStudioProjectJSONBody
-
-// UpsertStudioProjectFileJSONRequestBody defines body for UpsertStudioProjectFile for application/json ContentType.
-type UpsertStudioProjectFileJSONRequestBody UpsertStudioProjectFileJSONBody
-
-// CreateStudioProjectGenerationJSONRequestBody defines body for CreateStudioProjectGeneration for application/json ContentType.
-type CreateStudioProjectGenerationJSONRequestBody CreateStudioProjectGenerationJSONBody
-
-// CreateAiOperationJSONRequestBody defines body for CreateAiOperation for application/json ContentType.
-type CreateAiOperationJSONRequestBody = AIOperation
-
-// UpdateAvailabilityJSONRequestBody defines body for UpdateAvailability for application/json ContentType.
-type UpdateAvailabilityJSONRequestBody UpdateAvailabilityJSONBody
-
 // CreateBillingCheckoutJSONRequestBody defines body for CreateBillingCheckout for application/json ContentType.
 type CreateBillingCheckoutJSONRequestBody CreateBillingCheckoutJSONBody
+
+// MapAirbnbListingJSONRequestBody defines body for MapAirbnbListing for application/json ContentType.
+type MapAirbnbListingJSONRequestBody = MapAirbnbListingRequest
+
+// AirbnbListingActionJSONRequestBody defines body for AirbnbListingAction for application/json ContentType.
+type AirbnbListingActionJSONRequestBody = AirbnbListingActionRequest
+
+// UpdateAirbnbListingAvailabilityJSONRequestBody defines body for UpdateAirbnbListingAvailability for application/json ContentType.
+type UpdateAirbnbListingAvailabilityJSONRequestBody = AirbnbAvailabilityWriteRequest
+
+// UpdateAirbnbListingPricingJSONRequestBody defines body for UpdateAirbnbListingPricing for application/json ContentType.
+type UpdateAirbnbListingPricingJSONRequestBody = AirbnbPricingWriteRequest
 
 // EditAirbnbReviewJSONRequestBody defines body for EditAirbnbReview for application/json ContentType.
 type EditAirbnbReviewJSONRequestBody = AirbnbReview
 
 // RespondAirbnbReviewJSONRequestBody defines body for RespondAirbnbReview for application/json ContentType.
 type RespondAirbnbReviewJSONRequestBody RespondAirbnbReviewJSONBody
+
+// UpdateBookingAvailabilityJSONRequestBody defines body for UpdateBookingAvailability for application/json ContentType.
+type UpdateBookingAvailabilityJSONRequestBody = BookingAvailabilityUpdateRequest
 
 // UpdateBookingListingPricingJSONRequestBody defines body for UpdateBookingListingPricing for application/json ContentType.
 type UpdateBookingListingPricingJSONRequestBody = BookingPricingUpdateRequest
@@ -5261,6 +5636,9 @@ type BulkApplyPricingJSONRequestBody = BulkPricingRequest
 // UpdateListingActiveJSONRequestBody defines body for UpdateListingActive for application/json ContentType.
 type UpdateListingActiveJSONRequestBody = ListingActiveRequest
 
+// UpdateListingContentJSONRequestBody defines body for UpdateListingContent for application/json ContentType.
+type UpdateListingContentJSONRequestBody = ListingContentUpdateRequest
+
 // GenerateListingContentJSONRequestBody defines body for GenerateListingContent for application/json ContentType.
 type GenerateListingContentJSONRequestBody = ListingGenerateContentRequest
 
@@ -5272,12 +5650,6 @@ type UpdateListingPricingStrategyJSONRequestBody = ListingPricingStrategyInput
 
 // PublishListingToAirbnbJSONRequestBody defines body for PublishListingToAirbnb for application/json ContentType.
 type PublishListingToAirbnbJSONRequestBody = ListingPublishAirbnbRequest
-
-// CreateReservationJSONRequestBody defines body for CreateReservation for application/json ContentType.
-type CreateReservationJSONRequestBody CreateReservationJSONBody
-
-// UpdateReservationJSONRequestBody defines body for UpdateReservation for application/json ContentType.
-type UpdateReservationJSONRequestBody UpdateReservationJSONBody
 
 // CreateCustomSchemaJSONRequestBody defines body for CreateCustomSchema for application/json ContentType.
 type CreateCustomSchemaJSONRequestBody = CustomSchemaCreate
@@ -5375,6 +5747,254 @@ func (a BookingPricingResponse) MarshalJSON() ([]byte, error) {
 		}
 	}
 	return json.Marshal(object)
+}
+
+// AsBookingAvailabilityUpdateRequestPropertyId0 returns the union data inside the BookingAvailabilityUpdateRequest_PropertyId as a BookingAvailabilityUpdateRequestPropertyId0
+func (t BookingAvailabilityUpdateRequest_PropertyId) AsBookingAvailabilityUpdateRequestPropertyId0() (BookingAvailabilityUpdateRequestPropertyId0, error) {
+	var body BookingAvailabilityUpdateRequestPropertyId0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingAvailabilityUpdateRequestPropertyId0 overwrites any union data inside the BookingAvailabilityUpdateRequest_PropertyId as the provided BookingAvailabilityUpdateRequestPropertyId0
+func (t *BookingAvailabilityUpdateRequest_PropertyId) FromBookingAvailabilityUpdateRequestPropertyId0(v BookingAvailabilityUpdateRequestPropertyId0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingAvailabilityUpdateRequestPropertyId0 performs a merge with any union data inside the BookingAvailabilityUpdateRequest_PropertyId, using the provided BookingAvailabilityUpdateRequestPropertyId0
+func (t *BookingAvailabilityUpdateRequest_PropertyId) MergeBookingAvailabilityUpdateRequestPropertyId0(v BookingAvailabilityUpdateRequestPropertyId0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBookingAvailabilityUpdateRequestPropertyId1 returns the union data inside the BookingAvailabilityUpdateRequest_PropertyId as a BookingAvailabilityUpdateRequestPropertyId1
+func (t BookingAvailabilityUpdateRequest_PropertyId) AsBookingAvailabilityUpdateRequestPropertyId1() (BookingAvailabilityUpdateRequestPropertyId1, error) {
+	var body BookingAvailabilityUpdateRequestPropertyId1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingAvailabilityUpdateRequestPropertyId1 overwrites any union data inside the BookingAvailabilityUpdateRequest_PropertyId as the provided BookingAvailabilityUpdateRequestPropertyId1
+func (t *BookingAvailabilityUpdateRequest_PropertyId) FromBookingAvailabilityUpdateRequestPropertyId1(v BookingAvailabilityUpdateRequestPropertyId1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingAvailabilityUpdateRequestPropertyId1 performs a merge with any union data inside the BookingAvailabilityUpdateRequest_PropertyId, using the provided BookingAvailabilityUpdateRequestPropertyId1
+func (t *BookingAvailabilityUpdateRequest_PropertyId) MergeBookingAvailabilityUpdateRequestPropertyId1(v BookingAvailabilityUpdateRequestPropertyId1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t BookingAvailabilityUpdateRequest_PropertyId) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BookingAvailabilityUpdateRequest_PropertyId) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsBookingPricingRateUpdate returns the union data inside the BookingAvailabilityUpdateRequest_Updates_Item as a BookingPricingRateUpdate
+func (t BookingAvailabilityUpdateRequest_Updates_Item) AsBookingPricingRateUpdate() (BookingPricingRateUpdate, error) {
+	var body BookingPricingRateUpdate
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingPricingRateUpdate overwrites any union data inside the BookingAvailabilityUpdateRequest_Updates_Item as the provided BookingPricingRateUpdate
+func (t *BookingAvailabilityUpdateRequest_Updates_Item) FromBookingPricingRateUpdate(v BookingPricingRateUpdate) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingPricingRateUpdate performs a merge with any union data inside the BookingAvailabilityUpdateRequest_Updates_Item, using the provided BookingPricingRateUpdate
+func (t *BookingAvailabilityUpdateRequest_Updates_Item) MergeBookingPricingRateUpdate(v BookingPricingRateUpdate) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBookingAvailabilityUpdate returns the union data inside the BookingAvailabilityUpdateRequest_Updates_Item as a BookingAvailabilityUpdate
+func (t BookingAvailabilityUpdateRequest_Updates_Item) AsBookingAvailabilityUpdate() (BookingAvailabilityUpdate, error) {
+	var body BookingAvailabilityUpdate
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingAvailabilityUpdate overwrites any union data inside the BookingAvailabilityUpdateRequest_Updates_Item as the provided BookingAvailabilityUpdate
+func (t *BookingAvailabilityUpdateRequest_Updates_Item) FromBookingAvailabilityUpdate(v BookingAvailabilityUpdate) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingAvailabilityUpdate performs a merge with any union data inside the BookingAvailabilityUpdateRequest_Updates_Item, using the provided BookingAvailabilityUpdate
+func (t *BookingAvailabilityUpdateRequest_Updates_Item) MergeBookingAvailabilityUpdate(v BookingAvailabilityUpdate) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t BookingAvailabilityUpdateRequest_Updates_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BookingAvailabilityUpdateRequest_Updates_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsListingContentUpdateRequestAmenities0 returns the union data inside the ListingContentUpdateRequest_Amenities as a ListingContentUpdateRequestAmenities0
+func (t ListingContentUpdateRequest_Amenities) AsListingContentUpdateRequestAmenities0() (ListingContentUpdateRequestAmenities0, error) {
+	var body ListingContentUpdateRequestAmenities0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingContentUpdateRequestAmenities0 overwrites any union data inside the ListingContentUpdateRequest_Amenities as the provided ListingContentUpdateRequestAmenities0
+func (t *ListingContentUpdateRequest_Amenities) FromListingContentUpdateRequestAmenities0(v ListingContentUpdateRequestAmenities0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListingContentUpdateRequestAmenities0 performs a merge with any union data inside the ListingContentUpdateRequest_Amenities, using the provided ListingContentUpdateRequestAmenities0
+func (t *ListingContentUpdateRequest_Amenities) MergeListingContentUpdateRequestAmenities0(v ListingContentUpdateRequestAmenities0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsListingContentUpdateRequestAmenities1 returns the union data inside the ListingContentUpdateRequest_Amenities as a ListingContentUpdateRequestAmenities1
+func (t ListingContentUpdateRequest_Amenities) AsListingContentUpdateRequestAmenities1() (ListingContentUpdateRequestAmenities1, error) {
+	var body ListingContentUpdateRequestAmenities1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingContentUpdateRequestAmenities1 overwrites any union data inside the ListingContentUpdateRequest_Amenities as the provided ListingContentUpdateRequestAmenities1
+func (t *ListingContentUpdateRequest_Amenities) FromListingContentUpdateRequestAmenities1(v ListingContentUpdateRequestAmenities1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListingContentUpdateRequestAmenities1 performs a merge with any union data inside the ListingContentUpdateRequest_Amenities, using the provided ListingContentUpdateRequestAmenities1
+func (t *ListingContentUpdateRequest_Amenities) MergeListingContentUpdateRequestAmenities1(v ListingContentUpdateRequestAmenities1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ListingContentUpdateRequest_Amenities) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ListingContentUpdateRequest_Amenities) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsListingContentUpdateRequestPhotos0 returns the union data inside the ListingContentUpdateRequest_Photos_Item as a ListingContentUpdateRequestPhotos0
+func (t ListingContentUpdateRequest_Photos_Item) AsListingContentUpdateRequestPhotos0() (ListingContentUpdateRequestPhotos0, error) {
+	var body ListingContentUpdateRequestPhotos0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingContentUpdateRequestPhotos0 overwrites any union data inside the ListingContentUpdateRequest_Photos_Item as the provided ListingContentUpdateRequestPhotos0
+func (t *ListingContentUpdateRequest_Photos_Item) FromListingContentUpdateRequestPhotos0(v ListingContentUpdateRequestPhotos0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListingContentUpdateRequestPhotos0 performs a merge with any union data inside the ListingContentUpdateRequest_Photos_Item, using the provided ListingContentUpdateRequestPhotos0
+func (t *ListingContentUpdateRequest_Photos_Item) MergeListingContentUpdateRequestPhotos0(v ListingContentUpdateRequestPhotos0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsListingContentUpdateRequestPhotos1 returns the union data inside the ListingContentUpdateRequest_Photos_Item as a ListingContentUpdateRequestPhotos1
+func (t ListingContentUpdateRequest_Photos_Item) AsListingContentUpdateRequestPhotos1() (ListingContentUpdateRequestPhotos1, error) {
+	var body ListingContentUpdateRequestPhotos1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingContentUpdateRequestPhotos1 overwrites any union data inside the ListingContentUpdateRequest_Photos_Item as the provided ListingContentUpdateRequestPhotos1
+func (t *ListingContentUpdateRequest_Photos_Item) FromListingContentUpdateRequestPhotos1(v ListingContentUpdateRequestPhotos1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListingContentUpdateRequestPhotos1 performs a merge with any union data inside the ListingContentUpdateRequest_Photos_Item, using the provided ListingContentUpdateRequestPhotos1
+func (t *ListingContentUpdateRequest_Photos_Item) MergeListingContentUpdateRequestPhotos1(v ListingContentUpdateRequestPhotos1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ListingContentUpdateRequest_Photos_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ListingContentUpdateRequest_Photos_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
 }
 
 // AsReservationCreatedEvent returns the union data inside the WebhookEvent as a ReservationCreatedEvent
