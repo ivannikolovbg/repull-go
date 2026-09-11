@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.8 — 2026-09-11
+
+### Additive
+
+- **Regenerated against the live spec (170 → 174 operations).** Four write operations were added to the API as new methods on paths that already existed for `GET`, so the path count is unchanged at 124 and only the operation count moved:
+  - `CreateGuest` / `CreateGuestWithResponse` — `POST /v1/guests`
+  - `CreateReservation` / `CreateReservationWithResponse` — `POST /v1/reservations`
+  - `UpdateReservation` / `UpdateReservationWithResponse` — `PATCH /v1/reservations/{id}`
+  - `SendConversationMessage` / `SendConversationMessageWithResponse` — `POST /v1/conversations/{id}/messages`
+- All three creating calls accept `IdempotencyKey` on their `*Params` struct. Send a unique string per distinct request: a repeat with the same key replays the stored response for 24 hours, a reuse with a changed payload returns `422 idempotency_key_reused`, and a reuse while the first request is in flight returns `409 idempotency_key_in_use`.
+- No previously generated method was removed (229 → 237 `ClientWithResponses` methods).
+
 ## v0.2.7 — 2026-09-11
 
 ### Fix

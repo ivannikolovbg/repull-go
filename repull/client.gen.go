@@ -1527,6 +1527,48 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/conversations/{id}/messages (the `ListConversationMessages` operationId).
 	ListConversationMessages(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SendConversationMessageWithBody Send a message to the guest
+	//
+	// Sends a message to the guest on this conversation and records it in the thread.
+	//
+	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+	//
+	// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+	//
+	// ### Airbnb rewrites links — check `contentRewritten`
+	//
+	// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
+	//
+	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+	//
+	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
+	SendConversationMessageWithBody(ctx context.Context, id int, params *SendConversationMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SendConversationMessage Send a message to the guest
+	//
+	// Sends a message to the guest on this conversation and records it in the thread.
+	//
+	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+	//
+	// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+	//
+	// ### Airbnb rewrites links — check `contentRewritten`
+	//
+	// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
+	//
+	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+	//
+	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
+	SendConversationMessage(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListGuests List guests
 	//
 	// Cursor-paginated list of guests in the workspace. Walks `guests.id ASC` keyset for constant per-page cost regardless of how many guests the customer has. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
@@ -1537,6 +1579,36 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/guests (the `ListGuests` operationId).
 	ListGuests(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateGuestWithBody Create a guest
+	//
+	// Creates a guest in the workspace, with contact normalisation applied (phone digits, email lowercased) and each contact stored as its own record.
+	//
+	// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
+	//
+	// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/guests (the `CreateGuest` operationId).
+	CreateGuestWithBody(ctx context.Context, params *CreateGuestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateGuest Create a guest
+	//
+	// Creates a guest in the workspace, with contact normalisation applied (phone digits, email lowercased) and each contact stored as its own record.
+	//
+	// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
+	//
+	// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/guests (the `CreateGuest` operationId).
+	CreateGuest(ctx context.Context, params *CreateGuestParams, body CreateGuestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetGuest Get guest profile
 	//
@@ -2029,12 +2101,104 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/reservations (the `ListReservations` operationId).
 	ListReservations(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateReservationWithBody Create a reservation
+	//
+	// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+	//
+	// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+	//
+	// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+	//
+	// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+	//
+	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
+	CreateReservationWithBody(ctx context.Context, params *CreateReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateReservation Create a reservation
+	//
+	// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+	//
+	// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+	//
+	// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+	//
+	// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+	//
+	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
+	CreateReservation(ctx context.Context, params *CreateReservationParams, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetReservation Get reservation details
 	//
 	// Returns the full record for a single reservation, scoped to the authenticated workspace. Response shape is identical to a single row in `GET /v1/reservations` so SDK consumers can use the same type for both. Returns **404** if the id does not exist OR belongs to a different workspace — the API never differentiates the two so caller can't enumerate other workspaces' ids.
 	//
 	// Corresponds with GET /v1/reservations/{id} (the `GetReservation` operationId).
 	GetReservation(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateReservationWithBody Update a reservation
+	//
+	// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+	//
+	// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
+	//
+	// **Moving and re-dating in one call is one operation.** Send `listingId` together with `checkIn`/`checkOut` and it is applied as a single move, so the access code is re-issued once rather than twice.
+	//
+	// ### Fields this endpoint deliberately does NOT accept
+	//
+	// Each is rejected by name with the reason, never accepted and ignored:
+	//
+	// | Field | Why |
+	// |---|---|
+	// | `guest` / `guestDetails` | Guest name, email and phone live on the guest record. The underlying command has no branch for them, so accepting them would return a success that changed nothing. |
+	// | `pricing` / `totalPrice` / `currency` | Repricing writes the price breakdown, the pricing row and a pricing-history entry. It belongs to its own endpoint. |
+	// | `status` | Not a field. Cancelling, confirming and checking out are separate operations with materially different side effects — cancellation issues a credit refund and revokes access codes. |
+	// | `platform` | Immutable: it records where the booking actually originated. |
+	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
+	//
+	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
+	UpdateReservationWithBody(ctx context.Context, id int, params *UpdateReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateReservation Update a reservation
+	//
+	// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+	//
+	// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
+	//
+	// **Moving and re-dating in one call is one operation.** Send `listingId` together with `checkIn`/`checkOut` and it is applied as a single move, so the access code is re-issued once rather than twice.
+	//
+	// ### Fields this endpoint deliberately does NOT accept
+	//
+	// Each is rejected by name with the reason, never accepted and ignored:
+	//
+	// | Field | Why |
+	// |---|---|
+	// | `guest` / `guestDetails` | Guest name, email and phone live on the guest record. The underlying command has no branch for them, so accepting them would return a success that changed nothing. |
+	// | `pricing` / `totalPrice` / `currency` | Repricing writes the price breakdown, the pricing row and a pricing-history entry. It belongs to its own endpoint. |
+	// | `status` | Not a field. Cancelling, confirming and checking out are separate operations with materially different side effects — cancellation issues a credit refund and revokes access codes. |
+	// | `platform` | Immutable: it records where the booking actually originated. |
+	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
+	//
+	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
+	UpdateReservation(ctx context.Context, id int, params *UpdateReservationParams, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListReviews List reviews
 	//
@@ -5171,6 +5335,68 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 	return c.Client.Do(req)
 }
 
+// SendConversationMessageWithBody Send a message to the guest
+//
+// Sends a message to the guest on this conversation and records it in the thread.
+//
+// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+//
+// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+//
+// ### Airbnb rewrites links — check `contentRewritten`
+//
+// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
+//
+// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+//
+// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
+func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, params *SendConversationMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendConversationMessageRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SendConversationMessage Send a message to the guest
+//
+// Sends a message to the guest on this conversation and records it in the thread.
+//
+// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+//
+// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+//
+// ### Airbnb rewrites links — check `contentRewritten`
+//
+// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
+//
+// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+//
+// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
+func (c *Client) SendConversationMessage(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendConversationMessageRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListGuests List guests
 //
 // Cursor-paginated list of guests in the workspace. Walks `guests.id ASC` keyset for constant per-page cost regardless of how many guests the customer has. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
@@ -5182,6 +5408,56 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 // Corresponds with GET /v1/guests (the `ListGuests` operationId).
 func (c *Client) ListGuests(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListGuestsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateGuestWithBody Create a guest
+//
+// Creates a guest in the workspace, with contact normalisation applied (phone digits, email lowercased) and each contact stored as its own record.
+//
+// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
+//
+// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/guests (the `CreateGuest` operationId).
+func (c *Client) CreateGuestWithBody(ctx context.Context, params *CreateGuestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateGuestRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateGuest Create a guest
+//
+// Creates a guest in the workspace, with contact normalisation applied (phone digits, email lowercased) and each contact stored as its own record.
+//
+// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
+//
+// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/guests (the `CreateGuest` operationId).
+func (c *Client) CreateGuest(ctx context.Context, params *CreateGuestParams, body CreateGuestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateGuestRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6203,6 +6479,64 @@ func (c *Client) ListReservations(ctx context.Context, params *ListReservationsP
 	return c.Client.Do(req)
 }
 
+// CreateReservationWithBody Create a reservation
+//
+// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+//
+// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+//
+// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+//
+// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+//
+// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
+func (c *Client) CreateReservationWithBody(ctx context.Context, params *CreateReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReservationRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateReservation Create a reservation
+//
+// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+//
+// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+//
+// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+//
+// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+//
+// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
+func (c *Client) CreateReservation(ctx context.Context, params *CreateReservationParams, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReservationRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetReservation Get reservation details
 //
 // Returns the full record for a single reservation, scoped to the authenticated workspace. Response shape is identical to a single row in `GET /v1/reservations` so SDK consumers can use the same type for both. Returns **404** if the id does not exist OR belongs to a different workspace — the API never differentiates the two so caller can't enumerate other workspaces' ids.
@@ -6210,6 +6544,80 @@ func (c *Client) ListReservations(ctx context.Context, params *ListReservationsP
 // Corresponds with GET /v1/reservations/{id} (the `GetReservation` operationId).
 func (c *Client) GetReservation(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetReservationRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateReservationWithBody Update a reservation
+//
+// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+//
+// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
+//
+// **Moving and re-dating in one call is one operation.** Send `listingId` together with `checkIn`/`checkOut` and it is applied as a single move, so the access code is re-issued once rather than twice.
+//
+// ### Fields this endpoint deliberately does NOT accept
+//
+// Each is rejected by name with the reason, never accepted and ignored:
+//
+// | Field | Why |
+// |---|---|
+// | `guest` / `guestDetails` | Guest name, email and phone live on the guest record. The underlying command has no branch for them, so accepting them would return a success that changed nothing. |
+// | `pricing` / `totalPrice` / `currency` | Repricing writes the price breakdown, the pricing row and a pricing-history entry. It belongs to its own endpoint. |
+// | `status` | Not a field. Cancelling, confirming and checking out are separate operations with materially different side effects — cancellation issues a credit refund and revokes access codes. |
+// | `platform` | Immutable: it records where the booking actually originated. |
+// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
+//
+// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
+func (c *Client) UpdateReservationWithBody(ctx context.Context, id int, params *UpdateReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateReservationRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateReservation Update a reservation
+//
+// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+//
+// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
+//
+// **Moving and re-dating in one call is one operation.** Send `listingId` together with `checkIn`/`checkOut` and it is applied as a single move, so the access code is re-issued once rather than twice.
+//
+// ### Fields this endpoint deliberately does NOT accept
+//
+// Each is rejected by name with the reason, never accepted and ignored:
+//
+// | Field | Why |
+// |---|---|
+// | `guest` / `guestDetails` | Guest name, email and phone live on the guest record. The underlying command has no branch for them, so accepting them would return a success that changed nothing. |
+// | `pricing` / `totalPrice` / `currency` | Repricing writes the price breakdown, the pricing row and a pricing-history entry. It belongs to its own endpoint. |
+// | `status` | Not a field. Cancelling, confirming and checking out are separate operations with materially different side effects — cancellation issues a credit refund and revokes access codes. |
+// | `platform` | Immutable: it records where the booking actually originated. |
+// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
+//
+// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
+func (c *Client) UpdateReservation(ctx context.Context, id int, params *UpdateReservationParams, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateReservationRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -11411,6 +11819,68 @@ func NewListConversationMessagesRequest(server string, id int, params *ListConve
 	return req, nil
 }
 
+// NewSendConversationMessageRequest calls the generic SendConversationMessage builder with application/json body
+func NewSendConversationMessageRequest(server string, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSendConversationMessageRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewSendConversationMessageRequestWithBody constructs an http.Request for the SendConversationMessage method, with any body, and a specified content type
+func NewSendConversationMessageRequestWithBody(server string, id int, params *SendConversationMessageParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewListGuestsRequest constructs an http.Request for the ListGuests method
 func NewListGuestsRequest(server string, params *ListGuestsParams) (*http.Request, error) {
 	var err error
@@ -11533,6 +12003,61 @@ func NewListGuestsRequest(server string, params *ListGuestsParams) (*http.Reques
 			}
 
 			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewCreateGuestRequest calls the generic CreateGuest builder with application/json body
+func NewCreateGuestRequest(server string, params *CreateGuestParams, body CreateGuestJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateGuestRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateGuestRequestWithBody constructs an http.Request for the CreateGuest method, with any body, and a specified content type
+func NewCreateGuestRequestWithBody(server string, params *CreateGuestParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/guests")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
 		}
 
 	}
@@ -14162,6 +14687,61 @@ func NewListReservationsRequest(server string, params *ListReservationsParams) (
 	return req, nil
 }
 
+// NewCreateReservationRequest calls the generic CreateReservation builder with application/json body
+func NewCreateReservationRequest(server string, params *CreateReservationParams, body CreateReservationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateReservationRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateReservationRequestWithBody constructs an http.Request for the CreateReservation method, with any body, and a specified content type
+func NewCreateReservationRequestWithBody(server string, params *CreateReservationParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reservations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewGetReservationRequest constructs an http.Request for the GetReservation method
 func NewGetReservationRequest(server string, id int, params *GetReservationParams) (*http.Request, error) {
 	var err error
@@ -14204,6 +14784,68 @@ func NewGetReservationRequest(server string, id int, params *GetReservationParam
 			}
 
 			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewUpdateReservationRequest calls the generic UpdateReservation builder with application/json body
+func NewUpdateReservationRequest(server string, id int, params *UpdateReservationParams, body UpdateReservationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateReservationRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewUpdateReservationRequestWithBody constructs an http.Request for the UpdateReservation method, with any body, and a specified content type
+func NewUpdateReservationRequestWithBody(server string, id int, params *UpdateReservationParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reservations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
 		}
 
 	}
@@ -17011,6 +17653,48 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/conversations/{id}/messages (the `ListConversationMessages` operationId).
 	ListConversationMessagesWithResponse(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*ListConversationMessagesClientResponse, error)
 
+	// SendConversationMessageWithBodyWithResponse Send a message to the guest
+	//
+	// Sends a message to the guest on this conversation and records it in the thread.
+	//
+	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+	//
+	// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+	//
+	// ### Airbnb rewrites links — check `contentRewritten`
+	//
+	// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
+	//
+	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+	//
+	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
+	SendConversationMessageWithBodyWithResponse(ctx context.Context, id int, params *SendConversationMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendConversationMessageClientResponse, error)
+
+	// SendConversationMessageWithResponse Send a message to the guest
+	//
+	// Sends a message to the guest on this conversation and records it in the thread.
+	//
+	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+	//
+	// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+	//
+	// ### Airbnb rewrites links — check `contentRewritten`
+	//
+	// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
+	//
+	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+	//
+	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
+	SendConversationMessageWithResponse(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*SendConversationMessageClientResponse, error)
+
 	// ListGuestsWithResponse List guests
 	//
 	// Cursor-paginated list of guests in the workspace. Walks `guests.id ASC` keyset for constant per-page cost regardless of how many guests the customer has. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
@@ -17023,6 +17707,36 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/guests (the `ListGuests` operationId).
 	ListGuestsWithResponse(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*ListGuestsClientResponse, error)
+
+	// CreateGuestWithBodyWithResponse Create a guest
+	//
+	// Creates a guest in the workspace, with contact normalisation applied (phone digits, email lowercased) and each contact stored as its own record.
+	//
+	// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
+	//
+	// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/guests (the `CreateGuest` operationId).
+	CreateGuestWithBodyWithResponse(ctx context.Context, params *CreateGuestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateGuestClientResponse, error)
+
+	// CreateGuestWithResponse Create a guest
+	//
+	// Creates a guest in the workspace, with contact normalisation applied (phone digits, email lowercased) and each contact stored as its own record.
+	//
+	// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
+	//
+	// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/guests (the `CreateGuest` operationId).
+	CreateGuestWithResponse(ctx context.Context, params *CreateGuestParams, body CreateGuestJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateGuestClientResponse, error)
 
 	// GetGuestWithResponse Get guest profile
 	//
@@ -17575,6 +18289,44 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/reservations (the `ListReservations` operationId).
 	ListReservationsWithResponse(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*ListReservationsClientResponse, error)
 
+	// CreateReservationWithBodyWithResponse Create a reservation
+	//
+	// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+	//
+	// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+	//
+	// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+	//
+	// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+	//
+	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
+	CreateReservationWithBodyWithResponse(ctx context.Context, params *CreateReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error)
+
+	// CreateReservationWithResponse Create a reservation
+	//
+	// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+	//
+	// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+	//
+	// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+	//
+	// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+	//
+	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
+	CreateReservationWithResponse(ctx context.Context, params *CreateReservationParams, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error)
+
 	// GetReservationWithResponse Get reservation details
 	//
 	// Returns the full record for a single reservation, scoped to the authenticated workspace. Response shape is identical to a single row in `GET /v1/reservations` so SDK consumers can use the same type for both. Returns **404** if the id does not exist OR belongs to a different workspace — the API never differentiates the two so caller can't enumerate other workspaces' ids.
@@ -17583,6 +18335,60 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/reservations/{id} (the `GetReservation` operationId).
 	GetReservationWithResponse(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*GetReservationClientResponse, error)
+
+	// UpdateReservationWithBodyWithResponse Update a reservation
+	//
+	// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+	//
+	// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
+	//
+	// **Moving and re-dating in one call is one operation.** Send `listingId` together with `checkIn`/`checkOut` and it is applied as a single move, so the access code is re-issued once rather than twice.
+	//
+	// ### Fields this endpoint deliberately does NOT accept
+	//
+	// Each is rejected by name with the reason, never accepted and ignored:
+	//
+	// | Field | Why |
+	// |---|---|
+	// | `guest` / `guestDetails` | Guest name, email and phone live on the guest record. The underlying command has no branch for them, so accepting them would return a success that changed nothing. |
+	// | `pricing` / `totalPrice` / `currency` | Repricing writes the price breakdown, the pricing row and a pricing-history entry. It belongs to its own endpoint. |
+	// | `status` | Not a field. Cancelling, confirming and checking out are separate operations with materially different side effects — cancellation issues a credit refund and revokes access codes. |
+	// | `platform` | Immutable: it records where the booking actually originated. |
+	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
+	//
+	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
+	UpdateReservationWithBodyWithResponse(ctx context.Context, id int, params *UpdateReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error)
+
+	// UpdateReservationWithResponse Update a reservation
+	//
+	// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+	//
+	// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
+	//
+	// **Moving and re-dating in one call is one operation.** Send `listingId` together with `checkIn`/`checkOut` and it is applied as a single move, so the access code is re-issued once rather than twice.
+	//
+	// ### Fields this endpoint deliberately does NOT accept
+	//
+	// Each is rejected by name with the reason, never accepted and ignored:
+	//
+	// | Field | Why |
+	// |---|---|
+	// | `guest` / `guestDetails` | Guest name, email and phone live on the guest record. The underlying command has no branch for them, so accepting them would return a success that changed nothing. |
+	// | `pricing` / `totalPrice` / `currency` | Repricing writes the price breakdown, the pricing row and a pricing-history entry. It belongs to its own endpoint. |
+	// | `status` | Not a field. Cancelling, confirming and checking out are separate operations with materially different side effects — cancellation issues a credit refund and revokes access codes. |
+	// | `platform` | Immutable: it records where the booking actually originated. |
+	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
+	//
+	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
+	UpdateReservationWithResponse(ctx context.Context, id int, params *UpdateReservationParams, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error)
 
 	// ListReviewsWithResponse List reviews
 	//
@@ -23772,6 +24578,75 @@ func (r ListConversationMessagesClientResponse) ContentType() string {
 	return ""
 }
 
+type SendConversationMessageClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *SendMessageResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SendConversationMessageClientResponse) GetJSON200() *SendMessageResponse {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SendConversationMessageClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SendConversationMessageClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SendConversationMessageClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SendConversationMessageClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r SendConversationMessageClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SendConversationMessageClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SendConversationMessageClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SendConversationMessageClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListGuestsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -23835,6 +24710,75 @@ func (r ListGuestsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ListGuestsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateGuestClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GuestCreateResponse
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *GuestCreateResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateGuestClientResponse) GetJSON200() *GuestCreateResponse {
+	return r.JSON200
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateGuestClientResponse) GetJSON201() *GuestCreateResponse {
+	return r.JSON201
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateGuestClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateGuestClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateGuestClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateGuestClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateGuestClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateGuestClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateGuestClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -26144,6 +27088,75 @@ func (r ListReservationsClientResponse) ContentType() string {
 	return ""
 }
 
+type CreateReservationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *ReservationCreateResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateReservationClientResponse) GetJSON201() *ReservationCreateResponse {
+	return r.JSON201
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateReservationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateReservationClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateReservationClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateReservationClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateReservationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateReservationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateReservationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateReservationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetReservationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -26207,6 +27220,75 @@ func (r GetReservationClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetReservationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateReservationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ReservationUpdateResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateReservationClientResponse) GetJSON200() *ReservationUpdateResponse {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateReservationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateReservationClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateReservationClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r UpdateReservationClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateReservationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateReservationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateReservationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateReservationClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -30008,6 +31090,60 @@ func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.C
 	return ParseListConversationMessagesClientResponse(rsp)
 }
 
+// SendConversationMessageWithBodyWithResponse Send a message to the guest
+//
+// Sends a message to the guest on this conversation and records it in the thread.
+//
+// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+//
+// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+//
+// ### Airbnb rewrites links — check `contentRewritten`
+//
+// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
+//
+// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+//
+// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
+func (c *ClientWithResponses) SendConversationMessageWithBodyWithResponse(ctx context.Context, id int, params *SendConversationMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendConversationMessageClientResponse, error) {
+	rsp, err := c.SendConversationMessageWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendConversationMessageClientResponse(rsp)
+}
+
+// SendConversationMessageWithResponse Send a message to the guest
+//
+// Sends a message to the guest on this conversation and records it in the thread.
+//
+// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+//
+// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+//
+// ### Airbnb rewrites links — check `contentRewritten`
+//
+// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
+//
+// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+//
+// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
+func (c *ClientWithResponses) SendConversationMessageWithResponse(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*SendConversationMessageClientResponse, error) {
+	rsp, err := c.SendConversationMessage(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendConversationMessageClientResponse(rsp)
+}
+
 // ListGuestsWithResponse List guests
 //
 // Cursor-paginated list of guests in the workspace. Walks `guests.id ASC` keyset for constant per-page cost regardless of how many guests the customer has. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
@@ -30025,6 +31161,48 @@ func (c *ClientWithResponses) ListGuestsWithResponse(ctx context.Context, params
 		return nil, err
 	}
 	return ParseListGuestsClientResponse(rsp)
+}
+
+// CreateGuestWithBodyWithResponse Create a guest
+//
+// Creates a guest in the workspace, with contact normalisation applied (phone digits, email lowercased) and each contact stored as its own record.
+//
+// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
+//
+// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/guests (the `CreateGuest` operationId).
+func (c *ClientWithResponses) CreateGuestWithBodyWithResponse(ctx context.Context, params *CreateGuestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateGuestClientResponse, error) {
+	rsp, err := c.CreateGuestWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateGuestClientResponse(rsp)
+}
+
+// CreateGuestWithResponse Create a guest
+//
+// Creates a guest in the workspace, with contact normalisation applied (phone digits, email lowercased) and each contact stored as its own record.
+//
+// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
+//
+// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/guests (the `CreateGuest` operationId).
+func (c *ClientWithResponses) CreateGuestWithResponse(ctx context.Context, params *CreateGuestParams, body CreateGuestJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateGuestClientResponse, error) {
+	rsp, err := c.CreateGuest(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateGuestClientResponse(rsp)
 }
 
 // GetGuestWithResponse Get guest profile
@@ -30890,6 +32068,56 @@ func (c *ClientWithResponses) ListReservationsWithResponse(ctx context.Context, 
 	return ParseListReservationsClientResponse(rsp)
 }
 
+// CreateReservationWithBodyWithResponse Create a reservation
+//
+// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+//
+// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+//
+// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+//
+// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+//
+// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
+func (c *ClientWithResponses) CreateReservationWithBodyWithResponse(ctx context.Context, params *CreateReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error) {
+	rsp, err := c.CreateReservationWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateReservationClientResponse(rsp)
+}
+
+// CreateReservationWithResponse Create a reservation
+//
+// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+//
+// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+//
+// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+//
+// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+//
+// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
+func (c *ClientWithResponses) CreateReservationWithResponse(ctx context.Context, params *CreateReservationParams, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error) {
+	rsp, err := c.CreateReservation(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateReservationClientResponse(rsp)
+}
+
 // GetReservationWithResponse Get reservation details
 //
 // Returns the full record for a single reservation, scoped to the authenticated workspace. Response shape is identical to a single row in `GET /v1/reservations` so SDK consumers can use the same type for both. Returns **404** if the id does not exist OR belongs to a different workspace — the API never differentiates the two so caller can't enumerate other workspaces' ids.
@@ -30903,6 +32131,72 @@ func (c *ClientWithResponses) GetReservationWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseGetReservationClientResponse(rsp)
+}
+
+// UpdateReservationWithBodyWithResponse Update a reservation
+//
+// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+//
+// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
+//
+// **Moving and re-dating in one call is one operation.** Send `listingId` together with `checkIn`/`checkOut` and it is applied as a single move, so the access code is re-issued once rather than twice.
+//
+// ### Fields this endpoint deliberately does NOT accept
+//
+// Each is rejected by name with the reason, never accepted and ignored:
+//
+// | Field | Why |
+// |---|---|
+// | `guest` / `guestDetails` | Guest name, email and phone live on the guest record. The underlying command has no branch for them, so accepting them would return a success that changed nothing. |
+// | `pricing` / `totalPrice` / `currency` | Repricing writes the price breakdown, the pricing row and a pricing-history entry. It belongs to its own endpoint. |
+// | `status` | Not a field. Cancelling, confirming and checking out are separate operations with materially different side effects — cancellation issues a credit refund and revokes access codes. |
+// | `platform` | Immutable: it records where the booking actually originated. |
+// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
+//
+// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
+func (c *ClientWithResponses) UpdateReservationWithBodyWithResponse(ctx context.Context, id int, params *UpdateReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error) {
+	rsp, err := c.UpdateReservationWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateReservationClientResponse(rsp)
+}
+
+// UpdateReservationWithResponse Update a reservation
+//
+// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+//
+// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
+//
+// **Moving and re-dating in one call is one operation.** Send `listingId` together with `checkIn`/`checkOut` and it is applied as a single move, so the access code is re-issued once rather than twice.
+//
+// ### Fields this endpoint deliberately does NOT accept
+//
+// Each is rejected by name with the reason, never accepted and ignored:
+//
+// | Field | Why |
+// |---|---|
+// | `guest` / `guestDetails` | Guest name, email and phone live on the guest record. The underlying command has no branch for them, so accepting them would return a success that changed nothing. |
+// | `pricing` / `totalPrice` / `currency` | Repricing writes the price breakdown, the pricing row and a pricing-history entry. It belongs to its own endpoint. |
+// | `status` | Not a field. Cancelling, confirming and checking out are separate operations with materially different side effects — cancellation issues a credit refund and revokes access codes. |
+// | `platform` | Immutable: it records where the booking actually originated. |
+// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
+//
+// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
+func (c *ClientWithResponses) UpdateReservationWithResponse(ctx context.Context, id int, params *UpdateReservationParams, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error) {
+	rsp, err := c.UpdateReservation(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateReservationClientResponse(rsp)
 }
 
 // ListReviewsWithResponse List reviews
@@ -35662,6 +36956,60 @@ func ParseListConversationMessagesClientResponse(rsp *http.Response) (*ListConve
 	return response, nil
 }
 
+// ParseSendConversationMessageClientResponse parses an HTTP response from a SendConversationMessageWithResponse call
+func ParseSendConversationMessageClientResponse(rsp *http.Response) (*SendConversationMessageClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SendConversationMessageClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SendMessageResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListGuestsClientResponse parses an HTTP response from a ListGuestsWithResponse call
 func ParseListGuestsClientResponse(rsp *http.Response) (*ListGuestsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -35689,6 +37037,60 @@ func ParseListGuestsClientResponse(rsp *http.Response) (*ListGuestsClientRespons
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateGuestClientResponse parses an HTTP response from a CreateGuestWithResponse call
+func ParseCreateGuestClientResponse(rsp *http.Response) (*CreateGuestClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateGuestClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GuestCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest GuestCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
@@ -37410,6 +38812,60 @@ func ParseListReservationsClientResponse(rsp *http.Response) (*ListReservationsC
 	return response, nil
 }
 
+// ParseCreateReservationClientResponse parses an HTTP response from a CreateReservationWithResponse call
+func ParseCreateReservationClientResponse(rsp *http.Response) (*CreateReservationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateReservationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ReservationCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetReservationClientResponse parses an HTTP response from a GetReservationWithResponse call
 func ParseGetReservationClientResponse(rsp *http.Response) (*GetReservationClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -37440,6 +38896,60 @@ func ParseGetReservationClientResponse(rsp *http.Response) (*GetReservationClien
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateReservationClientResponse parses an HTTP response from a UpdateReservationWithResponse call
+func ParseUpdateReservationClientResponse(rsp *http.Response) (*UpdateReservationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateReservationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ReservationUpdateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

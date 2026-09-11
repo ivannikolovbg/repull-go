@@ -582,19 +582,19 @@ func (e ConnectProviderConnectPattern) Valid() bool {
 
 // Defines values for ConnectProviderStatus.
 const (
-	ConnectProviderStatusBeta       ConnectProviderStatus = "beta"
-	ConnectProviderStatusComingSoon ConnectProviderStatus = "coming-soon"
-	ConnectProviderStatusLive       ConnectProviderStatus = "live"
+	Beta       ConnectProviderStatus = "beta"
+	ComingSoon ConnectProviderStatus = "coming-soon"
+	Live       ConnectProviderStatus = "live"
 )
 
 // Valid indicates whether the value is a known member of the ConnectProviderStatus enum.
 func (e ConnectProviderStatus) Valid() bool {
 	switch e {
-	case ConnectProviderStatusBeta:
+	case Beta:
 		return true
-	case ConnectProviderStatusComingSoon:
+	case ComingSoon:
 		return true
-	case ConnectProviderStatusLive:
+	case Live:
 		return true
 	default:
 		return false
@@ -727,6 +727,24 @@ func (e ConversationDetailStatus) Valid() bool {
 	case ConversationDetailStatusArchived:
 		return true
 	case ConversationDetailStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GuestCreateResponseContactsType.
+const (
+	GuestCreateResponseContactsTypeEmail GuestCreateResponseContactsType = "email"
+	GuestCreateResponseContactsTypePhone GuestCreateResponseContactsType = "phone"
+)
+
+// Valid indicates whether the value is a known member of the GuestCreateResponseContactsType enum.
+func (e GuestCreateResponseContactsType) Valid() bool {
+	switch e {
+	case GuestCreateResponseContactsTypeEmail:
+		return true
+	case GuestCreateResponseContactsTypePhone:
 		return true
 	default:
 		return false
@@ -1191,16 +1209,16 @@ func (e MarketMyListingType) Valid() bool {
 
 // Defines values for MessageDirection.
 const (
-	Inbound  MessageDirection = "inbound"
-	Outbound MessageDirection = "outbound"
+	MessageDirectionInbound  MessageDirection = "inbound"
+	MessageDirectionOutbound MessageDirection = "outbound"
 )
 
 // Valid indicates whether the value is a known member of the MessageDirection enum.
 func (e MessageDirection) Valid() bool {
 	switch e {
-	case Inbound:
+	case MessageDirectionInbound:
 		return true
-	case Outbound:
+	case MessageDirectionOutbound:
 		return true
 	default:
 		return false
@@ -1432,6 +1450,27 @@ func (e ReservationCancelledPayloadCancelledBy) Valid() bool {
 	}
 }
 
+// Defines values for ReservationCreateRequestPlatform.
+const (
+	ReservationCreateRequestPlatformDirect  ReservationCreateRequestPlatform = "direct"
+	ReservationCreateRequestPlatformOwner   ReservationCreateRequestPlatform = "owner"
+	ReservationCreateRequestPlatformWebsite ReservationCreateRequestPlatform = "website"
+)
+
+// Valid indicates whether the value is a known member of the ReservationCreateRequestPlatform enum.
+func (e ReservationCreateRequestPlatform) Valid() bool {
+	switch e {
+	case ReservationCreateRequestPlatformDirect:
+		return true
+	case ReservationCreateRequestPlatformOwner:
+		return true
+	case ReservationCreateRequestPlatformWebsite:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationCreatedEventType.
 const (
 	ReservationCreatedEventTypeReservationCreated ReservationCreatedEventType = "reservation.created"
@@ -1588,51 +1627,42 @@ func (e SelectProviderResponsePattern) Valid() bool {
 	}
 }
 
-// Defines values for StudioDeploymentStatus.
+// Defines values for SendMessageRequestChannel.
 const (
-	StudioDeploymentStatusBuilding     StudioDeploymentStatus = "building"
-	StudioDeploymentStatusFailed       StudioDeploymentStatus = "failed"
-	StudioDeploymentStatusLive         StudioDeploymentStatus = "live"
-	StudioDeploymentStatusProvisioning StudioDeploymentStatus = "provisioning"
-	StudioDeploymentStatusSuspended    StudioDeploymentStatus = "suspended"
+	SendMessageRequestChannelAirbnb  SendMessageRequestChannel = "airbnb"
+	SendMessageRequestChannelBooking SendMessageRequestChannel = "booking"
+	SendMessageRequestChannelEmail   SendMessageRequestChannel = "email"
+	SendMessageRequestChannelSms     SendMessageRequestChannel = "sms"
+	SendMessageRequestChannelWebsite SendMessageRequestChannel = "website"
 )
 
-// Valid indicates whether the value is a known member of the StudioDeploymentStatus enum.
-func (e StudioDeploymentStatus) Valid() bool {
+// Valid indicates whether the value is a known member of the SendMessageRequestChannel enum.
+func (e SendMessageRequestChannel) Valid() bool {
 	switch e {
-	case StudioDeploymentStatusBuilding:
+	case SendMessageRequestChannelAirbnb:
 		return true
-	case StudioDeploymentStatusFailed:
+	case SendMessageRequestChannelBooking:
 		return true
-	case StudioDeploymentStatusLive:
+	case SendMessageRequestChannelEmail:
 		return true
-	case StudioDeploymentStatusProvisioning:
+	case SendMessageRequestChannelSms:
 		return true
-	case StudioDeploymentStatusSuspended:
+	case SendMessageRequestChannelWebsite:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for StudioProjectStatus.
+// Defines values for SendMessageResponseDirection.
 const (
-	StudioProjectStatusArchived StudioProjectStatus = "archived"
-	StudioProjectStatusBuilding StudioProjectStatus = "building"
-	StudioProjectStatusDraft    StudioProjectStatus = "draft"
-	StudioProjectStatusLive     StudioProjectStatus = "live"
+	SendMessageResponseDirectionOutbound SendMessageResponseDirection = "outbound"
 )
 
-// Valid indicates whether the value is a known member of the StudioProjectStatus enum.
-func (e StudioProjectStatus) Valid() bool {
+// Valid indicates whether the value is a known member of the SendMessageResponseDirection enum.
+func (e SendMessageResponseDirection) Valid() bool {
 	switch e {
-	case StudioProjectStatusArchived:
-		return true
-	case StudioProjectStatusBuilding:
-		return true
-	case StudioProjectStatusDraft:
-		return true
-	case StudioProjectStatusLive:
+	case SendMessageResponseDirectionOutbound:
 		return true
 	default:
 		return false
@@ -4080,6 +4110,59 @@ type GuestContact struct {
 	Verified *bool   `json:"verified,omitempty"`
 }
 
+// GuestCreateRequest defines model for GuestCreateRequest.
+type GuestCreateRequest struct {
+	// Currency Example: GBP
+	Currency *string `json:"currency,omitempty"`
+
+	// Email Example: ada@example.com
+	Email *openapi_types.Email `json:"email,omitempty"`
+
+	// FirstName Example: Ada
+	FirstName          string `json:"firstName"`
+	IsBusinessTraveler *bool  `json:"isBusinessTraveler,omitempty"`
+
+	// Language BCP-47 tag.
+	//
+	// Example: en-GB
+	Language *string `json:"language,omitempty"`
+
+	// LastName Example: Lovelace
+	LastName *string `json:"lastName,omitempty"`
+
+	// Phone E.164 preferred. Stored normalised.
+	//
+	// Example: +14035551234
+	Phone *string `json:"phone,omitempty"`
+}
+
+// GuestCreateResponse defines model for GuestCreateResponse.
+type GuestCreateResponse struct {
+	// Contacts One entry per stored contact. Email and phone are separate records.
+	Contacts *[]struct {
+		IsPrimary *bool                            `json:"isPrimary,omitempty"`
+		Type      *GuestCreateResponseContactsType `json:"type,omitempty"`
+		Value     *string                          `json:"value,omitempty"`
+	} `json:"contacts,omitempty"`
+
+	// Created `true` when a new guest was written, `false` when an existing guest matched on email/phone plus name. Read this rather than assuming a 2xx means a new record.
+	Created   *bool      `json:"created,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	Currency  *string    `json:"currency,omitempty"`
+	FirstName *string    `json:"firstName,omitempty"`
+
+	// Id Pass to `GET /v1/guests/{id}` for the full profile.
+	//
+	// Example: 91234
+	Id                 *int    `json:"id,omitempty"`
+	IsBusinessTraveler *bool   `json:"isBusinessTraveler,omitempty"`
+	Language           *string `json:"language,omitempty"`
+	LastName           *string `json:"lastName,omitempty"`
+}
+
+// GuestCreateResponseContactsType defines model for GuestCreateResponse.Contacts.Type.
+type GuestCreateResponseContactsType string
+
 // GuestFlag A risk/operational flag attached to a guest profile (e.g. blacklist, do-not-host, VIP). Severity comes from main vanio's flag taxonomy.
 type GuestFlag struct {
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -5852,6 +5935,79 @@ type ReservationCancelledPayload struct {
 // Example: guest
 type ReservationCancelledPayloadCancelledBy string
 
+// ReservationCreateRequest defines model for ReservationCreateRequest.
+type ReservationCreateRequest struct {
+	// CheckIn Example: 2026-10-01
+	CheckIn openapi_types.Date `json:"checkIn"`
+
+	// CheckInTime Example: 16:00
+	CheckInTime *string `json:"checkInTime,omitempty"`
+
+	// CheckOut Must be after `checkIn`.
+	//
+	// Example: 2026-10-05
+	CheckOut openapi_types.Date `json:"checkOut"`
+
+	// CheckOutTime Example: 10:00
+	CheckOutTime *string `json:"checkOutTime,omitempty"`
+
+	// Currency Example: USD
+	Currency *string `json:"currency,omitempty"`
+
+	// Guest The guest on a new reservation. Matched against existing guests on email (then phone) plus name, so repeat guests are not duplicated.
+	Guest ReservationGuestInput `json:"guest"`
+
+	// GuestCount Example: 2
+	GuestCount *int `json:"guestCount,omitempty"`
+
+	// GuestId Attach an existing guest instead of matching/creating one. Must belong to this workspace.
+	//
+	// Example: 91234
+	GuestId *int `json:"guestId,omitempty"`
+
+	// ListingId Internal Repull property id — see `GET /v1/properties`.
+	//
+	// Example: 4118
+	ListingId int `json:"listingId"`
+
+	// Platform OTA platforms are deliberately absent — those reservations are owned by the channel and arrive through sync.
+	Platform *ReservationCreateRequestPlatform `json:"platform,omitempty"`
+
+	// Status Lifecycle status to open the reservation in. Defaults to confirmed.
+	Status *string `json:"status,omitempty"`
+}
+
+// ReservationCreateRequestPlatform OTA platforms are deliberately absent — those reservations are owned by the channel and arrive through sync.
+type ReservationCreateRequestPlatform string
+
+// ReservationCreateResponse defines model for ReservationCreateResponse.
+type ReservationCreateResponse struct {
+	CheckIn  *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckOut *openapi_types.Date `json:"checkOut,omitempty"`
+
+	// ConfirmationCode Example: DIR-8H2K4N
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+	Currency         *string `json:"currency,omitempty"`
+	GuestId          *int    `json:"guestId,omitempty"`
+
+	// Id Pass to `GET /v1/reservations/{id}` for the full record.
+	//
+	// Example: 215708
+	Id *int `json:"id,omitempty"`
+
+	// ListingId Example: 4118
+	ListingId *int `json:"listingId,omitempty"`
+
+	// Platform Example: direct
+	Platform *string `json:"platform,omitempty"`
+
+	// Status Example: accept
+	Status *string `json:"status,omitempty"`
+
+	// TotalPrice The price the pricing engine derived for the stay. Reservations created through this endpoint are NOT priced from the request — see the operation description.
+	TotalPrice *float32 `json:"totalPrice,omitempty"`
+}
+
 // ReservationCreatedEvent defines model for ReservationCreatedEvent.
 type ReservationCreatedEvent struct {
 	// ApiVersion Example: 2026-04
@@ -5920,6 +6076,23 @@ type ReservationGuestFinancials struct {
 	//
 	// Example: 739.32
 	TotalPrice *float32 `json:"totalPrice,omitempty"`
+}
+
+// ReservationGuestInput The guest on a new reservation. Matched against existing guests on email (then phone) plus name, so repeat guests are not duplicated.
+type ReservationGuestInput struct {
+	// Email Example: ada@example.com
+	Email *openapi_types.Email `json:"email,omitempty"`
+
+	// FirstName Example: Ada
+	FirstName string `json:"firstName"`
+
+	// LastName Example: Lovelace
+	LastName *string `json:"lastName,omitempty"`
+
+	// Phone E.164 preferred.
+	//
+	// Example: +14035551234
+	Phone *string `json:"phone,omitempty"`
 }
 
 // ReservationHostFinancials HOST-side view of the stay — what it looks like on the host ledger. Projected from the reservation's own stored price breakdown, so it is available on every channel (Airbnb, Booking.com, VRBO, direct, owner), not just Airbnb.
@@ -6054,6 +6227,48 @@ type ReservationPrimaryGuest struct {
 
 	// Phone Primary phone contact (or first non-primary if no primary set).
 	Phone *string `json:"phone,omitempty"`
+}
+
+// ReservationUpdateRequest At least one field is required. Guest identity, pricing, `status`, `platform` and notes are rejected by name — see the operation description for why each is excluded.
+type ReservationUpdateRequest struct {
+	// CheckIn Example: 2026-10-02
+	CheckIn *openapi_types.Date `json:"checkIn,omitempty"`
+
+	// CheckInTime Example: 16:00
+	CheckInTime *string `json:"checkInTime,omitempty"`
+
+	// CheckOut Example: 2026-10-07
+	CheckOut *openapi_types.Date `json:"checkOut,omitempty"`
+
+	// CheckOutTime Example: 10:00
+	CheckOutTime *string `json:"checkOutTime,omitempty"`
+
+	// GuestCount Example: 3
+	GuestCount *int `json:"guestCount,omitempty"`
+
+	// ListingId Move the reservation to another property in this workspace. Combined with dates, it is applied as ONE move so the access code is re-issued once.
+	//
+	// Example: 4119
+	ListingId *int `json:"listingId,omitempty"`
+}
+
+// ReservationUpdateResponse defines model for ReservationUpdateResponse.
+type ReservationUpdateResponse struct {
+	// Changed The fields this request actually changed.
+	//
+	// Example: ["checkOut"]
+	Changed          *[]string           `json:"changed,omitempty"`
+	CheckIn          *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckInTime      *string             `json:"checkInTime,omitempty"`
+	CheckOut         *openapi_types.Date `json:"checkOut,omitempty"`
+	CheckOutTime     *string             `json:"checkOutTime,omitempty"`
+	ConfirmationCode *string             `json:"confirmationCode,omitempty"`
+	Id               *int                `json:"id,omitempty"`
+	ListingId        *int                `json:"listingId,omitempty"`
+
+	// Status A move forces the reservation to a confirmed status — read it back rather than assuming it is unchanged.
+	Status    *string    `json:"status,omitempty"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
 // ReservationUpdatedEvent defines model for ReservationUpdatedEvent.
@@ -6311,115 +6526,51 @@ type SelectProviderResponse struct {
 // SelectProviderResponsePattern defines model for SelectProviderResponse.Pattern.
 type SelectProviderResponsePattern string
 
-// StudioDeployment A deployed instance of a Studio project, served from a `*.studio.repull.dev` subdomain.
-type StudioDeployment struct {
-	CreatedAt    *time.Time          `json:"created_at,omitempty"`
-	DeploymentId *openapi_types.UUID `json:"deployment_id,omitempty"`
-	ProjectId    *openapi_types.UUID `json:"project_id,omitempty"`
+// SendMessageRequest defines model for SendMessageRequest.
+type SendMessageRequest struct {
+	// Channel Force a channel. Omit to send on whichever channel the conversation already uses, which is the right default.
+	Channel *SendMessageRequestChannel `json:"channel,omitempty"`
 
-	// Status Current deployment lifecycle status.
-	Status *StudioDeploymentStatus `json:"status,omitempty"`
-
-	// Subdomain Subdomain assigned to this deployment (e.g. `my-app-a1b2c3`).
-	Subdomain *string `json:"subdomain,omitempty"`
-
-	// SuspendedAt Set when the deployment is paused via `/suspend`.
-	SuspendedAt *time.Time `json:"suspended_at,omitempty"`
-
-	// Url Fully-qualified URL where the deployment is reachable when `status` is `live`.
-	Url *string `json:"url,omitempty"`
+	// Message The text to send the guest.
+	//
+	// Example: Your check-in details are ready — the door code is active from 16:00.
+	Message string `json:"message"`
 }
 
-// StudioDeploymentStatus Current deployment lifecycle status.
-type StudioDeploymentStatus string
+// SendMessageRequestChannel Force a channel. Omit to send on whichever channel the conversation already uses, which is the right default.
+type SendMessageRequestChannel string
 
-// StudioError Repull-style structured error envelope. Surface the `fix` and `docs_url` to your end users so they can self-serve.
-type StudioError struct {
-	Error *struct {
-		// Code Stable machine-readable error code (e.g. `bad_request`, `not_found`, `rate_limited`).
-		Code string `json:"code"`
+// SendMessageResponse defines model for SendMessageResponse.
+type SendMessageResponse struct {
+	// Channel The channel the message actually went out on.
+	Channel *string `json:"channel,omitempty"`
 
-		// DocsUrl Link to the docs page that explains this error.
-		DocsUrl *string `json:"docs_url,omitempty"`
+	// ContentRewritten TRUE when the channel altered the text before delivery — today that means Airbnb stripped a link, an email address or a phone number and the remainder was re-sent. When true, the guest did NOT receive `submittedContent`; they received `deliveredContent`.
+	ContentRewritten *bool `json:"contentRewritten,omitempty"`
+	ConversationId   *int  `json:"conversationId,omitempty"`
 
-		// Fix Suggested next action for the caller (optional).
-		Fix *string `json:"fix,omitempty"`
+	// DeliveredContent The text the guest actually received. Differs from `submittedContent` exactly when `contentRewritten` is true.
+	DeliveredContent *string                       `json:"deliveredContent,omitempty"`
+	Direction        *SendMessageResponseDirection `json:"direction,omitempty"`
 
-		// Message Human-readable description of what went wrong.
-		Message string `json:"message"`
-	} `json:"error,omitempty"`
+	// ExternalMessageId The channel's own message id, when it returns one.
+	ExternalMessageId *string `json:"externalMessageId,omitempty"`
+
+	// Id Repull message id for the row that was recorded.
+	Id *string `json:"id,omitempty"`
+
+	// Status Example: sent
+	Status *string `json:"status,omitempty"`
+
+	// StatusReason The channel's verbatim note, when it gave one — including the refusal that triggered a rewrite.
+	StatusReason *string `json:"statusReason,omitempty"`
+
+	// SubmittedContent The text you sent.
+	SubmittedContent *string `json:"submittedContent,omitempty"`
 }
 
-// StudioFile A single source file inside a Studio project. Files are addressed by their relative `path`.
-type StudioFile struct {
-	// Content UTF-8 file contents.
-	Content *string `json:"content,omitempty"`
-
-	// Path Project-relative path, e.g. `src/app/page.tsx`.
-	Path *string `json:"path,omitempty"`
-
-	// Sha256 SHA-256 hex digest of the content — use it to detect drift before writing.
-	Sha256 *string `json:"sha256,omitempty"`
-
-	// Size Byte length of the content.
-	Size      *int       `json:"size,omitempty"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
-}
-
-// StudioGeneration A single Repull AI generation run — captures the prompt, the model output, and token accounting.
-type StudioGeneration struct {
-	CreatedAt    *time.Time          `json:"created_at,omitempty"`
-	GenerationId *openapi_types.UUID `json:"generation_id,omitempty"`
-
-	// Model Model identifier used to produce the response.
-	Model     *string             `json:"model,omitempty"`
-	ProjectId *openapi_types.UUID `json:"project_id,omitempty"`
-	Prompt    *string             `json:"prompt,omitempty"`
-
-	// Response Generated text output.
-	Response *string `json:"response,omitempty"`
-
-	// TokensIn Prompt tokens consumed.
-	TokensIn *int `json:"tokens_in,omitempty"`
-
-	// TokensOut Completion tokens produced.
-	TokensOut *int `json:"tokens_out,omitempty"`
-}
-
-// StudioProject A single Repull Studio project — a vibe-coded app generated from a prompt. Each project has its own files, generations, and deployments.
-type StudioProject struct {
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-
-	// CustomerId Owning Repull account ID.
-	CustomerId *int `json:"customer_id,omitempty"`
-
-	// DeletedAt Soft-delete timestamp. `null` for live projects.
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-
-	// Id Project UUID.
-	Id *openapi_types.UUID `json:"id,omitempty"`
-
-	// LastActiveAt Updated whenever a file, generation, or deployment is touched.
-	LastActiveAt *time.Time `json:"last_active_at,omitempty"`
-
-	// Name Human-readable project name.
-	Name *string `json:"name,omitempty"`
-
-	// Prompt Initial prompt that seeded the project.
-	Prompt *string `json:"prompt,omitempty"`
-
-	// Slug URL-safe slug (unique within your account). Used for the deployment subdomain.
-	Slug *string `json:"slug,omitempty"`
-
-	// Status Current project lifecycle status.
-	Status *StudioProjectStatus `json:"status,omitempty"`
-
-	// TemplateId Template the project was scaffolded from, if any.
-	TemplateId *string `json:"template_id,omitempty"`
-}
-
-// StudioProjectStatus Current project lifecycle status.
-type StudioProjectStatus string
+// SendMessageResponseDirection defines model for SendMessageResponse.Direction.
+type SendMessageResponseDirection string
 
 // VrboListing A VRBO listing.
 type VrboListing struct {
@@ -6574,6 +6725,9 @@ type WebhookSubscription struct {
 
 // WebhookSubscriptionStatus defines model for WebhookSubscription.Status.
 type WebhookSubscriptionStatus string
+
+// IdempotencyKey Example: 9f1c2f7e-4a3b-4f2e-9c8d-1b6a0e5d7c31
+type IdempotencyKey = string
 
 // IncludeTotal defines model for IncludeTotal.
 type IncludeTotal = bool
@@ -7200,6 +7354,16 @@ type ListConversationMessagesParams struct {
 // ListConversationMessagesParamsOrder defines parameters for ListConversationMessages.
 type ListConversationMessagesParamsOrder string
 
+// SendConversationMessageParams defines parameters for SendConversationMessage.
+type SendConversationMessageParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // ListGuestsParams defines parameters for ListGuests.
 type ListGuestsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
@@ -7222,6 +7386,16 @@ type ListGuestsParams struct {
 
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
+
+// CreateGuestParams defines parameters for CreateGuest.
+type CreateGuestParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
 // GetGuestParams defines parameters for GetGuest.
@@ -7567,10 +7741,30 @@ type ListReservationsParams struct {
 // ListReservationsParamsStatus defines parameters for ListReservations.
 type ListReservationsParamsStatus string
 
+// CreateReservationParams defines parameters for CreateReservation.
+type CreateReservationParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // GetReservationParams defines parameters for GetReservation.
 type GetReservationParams struct {
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
+
+// UpdateReservationParams defines parameters for UpdateReservation.
+type UpdateReservationParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
 // ListReviewsParams defines parameters for ListReviews.
@@ -7828,6 +8022,12 @@ type SubmitVrboCredentialsJSONRequestBody SubmitVrboCredentialsJSONBody
 // CreateConnectionJSONRequestBody defines body for CreateConnection for application/json ContentType.
 type CreateConnectionJSONRequestBody CreateConnectionJSONBody
 
+// SendConversationMessageJSONRequestBody defines body for SendConversationMessage for application/json ContentType.
+type SendConversationMessageJSONRequestBody = SendMessageRequest
+
+// CreateGuestJSONRequestBody defines body for CreateGuest for application/json ContentType.
+type CreateGuestJSONRequestBody = GuestCreateRequest
+
 // SetKvJSONRequestBody defines body for SetKv for application/json ContentType.
 type SetKvJSONRequestBody SetKvJSONBody
 
@@ -7860,6 +8060,12 @@ type UpdateListingPricingStrategyJSONRequestBody = ListingPricingStrategyInput
 
 // PublishListingToAirbnbJSONRequestBody defines body for PublishListingToAirbnb for application/json ContentType.
 type PublishListingToAirbnbJSONRequestBody = ListingPublishAirbnbRequest
+
+// CreateReservationJSONRequestBody defines body for CreateReservation for application/json ContentType.
+type CreateReservationJSONRequestBody = ReservationCreateRequest
+
+// UpdateReservationJSONRequestBody defines body for UpdateReservation for application/json ContentType.
+type UpdateReservationJSONRequestBody = ReservationUpdateRequest
 
 // ReplyToReviewJSONRequestBody defines body for ReplyToReview for application/json ContentType.
 type ReplyToReviewJSONRequestBody ReplyToReviewJSONBody
