@@ -65,8 +65,7 @@ REPULL_API_KEY=sk_live_... go run github.com/ivannikolovbg/repull-go/examples/qu
 ## Authentication
 
 All Repull API calls require a bearer token. Get an API key at
-[repull.dev/dashboard](https://repull.dev/dashboard) — `sk_test_*` for sandbox,
-`sk_live_*` for production.
+[repull.dev/dashboard](https://repull.dev/dashboard) — `sk_live_*`.
 
 ```go
 client, _ := repull.NewClientWithResponses(
@@ -88,8 +87,8 @@ editors (logging, tracing, retries) by passing more `repull.ClientOption`s to
 | `examples/connect_airbnb` | Mint a white-label Airbnb OAuth Connect session and poll for completion. |
 
 ```bash
-REPULL_API_KEY=sk_test_... go run ./examples/quickstart
-REPULL_API_KEY=sk_test_... go run ./examples/connect_airbnb
+REPULL_API_KEY=sk_live_... go run ./examples/quickstart
+REPULL_API_KEY=sk_live_... go run ./examples/connect_airbnb
 ```
 
 ## Layout

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.7 — 2026-09-11
+
+### Fix
+
+- **Regenerated against the live spec (102 → 124 paths).** Removed the two dead `/v1/sandbox/*` paths (the sandbox was deleted from the API; `sk_test_*` keys now return 401). Added the 24 paths that were missing from the SDK: `PATCH /v1/availability/batch`, Airbnb alteration accept/decline, `GET /v1/channels/booking/properties/{id}/rooms`, credentials endpoints for the ten `/v1/connect/{provider}/credentials` PMS integrations, `POST /v1/connect/booking/callback`, `GET /v1/health/{atlas,auth,mcp,webhooks}` and `GET /v1/health/channels/{channel}`, listing photo upload endpoints, `GET /v1/quotes`, and `POST /v1/reviews/{id}/reply`.
+- **`scripts/regen.sh` now points at the canonical spec URL** (`https://api.repull.dev/openapi.json`) instead of a second, previously-identical mirror path — this was a drift risk, not a behavior change. `REPULL_OPENAPI_URL` still overrides it.
+- Dropped `sk_test_*` / sandbox mentions from doc comments, the test suite, the `connect_airbnb` example, and the README — the sandbox no longer exists; use `sk_live_*` everywhere.
+
 ## v0.2.6 — 2026-06-25
 
 ### Additive

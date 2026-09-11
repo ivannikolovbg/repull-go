@@ -16,14 +16,14 @@ func TestWithBearer_AddsAuthorizationHeader(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	c, err := NewClient(srv.URL, WithBearer("sk_test_abc"))
+	c, err := NewClient(srv.URL, WithBearer("sk_live_abc"))
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
 	}
 	if _, err := c.GetHealth(context.Background()); err != nil {
 		t.Fatalf("GetHealth: %v", err)
 	}
-	if want := "Bearer sk_test_abc"; got != want {
+	if want := "Bearer sk_live_abc"; got != want {
 		t.Fatalf("authorization header = %q, want %q", got, want)
 	}
 }
