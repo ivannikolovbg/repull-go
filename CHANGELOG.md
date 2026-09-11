@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.9 — 2026-09-11
+## v0.2.11 — 2026-09-11
 
 ### Fix
 
@@ -9,6 +9,10 @@
 - **Four id fields are now `*string`, not `*int`:** `AirbnbAlteration.Id`, `AirbnbAlteration.ReservationId`, `AirbnbConnection.Id`, `AirbnbListing.ListingId`.
 - **`Property.Latitude` / `Property.Longitude` are now `*string`** (decimal degrees as a string), not `*float64`.
 - `scripts/check-spec-freshness.py` now diffs schema shapes, not just the path/operation inventory, so drift like this fails CI going forward instead of only catching added/removed endpoints.
+
+### Note
+
+- Jumping v0.2.8 → v0.2.11: `v0.2.9` and `v0.2.10` are already published git tags (cut 2026-07-30, before this file's `v0.2.7`/`v0.2.8` entries were written) pointing at unrelated commits — this changelog's numbering had drifted ahead of the actual tag history. Picking `v0.2.11` avoids colliding with an existing tag; it does not itself re-tag anything.
 
 ## v0.2.8 — 2026-09-11
 
