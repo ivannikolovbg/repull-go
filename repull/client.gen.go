@@ -171,7 +171,7 @@ type ClientInterface interface {
 	//
 	// List reservation alteration requests for Airbnb reservations in this workspace. **Pure DB read** from the local `reservation_alterations` mirror — never calls Airbnb upstream — scoped to your workspace via the reservations join.
 	//
-	// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `data_freshness` envelope.
+	// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `dataFreshness` envelope.
 	//
 	// Corresponds with GET /v1/channels/airbnb/alterations (the `ListAirbnbAlterations` operationId).
 	ListAirbnbAlterations(ctx context.Context, params *ListAirbnbAlterationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -252,7 +252,7 @@ type ClientInterface interface {
 
 	// ListAirbnbListings List Airbnb listings
 	//
-	// List every Airbnb listing this workspace has access to via the connected Airbnb account. **Pure DB read — never calls Airbnb upstream.** The connect flow is what populates the local cache; the API serves what's already there. Customers with a disconnected host still see their last-synced data, with the top-level `data_freshness` envelope flagging the staleness and pointing at the reconnect URL.
+	// List every Airbnb listing this workspace has access to via the connected Airbnb account. **Pure DB read — never calls Airbnb upstream.** The connect flow is what populates the local cache; the API serves what's already there. Customers with a disconnected host still see their last-synced data, with the top-level `dataFreshness` envelope flagging the staleness and pointing at the reconnect URL.
 	//
 	// Pass `?include=amenities` to enrich each connection with its locally-cached amenity set. Returns `null` per connection when the cache is empty.
 	//
@@ -324,7 +324,7 @@ type ClientInterface interface {
 
 	// ListAirbnbListingAmenities List Airbnb amenities
 	//
-	// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `data_freshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
+	// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/amenities (the `ListAirbnbListingAmenities` operationId).
 	ListAirbnbListingAmenities(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2392,7 +2392,7 @@ type ClientInterface interface {
 
 	// UpdateWebhookWithBody Update webhook subscription
 	//
-	// Update url, description, events, or status (active|paused). Re-enabling clears `consecutive_failures` and `disabled_at`.
+	// Update url, description, events, or status (active|paused). Re-enabling clears `consecutiveFailures` and `disabledAt`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -2401,7 +2401,7 @@ type ClientInterface interface {
 
 	// UpdateWebhook Update webhook subscription
 	//
-	// Update url, description, events, or status (active|paused). Re-enabling clears `consecutive_failures` and `disabled_at`.
+	// Update url, description, events, or status (active|paused). Re-enabling clears `consecutiveFailures` and `disabledAt`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -2600,7 +2600,7 @@ func (c *Client) CreateBillingCheckout(ctx context.Context, body CreateBillingCh
 //
 // List reservation alteration requests for Airbnb reservations in this workspace. **Pure DB read** from the local `reservation_alterations` mirror — never calls Airbnb upstream — scoped to your workspace via the reservations join.
 //
-// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `data_freshness` envelope.
+// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `dataFreshness` envelope.
 //
 // Corresponds with GET /v1/channels/airbnb/alterations (the `ListAirbnbAlterations` operationId).
 func (c *Client) ListAirbnbAlterations(ctx context.Context, params *ListAirbnbAlterationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2771,7 +2771,7 @@ func (c *Client) GetAirbnbConnection(ctx context.Context, reqEditors ...RequestE
 
 // ListAirbnbListings List Airbnb listings
 //
-// List every Airbnb listing this workspace has access to via the connected Airbnb account. **Pure DB read — never calls Airbnb upstream.** The connect flow is what populates the local cache; the API serves what's already there. Customers with a disconnected host still see their last-synced data, with the top-level `data_freshness` envelope flagging the staleness and pointing at the reconnect URL.
+// List every Airbnb listing this workspace has access to via the connected Airbnb account. **Pure DB read — never calls Airbnb upstream.** The connect flow is what populates the local cache; the API serves what's already there. Customers with a disconnected host still see their last-synced data, with the top-level `dataFreshness` envelope flagging the staleness and pointing at the reconnect URL.
 //
 // Pass `?include=amenities` to enrich each connection with its locally-cached amenity set. Returns `null` per connection when the cache is empty.
 //
@@ -2903,7 +2903,7 @@ func (c *Client) AirbnbListingAction(ctx context.Context, id string, body Airbnb
 
 // ListAirbnbListingAmenities List Airbnb amenities
 //
-// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `data_freshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
+// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/amenities (the `ListAirbnbListingAmenities` operationId).
 func (c *Client) ListAirbnbListingAmenities(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -7040,7 +7040,7 @@ func (c *Client) GetWebhook(ctx context.Context, id openapi_types.UUID, reqEdito
 
 // UpdateWebhookWithBody Update webhook subscription
 //
-// Update url, description, events, or status (active|paused). Re-enabling clears `consecutive_failures` and `disabled_at`.
+// Update url, description, events, or status (active|paused). Re-enabling clears `consecutiveFailures` and `disabledAt`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -7059,7 +7059,7 @@ func (c *Client) UpdateWebhookWithBody(ctx context.Context, id openapi_types.UUI
 
 // UpdateWebhook Update webhook subscription
 //
-// Update url, description, events, or status (active|paused). Re-enabling clears `consecutive_failures` and `disabled_at`.
+// Update url, description, events, or status (active|paused). Re-enabling clears `consecutiveFailures` and `disabledAt`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -16177,7 +16177,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// List reservation alteration requests for Airbnb reservations in this workspace. **Pure DB read** from the local `reservation_alterations` mirror — never calls Airbnb upstream — scoped to your workspace via the reservations join.
 	//
-	// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `data_freshness` envelope.
+	// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `dataFreshness` envelope.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16264,7 +16264,7 @@ type ClientWithResponsesInterface interface {
 
 	// ListAirbnbListingsWithResponse List Airbnb listings
 	//
-	// List every Airbnb listing this workspace has access to via the connected Airbnb account. **Pure DB read — never calls Airbnb upstream.** The connect flow is what populates the local cache; the API serves what's already there. Customers with a disconnected host still see their last-synced data, with the top-level `data_freshness` envelope flagging the staleness and pointing at the reconnect URL.
+	// List every Airbnb listing this workspace has access to via the connected Airbnb account. **Pure DB read — never calls Airbnb upstream.** The connect flow is what populates the local cache; the API serves what's already there. Customers with a disconnected host still see their last-synced data, with the top-level `dataFreshness` envelope flagging the staleness and pointing at the reconnect URL.
 	//
 	// Pass `?include=amenities` to enrich each connection with its locally-cached amenity set. Returns `null` per connection when the cache is empty.
 	//
@@ -16340,7 +16340,7 @@ type ClientWithResponsesInterface interface {
 
 	// ListAirbnbListingAmenitiesWithResponse List Airbnb amenities
 	//
-	// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `data_freshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
+	// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18606,7 +18606,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateWebhookWithBodyWithResponse Update webhook subscription
 	//
-	// Update url, description, events, or status (active|paused). Re-enabling clears `consecutive_failures` and `disabled_at`.
+	// Update url, description, events, or status (active|paused). Re-enabling clears `consecutiveFailures` and `disabledAt`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18615,7 +18615,7 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateWebhookWithResponse Update webhook subscription
 	//
-	// Update url, description, events, or status (active|paused). Re-enabling clears `consecutive_failures` and `disabled_at`.
+	// Update url, description, events, or status (active|paused). Re-enabling clears `consecutiveFailures` and `disabledAt`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18898,7 +18898,7 @@ type ListAirbnbAlterationsClientResponse struct {
 		Data []AirbnbAlteration `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -18911,7 +18911,7 @@ func (r ListAirbnbAlterationsClientResponse) GetJSON200() *struct {
 	Data []AirbnbAlteration `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -19019,7 +19019,7 @@ type GetAirbnbAlterationClientResponse struct {
 		Data AirbnbAlteration `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -19035,7 +19035,7 @@ func (r GetAirbnbAlterationClientResponse) GetJSON200() *struct {
 	Data AirbnbAlteration `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -19445,7 +19445,7 @@ type ListAirbnbListingAmenitiesClientResponse struct {
 		} `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -19465,7 +19465,7 @@ func (r ListAirbnbListingAmenitiesClientResponse) GetJSON200() *struct {
 	} `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -19595,7 +19595,7 @@ type GetAirbnbCheckinGuideClientResponse struct {
 		Data []map[string]interface{} `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -19612,7 +19612,7 @@ func (r GetAirbnbCheckinGuideClientResponse) GetJSON200() *struct {
 	Data []map[string]interface{} `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -19729,7 +19729,7 @@ type GetAirbnbCheckoutGuideClientResponse struct {
 		Data []map[string]interface{} `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -19746,7 +19746,7 @@ func (r GetAirbnbCheckoutGuideClientResponse) GetJSON200() *struct {
 	Data []map[string]interface{} `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -19808,7 +19808,7 @@ type ListAirbnbListingDescriptionsClientResponse struct {
 		Data []map[string]interface{} `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -19825,7 +19825,7 @@ func (r ListAirbnbListingDescriptionsClientResponse) GetJSON200() *struct {
 	Data []map[string]interface{} `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -20092,7 +20092,7 @@ type GetAirbnbListingQualityClientResponse struct {
 		Data interface{} `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -20110,7 +20110,7 @@ func (r GetAirbnbListingQualityClientResponse) GetJSON200() *struct {
 	Data interface{} `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -20247,7 +20247,7 @@ type ListAirbnbListingRoomsClientResponse struct {
 		Data []map[string]interface{} `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -20264,7 +20264,7 @@ func (r ListAirbnbListingRoomsClientResponse) GetJSON200() *struct {
 	Data []map[string]interface{} `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -20382,7 +20382,7 @@ type GetAirbnbListingSettingsClientResponse struct {
 		Data interface{} `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -20400,7 +20400,7 @@ func (r GetAirbnbListingSettingsClientResponse) GetJSON200() *struct {
 	Data interface{} `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -20504,7 +20504,7 @@ type GetAirbnbThreadClientResponse struct {
 		Data AirbnbThread `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -20520,7 +20520,7 @@ func (r GetAirbnbThreadClientResponse) GetJSON200() *struct {
 	Data AirbnbThread `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -21188,7 +21188,7 @@ type ListAirbnbTransactionsClientResponse struct {
 		Data []AirbnbTransaction `json:"data"`
 
 		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-		DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -21201,7 +21201,7 @@ func (r ListAirbnbTransactionsClientResponse) GetJSON200() *struct {
 	Data []AirbnbTransaction `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 } {
 	return r.JSON200
 }
@@ -25183,7 +25183,7 @@ type ListKvClientResponse struct {
 			Value     interface{} `json:"value,omitempty"`
 		} `json:"data,omitempty"`
 		Pagination *struct {
-			HasMore *bool `json:"has_more,omitempty"`
+			HasMore *bool `json:"hasMore,omitempty"`
 			Total   *int  `json:"total,omitempty"`
 		} `json:"pagination,omitempty"`
 	}
@@ -25200,7 +25200,7 @@ func (r ListKvClientResponse) GetJSON200() *struct {
 		Value     interface{} `json:"value,omitempty"`
 	} `json:"data,omitempty"`
 	Pagination *struct {
-		HasMore *bool `json:"has_more,omitempty"`
+		HasMore *bool `json:"hasMore,omitempty"`
 		Total   *int  `json:"total,omitempty"`
 	} `json:"pagination,omitempty"`
 } {
@@ -27848,8 +27848,8 @@ type GetUsageLogsClientResponse struct {
 			UserAgent     *string    `json:"userAgent,omitempty"`
 		} `json:"data,omitempty"`
 		Pagination *struct {
-			HasMore    *bool   `json:"has_more,omitempty"`
-			NextCursor *string `json:"next_cursor,omitempty"`
+			HasMore    *bool   `json:"hasMore,omitempty"`
+			NextCursor *string `json:"nextCursor,omitempty"`
 			Total      *int    `json:"total,omitempty"`
 		} `json:"pagination,omitempty"`
 		Range *string `json:"range,omitempty"`
@@ -27880,8 +27880,8 @@ func (r GetUsageLogsClientResponse) GetJSON200() *struct {
 		UserAgent     *string    `json:"userAgent,omitempty"`
 	} `json:"data,omitempty"`
 	Pagination *struct {
-		HasMore    *bool   `json:"has_more,omitempty"`
-		NextCursor *string `json:"next_cursor,omitempty"`
+		HasMore    *bool   `json:"hasMore,omitempty"`
+		NextCursor *string `json:"nextCursor,omitempty"`
 		Total      *int    `json:"total,omitempty"`
 	} `json:"pagination,omitempty"`
 	Range *string `json:"range,omitempty"`
@@ -27946,15 +27946,15 @@ type GetUsageSummaryClientResponse struct {
 			RequestCount *int     `json:"requestCount,omitempty"`
 		} `json:"breakdown,omitempty"`
 		Limits *struct {
-			DailyAiRequests *int `json:"daily_ai_requests,omitempty"`
-			MonthlyRequests *int `json:"monthly_requests,omitempty"`
+			DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
+			MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 		} `json:"limits,omitempty"`
 		Range     *string `json:"range,omitempty"`
 		Remaining *struct {
-			DailyAi *int `json:"daily_ai,omitempty"`
+			DailyAi *int `json:"dailyAi,omitempty"`
 			Monthly *int `json:"monthly,omitempty"`
 		} `json:"remaining,omitempty"`
-		ResetsAt           *time.Time `json:"resets_at,omitempty"`
+		ResetsAt           *time.Time `json:"resetsAt,omitempty"`
 		StatusDistribution *struct {
 			N2xx *int `json:"2xx,omitempty"`
 			N3xx *int `json:"3xx,omitempty"`
@@ -27973,7 +27973,7 @@ type GetUsageSummaryClientResponse struct {
 			Requests     *int `json:"requests,omitempty"`
 		} `json:"totals,omitempty"`
 		Used *struct {
-			DailyAi *int `json:"daily_ai,omitempty"`
+			DailyAi *int `json:"dailyAi,omitempty"`
 			Monthly *int `json:"monthly,omitempty"`
 		} `json:"used,omitempty"`
 	}
@@ -27993,15 +27993,15 @@ func (r GetUsageSummaryClientResponse) GetJSON200() *struct {
 		RequestCount *int     `json:"requestCount,omitempty"`
 	} `json:"breakdown,omitempty"`
 	Limits *struct {
-		DailyAiRequests *int `json:"daily_ai_requests,omitempty"`
-		MonthlyRequests *int `json:"monthly_requests,omitempty"`
+		DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
+		MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 	} `json:"limits,omitempty"`
 	Range     *string `json:"range,omitempty"`
 	Remaining *struct {
-		DailyAi *int `json:"daily_ai,omitempty"`
+		DailyAi *int `json:"dailyAi,omitempty"`
 		Monthly *int `json:"monthly,omitempty"`
 	} `json:"remaining,omitempty"`
-	ResetsAt           *time.Time `json:"resets_at,omitempty"`
+	ResetsAt           *time.Time `json:"resetsAt,omitempty"`
 	StatusDistribution *struct {
 		N2xx *int `json:"2xx,omitempty"`
 		N3xx *int `json:"3xx,omitempty"`
@@ -28020,7 +28020,7 @@ func (r GetUsageSummaryClientResponse) GetJSON200() *struct {
 		Requests     *int `json:"requests,omitempty"`
 	} `json:"totals,omitempty"`
 	Used *struct {
-		DailyAi *int `json:"daily_ai,omitempty"`
+		DailyAi *int `json:"dailyAi,omitempty"`
 		Monthly *int `json:"monthly,omitempty"`
 	} `json:"used,omitempty"`
 } {
@@ -28072,20 +28072,20 @@ type GetUsageTierClientResponse struct {
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
 		Limits *struct {
-			DailyAiRequests        *int `json:"daily_ai_requests,omitempty"`
-			DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
-			MonthlyRequests        *int `json:"monthly_requests,omitempty"`
+			DailyAiRequests        *int `json:"dailyAiRequests,omitempty"`
+			DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
+			MonthlyRequests        *int `json:"monthlyRequests,omitempty"`
 		} `json:"limits,omitempty"`
 		Remaining *struct {
-			DailyAi                *int `json:"daily_ai,omitempty"`
-			DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+			DailyAi                *int `json:"dailyAi,omitempty"`
+			DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 			Monthly                *int `json:"monthly,omitempty"`
 		} `json:"remaining,omitempty"`
-		ResetsAt *time.Time `json:"resets_at,omitempty"`
+		ResetsAt *time.Time `json:"resetsAt,omitempty"`
 		Tier     *string    `json:"tier,omitempty"`
 		Used     *struct {
-			DailyAi                *int `json:"daily_ai,omitempty"`
-			DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+			DailyAi                *int `json:"dailyAi,omitempty"`
+			DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 			Monthly                *int `json:"monthly,omitempty"`
 		} `json:"used,omitempty"`
 	}
@@ -28098,20 +28098,20 @@ type GetUsageTierClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetUsageTierClientResponse) GetJSON200() *struct {
 	Limits *struct {
-		DailyAiRequests        *int `json:"daily_ai_requests,omitempty"`
-		DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
-		MonthlyRequests        *int `json:"monthly_requests,omitempty"`
+		DailyAiRequests        *int `json:"dailyAiRequests,omitempty"`
+		DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
+		MonthlyRequests        *int `json:"monthlyRequests,omitempty"`
 	} `json:"limits,omitempty"`
 	Remaining *struct {
-		DailyAi                *int `json:"daily_ai,omitempty"`
-		DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+		DailyAi                *int `json:"dailyAi,omitempty"`
+		DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 		Monthly                *int `json:"monthly,omitempty"`
 	} `json:"remaining,omitempty"`
-	ResetsAt *time.Time `json:"resets_at,omitempty"`
+	ResetsAt *time.Time `json:"resetsAt,omitempty"`
 	Tier     *string    `json:"tier,omitempty"`
 	Used     *struct {
-		DailyAi                *int `json:"daily_ai,omitempty"`
-		DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+		DailyAi                *int `json:"dailyAi,omitempty"`
+		DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 		Monthly                *int `json:"monthly,omitempty"`
 	} `json:"used,omitempty"`
 } {
@@ -28786,7 +28786,7 @@ func (c *ClientWithResponses) CreateBillingCheckoutWithResponse(ctx context.Cont
 //
 // List reservation alteration requests for Airbnb reservations in this workspace. **Pure DB read** from the local `reservation_alterations` mirror — never calls Airbnb upstream — scoped to your workspace via the reservations join.
 //
-// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `data_freshness` envelope.
+// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `dataFreshness` envelope.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -28927,7 +28927,7 @@ func (c *ClientWithResponses) GetAirbnbConnectionWithResponse(ctx context.Contex
 
 // ListAirbnbListingsWithResponse List Airbnb listings
 //
-// List every Airbnb listing this workspace has access to via the connected Airbnb account. **Pure DB read — never calls Airbnb upstream.** The connect flow is what populates the local cache; the API serves what's already there. Customers with a disconnected host still see their last-synced data, with the top-level `data_freshness` envelope flagging the staleness and pointing at the reconnect URL.
+// List every Airbnb listing this workspace has access to via the connected Airbnb account. **Pure DB read — never calls Airbnb upstream.** The connect flow is what populates the local cache; the API serves what's already there. Customers with a disconnected host still see their last-synced data, with the top-level `dataFreshness` envelope flagging the staleness and pointing at the reconnect URL.
 //
 // Pass `?include=amenities` to enrich each connection with its locally-cached amenity set. Returns `null` per connection when the cache is empty.
 //
@@ -29039,7 +29039,7 @@ func (c *ClientWithResponses) AirbnbListingActionWithResponse(ctx context.Contex
 
 // ListAirbnbListingAmenitiesWithResponse List Airbnb amenities
 //
-// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `data_freshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
+// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32547,7 +32547,7 @@ func (c *ClientWithResponses) GetWebhookWithResponse(ctx context.Context, id ope
 
 // UpdateWebhookWithBodyWithResponse Update webhook subscription
 //
-// Update url, description, events, or status (active|paused). Re-enabling clears `consecutive_failures` and `disabled_at`.
+// Update url, description, events, or status (active|paused). Re-enabling clears `consecutiveFailures` and `disabledAt`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32562,7 +32562,7 @@ func (c *ClientWithResponses) UpdateWebhookWithBodyWithResponse(ctx context.Cont
 
 // UpdateWebhookWithResponse Update webhook subscription
 //
-// Update url, description, events, or status (active|paused). Re-enabling clears `consecutive_failures` and `disabled_at`.
+// Update url, description, events, or status (active|paused). Re-enabling clears `consecutiveFailures` and `disabledAt`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32834,7 +32834,7 @@ func ParseListAirbnbAlterationsClientResponse(rsp *http.Response) (*ListAirbnbAl
 			Data []AirbnbAlteration `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -32923,7 +32923,7 @@ func ParseGetAirbnbAlterationClientResponse(rsp *http.Response) (*GetAirbnbAlter
 			Data AirbnbAlteration `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -33232,7 +33232,7 @@ func ParseListAirbnbListingAmenitiesClientResponse(rsp *http.Response) (*ListAir
 			} `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -33323,7 +33323,7 @@ func ParseGetAirbnbCheckinGuideClientResponse(rsp *http.Response) (*GetAirbnbChe
 			Data []map[string]interface{} `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -33425,7 +33425,7 @@ func ParseGetAirbnbCheckoutGuideClientResponse(rsp *http.Response) (*GetAirbnbCh
 			Data []map[string]interface{} `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -33484,7 +33484,7 @@ func ParseListAirbnbListingDescriptionsClientResponse(rsp *http.Response) (*List
 			Data []map[string]interface{} `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -33658,7 +33658,7 @@ func ParseGetAirbnbListingQualityClientResponse(rsp *http.Response) (*GetAirbnbL
 			Data interface{} `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -33774,7 +33774,7 @@ func ParseListAirbnbListingRoomsClientResponse(rsp *http.Response) (*ListAirbnbL
 			Data []map[string]interface{} `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -33877,7 +33877,7 @@ func ParseGetAirbnbListingSettingsClientResponse(rsp *http.Response) (*GetAirbnb
 			Data interface{} `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -33963,7 +33963,7 @@ func ParseGetAirbnbThreadClientResponse(rsp *http.Response) (*GetAirbnbThreadCli
 			Data AirbnbThread `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -34452,7 +34452,7 @@ func ParseListAirbnbTransactionsClientResponse(rsp *http.Response) (*ListAirbnbT
 			Data []AirbnbTransaction `json:"data"`
 
 			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-			DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -37399,7 +37399,7 @@ func ParseListKvClientResponse(rsp *http.Response) (*ListKvClientResponse, error
 				Value     interface{} `json:"value,omitempty"`
 			} `json:"data,omitempty"`
 			Pagination *struct {
-				HasMore *bool `json:"has_more,omitempty"`
+				HasMore *bool `json:"hasMore,omitempty"`
 				Total   *int  `json:"total,omitempty"`
 			} `json:"pagination,omitempty"`
 		}
@@ -39414,8 +39414,8 @@ func ParseGetUsageLogsClientResponse(rsp *http.Response) (*GetUsageLogsClientRes
 				UserAgent     *string    `json:"userAgent,omitempty"`
 			} `json:"data,omitempty"`
 			Pagination *struct {
-				HasMore    *bool   `json:"has_more,omitempty"`
-				NextCursor *string `json:"next_cursor,omitempty"`
+				HasMore    *bool   `json:"hasMore,omitempty"`
+				NextCursor *string `json:"nextCursor,omitempty"`
 				Total      *int    `json:"total,omitempty"`
 			} `json:"pagination,omitempty"`
 			Range *string `json:"range,omitempty"`
@@ -39475,15 +39475,15 @@ func ParseGetUsageSummaryClientResponse(rsp *http.Response) (*GetUsageSummaryCli
 				RequestCount *int     `json:"requestCount,omitempty"`
 			} `json:"breakdown,omitempty"`
 			Limits *struct {
-				DailyAiRequests *int `json:"daily_ai_requests,omitempty"`
-				MonthlyRequests *int `json:"monthly_requests,omitempty"`
+				DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
+				MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 			} `json:"limits,omitempty"`
 			Range     *string `json:"range,omitempty"`
 			Remaining *struct {
-				DailyAi *int `json:"daily_ai,omitempty"`
+				DailyAi *int `json:"dailyAi,omitempty"`
 				Monthly *int `json:"monthly,omitempty"`
 			} `json:"remaining,omitempty"`
-			ResetsAt           *time.Time `json:"resets_at,omitempty"`
+			ResetsAt           *time.Time `json:"resetsAt,omitempty"`
 			StatusDistribution *struct {
 				N2xx *int `json:"2xx,omitempty"`
 				N3xx *int `json:"3xx,omitempty"`
@@ -39502,7 +39502,7 @@ func ParseGetUsageSummaryClientResponse(rsp *http.Response) (*GetUsageSummaryCli
 				Requests     *int `json:"requests,omitempty"`
 			} `json:"totals,omitempty"`
 			Used *struct {
-				DailyAi *int `json:"daily_ai,omitempty"`
+				DailyAi *int `json:"dailyAi,omitempty"`
 				Monthly *int `json:"monthly,omitempty"`
 			} `json:"used,omitempty"`
 		}
@@ -39547,20 +39547,20 @@ func ParseGetUsageTierClientResponse(rsp *http.Response) (*GetUsageTierClientRes
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
 			Limits *struct {
-				DailyAiRequests        *int `json:"daily_ai_requests,omitempty"`
-				DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
-				MonthlyRequests        *int `json:"monthly_requests,omitempty"`
+				DailyAiRequests        *int `json:"dailyAiRequests,omitempty"`
+				DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
+				MonthlyRequests        *int `json:"monthlyRequests,omitempty"`
 			} `json:"limits,omitempty"`
 			Remaining *struct {
-				DailyAi                *int `json:"daily_ai,omitempty"`
-				DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+				DailyAi                *int `json:"dailyAi,omitempty"`
+				DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 				Monthly                *int `json:"monthly,omitempty"`
 			} `json:"remaining,omitempty"`
-			ResetsAt *time.Time `json:"resets_at,omitempty"`
+			ResetsAt *time.Time `json:"resetsAt,omitempty"`
 			Tier     *string    `json:"tier,omitempty"`
 			Used     *struct {
-				DailyAi                *int `json:"daily_ai,omitempty"`
-				DynamicPricingListings *int `json:"dynamic_pricing_listings,omitempty"`
+				DailyAi                *int `json:"dailyAi,omitempty"`
+				DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 				Monthly                *int `json:"monthly,omitempty"`
 			} `json:"used,omitempty"`
 		}

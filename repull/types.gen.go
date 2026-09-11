@@ -2613,7 +2613,7 @@ type AirbnbAlteration struct {
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 
 	// Id Internal Repull mirror-row id (not the Airbnb alteration id — use `alterationId` for the `{id}` path param on the get / accept / decline routes).
-	Id *int `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
 
 	// Initiator Who proposed the alteration — e.g. `host` or `guest`.
 	Initiator *string `json:"initiator,omitempty"`
@@ -2654,7 +2654,7 @@ type AirbnbAlteration struct {
 	Reason *string `json:"reason,omitempty"`
 
 	// ReservationId Repull reservation id the alteration belongs to.
-	ReservationId *int `json:"reservationId,omitempty"`
+	ReservationId *string `json:"reservationId,omitempty"`
 
 	// Status Alteration lifecycle status — e.g. `pending` (awaiting a decision), `accepted`, `declined`, `canceled`.
 	Status *string `json:"status,omitempty"`
@@ -2725,7 +2725,7 @@ type AirbnbCalendarOperationAvailability string
 
 // AirbnbConnection An Airbnb-side connection record for a Vanio listing. The same property may appear under multiple connections if it has been linked from multiple Airbnb host accounts.
 type AirbnbConnection struct {
-	// AccessibilityAmenities Present only when `?include=amenities` is passed. Accessibility-tagged subset of the local amenity cache (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Returns an empty array when amenities synced but none qualify as accessibility; returns `null` when the cache is empty for this connection (use `data_freshness` to disambiguate "never synced" from "fresh and genuinely empty").
+	// AccessibilityAmenities Present only when `?include=amenities` is passed. Accessibility-tagged subset of the local amenity cache (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Returns an empty array when amenities synced but none qualify as accessibility; returns `null` when the cache is empty for this connection (use `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty").
 	AccessibilityAmenities *[]struct {
 		// Id Airbnb amenity id (e.g. `wheelchair_accessible`, `home_step_free_access`).
 		Id          *string `json:"id,omitempty"`
@@ -2739,7 +2739,7 @@ type AirbnbConnection struct {
 	// Example: 1116939745194659457
 	AirbnbId *string `json:"airbnbId,omitempty"`
 
-	// Amenities Present only when `?include=amenities` is passed. Sourced from the local `listings_airbnb_amenities` cache (populated by the Airbnb sync worker). Returns `null` when the cache is empty for this connection — see the top-level `data_freshness` envelope to disambiguate "never synced" vs "host disconnected" vs "fresh and genuinely empty".
+	// Amenities Present only when `?include=amenities` is passed. Sourced from the local `listings_airbnb_amenities` cache (populated by the Airbnb sync worker). Returns `null` when the cache is empty for this connection — see the top-level `dataFreshness` envelope to disambiguate "never synced" vs "host disconnected" vs "fresh and genuinely empty".
 	Amenities *[]struct {
 		// Id Airbnb amenity id (e.g. `wifi`, `kitchen`).
 		Id *string `json:"id,omitempty"`
@@ -2754,7 +2754,7 @@ type AirbnbConnection struct {
 	HostId *string `json:"hostId,omitempty"`
 
 	// Id Connection row id
-	Id *int `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
 
 	// Markup Decimal markup (e.g. "1.10" for +10%).
 	Markup      *string `json:"markup,omitempty"`
@@ -2816,10 +2816,10 @@ type AirbnbConnectionSummaryStatus string
 // AirbnbDataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
 type AirbnbDataFreshness struct {
 	// FixUrl Dashboard URL the consumer can open to resolve the staleness (typically the Airbnb reconnect screen). Omitted when `stale` is `false`.
-	FixUrl *string `json:"fix_url,omitempty"`
+	FixUrl *string `json:"fixUrl,omitempty"`
 
 	// LastSyncedAt Most recent sync timestamp across the rows in the response. `null` when nothing has ever synced for this customer.
-	LastSyncedAt *time.Time `json:"last_synced_at"`
+	LastSyncedAt *time.Time `json:"lastSyncedAt"`
 
 	// Reason Why the data is stale. One of `host_disconnected_since_<iso>`, `sync_lag_>_24h`, `never_synced`. Omitted when `stale` is `false`.
 	Reason *string `json:"reason,omitempty"`
@@ -2837,7 +2837,7 @@ type AirbnbListing struct {
 	// ListingId Vanio (Repull) listing id
 	//
 	// Example: 6248
-	ListingId *int `json:"listingId,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
 
 	// Name Listing title
 	//
@@ -2868,7 +2868,7 @@ type AirbnbListingListResponse struct {
 	Data []AirbnbListing `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
-	DataFreshness AirbnbDataFreshness `json:"data_freshness"`
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination Pagination `json:"pagination"`
@@ -3284,12 +3284,7 @@ type BookingConversation struct {
 }
 
 // BookingConversationListResponse defines model for BookingConversationListResponse.
-type BookingConversationListResponse struct {
-	Data *[]BookingConversation `json:"data,omitempty"`
-
-	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
-	Pagination *Pagination `json:"pagination,omitempty"`
-}
+type BookingConversationListResponse = []BookingConversation
 
 // BookingPricingRateUpdate A single (room, rate-plan, date-range) update pushed to Booking.com via the rates API.
 type BookingPricingRateUpdate struct {
@@ -3385,12 +3380,7 @@ type BookingProperty struct {
 }
 
 // BookingPropertyListResponse defines model for BookingPropertyListResponse.
-type BookingPropertyListResponse struct {
-	Data *[]BookingProperty `json:"data,omitempty"`
-
-	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
-	Pagination *Pagination `json:"pagination,omitempty"`
-}
+type BookingPropertyListResponse = []BookingProperty
 
 // BookingReservation A Booking.com reservation as returned by `GET /v1/channels/booking/reservations`.
 //
@@ -4826,7 +4816,7 @@ type ListingPricingHistoryEntry struct {
 	// AppliedBy Who applied it (e.g. `auto`, `api`, `user`).
 	AppliedBy *string `json:"appliedBy,omitempty"`
 
-	// AppliedRate Price actually written to the calendar. `null` when status is `pending` or `declined`. For now, when `status=applied` this equals `recommended_rate` because the apply path writes the recommendation verbatim.
+	// AppliedRate Price actually written to the calendar. `null` when status is `pending` or `declined`. For now, when `status=applied` this equals `recommendedRate` because the apply path writes the recommendation verbatim.
 	AppliedRate *float32            `json:"appliedRate,omitempty"`
 	Date        *openapi_types.Date `json:"date,omitempty"`
 
@@ -5608,18 +5598,18 @@ type Property struct {
 	// Id Internal Repull property ID. Equal to the listing id (`listings.id`); the same integer is used as `listingId` on reservations and `propertyId` on availability.
 	Id *string `json:"id,omitempty"`
 
-	// Latitude Detail endpoint only.
+	// Latitude Detail endpoint only. Decimal degrees, as a string.
 	//
 	// Example: 25.7617
-	Latitude *float32 `json:"latitude,omitempty"`
+	Latitude *string `json:"latitude,omitempty"`
 
 	// LifecycleStatus The listing's lifecycle state (e.g. `live`, `draft`, `archived`).
 	LifecycleStatus *string `json:"lifecycleStatus,omitempty"`
 
-	// Longitude Detail endpoint only.
+	// Longitude Detail endpoint only. Decimal degrees, as a string.
 	//
 	// Example: -80.1918
-	Longitude *float32 `json:"longitude,omitempty"`
+	Longitude *string `json:"longitude,omitempty"`
 
 	// Name Property name
 	//
@@ -6580,12 +6570,7 @@ type VrboListing struct {
 }
 
 // VrboListingListResponse defines model for VrboListingListResponse.
-type VrboListingListResponse struct {
-	Data *[]VrboListing `json:"data,omitempty"`
-
-	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
-	Pagination *Pagination `json:"pagination,omitempty"`
-}
+type VrboListingListResponse = []VrboListing
 
 // VrboReservation A VRBO reservation.
 type VrboReservation struct {

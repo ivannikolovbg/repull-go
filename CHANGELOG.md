@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.9 — 2026-09-11
+
+### Fix
+
+- **Regenerated against the live spec — 19 schema corrections, no path/operation change (still 124 paths / 174 operations).** Ten fields were `snake_case` in the SDK but the live API has always sent camelCase — the SDK now matches: `dataFreshness`, `lastSyncedAt`, `fixUrl`, `nextCursor`, `hasMore`, `monthlyRequests`, `dailyAiRequests`, `dailyAi`, `dynamicPricingListings`, `resetsAt`.
+- **`BookingPropertyListResponse`, `BookingConversationListResponse`, `VrboListingListResponse` are now bare array type aliases** (`= []BookingProperty` etc.), matching what these three endpoints actually return. Previously generated as `{data, pagination}` wrapper structs, which never matched the wire response.
+- **Four id fields are now `*string`, not `*int`:** `AirbnbAlteration.Id`, `AirbnbAlteration.ReservationId`, `AirbnbConnection.Id`, `AirbnbListing.ListingId`.
+- **`Property.Latitude` / `Property.Longitude` are now `*string`** (decimal degrees as a string), not `*float64`.
+- `scripts/check-spec-freshness.py` now diffs schema shapes, not just the path/operation inventory, so drift like this fails CI going forward instead of only catching added/removed endpoints.
+
 ## v0.2.8 — 2026-09-11
 
 ### Additive
