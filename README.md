@@ -6,13 +6,13 @@ The official Go SDK for [api.repull.dev](https://api.repull.dev) — the unified
 API for vacation-rental tech (50+ PMS platforms, Airbnb / Booking.com / VRBO /
 Plumguide channels, AI ops, white-label OAuth).
 
-> **Status:** v0.2.9 — alpha. `pkg.go.dev` listing pending (auto-publishes on
+> **Status:** v0.2.11 — alpha. `pkg.go.dev` listing pending (auto-publishes on
 > first import).
 
 ## Install
 
 ```bash
-go get github.com/ivannikolovbg/repull-go@v0.2.9
+go get github.com/ivannikolovbg/repull-go@v0.2.11
 ```
 
 Requires Go 1.24+.
@@ -146,7 +146,7 @@ resp, err := client.ListReservationsWithResponse(ctx, &repull.ListReservationsPa
 
 ## Status
 
-v0.2.9 — alpha. The API surface tracks `https://api.repull.dev/api/repull/openapi.json`
+v0.2.11 — alpha. The API surface tracks `https://api.repull.dev/api/repull/openapi.json`
 1:1 and may break before 1.0. Open an issue if you hit drift between the
 generated client and the live API — both are still settling.
 
