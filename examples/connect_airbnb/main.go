@@ -4,7 +4,7 @@
 // URL the user should visit, then polls connection status until it flips to
 // connected (or you Ctrl-C).
 //
-//	REPULL_API_KEY=sk_test_... go run ./examples/connect_airbnb
+//	REPULL_API_KEY=sk_live_... go run ./examples/connect_airbnb
 //
 // The redirect URL below is for demo purposes — register your real one with
 // Repull before going to production.

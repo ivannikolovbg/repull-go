@@ -36,8 +36,7 @@ import (
 const DefaultBaseURL = "https://api.repull.dev"
 
 // WithBearer returns a ClientOption that adds an `Authorization: Bearer <token>`
-// header to every request. Pass your Repull API key (sk_test_* for sandbox,
-// sk_live_* for production).
+// header to every request. Pass your Repull API key (sk_live_*).
 //
 // oapi-codegen does not generate auth handling out of the box — this is the
 // canonical way to wire it in.
