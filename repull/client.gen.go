@@ -100,6 +100,8 @@ type ClientInterface interface {
 	//
 	// Per-property *different* values are separate calls — presenting them as one request would be a false claim about atomicity.
 	//
+	// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with PATCH /v1/availability/batch (the `BatchUpdateAvailability` operationId).
@@ -112,6 +114,8 @@ type ClientInterface interface {
 	// Ownership is checked before anything is written: a batch containing a property from another workspace is refused as a whole and names the offending ids, rather than being partially applied.
 	//
 	// Per-property *different* values are separate calls — presenting them as one request would be a false claim about atomicity.
+	//
+	// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -128,12 +132,16 @@ type ClientInterface interface {
 	//
 	// This endpoint is read-only, and the projected per-date shape carries **availability, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). Availability **writes** always stay per-channel: `PUT /v1/channels/airbnb/listings/{id}/availability` (Airbnb) or `PUT /v1/channels/booking/availability` (Booking.com).
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/availability/{propertyId} (the `GetAvailability` operationId).
 	GetAvailability(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateAvailabilityWithBody Set prices, block or unblock dates
 	//
 	// Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -143,6 +151,8 @@ type ClientInterface interface {
 	// UpdateAvailability Set prices, block or unblock dates
 	//
 	// Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -173,12 +183,16 @@ type ClientInterface interface {
 	//
 	// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `dataFreshness` envelope.
 	//
+	// Alterations of reservations on inactive listings are left out. Filtering by a reservation on an inactive listing (`reservation_code`) returns `403 listing_inactive`.
+	//
 	// Corresponds with GET /v1/channels/airbnb/alterations (the `ListAirbnbAlterations` operationId).
 	ListAirbnbAlterations(ctx context.Context, params *ListAirbnbAlterationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateAirbnbAlterationWithBody Create Airbnb alteration
 	//
 	// Create a reservation alteration request (change dates, guest count, or price) on Airbnb. **Write-side** — calls Airbnb upstream. Requires a connected Airbnb host for the workspace, else `404 no_connection`.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -189,6 +203,8 @@ type ClientInterface interface {
 	//
 	// Create a reservation alteration request (change dates, guest count, or price) on Airbnb. **Write-side** — calls Airbnb upstream. Requires a connected Airbnb host for the workspace, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/alterations (the `CreateAirbnbAlteration` operationId).
@@ -198,12 +214,16 @@ type ClientInterface interface {
 	//
 	// Fetch a single Airbnb reservation alteration by its Airbnb alteration id. **Pure DB read**, workspace-scoped via the reservations join. Returns `404 not_found` when no alteration matches the id in your workspace.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/alterations/{id} (the `GetAirbnbAlteration` operationId).
 	GetAirbnbAlteration(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AcceptAirbnbAlterationWithBody Accept Airbnb alteration
 	//
 	// Accept a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to approve the proposed date / guest-count / price change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -214,6 +234,8 @@ type ClientInterface interface {
 	//
 	// Accept a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to approve the proposed date / guest-count / price change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/alterations/{id}/accept (the `AcceptAirbnbAlteration` operationId).
@@ -223,6 +245,8 @@ type ClientInterface interface {
 	//
 	// Decline a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to reject the proposed change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/alterations/{id}/decline (the `DeclineAirbnbAlteration` operationId).
@@ -231,6 +255,8 @@ type ClientInterface interface {
 	// DeclineAirbnbAlteration Decline Airbnb alteration
 	//
 	// Decline a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to reject the proposed change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -256,6 +282,8 @@ type ClientInterface interface {
 	//
 	// Pass `?include=amenities` to enrich each connection with its locally-cached amenity set. Returns `null` per connection when the cache is empty.
 	//
+	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings (the `ListAirbnbListings` operationId).
 	ListAirbnbListings(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -266,6 +294,8 @@ type ClientInterface interface {
 	// Discover the `airbnbId` (+ `hostId`) via `GET /v1/channels/airbnb/listings`, then re-point it at the `listingId` of your choice — the dedup / consolidation case where the Airbnb sync auto-created its own listing but you want the inventory under an existing property.
 	//
 	// Repoints both the Airbnb record and its platform link to the target listing in one transaction. Idempotent — re-mapping to the same listing is a 200 no-op (`alreadyMapped: true`). Scope is enforced against your workspace on both the target listing and the existing Airbnb record; a listing that already links a different Airbnb listing returns 409.
+	//
+	// Returns `403 listing_inactive` when the target listing, or the listing the Airbnb listing is mapped to now, is inactive; nothing is changed.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -280,6 +310,8 @@ type ClientInterface interface {
 	//
 	// Repoints both the Airbnb record and its platform link to the target listing in one transaction. Idempotent — re-mapping to the same listing is a 200 no-op (`alreadyMapped: true`). Scope is enforced against your workspace on both the target listing and the existing Airbnb record; a listing that already links a different Airbnb listing returns 409.
 	//
+	// Returns `403 listing_inactive` when the target listing, or the listing the Airbnb listing is mapped to now, is inactive; nothing is changed.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/listings/map (the `MapAirbnbListing` operationId).
@@ -288,6 +320,8 @@ type ClientInterface interface {
 	// GetAirbnbListing Get Airbnb listing
 	//
 	// Fetch all Airbnb connection rows for a single Vanio listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id} (the `GetAirbnbListing` operationId).
 	GetAirbnbListing(ctx context.Context, id string, params *GetAirbnbListingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -301,6 +335,8 @@ type ClientInterface interface {
 	// `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking.
 	//
 	// Any other action (e.g. `pull`, `unlist`) returns a structured 422 naming the supported actions.
+	//
+	// Returns `403 listing_inactive` for `push`/`publish` when the listing is inactive. `delete` (deactivation) is always accepted.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -317,6 +353,8 @@ type ClientInterface interface {
 	//
 	// Any other action (e.g. `pull`, `unlist`) returns a structured 422 naming the supported actions.
 	//
+	// Returns `403 listing_inactive` for `push`/`publish` when the listing is inactive. `delete` (deactivation) is always accepted.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/listings/{id} (the `AirbnbListingAction` operationId).
@@ -326,6 +364,8 @@ type ClientInterface interface {
 	//
 	// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/amenities (the `ListAirbnbListingAmenities` operationId).
 	ListAirbnbListingAmenities(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -333,12 +373,22 @@ type ClientInterface interface {
 	//
 	// Read the per-day availability calendar for an Airbnb listing. Returns one row per day including price overrides, min-stay, and blocked status.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/availability (the `GetAirbnbListingAvailability` operationId).
 	GetAirbnbListingAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateAirbnbListingAvailabilityWithBody Update Airbnb availability
 	//
 	// Push availability + restrictions to Airbnb. `type: "calendar"` writes per-date restrictions — min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`) — via a batch of operations that each target either a date range or an explicit date list. `type: "rules"` writes listing-level availability rules (default min/max nights, booking lead time, turnover days, seasonal/day-of-week min nights). Restrictions never leak across channels — this endpoint writes only to Airbnb.
+	//
+	// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+	//
+	// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+	//
+	// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+	//
+	// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -349,6 +399,14 @@ type ClientInterface interface {
 	//
 	// Push availability + restrictions to Airbnb. `type: "calendar"` writes per-date restrictions — min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`) — via a batch of operations that each target either a date range or an explicit date list. `type: "rules"` writes listing-level availability rules (default min/max nights, booking lead time, turnover days, seasonal/day-of-week min nights). Restrictions never leak across channels — this endpoint writes only to Airbnb.
 	//
+	// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+	//
+	// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+	//
+	// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+	//
+	// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/availability (the `UpdateAirbnbListingAvailability` operationId).
@@ -358,12 +416,16 @@ type ClientInterface interface {
 	//
 	// Return every published locale variant of an Airbnb listing's check-in guide. **Pure DB read** from `listings_airbnb_check_in_guides`. Pass `?locale=en` to filter to one locale (prefix match). Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/checkin-guide (the `GetAirbnbCheckinGuide` operationId).
 	GetAirbnbCheckinGuide(ctx context.Context, id string, params *GetAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateAirbnbCheckinGuide Upsert Airbnb check-in guide
 	//
 	// Upsert the check-in guide for one locale on an Airbnb listing. **Write-side** — calls Airbnb upstream; the DB mirror is reconciled by the sync worker once the upstream call returns. Target the locale with `?locale=en` (defaults to `en`). Requires a connected Airbnb host, else `404 no_connection`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
 	UpdateAirbnbCheckinGuide(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -372,12 +434,16 @@ type ClientInterface interface {
 	//
 	// Return the checkout tasks an Airbnb listing shows guests at departure. **Pure DB read** from `listings_airbnb_checkout_tasks`. Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/checkout-guide (the `GetAirbnbCheckoutGuide` operationId).
 	GetAirbnbCheckoutGuide(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbListingDescriptions List Airbnb descriptions
 	//
 	// List an Airbnb listing's per-locale content (name, summary, house rules, etc). **Pure DB read** from `listings_airbnb_descriptions`. Filter to one locale with `?locale=en` (the legacy `?country=` param is accepted as a soft alias). Returns `404` when the listing has no Airbnb connection in this workspace.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/descriptions (the `ListAirbnbListingDescriptions` operationId).
 	ListAirbnbListingDescriptions(ctx context.Context, id string, params *ListAirbnbListingDescriptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -386,12 +452,16 @@ type ClientInterface interface {
 	//
 	// Remove a single photo from an Airbnb listing. Pass the Airbnb-side photo id as `?photoId=`. Write-side — calls Airbnb upstream; the local photo cache is reconciled by the sync worker afterwards.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with DELETE /v1/channels/airbnb/listings/{id}/photos (the `DeleteAirbnbListingPhoto` operationId).
 	DeleteAirbnbListingPhoto(ctx context.Context, id string, params *DeleteAirbnbListingPhotoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbListingPhotos List Airbnb photos
 	//
 	// List photos attached to an Airbnb listing in display order. Returns the public CDN URL plus Airbnb-side metadata (id, caption, room).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/photos (the `ListAirbnbListingPhotos` operationId).
 	ListAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -400,6 +470,8 @@ type ClientInterface interface {
 	//
 	// Upload one or more photos to an Airbnb listing. Accepts public image URLs (Airbnb fetches them) — direct binary upload is not supported on this endpoint.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with POST /v1/channels/airbnb/listings/{id}/photos (the `UploadAirbnbListingPhotos` operationId).
 	UploadAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -407,12 +479,22 @@ type ClientInterface interface {
 	//
 	// Read the current pricing config (base price, weekend uplift, length-of-stay discounts, smart-pricing bounds) for an Airbnb listing.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/pricing (the `GetAirbnbListingPricing` operationId).
 	GetAirbnbListingPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateAirbnbListingPricingWithBody Update Airbnb pricing
 	//
 	// Push pricing changes to Airbnb. The `type` discriminator selects the sub-resource (model, standard settings, LOS, rate-plan, fees, currency, rule, or per-date `calendar`). `type: "calendar"` carries the full per-date restriction set — nightly price, min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`). For settings sub-resources the full object is replaced — GET first, mutate locally, then PUT the whole object.
+	//
+	// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+	//
+	// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+	//
+	// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+	//
+	// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -423,6 +505,14 @@ type ClientInterface interface {
 	//
 	// Push pricing changes to Airbnb. The `type` discriminator selects the sub-resource (model, standard settings, LOS, rate-plan, fees, currency, rule, or per-date `calendar`). `type: "calendar"` carries the full per-date restriction set — nightly price, min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`). For settings sub-resources the full object is replaced — GET first, mutate locally, then PUT the whole object.
 	//
+	// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+	//
+	// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+	//
+	// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+	//
+	// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/pricing (the `UpdateAirbnbListingPricing` operationId).
@@ -432,12 +522,16 @@ type ClientInterface interface {
 	//
 	// Return an Airbnb listing's quality signals — standards, reservation issues, and monthly quality stats. **Pure DB read** from the local quality mirrors. Scope the response with `?type=all|standards|issues|stats` (default `all`, which returns `{ standards, issues }`). Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/quality (the `GetAirbnbListingQuality` operationId).
 	GetAirbnbListingQuality(ctx context.Context, id string, params *GetAirbnbListingQualityParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteAirbnbListingRoom Delete an Airbnb room
 	//
 	// Delete a room from an Airbnb listing. **Write-side** — calls Airbnb upstream. Pass the Airbnb-side room id as `?roomId=`. Requires a connected Airbnb host, else `404 no_connection`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with DELETE /v1/channels/airbnb/listings/{id}/rooms (the `DeleteAirbnbListingRoom` operationId).
 	DeleteAirbnbListingRoom(ctx context.Context, id string, params *DeleteAirbnbListingRoomParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -446,12 +540,16 @@ type ClientInterface interface {
 	//
 	// List the rooms configured on an Airbnb listing, ordered by room number. **Pure DB read** from `listings_airbnb_rooms`. Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/rooms (the `ListAirbnbListingRooms` operationId).
 	ListAirbnbListingRooms(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateAirbnbListingRoomWithBody Create an Airbnb room
 	//
 	// Create a new room on an Airbnb listing. **Write-side** — calls Airbnb upstream. Body is the full room object minus `room_id`. Requires a connected Airbnb host, else `404 no_connection`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -462,6 +560,8 @@ type ClientInterface interface {
 	//
 	// Create a new room on an Airbnb listing. **Write-side** — calls Airbnb upstream. Body is the full room object minus `room_id`. Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/listings/{id}/rooms (the `CreateAirbnbListingRoom` operationId).
@@ -471,12 +571,16 @@ type ClientInterface interface {
 	//
 	// Return an Airbnb listing's host roles, published locales, and regulatory permits. **Pure DB read** — host roles from `listings_airbnb_details.host_roles`, locales from distinct `listings_airbnb_descriptions.locale`, permits from `listings_airbnb_permits`. Scope with `?type=all|hosts|permits|locales` (default `all`, which returns `{ hosts, locales }`). Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/settings (the `GetAirbnbListingSettings` operationId).
 	GetAirbnbListingSettings(ctx context.Context, id string, params *GetAirbnbListingSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbThreads List Airbnb message threads
 	//
 	// List Airbnb message threads (one per guest conversation). Cursor-paginated. Each thread includes a preview of the latest message.
+	//
+	// Threads on inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
 	// Corresponds with GET /v1/channels/airbnb/messaging (the `ListAirbnbThreads` operationId).
 	ListAirbnbThreads(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -485,12 +589,16 @@ type ClientInterface interface {
 	//
 	// Fetch a single Airbnb message thread by its Airbnb thread id. **Pure DB read** from the local `message_threads` mirror, workspace-scoped. Returns `404 not_found` when no thread matches. For the messages within a thread use `GET /v1/channels/airbnb/messaging/{threadId}/messages`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/messaging/{threadId} (the `GetAirbnbThread` operationId).
 	GetAirbnbThread(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbThreadMessages Get Airbnb messages
 	//
 	// Fetch the full message log for an Airbnb thread, ordered oldest-to-newest. Walk pages with `?cursor=` until `pagination.hasMore` is `false`.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/airbnb/messaging/{threadId}/messages (the `ListAirbnbThreadMessages` operationId).
 	ListAirbnbThreadMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -500,6 +608,8 @@ type ClientInterface interface {
 	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
 	//
 	// The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -511,6 +621,8 @@ type ClientInterface interface {
 	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
 	//
 	// The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -528,6 +640,8 @@ type ClientInterface interface {
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with PATCH /v1/channels/airbnb/messaging/{threadId}/messages/{messageId} (the `UpdateAirbnbMessage` operationId).
@@ -543,6 +657,8 @@ type ClientInterface interface {
 	// - `react` — add a reaction (requires `reaction`).
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -565,6 +681,8 @@ type ClientInterface interface {
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
@@ -579,6 +697,8 @@ type ClientInterface interface {
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
@@ -588,11 +708,13 @@ type ClientInterface interface {
 	//
 	// Cursor-paginated list of reservations sourced directly from Airbnb. Use this when you need Airbnb-specific fields (guest payout split, cancellation policy snapshot) that the unified `/v1/reservations` endpoint flattens away.
 	//
-	// Walk pages with `?cursor=<pagination.next_cursor>` until `pagination.has_more` is `false`. The cursor is opaque — never construct or parse it client-side.
+	// Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. Internally this walks upstream Airbnb cursor pages to skip rows, so deep offsets cost N/limit upstream round-trips; cursor remains the better choice for deep pagination.
 	//
 	// When `status` is omitted, all statuses are returned (Airbnb defaults to `accepted` only on its own surface, but this endpoint normalises to "all"). Pass `?status=accepted` to scope.
+	//
+	// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
 	// Corresponds with GET /v1/channels/airbnb/reservations (the `ListAirbnbReservations` operationId).
 	ListAirbnbReservations(ctx context.Context, params *ListAirbnbReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -601,12 +723,16 @@ type ClientInterface interface {
 	//
 	// Fetch a single Airbnb reservation by Airbnb confirmation code (e.g. `HMABCDEF12`).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/airbnb/reservations/{code} (the `GetAirbnbReservation` operationId).
 	GetAirbnbReservation(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AirbnbReservationAction Accept/decline/cancel Airbnb reservation
 	//
 	// Apply a state action to an Airbnb reservation — `accept` / `decline` (for inquiries and reservation requests), `cancel` (host cancellation, carries penalties), `pre-approve` (for inquiries).
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
 	AirbnbReservationAction(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -615,12 +741,16 @@ type ClientInterface interface {
 	//
 	// List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
 	//
+	// Reviews of inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
+	//
 	// Corresponds with GET /v1/channels/airbnb/reviews (the `ListAirbnbReviews` operationId).
 	ListAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RespondAirbnbReviewLegacy Respond to / submit Airbnb review (legacy)
 	//
 	// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `PUT /v1/channels/airbnb/reviews/{id}` (edit) and `POST /v1/channels/airbnb/reviews/{id}/respond` (reply) for new integrations.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with POST /v1/channels/airbnb/reviews (the `RespondAirbnbReviewLegacy` operationId).
 	//
@@ -633,6 +763,8 @@ type ClientInterface interface {
 	//
 	// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
@@ -644,6 +776,8 @@ type ClientInterface interface {
 	//
 	// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
@@ -652,6 +786,8 @@ type ClientInterface interface {
 	// RespondAirbnbReviewWithBody Respond to Airbnb review
 	//
 	// Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -662,6 +798,8 @@ type ClientInterface interface {
 	//
 	// Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
@@ -669,7 +807,9 @@ type ClientInterface interface {
 
 	// ListAirbnbTransactions List Airbnb transactions
 	//
-	// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `data_freshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+	// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `dataFreshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+	//
+	// Transactions of reservations on inactive listings are left out; payout rows, which belong to no listing, are always included.
 	//
 	// Corresponds with GET /v1/channels/airbnb/transactions (the `ListAirbnbTransactions` operationId).
 	ListAirbnbTransactions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -698,6 +838,10 @@ type ClientInterface interface {
 	//
 	// Proxies Booking's `getRoomRateAvailability` — the returned fields (price, rooms-to-sell, min/max stay, closed-to-arrival/departure, stop-sell) are whatever Booking.com emits for the window. A listing-id-keyed equivalent is available at `GET /v1/channels/booking/listings/{id}/pricing`.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/booking/availability (the `GetBookingAvailability` operationId).
 	GetBookingAvailability(ctx context.Context, params *GetBookingAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -710,6 +854,10 @@ type ClientInterface interface {
 	// - `derived-pricing` — occupancy-derived pricing rules.
 	//
 	// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -726,6 +874,10 @@ type ClientInterface interface {
 	//
 	// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/channels/booking/availability (the `UpdateBookingAvailability` operationId).
@@ -735,12 +887,20 @@ type ClientInterface interface {
 	//
 	// Fetch the extra-charge set (cleaning fee, resort fee, city tax, etc.) configured for a Booking.com property. Pass the Booking.com `property_id` as a query param — required.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/booking/charges (the `GetBookingCharges` operationId).
 	GetBookingCharges(ctx context.Context, params *GetBookingChargesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateBookingChargesWithBody Set Booking.com charges
 	//
 	// Replace the extra-charge set for a Booking.com property. The body carries the target `property_id` and the full `charges` array — Booking treats the write as a full replacement, so include every charge you want to keep.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -751,6 +911,10 @@ type ClientInterface interface {
 	//
 	// Replace the extra-charge set for a Booking.com property. The body carries the target `property_id` and the full `charges` array — Booking treats the write as a full replacement, so include every charge you want to keep.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/channels/booking/charges (the `UpdateBookingCharges` operationId).
@@ -760,12 +924,20 @@ type ClientInterface interface {
 	//
 	// Fetch the current content (descriptions, amenities, photos) for a Booking.com property. Used to round-trip edits through Repull.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/booking/content (the `GetBookingContent` operationId).
 	GetBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateBookingContent Update Booking.com content
 	//
 	// Push content changes (descriptions, amenities, photos) to Booking.com. Booking enforces editorial review on text fields — changes appear after their content moderation queue clears.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
 	UpdateBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -776,12 +948,16 @@ type ClientInterface interface {
 	//
 	// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Vanio listing ID across channels.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/booking/listings/{id}/pricing (the `GetBookingListingPricing` operationId).
 	GetBookingListingPricing(ctx context.Context, id int, params *GetBookingListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateBookingListingPricingWithBody Update Booking.com pricing for a listing
 	//
 	// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -792,6 +968,8 @@ type ClientInterface interface {
 	//
 	// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
@@ -801,12 +979,20 @@ type ClientInterface interface {
 	//
 	// List Booking.com guest conversations. Cursor-paginated. Use the messaging POST to send a reply.
 	//
+	// Scoped to this workspace. With `property_id`, the property must be connected to this workspace — any other id returns `404 not_found`. Without it, only messages for this workspace's own Booking.com properties are returned.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/booking/messaging (the `ListBookingConversations` operationId).
 	ListBookingConversations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SendBookingMessageWithBody Send Booking.com message
 	//
 	// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -817,6 +1003,10 @@ type ClientInterface interface {
 	//
 	// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/booking/messaging (the `SendBookingMessage` operationId).
@@ -826,12 +1016,16 @@ type ClientInterface interface {
 	//
 	// List Booking.com hotels claimed by this workspace. Each row includes the Booking-side hotel id and the connected room types.
 	//
+	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	//
 	// Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
 	ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetBookingProperty Get Booking.com connection for a listing
 	//
 	// Return the Booking.com connection record(s) for a Vanio listing — the linked Booking hotel id, sync flags, markup, sync category, and suspension state. Scoped to the authenticated workspace; a listing with no Booking.com connection returns 404.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/booking/properties/{id} (the `GetBookingProperty` operationId).
 	GetBookingProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -842,6 +1036,8 @@ type ClientInterface interface {
 	//
 	// `id` is a Vanio listing id — resolved to the Booking `hotel_id` via the workspace mapping (a listing with no active Booking.com mapping returns 404). Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/booking/properties/{id}/rooms (the `ListBookingPropertyRooms` operationId).
 	ListBookingPropertyRooms(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -849,12 +1045,18 @@ type ClientInterface interface {
 	//
 	// Pull reservations from Booking.com. `type=new` (default) returns un-acknowledged bookings; `type=modified` returns changed bookings. Pass both `reservation_id` and `hotel_id` to fetch a single reservation's full details. Acknowledge processed reservations with the POST so Booking stops re-serving them in the `new` queue.
 	//
+	// Scoped to this workspace. `hotel_id` (or its alias `property_id`) must be a property connected to this workspace; any other id returns `404 not_found`, the same as an id that does not exist. Without a hotel, `new`/`modified` cover every Booking.com property this workspace holds (and return `404 not_found` if it holds none). A `reservation_id` that belongs to another workspace returns `404 not_found`.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/booking/reservations (the `ListBookingReservations` operationId).
 	ListBookingReservations(ctx context.Context, params *ListBookingReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AcknowledgeBookingReservationsWithBody Acknowledge Booking.com reservations
 	//
 	// Acknowledge one or more reservations so Booking.com removes them from the `new` queue. The body carries `reservation_ids` (non-empty array). Acknowledge only after you have durably persisted each reservation.
+	//
+	// Only reservations that belong to this workspace can be acknowledged. If any id in `reservation_ids` is not one of this workspace's Booking.com reservations (`confirmationCode` on `GET /v1/reservations?platform=booking`), nothing is acknowledged and the response is `404 not_found` naming those ids in `reservation_ids`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -865,6 +1067,8 @@ type ClientInterface interface {
 	//
 	// Acknowledge one or more reservations so Booking.com removes them from the `new` queue. The body carries `reservation_ids` (non-empty array). Acknowledge only after you have durably persisted each reservation.
 	//
+	// Only reservations that belong to this workspace can be acknowledged. If any id in `reservation_ids` is not one of this workspace's Booking.com reservations (`confirmationCode` on `GET /v1/reservations?platform=booking`), nothing is acknowledged and the response is `404 not_found` naming those ids in `reservation_ids`.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/booking/reservations (the `AcknowledgeBookingReservations` operationId).
@@ -874,6 +1078,10 @@ type ClientInterface interface {
 	//
 	// List guest reviews for a Booking.com property. Pass `property_id` (the Booking.com hotel id) as a query param — required.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/booking/reviews (the `ListBookingReviews` operationId).
 	ListBookingReviews(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -882,6 +1090,10 @@ type ClientInterface interface {
 	// Post a public host reply to a guest review on Booking.com. Booking allows one host reply per review — repeated POSTs are rejected by upstream.
 	//
 	// Booking.com does NOT support host-authored reviews of guests via the API (platform-level limitation), so this endpoint is reply-only.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -893,6 +1105,10 @@ type ClientInterface interface {
 	// Post a public host reply to a guest review on Booking.com. Booking allows one host reply per review — repeated POSTs are rejected by upstream.
 	//
 	// Booking.com does NOT support host-authored reviews of guests via the API (platform-level limitation), so this endpoint is reply-only.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -912,6 +1128,10 @@ type ClientInterface interface {
 	//
 	// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
 	//
+	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
@@ -930,6 +1150,10 @@ type ClientInterface interface {
 	//
 	// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
 	//
+	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
@@ -937,39 +1161,49 @@ type ClientInterface interface {
 
 	// DeleteBookingWebhook Unsubscribe from a Booking.com notification
 	//
-	// Remove a Booking.com CNS subscription. Pass the `notification_type` to unsubscribe as a query param — required.
+	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 	//
 	// Corresponds with DELETE /v1/channels/booking/webhooks (the `DeleteBookingWebhook` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	DeleteBookingWebhook(ctx context.Context, params *DeleteBookingWebhookParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListBookingWebhooks List Booking.com webhook subscriptions
 	//
-	// List the workspace's Booking.com Content Notification Service (CNS) subscriptions — the notification types Booking pushes to your callback URLs.
+	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 	//
 	// Corresponds with GET /v1/channels/booking/webhooks (the `ListBookingWebhooks` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	ListBookingWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateBookingWebhookWithBody Subscribe to a Booking.com notification
 	//
-	// Subscribe to a Booking.com CNS notification type, delivered to `callback_url`. Returns 201 on success.
+	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/channels/booking/webhooks (the `CreateBookingWebhook` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateBookingWebhook Subscribe to a Booking.com notification
 	//
-	// Subscribe to a Booking.com CNS notification type, delivered to `callback_url`. Returns 201 on success.
+	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/booking/webhooks (the `CreateBookingWebhook` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhook(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetPlumguideAvailability Get Plumguide availability
 	//
 	// Read the per-day availability calendar for a Plumguide listing. Returns the same row shape as Airbnb availability for SDK convenience.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/plumguide/availability (the `GetPlumguideAvailability` operationId).
 	GetPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -978,12 +1212,16 @@ type ClientInterface interface {
 	//
 	// Push per-day availability changes to Plumguide. Plumguide accepts only the next 24 months — dates beyond that are silently ignored.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with PUT /v1/channels/plumguide/availability (the `UpdatePlumguideAvailability` operationId).
 	UpdatePlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListPlumguideBookings List Plumguide bookings
 	//
 	// List Plumguide bookings. Default returns all bookings; pass `listing_id` to filter to one listing, or `booking_code` to fetch a single booking.
+	//
+	// Returns `403 listing_inactive` when `listing_id` or `booking_code` resolves to an inactive listing. The unfiltered list is read straight from Plum Guide and is not filtered by listing status.
 	//
 	// Corresponds with GET /v1/channels/plumguide/bookings (the `ListPlumguideBookings` operationId).
 	ListPlumguideBookings(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -999,12 +1237,16 @@ type ClientInterface interface {
 	//
 	// Read the current pricing for a Plumguide listing (base price, currency, weekend uplift).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/channels/plumguide/pricing (the `GetPlumguidePricing` operationId).
 	GetPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdatePlumguidePricing Push pricing to Plumguide
 	//
 	// Push pricing changes to Plumguide. Plumguide rounds all prices to whole units of the listing currency — sub-unit precision is silently truncated.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with PUT /v1/channels/plumguide/pricing (the `UpdatePlumguidePricing` operationId).
 	UpdatePlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1045,12 +1287,16 @@ type ClientInterface interface {
 	//
 	// List VRBO listings this workspace owns. VRBO is agency-model — Repull reads listings via the public iCal/HTTP feeds.
 	//
+	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	//
 	// Corresponds with GET /v1/channels/vrbo/listings (the `ListVrboListings` operationId).
 	ListVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVrboReservations List VRBO reservations
 	//
 	// Cursor-paginated list of VRBO reservations sourced from the public booking feed. Lag is typically 5-10 minutes vs. Airbnb / Booking.com. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
+	//
+	// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated.
 	//
 	// Corresponds with GET /v1/channels/vrbo/reservations (the `ListVrboReservations` operationId).
 	ListVrboReservations(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1454,14 +1700,18 @@ type ClientInterface interface {
 
 	// DeleteConnection Disconnect provider
 	//
-	// Disconnect a PMS or OTA from this workspace.
+	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
 	//
-	// Currently supported for `booking` only: drops the stored connection and stops syncing the mapped rooms. Resources already synced remain queryable but become read-only and stop receiving updates.
+	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 	//
-	// Every other provider returns `501 not_implemented` with instructions for disconnecting on the provider's side — Airbnb in particular has to be revoked by the host (Account → Privacy & sharing → Connected apps), because the OAuth grant lives outside this service. The endpoint used to report `200 { disconnected: true }` for every provider while doing nothing; it now tells you the truth.
+	// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
+	//
+	// The change is all or nothing. For Airbnb, the host can also revoke access on Airbnb's side (Account → Privacy & sharing → Connected apps); that alone does not update this workspace, so call this endpoint as well.
+	//
+	// Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side.
 	//
 	// Corresponds with DELETE /v1/connect/{provider} (the `DeleteConnection` operationId).
-	DeleteConnection(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteConnection(ctx context.Context, provider Provider, params *DeleteConnectionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetConnectStatus Get connection status
 	//
@@ -1508,12 +1758,16 @@ type ClientInterface interface {
 	//
 	// Filters: `platform` (`airbnb`|`booking`|`vrbo`|`website`|`email`), `status` (`open`|`archived` — `archived` is a stable no-op until the bit lands on `message_threads`).
 	//
+	// **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
+	//
 	// Corresponds with GET /v1/conversations (the `ListConversations` operationId).
 	ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetConversation Get conversation detail
 	//
 	// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks.
+	//
+	// A conversation that belongs to an inactive listing (by the thread's listing or its reservation's listing) returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 	//
 	// Corresponds with GET /v1/conversations/{id} (the `GetConversation` operationId).
 	GetConversation(ctx context.Context, id int, params *GetConversationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1523,6 +1777,8 @@ type ClientInterface interface {
 	// Cursor-paginated messages within one thread. Defaults to newest-first (`?order=desc`); pass `?order=asc` for chronological replay. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
+	//
+	// A conversation that belongs to an inactive listing returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 	//
 	// Corresponds with GET /v1/conversations/{id}/messages (the `ListConversationMessages` operationId).
 	ListConversationMessages(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1542,6 +1798,8 @@ type ClientInterface interface {
 	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+	//
+	// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1564,6 +1822,8 @@ type ClientInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
@@ -1576,6 +1836,8 @@ type ClientInterface interface {
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 	//
 	// Filters: `q` (substring on name/email/phone), `has_reservation` (`true`|`false`), `listing_id` (restrict to guests with at least one reservation on that listing).
+	//
+	// **Inactive listings:** a guest whose every reservation is on an inactive listing is left out of the page and of `pagination.total`, and `totalReservations`, `totalRevenue`, `firstStayedAt` / `lastStayedAt`, `has_reservation` and `listing_id` only consider reservations that are not on an inactive listing. Guests with no reservations are tied to no listing and are always listed. Filtering by an inactive `listing_id` returns `403 listing_inactive`.
 	//
 	// Corresponds with GET /v1/guests (the `ListGuests` operationId).
 	ListGuests(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1613,6 +1875,8 @@ type ClientInterface interface {
 	// GetGuest Get guest profile
 	//
 	// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates. Aggregates main vanio's `GuestService.getGuestProfile()` into the public Repull shape so SDK consumers don't have to learn the internal schema.
+	//
+	// **Inactive listings:** a guest whose every reservation is on an inactive listing returns `403 listing_inactive` naming those listings (the guest is kept, so this is not a 404). Otherwise the reservation aggregates exclude reservations on inactive listings. A guest with no reservations is always readable.
 	//
 	// Corresponds with GET /v1/guests/{id} (the `GetGuest` operationId).
 	GetGuest(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1711,6 +1975,8 @@ type ClientInterface interface {
 	//
 	// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Combine comma-separated, e.g. `?include=content,details`. The default response stays lean; consumers must opt in.
 	//
+	// **Inactive listings:** by default only active listings are returned. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated, so when `status` asks for inactive ones they carry only `id`, `name`, `status` and `channels` — enough to choose what to activate with `PATCH /v1/listings/{id}`. `?include=` expansions are not applied to them.
+	//
 	// Corresponds with GET /v1/listings (the `ListListings` operationId).
 	ListListings(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1742,6 +2008,8 @@ type ClientInterface interface {
 	//
 	// Apply path writes the recommended price to each listing's calendar via the calendar service (which fans out to Airbnb/Booking/VRBO) then marks the Atlas recommendation `applied`. Decline path is Atlas-only — fast.
 	//
+	// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
@@ -1757,10 +2025,54 @@ type ClientInterface interface {
 	//
 	// Apply path writes the recommended price to each listing's calendar via the calendar service (which fans out to Airbnb/Booking/VRBO) then marks the Atlas recommendation `applied`. Decline path is Atlas-only — fast.
 	//
+	// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
 	BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetListingsStatusWithBody Activate or deactivate listings in bulk
+	//
+	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
+	//
+	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	//
+	// **All or nothing.** Nothing changes unless the whole request can be applied:
+	// - If any id is not one of your listings, the call returns `404` naming those ids.
+	// - If activating would take you over your plan's listing limit, the call returns `402 listings_limit_exceeded`. Only listings that are currently inactive count toward the new total, so re-sending ids that are already active never trips the limit.
+	//
+	// Deactivating is always allowed, including when your account is already over its limit — it is how you get back under it.
+	//
+	// **Idempotent.** Ids already in the requested state are returned in `unchanged`; ids this call changed are returned in `updated`.
+	//
+	// For a single listing, `PATCH /v1/listings/{id}` does the same.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/listings/status (the `SetListingsStatus` operationId).
+	SetListingsStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetListingsStatus Activate or deactivate listings in bulk
+	//
+	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
+	//
+	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	//
+	// **All or nothing.** Nothing changes unless the whole request can be applied:
+	// - If any id is not one of your listings, the call returns `404` naming those ids.
+	// - If activating would take you over your plan's listing limit, the call returns `402 listings_limit_exceeded`. Only listings that are currently inactive count toward the new total, so re-sending ids that are already active never trips the limit.
+	//
+	// Deactivating is always allowed, including when your account is already over its limit — it is how you get back under it.
+	//
+	// **Idempotent.** Ids already in the requested state are returned in `unchanged`; ids this call changed are returned in `updated`.
+	//
+	// For a single listing, `PATCH /v1/listings/{id}` does the same.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/status (the `SetListingsStatus` operationId).
+	SetListingsStatus(ctx context.Context, body SetListingsStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeactivateListing Deactivate (exclude) a listing
 	//
@@ -1770,6 +2082,8 @@ type ClientInterface interface {
 	//
 	// Idempotent: deactivating an already-inactive listing returns 200.
 	//
+	// To deactivate many listings at once, use `POST /v1/listings/status` with `{ "active": false }`.
+	//
 	// Corresponds with DELETE /v1/listings/{id} (the `DeactivateListing` operationId).
 	DeactivateListing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1778,6 +2092,8 @@ type ClientInterface interface {
 	// Fetch a single listing by id. Returns the same shape as one element of the `GET /v1/listings` response, so you can bind the result to the same model. Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403, never reveals the listing's existence.
 	//
 	// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Combine comma-separated, e.g. `?include=amenities,content,details`. The default response stays lean; consumers must opt in.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/listings/{id} (the `GetListing` operationId).
 	GetListing(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1791,6 +2107,8 @@ type ClientInterface interface {
 	// Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 	//
 	// Idempotent: setting a listing to the state it's already in returns 200.
+	//
+	// To change many listings at once, all or nothing, use `POST /v1/listings/status`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1807,6 +2125,8 @@ type ClientInterface interface {
 	//
 	// Idempotent: setting a listing to the state it's already in returns 200.
 	//
+	// To change many listings at once, all or nothing, use `POST /v1/listings/status`.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PATCH /v1/listings/{id} (the `UpdateListingActive` operationId).
@@ -1817,6 +2137,8 @@ type ClientInterface interface {
 	// Returns the actual comp set for a listing — the underlying competitor listings (with daily nightly pricing), not just the aggregated `compSummary` from `/pricing`. Each comp comes back with distance, bedrooms, ratings, lat/lng, platform link, and a per-day rate/availability series for the requested window.
 	//
 	// Powered by Atlas. Comps with no coordinates are excluded — there's no way to rank them by distance. Listings without coordinates return `data: []` and a `warning` field.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/listings/{id}/comps (the `ListListingComps` operationId).
 	ListListingComps(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1832,6 +2154,8 @@ type ClientInterface interface {
 	// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
 	//
 	// Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1850,6 +2174,8 @@ type ClientInterface interface {
 	//
 	// Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/listings/{id}/content (the `UpdateListingContent` operationId).
@@ -1858,6 +2184,8 @@ type ClientInterface interface {
 	// GenerateListingContentWithBody AI-generate listing content
 	//
 	// Generate guest-facing copy (title, summary, description, amenities, etc.) for a listing using Repull AI. When `photos` are provided the vision model is used for photo-grounded copy. Persists into the listing by default.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1868,6 +2196,8 @@ type ClientInterface interface {
 	//
 	// Generate guest-facing copy (title, summary, description, amenities, etc.) for a listing using Repull AI. When `photos` are provided the vision model is used for photo-grounded copy. Persists into the listing by default.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
@@ -1876,6 +2206,8 @@ type ClientInterface interface {
 	// DeleteListingPhotoWithBody Delete a stored listing photo
 	//
 	// Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1886,6 +2218,8 @@ type ClientInterface interface {
 	//
 	// Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with DELETE /v1/listings/{id}/photos (the `DeleteListingPhoto` operationId).
@@ -1895,6 +2229,8 @@ type ClientInterface interface {
 	//
 	// Returns the photo set currently stored for this listing.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/listings/{id}/photos (the `ListListingPhotos` operationId).
 	ListListingPhotos(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1903,6 +2239,8 @@ type ClientInterface interface {
 	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 	//
 	// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1915,6 +2253,8 @@ type ClientInterface interface {
 	//
 	// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/listings/{id}/photos/upload-url (the `CreateListingPhotoUploadUrl` operationId).
@@ -1924,12 +2264,16 @@ type ClientInterface interface {
 	//
 	// Returns date-by-date pricing recommendations for a listing's upcoming calendar window, plus the listing's base-price context and a 5km comp summary. Recommendations come from the Atlas pricing model — pre-computed nightly and stored in `pricing_recommendations`. Use POST to apply or decline pending recommendations.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/listings/{id}/pricing (the `GetListingPricing` operationId).
 	GetListingPricing(ctx context.Context, id int, params *GetListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ApplyListingPricingWithBody Apply or decline pricing recommendations
 	//
 	// Apply: writes the recommended price to the listing's calendar for the given dates and triggers the platform fan-out (Airbnb / Booking.com / VRBO). Decline: marks the recommendation as `declined` so it stops surfacing — the model can re-recommend on the next training cycle.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1939,6 +2283,8 @@ type ClientInterface interface {
 	// ApplyListingPricing Apply or decline pricing recommendations
 	//
 	// Apply: writes the recommended price to the listing's calendar for the given dates and triggers the platform fan-out (Airbnb / Booking.com / VRBO). Decline: marks the recommendation as `declined` so it stops surfacing — the model can re-recommend on the next training cycle.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -1953,6 +2299,8 @@ type ClientInterface interface {
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/listings/{id}/pricing/history (the `GetListingPricingHistory` operationId).
 	GetListingPricingHistory(ctx context.Context, id int, params *GetListingPricingHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1960,12 +2308,16 @@ type ClientInterface interface {
 	//
 	// Returns the strategy that constrains how the Atlas pricing model behaves for this listing. If no strategy row exists yet, returns sane defaults flagged with `isDefault: true`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/listings/{id}/pricing/strategy (the `GetListingPricingStrategy` operationId).
 	GetListingPricingStrategy(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateListingPricingStrategyWithBody Update pricing strategy
 	//
 	// Upserts the strategy on `(listing_id, customer_id)` — repeated PUTs are idempotent. Send only the fields you want to change; omitted fields take server-side defaults.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1976,6 +2328,8 @@ type ClientInterface interface {
 	//
 	// Upserts the strategy on `(listing_id, customer_id)` — repeated PUTs are idempotent. Send only the fields you want to change; omitted fields take server-side defaults.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/listings/{id}/pricing/strategy (the `UpdateListingPricingStrategy` operationId).
@@ -1985,12 +2339,16 @@ type ClientInterface interface {
 	//
 	// Returns connection state and sync activity per channel. `channels` is sync activity (empty until first push). `connections` is connection state (populated as soon as a channel is linked). Recommended polling cadence: at most once per 30s per listing — for bulk views, prefer `GET /v1/listings` and filter client-side.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/listings/{id}/publish-status (the `GetListingPublishStatus` operationId).
 	GetListingPublishStatus(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PublishListingToAirbnbWithBody Publish a listing to Airbnb
 	//
 	// Push a Repull listing to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -2001,6 +2359,8 @@ type ClientInterface interface {
 	//
 	// Push a Repull listing to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/airbnb (the `PublishListingToAirbnb` operationId).
@@ -2009,6 +2369,8 @@ type ClientInterface interface {
 	// PublishListingToBooking Publish a listing to Booking.com
 	//
 	// Push a Repull listing to Booking.com. The listing must already be mapped to a Booking property + room (created via the Booking-claim Connect flow).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
 	PublishListingToBooking(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2021,6 +2383,8 @@ type ClientInterface interface {
 	// - What's the ADR uplift for moving up a tier?
 	//
 	// DNA coverage is still ramping — segments are scored asynchronously. Cities and radii without scored comps return `totalCompsAnalyzed: 0` plus a `low_dna_coverage` recommendation rather than fabricated data.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/listings/{id}/segments (the `GetListingSegments` operationId).
 	GetListingSegments(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2067,6 +2431,8 @@ type ClientInterface interface {
 	//
 	// **Incremental sync (only changes since last poll):** pass `?updated_since=<ISO8601>` to receive only properties changed at or after that instant. Each property carries `updatedAt` — the last row of the final page is your next watermark. `updated_since` changes the page ordering to `updatedAt ASC, id ASC` (and the cursor with it); see the parameter description. `GET /v1/listings` does NOT yet accept `updated_since` — use this endpoint for property-side incremental sync.
 	//
+	// **Inactive properties:** an inactive property keeps syncing, but cannot be read or changed through the API until it is activated. They are only listed when `status` asks for them, and then with `id`, `name`, `status`, `lifecycleStatus`, `channels` and `updatedAt` only — enough to choose what to activate with `PATCH /v1/listings/{id}`.
+	//
 	// Corresponds with GET /v1/properties (the `ListProperties` operationId).
 	ListProperties(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2076,6 +2442,8 @@ type ClientInterface interface {
 	//
 	// **Optional expansions:** Pass `?include=amenities` to enrich the response with the property's amenities (sourced from the unified `listings_amenities` table). Returns `[]` when the property has no amenity rows. The default response stays lean; consumers must opt in.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Corresponds with GET /v1/properties/{id} (the `GetProperty` operationId).
 	GetProperty(ctx context.Context, id int, params *GetPropertyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2084,6 +2452,8 @@ type ClientInterface interface {
 	// Returns the full price breakdown for a stay — nightly total, length-of-stay discount, cleaning fee, pet and other fees, taxes, and the total.
 	//
 	// A quote is priced against a booking website, because the markup, custom fees and tax overrides that decide what a guest is actually charged live there. A workspace with no booking site receives `422 quote_unavailable` rather than a number computed from different rules than the ones applied at checkout.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/quotes (the `GetQuote` operationId).
 	GetQuote(ctx context.Context, params *GetQuoteParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2097,6 +2467,8 @@ type ClientInterface interface {
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. For deep pagination cursor remains O(1) per page; offset > 10000 returns 422 with a docs link.
 	//
 	// **Incremental sync (only changes since last poll):** pass `?updated_since=<ISO8601>` to receive only reservations amended, cancelled, or created at or after that instant — no full re-walk. Each row carries `updatedAt`; the last row of the final page is your next watermark. Note that `updated_since` changes the page ordering to `updatedAt ASC, id ASC` (and the cursor with it) so mid-walk amendments cannot be skipped — see the parameter description for the full contract.
+	//
+	// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
 	// Corresponds with GET /v1/reservations (the `ListReservations` operationId).
 	ListReservations(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2114,6 +2486,8 @@ type ClientInterface interface {
 	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
 	//
 	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -2134,6 +2508,8 @@ type ClientInterface interface {
 	//
 	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
@@ -2142,6 +2518,8 @@ type ClientInterface interface {
 	// GetReservation Get reservation details
 	//
 	// Returns the full record for a single reservation, scoped to the authenticated workspace. Response shape is identical to a single row in `GET /v1/reservations` so SDK consumers can use the same type for both. Returns **404** if the id does not exist OR belongs to a different workspace — the API never differentiates the two so caller can't enumerate other workspaces' ids.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/reservations/{id} (the `GetReservation` operationId).
 	GetReservation(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2167,6 +2545,8 @@ type ClientInterface interface {
 	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 	//
 	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	//
+	// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -2195,6 +2575,8 @@ type ClientInterface interface {
 	//
 	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 	//
+	// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
@@ -2208,12 +2590,16 @@ type ClientInterface interface {
 	//
 	// Filters: `platform` (`airbnb`|`booking`|`vrbo`), `listing_id` (internal Repull listing id), `rating_min` / `rating_max` (inclusive bounds, 0..5), `status` (`responded`|`unanswered`|`all`), `reviewer_role` (`guest` (default) | `host` | `all`).
 	//
+	// **Inactive listings:** reviews of inactive listings are left out of the page and of `pagination.total`. Filtering by an inactive `listing_id` returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
+	//
 	// Corresponds with GET /v1/reviews (the `ListReviews` operationId).
 	ListReviews(ctx context.Context, params *ListReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetReview Get review
 	//
 	// Returns one review (the bare `Review` object — NOT wrapped in `{ data: ... }`). Scoped to the authenticated workspace via the listings join — reviews that don't belong to the workspace return 404 (we don't differentiate to avoid leaking other customers' ids).
+	//
+	// A review of an inactive listing returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 	//
 	// Corresponds with GET /v1/reviews/{id} (the `GetReview` operationId).
 	GetReview(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2223,6 +2609,8 @@ type ClientInterface interface {
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
 	// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -2234,6 +2622,8 @@ type ClientInterface interface {
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
 	// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -2307,7 +2697,7 @@ type ClientInterface interface {
 
 	// GetUsageLogs List API request logs
 	//
-	// Cursor-paginated raw API request log for the authenticated workspace, newest first. Filter by time `range`, `operation` id(s), status class, or free-text `q`. Walk pages with `cursor` from `pagination.next_cursor` until `pagination.has_more` is `false`; `offset` is accepted as a shallow alias (deep walks must use `cursor`).
+	// Cursor-paginated raw API request log for the authenticated workspace, newest first. Filter by time `range`, `operation` id(s), status class, or free-text `q`. Walk pages with `cursor` from `pagination.nextCursor` until `pagination.hasMore` is `false`; `offset` is accepted as a shallow alias (deep walks must use `cursor`).
 	//
 	// Corresponds with GET /v1/usage/logs (the `GetUsageLogs` operationId).
 	GetUsageLogs(ctx context.Context, params *GetUsageLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2335,7 +2725,7 @@ type ClientInterface interface {
 
 	// CreateWebhookWithBody Create webhook subscription
 	//
-	// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events.
+	// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -2344,7 +2734,7 @@ type ClientInterface interface {
 
 	// CreateWebhook Create webhook subscription
 	//
-	// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events.
+	// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -2424,7 +2814,7 @@ type ClientInterface interface {
 
 	// ReplayWebhookDelivery Replay webhook delivery
 	//
-	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1). A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
 	//
 	// Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
 	ReplayWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2459,6 +2849,8 @@ type ClientInterface interface {
 //
 // Per-property *different* values are separate calls — presenting them as one request would be a false claim about atomicity.
 //
+// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+//
 // Takes any type of body and a specified content type.
 //
 // Corresponds with PATCH /v1/availability/batch (the `BatchUpdateAvailability` operationId).
@@ -2481,6 +2873,8 @@ func (c *Client) BatchUpdateAvailabilityWithBody(ctx context.Context, contentTyp
 // Ownership is checked before anything is written: a batch containing a property from another workspace is refused as a whole and names the offending ids, rather than being partially applied.
 //
 // Per-property *different* values are separate calls — presenting them as one request would be a false claim about atomicity.
+//
+// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -2507,6 +2901,8 @@ func (c *Client) BatchUpdateAvailability(ctx context.Context, body BatchUpdateAv
 //
 // This endpoint is read-only, and the projected per-date shape carries **availability, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). Availability **writes** always stay per-channel: `PUT /v1/channels/airbnb/listings/{id}/availability` (Airbnb) or `PUT /v1/channels/booking/availability` (Booking.com).
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/availability/{propertyId} (the `GetAvailability` operationId).
 func (c *Client) GetAvailability(ctx context.Context, propertyId int, params *GetAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAvailabilityRequest(c.Server, propertyId, params)
@@ -2523,6 +2919,8 @@ func (c *Client) GetAvailability(ctx context.Context, propertyId int, params *Ge
 // UpdateAvailabilityWithBody Set prices, block or unblock dates
 //
 // Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -2542,6 +2940,8 @@ func (c *Client) UpdateAvailabilityWithBody(ctx context.Context, propertyId int,
 // UpdateAvailability Set prices, block or unblock dates
 //
 // Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -2602,6 +3002,8 @@ func (c *Client) CreateBillingCheckout(ctx context.Context, body CreateBillingCh
 //
 // Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `dataFreshness` envelope.
 //
+// Alterations of reservations on inactive listings are left out. Filtering by a reservation on an inactive listing (`reservation_code`) returns `403 listing_inactive`.
+//
 // Corresponds with GET /v1/channels/airbnb/alterations (the `ListAirbnbAlterations` operationId).
 func (c *Client) ListAirbnbAlterations(ctx context.Context, params *ListAirbnbAlterationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAirbnbAlterationsRequest(c.Server, params)
@@ -2618,6 +3020,8 @@ func (c *Client) ListAirbnbAlterations(ctx context.Context, params *ListAirbnbAl
 // CreateAirbnbAlterationWithBody Create Airbnb alteration
 //
 // Create a reservation alteration request (change dates, guest count, or price) on Airbnb. **Write-side** — calls Airbnb upstream. Requires a connected Airbnb host for the workspace, else `404 no_connection`.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -2638,6 +3042,8 @@ func (c *Client) CreateAirbnbAlterationWithBody(ctx context.Context, contentType
 //
 // Create a reservation alteration request (change dates, guest count, or price) on Airbnb. **Write-side** — calls Airbnb upstream. Requires a connected Airbnb host for the workspace, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/alterations (the `CreateAirbnbAlteration` operationId).
@@ -2657,6 +3063,8 @@ func (c *Client) CreateAirbnbAlteration(ctx context.Context, body CreateAirbnbAl
 //
 // Fetch a single Airbnb reservation alteration by its Airbnb alteration id. **Pure DB read**, workspace-scoped via the reservations join. Returns `404 not_found` when no alteration matches the id in your workspace.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/alterations/{id} (the `GetAirbnbAlteration` operationId).
 func (c *Client) GetAirbnbAlteration(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbAlterationRequest(c.Server, id)
@@ -2673,6 +3081,8 @@ func (c *Client) GetAirbnbAlteration(ctx context.Context, id string, reqEditors 
 // AcceptAirbnbAlterationWithBody Accept Airbnb alteration
 //
 // Accept a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to approve the proposed date / guest-count / price change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -2693,6 +3103,8 @@ func (c *Client) AcceptAirbnbAlterationWithBody(ctx context.Context, id string, 
 //
 // Accept a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to approve the proposed date / guest-count / price change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/alterations/{id}/accept (the `AcceptAirbnbAlteration` operationId).
@@ -2712,6 +3124,8 @@ func (c *Client) AcceptAirbnbAlteration(ctx context.Context, id string, body Acc
 //
 // Decline a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to reject the proposed change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/channels/airbnb/alterations/{id}/decline (the `DeclineAirbnbAlteration` operationId).
@@ -2730,6 +3144,8 @@ func (c *Client) DeclineAirbnbAlterationWithBody(ctx context.Context, id string,
 // DeclineAirbnbAlteration Decline Airbnb alteration
 //
 // Decline a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to reject the proposed change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -2775,6 +3191,8 @@ func (c *Client) GetAirbnbConnection(ctx context.Context, reqEditors ...RequestE
 //
 // Pass `?include=amenities` to enrich each connection with its locally-cached amenity set. Returns `null` per connection when the cache is empty.
 //
+// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+//
 // Corresponds with GET /v1/channels/airbnb/listings (the `ListAirbnbListings` operationId).
 func (c *Client) ListAirbnbListings(ctx context.Context, params *ListAirbnbListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAirbnbListingsRequest(c.Server, params)
@@ -2795,6 +3213,8 @@ func (c *Client) ListAirbnbListings(ctx context.Context, params *ListAirbnbListi
 // Discover the `airbnbId` (+ `hostId`) via `GET /v1/channels/airbnb/listings`, then re-point it at the `listingId` of your choice — the dedup / consolidation case where the Airbnb sync auto-created its own listing but you want the inventory under an existing property.
 //
 // Repoints both the Airbnb record and its platform link to the target listing in one transaction. Idempotent — re-mapping to the same listing is a 200 no-op (`alreadyMapped: true`). Scope is enforced against your workspace on both the target listing and the existing Airbnb record; a listing that already links a different Airbnb listing returns 409.
+//
+// Returns `403 listing_inactive` when the target listing, or the listing the Airbnb listing is mapped to now, is inactive; nothing is changed.
 //
 // Takes any type of body and a specified content type.
 //
@@ -2819,6 +3239,8 @@ func (c *Client) MapAirbnbListingWithBody(ctx context.Context, contentType strin
 //
 // Repoints both the Airbnb record and its platform link to the target listing in one transaction. Idempotent — re-mapping to the same listing is a 200 no-op (`alreadyMapped: true`). Scope is enforced against your workspace on both the target listing and the existing Airbnb record; a listing that already links a different Airbnb listing returns 409.
 //
+// Returns `403 listing_inactive` when the target listing, or the listing the Airbnb listing is mapped to now, is inactive; nothing is changed.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/listings/map (the `MapAirbnbListing` operationId).
@@ -2837,6 +3259,8 @@ func (c *Client) MapAirbnbListing(ctx context.Context, body MapAirbnbListingJSON
 // GetAirbnbListing Get Airbnb listing
 //
 // Fetch all Airbnb connection rows for a single Vanio listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id} (the `GetAirbnbListing` operationId).
 func (c *Client) GetAirbnbListing(ctx context.Context, id string, params *GetAirbnbListingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2860,6 +3284,8 @@ func (c *Client) GetAirbnbListing(ctx context.Context, id string, params *GetAir
 // `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking.
 //
 // Any other action (e.g. `pull`, `unlist`) returns a structured 422 naming the supported actions.
+//
+// Returns `403 listing_inactive` for `push`/`publish` when the listing is inactive. `delete` (deactivation) is always accepted.
 //
 // Takes any type of body and a specified content type.
 //
@@ -2886,6 +3312,8 @@ func (c *Client) AirbnbListingActionWithBody(ctx context.Context, id string, con
 //
 // Any other action (e.g. `pull`, `unlist`) returns a structured 422 naming the supported actions.
 //
+// Returns `403 listing_inactive` for `push`/`publish` when the listing is inactive. `delete` (deactivation) is always accepted.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/listings/{id} (the `AirbnbListingAction` operationId).
@@ -2905,6 +3333,8 @@ func (c *Client) AirbnbListingAction(ctx context.Context, id string, body Airbnb
 //
 // List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/amenities (the `ListAirbnbListingAmenities` operationId).
 func (c *Client) ListAirbnbListingAmenities(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAirbnbListingAmenitiesRequest(c.Server, id)
@@ -2922,6 +3352,8 @@ func (c *Client) ListAirbnbListingAmenities(ctx context.Context, id string, reqE
 //
 // Read the per-day availability calendar for an Airbnb listing. Returns one row per day including price overrides, min-stay, and blocked status.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/availability (the `GetAirbnbListingAvailability` operationId).
 func (c *Client) GetAirbnbListingAvailability(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbListingAvailabilityRequest(c.Server, id)
@@ -2938,6 +3370,14 @@ func (c *Client) GetAirbnbListingAvailability(ctx context.Context, id string, re
 // UpdateAirbnbListingAvailabilityWithBody Update Airbnb availability
 //
 // Push availability + restrictions to Airbnb. `type: "calendar"` writes per-date restrictions — min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`) — via a batch of operations that each target either a date range or an explicit date list. `type: "rules"` writes listing-level availability rules (default min/max nights, booking lead time, turnover days, seasonal/day-of-week min nights). Restrictions never leak across channels — this endpoint writes only to Airbnb.
+//
+// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+//
+// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+//
+// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+//
+// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
 //
 // Takes any type of body and a specified content type.
 //
@@ -2958,6 +3398,14 @@ func (c *Client) UpdateAirbnbListingAvailabilityWithBody(ctx context.Context, id
 //
 // Push availability + restrictions to Airbnb. `type: "calendar"` writes per-date restrictions — min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`) — via a batch of operations that each target either a date range or an explicit date list. `type: "rules"` writes listing-level availability rules (default min/max nights, booking lead time, turnover days, seasonal/day-of-week min nights). Restrictions never leak across channels — this endpoint writes only to Airbnb.
 //
+// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+//
+// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+//
+// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+//
+// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/availability (the `UpdateAirbnbListingAvailability` operationId).
@@ -2977,6 +3425,8 @@ func (c *Client) UpdateAirbnbListingAvailability(ctx context.Context, id string,
 //
 // Return every published locale variant of an Airbnb listing's check-in guide. **Pure DB read** from `listings_airbnb_check_in_guides`. Pass `?locale=en` to filter to one locale (prefix match). Returns `404` when the listing has no Airbnb connection in this workspace.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/checkin-guide (the `GetAirbnbCheckinGuide` operationId).
 func (c *Client) GetAirbnbCheckinGuide(ctx context.Context, id string, params *GetAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbCheckinGuideRequest(c.Server, id, params)
@@ -2993,6 +3443,8 @@ func (c *Client) GetAirbnbCheckinGuide(ctx context.Context, id string, params *G
 // UpdateAirbnbCheckinGuide Upsert Airbnb check-in guide
 //
 // Upsert the check-in guide for one locale on an Airbnb listing. **Write-side** — calls Airbnb upstream; the DB mirror is reconciled by the sync worker once the upstream call returns. Target the locale with `?locale=en` (defaults to `en`). Requires a connected Airbnb host, else `404 no_connection`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
 func (c *Client) UpdateAirbnbCheckinGuide(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3011,6 +3463,8 @@ func (c *Client) UpdateAirbnbCheckinGuide(ctx context.Context, id string, params
 //
 // Return the checkout tasks an Airbnb listing shows guests at departure. **Pure DB read** from `listings_airbnb_checkout_tasks`. Returns `404` when the listing has no Airbnb connection in this workspace.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/checkout-guide (the `GetAirbnbCheckoutGuide` operationId).
 func (c *Client) GetAirbnbCheckoutGuide(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbCheckoutGuideRequest(c.Server, id)
@@ -3027,6 +3481,8 @@ func (c *Client) GetAirbnbCheckoutGuide(ctx context.Context, id string, reqEdito
 // ListAirbnbListingDescriptions List Airbnb descriptions
 //
 // List an Airbnb listing's per-locale content (name, summary, house rules, etc). **Pure DB read** from `listings_airbnb_descriptions`. Filter to one locale with `?locale=en` (the legacy `?country=` param is accepted as a soft alias). Returns `404` when the listing has no Airbnb connection in this workspace.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/descriptions (the `ListAirbnbListingDescriptions` operationId).
 func (c *Client) ListAirbnbListingDescriptions(ctx context.Context, id string, params *ListAirbnbListingDescriptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3045,6 +3501,8 @@ func (c *Client) ListAirbnbListingDescriptions(ctx context.Context, id string, p
 //
 // Remove a single photo from an Airbnb listing. Pass the Airbnb-side photo id as `?photoId=`. Write-side — calls Airbnb upstream; the local photo cache is reconciled by the sync worker afterwards.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with DELETE /v1/channels/airbnb/listings/{id}/photos (the `DeleteAirbnbListingPhoto` operationId).
 func (c *Client) DeleteAirbnbListingPhoto(ctx context.Context, id string, params *DeleteAirbnbListingPhotoParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteAirbnbListingPhotoRequest(c.Server, id, params)
@@ -3061,6 +3519,8 @@ func (c *Client) DeleteAirbnbListingPhoto(ctx context.Context, id string, params
 // ListAirbnbListingPhotos List Airbnb photos
 //
 // List photos attached to an Airbnb listing in display order. Returns the public CDN URL plus Airbnb-side metadata (id, caption, room).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/photos (the `ListAirbnbListingPhotos` operationId).
 func (c *Client) ListAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3079,6 +3539,8 @@ func (c *Client) ListAirbnbListingPhotos(ctx context.Context, id string, reqEdit
 //
 // Upload one or more photos to an Airbnb listing. Accepts public image URLs (Airbnb fetches them) — direct binary upload is not supported on this endpoint.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with POST /v1/channels/airbnb/listings/{id}/photos (the `UploadAirbnbListingPhotos` operationId).
 func (c *Client) UploadAirbnbListingPhotos(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUploadAirbnbListingPhotosRequest(c.Server, id)
@@ -3096,6 +3558,8 @@ func (c *Client) UploadAirbnbListingPhotos(ctx context.Context, id string, reqEd
 //
 // Read the current pricing config (base price, weekend uplift, length-of-stay discounts, smart-pricing bounds) for an Airbnb listing.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/pricing (the `GetAirbnbListingPricing` operationId).
 func (c *Client) GetAirbnbListingPricing(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbListingPricingRequest(c.Server, id)
@@ -3112,6 +3576,14 @@ func (c *Client) GetAirbnbListingPricing(ctx context.Context, id string, reqEdit
 // UpdateAirbnbListingPricingWithBody Update Airbnb pricing
 //
 // Push pricing changes to Airbnb. The `type` discriminator selects the sub-resource (model, standard settings, LOS, rate-plan, fees, currency, rule, or per-date `calendar`). `type: "calendar"` carries the full per-date restriction set — nightly price, min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`). For settings sub-resources the full object is replaced — GET first, mutate locally, then PUT the whole object.
+//
+// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+//
+// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+//
+// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+//
+// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3132,6 +3604,14 @@ func (c *Client) UpdateAirbnbListingPricingWithBody(ctx context.Context, id stri
 //
 // Push pricing changes to Airbnb. The `type` discriminator selects the sub-resource (model, standard settings, LOS, rate-plan, fees, currency, rule, or per-date `calendar`). `type: "calendar"` carries the full per-date restriction set — nightly price, min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`). For settings sub-resources the full object is replaced — GET first, mutate locally, then PUT the whole object.
 //
+// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+//
+// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+//
+// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+//
+// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/pricing (the `UpdateAirbnbListingPricing` operationId).
@@ -3151,6 +3631,8 @@ func (c *Client) UpdateAirbnbListingPricing(ctx context.Context, id string, body
 //
 // Return an Airbnb listing's quality signals — standards, reservation issues, and monthly quality stats. **Pure DB read** from the local quality mirrors. Scope the response with `?type=all|standards|issues|stats` (default `all`, which returns `{ standards, issues }`). Returns `404` when the listing has no Airbnb connection in this workspace.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/quality (the `GetAirbnbListingQuality` operationId).
 func (c *Client) GetAirbnbListingQuality(ctx context.Context, id string, params *GetAirbnbListingQualityParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbListingQualityRequest(c.Server, id, params)
@@ -3167,6 +3649,8 @@ func (c *Client) GetAirbnbListingQuality(ctx context.Context, id string, params 
 // DeleteAirbnbListingRoom Delete an Airbnb room
 //
 // Delete a room from an Airbnb listing. **Write-side** — calls Airbnb upstream. Pass the Airbnb-side room id as `?roomId=`. Requires a connected Airbnb host, else `404 no_connection`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with DELETE /v1/channels/airbnb/listings/{id}/rooms (the `DeleteAirbnbListingRoom` operationId).
 func (c *Client) DeleteAirbnbListingRoom(ctx context.Context, id string, params *DeleteAirbnbListingRoomParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3185,6 +3669,8 @@ func (c *Client) DeleteAirbnbListingRoom(ctx context.Context, id string, params 
 //
 // List the rooms configured on an Airbnb listing, ordered by room number. **Pure DB read** from `listings_airbnb_rooms`. Returns `404` when the listing has no Airbnb connection in this workspace.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/rooms (the `ListAirbnbListingRooms` operationId).
 func (c *Client) ListAirbnbListingRooms(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAirbnbListingRoomsRequest(c.Server, id)
@@ -3201,6 +3687,8 @@ func (c *Client) ListAirbnbListingRooms(ctx context.Context, id string, reqEdito
 // CreateAirbnbListingRoomWithBody Create an Airbnb room
 //
 // Create a new room on an Airbnb listing. **Write-side** — calls Airbnb upstream. Body is the full room object minus `room_id`. Requires a connected Airbnb host, else `404 no_connection`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3221,6 +3709,8 @@ func (c *Client) CreateAirbnbListingRoomWithBody(ctx context.Context, id string,
 //
 // Create a new room on an Airbnb listing. **Write-side** — calls Airbnb upstream. Body is the full room object minus `room_id`. Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/listings/{id}/rooms (the `CreateAirbnbListingRoom` operationId).
@@ -3240,6 +3730,8 @@ func (c *Client) CreateAirbnbListingRoom(ctx context.Context, id string, body Cr
 //
 // Return an Airbnb listing's host roles, published locales, and regulatory permits. **Pure DB read** — host roles from `listings_airbnb_details.host_roles`, locales from distinct `listings_airbnb_descriptions.locale`, permits from `listings_airbnb_permits`. Scope with `?type=all|hosts|permits|locales` (default `all`, which returns `{ hosts, locales }`). Returns `404` when the listing has no Airbnb connection in this workspace.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/settings (the `GetAirbnbListingSettings` operationId).
 func (c *Client) GetAirbnbListingSettings(ctx context.Context, id string, params *GetAirbnbListingSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbListingSettingsRequest(c.Server, id, params)
@@ -3256,6 +3748,8 @@ func (c *Client) GetAirbnbListingSettings(ctx context.Context, id string, params
 // ListAirbnbThreads List Airbnb message threads
 //
 // List Airbnb message threads (one per guest conversation). Cursor-paginated. Each thread includes a preview of the latest message.
+//
+// Threads on inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
 // Corresponds with GET /v1/channels/airbnb/messaging (the `ListAirbnbThreads` operationId).
 func (c *Client) ListAirbnbThreads(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3274,6 +3768,8 @@ func (c *Client) ListAirbnbThreads(ctx context.Context, reqEditors ...RequestEdi
 //
 // Fetch a single Airbnb message thread by its Airbnb thread id. **Pure DB read** from the local `message_threads` mirror, workspace-scoped. Returns `404 not_found` when no thread matches. For the messages within a thread use `GET /v1/channels/airbnb/messaging/{threadId}/messages`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/messaging/{threadId} (the `GetAirbnbThread` operationId).
 func (c *Client) GetAirbnbThread(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbThreadRequest(c.Server, threadId)
@@ -3290,6 +3786,8 @@ func (c *Client) GetAirbnbThread(ctx context.Context, threadId string, reqEditor
 // ListAirbnbThreadMessages Get Airbnb messages
 //
 // Fetch the full message log for an Airbnb thread, ordered oldest-to-newest. Walk pages with `?cursor=` until `pagination.hasMore` is `false`.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/airbnb/messaging/{threadId}/messages (the `ListAirbnbThreadMessages` operationId).
 func (c *Client) ListAirbnbThreadMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3309,6 +3807,8 @@ func (c *Client) ListAirbnbThreadMessages(ctx context.Context, threadId string, 
 // Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
 //
 // The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3330,6 +3830,8 @@ func (c *Client) SendAirbnbMessageWithBody(ctx context.Context, threadId string,
 // Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
 //
 // The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -3357,6 +3859,8 @@ func (c *Client) SendAirbnbMessage(ctx context.Context, threadId string, body Se
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type.
 //
 // Corresponds with PATCH /v1/channels/airbnb/messaging/{threadId}/messages/{messageId} (the `UpdateAirbnbMessage` operationId).
@@ -3382,6 +3886,8 @@ func (c *Client) UpdateAirbnbMessageWithBody(ctx context.Context, threadId strin
 // - `react` — add a reaction (requires `reaction`).
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -3424,6 +3930,8 @@ func (c *Client) WithdrawAirbnbOffer(ctx context.Context, params *WithdrawAirbnb
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
@@ -3448,6 +3956,8 @@ func (c *Client) CreateAirbnbOfferWithBody(ctx context.Context, contentType stri
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
@@ -3467,11 +3977,13 @@ func (c *Client) CreateAirbnbOffer(ctx context.Context, body CreateAirbnbOfferJS
 //
 // Cursor-paginated list of reservations sourced directly from Airbnb. Use this when you need Airbnb-specific fields (guest payout split, cancellation policy snapshot) that the unified `/v1/reservations` endpoint flattens away.
 //
-// Walk pages with `?cursor=<pagination.next_cursor>` until `pagination.has_more` is `false`. The cursor is opaque — never construct or parse it client-side.
+// Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. Internally this walks upstream Airbnb cursor pages to skip rows, so deep offsets cost N/limit upstream round-trips; cursor remains the better choice for deep pagination.
 //
 // When `status` is omitted, all statuses are returned (Airbnb defaults to `accepted` only on its own surface, but this endpoint normalises to "all"). Pass `?status=accepted` to scope.
+//
+// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
 // Corresponds with GET /v1/channels/airbnb/reservations (the `ListAirbnbReservations` operationId).
 func (c *Client) ListAirbnbReservations(ctx context.Context, params *ListAirbnbReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3490,6 +4002,8 @@ func (c *Client) ListAirbnbReservations(ctx context.Context, params *ListAirbnbR
 //
 // Fetch a single Airbnb reservation by Airbnb confirmation code (e.g. `HMABCDEF12`).
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/airbnb/reservations/{code} (the `GetAirbnbReservation` operationId).
 func (c *Client) GetAirbnbReservation(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAirbnbReservationRequest(c.Server, code)
@@ -3506,6 +4020,8 @@ func (c *Client) GetAirbnbReservation(ctx context.Context, code string, reqEdito
 // AirbnbReservationAction Accept/decline/cancel Airbnb reservation
 //
 // Apply a state action to an Airbnb reservation — `accept` / `decline` (for inquiries and reservation requests), `cancel` (host cancellation, carries penalties), `pre-approve` (for inquiries).
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
 func (c *Client) AirbnbReservationAction(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3524,6 +4040,8 @@ func (c *Client) AirbnbReservationAction(ctx context.Context, code string, reqEd
 //
 // List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
 //
+// Reviews of inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
+//
 // Corresponds with GET /v1/channels/airbnb/reviews (the `ListAirbnbReviews` operationId).
 func (c *Client) ListAirbnbReviews(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAirbnbReviewsRequest(c.Server)
@@ -3540,6 +4058,8 @@ func (c *Client) ListAirbnbReviews(ctx context.Context, reqEditors ...RequestEdi
 // RespondAirbnbReviewLegacy Respond to / submit Airbnb review (legacy)
 //
 // Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `PUT /v1/channels/airbnb/reviews/{id}` (edit) and `POST /v1/channels/airbnb/reviews/{id}/respond` (reply) for new integrations.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with POST /v1/channels/airbnb/reviews (the `RespondAirbnbReviewLegacy` operationId).
 // Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
@@ -3560,6 +4080,8 @@ func (c *Client) RespondAirbnbReviewLegacy(ctx context.Context, reqEditors ...Re
 // Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
 //
 // Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3582,6 +4104,8 @@ func (c *Client) EditAirbnbReviewWithBody(ctx context.Context, id string, conten
 //
 // Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
@@ -3600,6 +4124,8 @@ func (c *Client) EditAirbnbReview(ctx context.Context, id string, body EditAirbn
 // RespondAirbnbReviewWithBody Respond to Airbnb review
 //
 // Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3620,6 +4146,8 @@ func (c *Client) RespondAirbnbReviewWithBody(ctx context.Context, id string, con
 //
 // Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
@@ -3637,7 +4165,9 @@ func (c *Client) RespondAirbnbReview(ctx context.Context, id string, body Respon
 
 // ListAirbnbTransactions List Airbnb transactions
 //
-// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `data_freshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `dataFreshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+//
+// Transactions of reservations on inactive listings are left out; payout rows, which belong to no listing, are always included.
 //
 // Corresponds with GET /v1/channels/airbnb/transactions (the `ListAirbnbTransactions` operationId).
 func (c *Client) ListAirbnbTransactions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3696,6 +4226,10 @@ func (c *Client) SyncAirbnbTransactions(ctx context.Context, body SyncAirbnbTran
 //
 // Proxies Booking's `getRoomRateAvailability` — the returned fields (price, rooms-to-sell, min/max stay, closed-to-arrival/departure, stop-sell) are whatever Booking.com emits for the window. A listing-id-keyed equivalent is available at `GET /v1/channels/booking/listings/{id}/pricing`.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/booking/availability (the `GetBookingAvailability` operationId).
 func (c *Client) GetBookingAvailability(ctx context.Context, params *GetBookingAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBookingAvailabilityRequest(c.Server, params)
@@ -3718,6 +4252,10 @@ func (c *Client) GetBookingAvailability(ctx context.Context, params *GetBookingA
 // - `derived-pricing` — occupancy-derived pricing rules.
 //
 // Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3744,6 +4282,10 @@ func (c *Client) UpdateBookingAvailabilityWithBody(ctx context.Context, contentT
 //
 // Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/channels/booking/availability (the `UpdateBookingAvailability` operationId).
@@ -3763,6 +4305,10 @@ func (c *Client) UpdateBookingAvailability(ctx context.Context, body UpdateBooki
 //
 // Fetch the extra-charge set (cleaning fee, resort fee, city tax, etc.) configured for a Booking.com property. Pass the Booking.com `property_id` as a query param — required.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/booking/charges (the `GetBookingCharges` operationId).
 func (c *Client) GetBookingCharges(ctx context.Context, params *GetBookingChargesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBookingChargesRequest(c.Server, params)
@@ -3779,6 +4325,10 @@ func (c *Client) GetBookingCharges(ctx context.Context, params *GetBookingCharge
 // UpdateBookingChargesWithBody Set Booking.com charges
 //
 // Replace the extra-charge set for a Booking.com property. The body carries the target `property_id` and the full `charges` array — Booking treats the write as a full replacement, so include every charge you want to keep.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3799,6 +4349,10 @@ func (c *Client) UpdateBookingChargesWithBody(ctx context.Context, contentType s
 //
 // Replace the extra-charge set for a Booking.com property. The body carries the target `property_id` and the full `charges` array — Booking treats the write as a full replacement, so include every charge you want to keep.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/channels/booking/charges (the `UpdateBookingCharges` operationId).
@@ -3818,6 +4372,10 @@ func (c *Client) UpdateBookingCharges(ctx context.Context, body UpdateBookingCha
 //
 // Fetch the current content (descriptions, amenities, photos) for a Booking.com property. Used to round-trip edits through Repull.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/booking/content (the `GetBookingContent` operationId).
 func (c *Client) GetBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBookingContentRequest(c.Server)
@@ -3834,6 +4392,10 @@ func (c *Client) GetBookingContent(ctx context.Context, reqEditors ...RequestEdi
 // UpdateBookingContent Update Booking.com content
 //
 // Push content changes (descriptions, amenities, photos) to Booking.com. Booking enforces editorial review on text fields — changes appear after their content moderation queue clears.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
 func (c *Client) UpdateBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3854,6 +4416,8 @@ func (c *Client) UpdateBookingContent(ctx context.Context, reqEditors ...Request
 //
 // Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Vanio listing ID across channels.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/booking/listings/{id}/pricing (the `GetBookingListingPricing` operationId).
 func (c *Client) GetBookingListingPricing(ctx context.Context, id int, params *GetBookingListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBookingListingPricingRequest(c.Server, id, params)
@@ -3870,6 +4434,8 @@ func (c *Client) GetBookingListingPricing(ctx context.Context, id int, params *G
 // UpdateBookingListingPricingWithBody Update Booking.com pricing for a listing
 //
 // Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3890,6 +4456,8 @@ func (c *Client) UpdateBookingListingPricingWithBody(ctx context.Context, id int
 //
 // Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
@@ -3909,6 +4477,10 @@ func (c *Client) UpdateBookingListingPricing(ctx context.Context, id int, body U
 //
 // List Booking.com guest conversations. Cursor-paginated. Use the messaging POST to send a reply.
 //
+// Scoped to this workspace. With `property_id`, the property must be connected to this workspace — any other id returns `404 not_found`. Without it, only messages for this workspace's own Booking.com properties are returned.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/booking/messaging (the `ListBookingConversations` operationId).
 func (c *Client) ListBookingConversations(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBookingConversationsRequest(c.Server)
@@ -3925,6 +4497,10 @@ func (c *Client) ListBookingConversations(ctx context.Context, reqEditors ...Req
 // SendBookingMessageWithBody Send Booking.com message
 //
 // Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -3945,6 +4521,10 @@ func (c *Client) SendBookingMessageWithBody(ctx context.Context, contentType str
 //
 // Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/booking/messaging (the `SendBookingMessage` operationId).
@@ -3964,6 +4544,8 @@ func (c *Client) SendBookingMessage(ctx context.Context, body SendBookingMessage
 //
 // List Booking.com hotels claimed by this workspace. Each row includes the Booking-side hotel id and the connected room types.
 //
+// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+//
 // Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
 func (c *Client) ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBookingPropertiesRequest(c.Server)
@@ -3980,6 +4562,8 @@ func (c *Client) ListBookingProperties(ctx context.Context, reqEditors ...Reques
 // GetBookingProperty Get Booking.com connection for a listing
 //
 // Return the Booking.com connection record(s) for a Vanio listing — the linked Booking hotel id, sync flags, markup, sync category, and suspension state. Scoped to the authenticated workspace; a listing with no Booking.com connection returns 404.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/booking/properties/{id} (the `GetBookingProperty` operationId).
 func (c *Client) GetBookingProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4000,6 +4584,8 @@ func (c *Client) GetBookingProperty(ctx context.Context, id int, reqEditors ...R
 //
 // `id` is a Vanio listing id — resolved to the Booking `hotel_id` via the workspace mapping (a listing with no active Booking.com mapping returns 404). Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/booking/properties/{id}/rooms (the `ListBookingPropertyRooms` operationId).
 func (c *Client) ListBookingPropertyRooms(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBookingPropertyRoomsRequest(c.Server, id)
@@ -4017,6 +4603,10 @@ func (c *Client) ListBookingPropertyRooms(ctx context.Context, id int, reqEditor
 //
 // Pull reservations from Booking.com. `type=new` (default) returns un-acknowledged bookings; `type=modified` returns changed bookings. Pass both `reservation_id` and `hotel_id` to fetch a single reservation's full details. Acknowledge processed reservations with the POST so Booking stops re-serving them in the `new` queue.
 //
+// Scoped to this workspace. `hotel_id` (or its alias `property_id`) must be a property connected to this workspace; any other id returns `404 not_found`, the same as an id that does not exist. Without a hotel, `new`/`modified` cover every Booking.com property this workspace holds (and return `404 not_found` if it holds none). A `reservation_id` that belongs to another workspace returns `404 not_found`.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/booking/reservations (the `ListBookingReservations` operationId).
 func (c *Client) ListBookingReservations(ctx context.Context, params *ListBookingReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBookingReservationsRequest(c.Server, params)
@@ -4033,6 +4623,8 @@ func (c *Client) ListBookingReservations(ctx context.Context, params *ListBookin
 // AcknowledgeBookingReservationsWithBody Acknowledge Booking.com reservations
 //
 // Acknowledge one or more reservations so Booking.com removes them from the `new` queue. The body carries `reservation_ids` (non-empty array). Acknowledge only after you have durably persisted each reservation.
+//
+// Only reservations that belong to this workspace can be acknowledged. If any id in `reservation_ids` is not one of this workspace's Booking.com reservations (`confirmationCode` on `GET /v1/reservations?platform=booking`), nothing is acknowledged and the response is `404 not_found` naming those ids in `reservation_ids`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4053,6 +4645,8 @@ func (c *Client) AcknowledgeBookingReservationsWithBody(ctx context.Context, con
 //
 // Acknowledge one or more reservations so Booking.com removes them from the `new` queue. The body carries `reservation_ids` (non-empty array). Acknowledge only after you have durably persisted each reservation.
 //
+// Only reservations that belong to this workspace can be acknowledged. If any id in `reservation_ids` is not one of this workspace's Booking.com reservations (`confirmationCode` on `GET /v1/reservations?platform=booking`), nothing is acknowledged and the response is `404 not_found` naming those ids in `reservation_ids`.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/booking/reservations (the `AcknowledgeBookingReservations` operationId).
@@ -4072,6 +4666,10 @@ func (c *Client) AcknowledgeBookingReservations(ctx context.Context, body Acknow
 //
 // List guest reviews for a Booking.com property. Pass `property_id` (the Booking.com hotel id) as a query param — required.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/booking/reviews (the `ListBookingReviews` operationId).
 func (c *Client) ListBookingReviews(ctx context.Context, params *ListBookingReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBookingReviewsRequest(c.Server, params)
@@ -4090,6 +4688,10 @@ func (c *Client) ListBookingReviews(ctx context.Context, params *ListBookingRevi
 // Post a public host reply to a guest review on Booking.com. Booking allows one host reply per review — repeated POSTs are rejected by upstream.
 //
 // Booking.com does NOT support host-authored reviews of guests via the API (platform-level limitation), so this endpoint is reply-only.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4111,6 +4713,10 @@ func (c *Client) ReplyBookingReviewWithBody(ctx context.Context, contentType str
 // Post a public host reply to a guest review on Booking.com. Booking allows one host reply per review — repeated POSTs are rejected by upstream.
 //
 // Booking.com does NOT support host-authored reviews of guests via the API (platform-level limitation), so this endpoint is reply-only.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -4140,6 +4746,10 @@ func (c *Client) ReplyBookingReview(ctx context.Context, body ReplyBookingReview
 //
 // Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
 //
+// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
@@ -4168,6 +4778,10 @@ func (c *Client) BookingSetupWithBody(ctx context.Context, contentType string, b
 //
 // Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
 //
+// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
@@ -4185,9 +4799,10 @@ func (c *Client) BookingSetup(ctx context.Context, body BookingSetupJSONRequestB
 
 // DeleteBookingWebhook Unsubscribe from a Booking.com notification
 //
-// Remove a Booking.com CNS subscription. Pass the `notification_type` to unsubscribe as a query param — required.
+// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 //
 // Corresponds with DELETE /v1/channels/booking/webhooks (the `DeleteBookingWebhook` operationId).
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *Client) DeleteBookingWebhook(ctx context.Context, params *DeleteBookingWebhookParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteBookingWebhookRequest(c.Server, params)
 	if err != nil {
@@ -4202,9 +4817,10 @@ func (c *Client) DeleteBookingWebhook(ctx context.Context, params *DeleteBooking
 
 // ListBookingWebhooks List Booking.com webhook subscriptions
 //
-// List the workspace's Booking.com Content Notification Service (CNS) subscriptions — the notification types Booking pushes to your callback URLs.
+// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 //
 // Corresponds with GET /v1/channels/booking/webhooks (the `ListBookingWebhooks` operationId).
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *Client) ListBookingWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBookingWebhooksRequest(c.Server)
 	if err != nil {
@@ -4219,11 +4835,12 @@ func (c *Client) ListBookingWebhooks(ctx context.Context, reqEditors ...RequestE
 
 // CreateBookingWebhookWithBody Subscribe to a Booking.com notification
 //
-// Subscribe to a Booking.com CNS notification type, delivered to `callback_url`. Returns 201 on success.
+// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 //
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/channels/booking/webhooks (the `CreateBookingWebhook` operationId).
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *Client) CreateBookingWebhookWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateBookingWebhookRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -4238,11 +4855,12 @@ func (c *Client) CreateBookingWebhookWithBody(ctx context.Context, contentType s
 
 // CreateBookingWebhook Subscribe to a Booking.com notification
 //
-// Subscribe to a Booking.com CNS notification type, delivered to `callback_url`. Returns 201 on success.
+// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 //
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/booking/webhooks (the `CreateBookingWebhook` operationId).
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *Client) CreateBookingWebhook(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateBookingWebhookRequest(c.Server, body)
 	if err != nil {
@@ -4258,6 +4876,8 @@ func (c *Client) CreateBookingWebhook(ctx context.Context, body CreateBookingWeb
 // GetPlumguideAvailability Get Plumguide availability
 //
 // Read the per-day availability calendar for a Plumguide listing. Returns the same row shape as Airbnb availability for SDK convenience.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/plumguide/availability (the `GetPlumguideAvailability` operationId).
 func (c *Client) GetPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4276,6 +4896,8 @@ func (c *Client) GetPlumguideAvailability(ctx context.Context, reqEditors ...Req
 //
 // Push per-day availability changes to Plumguide. Plumguide accepts only the next 24 months — dates beyond that are silently ignored.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with PUT /v1/channels/plumguide/availability (the `UpdatePlumguideAvailability` operationId).
 func (c *Client) UpdatePlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdatePlumguideAvailabilityRequest(c.Server)
@@ -4292,6 +4914,8 @@ func (c *Client) UpdatePlumguideAvailability(ctx context.Context, reqEditors ...
 // ListPlumguideBookings List Plumguide bookings
 //
 // List Plumguide bookings. Default returns all bookings; pass `listing_id` to filter to one listing, or `booking_code` to fetch a single booking.
+//
+// Returns `403 listing_inactive` when `listing_id` or `booking_code` resolves to an inactive listing. The unfiltered list is read straight from Plum Guide and is not filtered by listing status.
 //
 // Corresponds with GET /v1/channels/plumguide/bookings (the `ListPlumguideBookings` operationId).
 func (c *Client) ListPlumguideBookings(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4327,6 +4951,8 @@ func (c *Client) ListPlumguideListings(ctx context.Context, reqEditors ...Reques
 //
 // Read the current pricing for a Plumguide listing (base price, currency, weekend uplift).
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/channels/plumguide/pricing (the `GetPlumguidePricing` operationId).
 func (c *Client) GetPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPlumguidePricingRequest(c.Server)
@@ -4343,6 +4969,8 @@ func (c *Client) GetPlumguidePricing(ctx context.Context, reqEditors ...RequestE
 // UpdatePlumguidePricing Push pricing to Plumguide
 //
 // Push pricing changes to Plumguide. Plumguide rounds all prices to whole units of the listing currency — sub-unit precision is silently truncated.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with PUT /v1/channels/plumguide/pricing (the `UpdatePlumguidePricing` operationId).
 func (c *Client) UpdatePlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -4433,6 +5061,8 @@ func (c *Client) UpdatePlumguideWebhooks(ctx context.Context, body UpdatePlumgui
 //
 // List VRBO listings this workspace owns. VRBO is agency-model — Repull reads listings via the public iCal/HTTP feeds.
 //
+// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+//
 // Corresponds with GET /v1/channels/vrbo/listings (the `ListVrboListings` operationId).
 func (c *Client) ListVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListVrboListingsRequest(c.Server)
@@ -4449,6 +5079,8 @@ func (c *Client) ListVrboListings(ctx context.Context, reqEditors ...RequestEdit
 // ListVrboReservations List VRBO reservations
 //
 // Cursor-paginated list of VRBO reservations sourced from the public booking feed. Lag is typically 5-10 minutes vs. Airbnb / Booking.com. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
+//
+// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated.
 //
 // Corresponds with GET /v1/channels/vrbo/reservations (the `ListVrboReservations` operationId).
 func (c *Client) ListVrboReservations(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5192,15 +5824,19 @@ func (c *Client) SubmitVrboCredentials(ctx context.Context, body SubmitVrboCrede
 
 // DeleteConnection Disconnect provider
 //
-// Disconnect a PMS or OTA from this workspace.
+// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
 //
-// Currently supported for `booking` only: drops the stored connection and stops syncing the mapped rooms. Resources already synced remain queryable but become read-only and stop receiving updates.
+// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 //
-// Every other provider returns `501 not_implemented` with instructions for disconnecting on the provider's side — Airbnb in particular has to be revoked by the host (Account → Privacy & sharing → Connected apps), because the OAuth grant lives outside this service. The endpoint used to report `200 { disconnected: true }` for every provider while doing nothing; it now tells you the truth.
+// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
+//
+// The change is all or nothing. For Airbnb, the host can also revoke access on Airbnb's side (Account → Privacy & sharing → Connected apps); that alone does not update this workspace, so call this endpoint as well.
+//
+// Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side.
 //
 // Corresponds with DELETE /v1/connect/{provider} (the `DeleteConnection` operationId).
-func (c *Client) DeleteConnection(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteConnectionRequest(c.Server, provider)
+func (c *Client) DeleteConnection(ctx context.Context, provider Provider, params *DeleteConnectionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteConnectionRequest(c.Server, provider, params)
 	if err != nil {
 		return nil, err
 	}
@@ -5286,6 +5922,8 @@ func (c *Client) CreateConnection(ctx context.Context, provider Provider, body C
 //
 // Filters: `platform` (`airbnb`|`booking`|`vrbo`|`website`|`email`), `status` (`open`|`archived` — `archived` is a stable no-op until the bit lands on `message_threads`).
 //
+// **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
+//
 // Corresponds with GET /v1/conversations (the `ListConversations` operationId).
 func (c *Client) ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListConversationsRequest(c.Server, params)
@@ -5302,6 +5940,8 @@ func (c *Client) ListConversations(ctx context.Context, params *ListConversation
 // GetConversation Get conversation detail
 //
 // Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks.
+//
+// A conversation that belongs to an inactive listing (by the thread's listing or its reservation's listing) returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 //
 // Corresponds with GET /v1/conversations/{id} (the `GetConversation` operationId).
 func (c *Client) GetConversation(ctx context.Context, id int, params *GetConversationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5321,6 +5961,8 @@ func (c *Client) GetConversation(ctx context.Context, id int, params *GetConvers
 // Cursor-paginated messages within one thread. Defaults to newest-first (`?order=desc`); pass `?order=asc` for chronological replay. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
+//
+// A conversation that belongs to an inactive listing returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 //
 // Corresponds with GET /v1/conversations/{id}/messages (the `ListConversationMessages` operationId).
 func (c *Client) ListConversationMessages(ctx context.Context, id int, params *ListConversationMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5350,6 +5992,8 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 // When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+//
+// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5382,6 +6026,8 @@ func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, pa
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
@@ -5404,6 +6050,8 @@ func (c *Client) SendConversationMessage(ctx context.Context, id int, params *Se
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 //
 // Filters: `q` (substring on name/email/phone), `has_reservation` (`true`|`false`), `listing_id` (restrict to guests with at least one reservation on that listing).
+//
+// **Inactive listings:** a guest whose every reservation is on an inactive listing is left out of the page and of `pagination.total`, and `totalReservations`, `totalRevenue`, `firstStayedAt` / `lastStayedAt`, `has_reservation` and `listing_id` only consider reservations that are not on an inactive listing. Guests with no reservations are tied to no listing and are always listed. Filtering by an inactive `listing_id` returns `403 listing_inactive`.
 //
 // Corresponds with GET /v1/guests (the `ListGuests` operationId).
 func (c *Client) ListGuests(ctx context.Context, params *ListGuestsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5471,6 +6119,8 @@ func (c *Client) CreateGuest(ctx context.Context, params *CreateGuestParams, bod
 // GetGuest Get guest profile
 //
 // Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates. Aggregates main vanio's `GuestService.getGuestProfile()` into the public Repull shape so SDK consumers don't have to learn the internal schema.
+//
+// **Inactive listings:** a guest whose every reservation is on an inactive listing returns `403 listing_inactive` naming those listings (the guest is kept, so this is not a 404). Otherwise the reservation aggregates exclude reservations on inactive listings. A guest with no reservations is always readable.
 //
 // Corresponds with GET /v1/guests/{id} (the `GetGuest` operationId).
 func (c *Client) GetGuest(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5699,6 +6349,8 @@ func (c *Client) SetKv(ctx context.Context, key string, params *SetKvParams, bod
 //
 // **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Combine comma-separated, e.g. `?include=content,details`. The default response stays lean; consumers must opt in.
 //
+// **Inactive listings:** by default only active listings are returned. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated, so when `status` asks for inactive ones they carry only `id`, `name`, `status` and `channels` — enough to choose what to activate with `PATCH /v1/listings/{id}`. `?include=` expansions are not applied to them.
+//
 // Corresponds with GET /v1/listings (the `ListListings` operationId).
 func (c *Client) ListListings(ctx context.Context, params *ListListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListListingsRequest(c.Server, params)
@@ -5760,6 +6412,8 @@ func (c *Client) CreateListing(ctx context.Context, body CreateListingJSONReques
 //
 // Apply path writes the recommended price to each listing's calendar via the calendar service (which fans out to Airbnb/Booking/VRBO) then marks the Atlas recommendation `applied`. Decline path is Atlas-only — fast.
 //
+// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+//
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
@@ -5785,11 +6439,75 @@ func (c *Client) BulkApplyPricingWithBody(ctx context.Context, contentType strin
 //
 // Apply path writes the recommended price to each listing's calendar via the calendar service (which fans out to Airbnb/Booking/VRBO) then marks the Atlas recommendation `applied`. Decline path is Atlas-only — fast.
 //
+// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
 func (c *Client) BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewBulkApplyPricingRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetListingsStatusWithBody Activate or deactivate listings in bulk
+//
+// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
+//
+// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+//
+// **All or nothing.** Nothing changes unless the whole request can be applied:
+// - If any id is not one of your listings, the call returns `404` naming those ids.
+// - If activating would take you over your plan's listing limit, the call returns `402 listings_limit_exceeded`. Only listings that are currently inactive count toward the new total, so re-sending ids that are already active never trips the limit.
+//
+// Deactivating is always allowed, including when your account is already over its limit — it is how you get back under it.
+//
+// **Idempotent.** Ids already in the requested state are returned in `unchanged`; ids this call changed are returned in `updated`.
+//
+// For a single listing, `PATCH /v1/listings/{id}` does the same.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/listings/status (the `SetListingsStatus` operationId).
+func (c *Client) SetListingsStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetListingsStatusRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetListingsStatus Activate or deactivate listings in bulk
+//
+// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
+//
+// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+//
+// **All or nothing.** Nothing changes unless the whole request can be applied:
+// - If any id is not one of your listings, the call returns `404` naming those ids.
+// - If activating would take you over your plan's listing limit, the call returns `402 listings_limit_exceeded`. Only listings that are currently inactive count toward the new total, so re-sending ids that are already active never trips the limit.
+//
+// Deactivating is always allowed, including when your account is already over its limit — it is how you get back under it.
+//
+// **Idempotent.** Ids already in the requested state are returned in `unchanged`; ids this call changed are returned in `updated`.
+//
+// For a single listing, `PATCH /v1/listings/{id}` does the same.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/status (the `SetListingsStatus` operationId).
+func (c *Client) SetListingsStatus(ctx context.Context, body SetListingsStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetListingsStatusRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5807,6 +6525,8 @@ func (c *Client) BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSON
 // Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. This is the primary self-serve way for a free-tier customer to trim back under the plan-listings cap — `DELETE` is served even when the account is over the cap (a 402-locked account can still call it). To bring a listing back, use `PATCH` with `{ "active": true }`.
 //
 // Idempotent: deactivating an already-inactive listing returns 200.
+//
+// To deactivate many listings at once, use `POST /v1/listings/status` with `{ "active": false }`.
 //
 // Corresponds with DELETE /v1/listings/{id} (the `DeactivateListing` operationId).
 func (c *Client) DeactivateListing(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5826,6 +6546,8 @@ func (c *Client) DeactivateListing(ctx context.Context, id int, reqEditors ...Re
 // Fetch a single listing by id. Returns the same shape as one element of the `GET /v1/listings` response, so you can bind the result to the same model. Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403, never reveals the listing's existence.
 //
 // **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Combine comma-separated, e.g. `?include=amenities,content,details`. The default response stays lean; consumers must opt in.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/listings/{id} (the `GetListing` operationId).
 func (c *Client) GetListing(ctx context.Context, id int, params *GetListingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5849,6 +6571,8 @@ func (c *Client) GetListing(ctx context.Context, id int, params *GetListingParam
 // Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 //
 // Idempotent: setting a listing to the state it's already in returns 200.
+//
+// To change many listings at once, all or nothing, use `POST /v1/listings/status`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5875,6 +6599,8 @@ func (c *Client) UpdateListingActiveWithBody(ctx context.Context, id int, conten
 //
 // Idempotent: setting a listing to the state it's already in returns 200.
 //
+// To change many listings at once, all or nothing, use `POST /v1/listings/status`.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PATCH /v1/listings/{id} (the `UpdateListingActive` operationId).
@@ -5895,6 +6621,8 @@ func (c *Client) UpdateListingActive(ctx context.Context, id int, body UpdateLis
 // Returns the actual comp set for a listing — the underlying competitor listings (with daily nightly pricing), not just the aggregated `compSummary` from `/pricing`. Each comp comes back with distance, bedrooms, ratings, lat/lng, platform link, and a per-day rate/availability series for the requested window.
 //
 // Powered by Atlas. Comps with no coordinates are excluded — there's no way to rank them by distance. Listings without coordinates return `data: []` and a `warning` field.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/listings/{id}/comps (the `ListListingComps` operationId).
 func (c *Client) ListListingComps(ctx context.Context, id int, params *ListListingCompsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5920,6 +6648,8 @@ func (c *Client) ListListingComps(ctx context.Context, id int, params *ListListi
 // **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
 //
 // Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5948,6 +6678,8 @@ func (c *Client) UpdateListingContentWithBody(ctx context.Context, id int, conte
 //
 // Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/listings/{id}/content (the `UpdateListingContent` operationId).
@@ -5966,6 +6698,8 @@ func (c *Client) UpdateListingContent(ctx context.Context, id int, body UpdateLi
 // GenerateListingContentWithBody AI-generate listing content
 //
 // Generate guest-facing copy (title, summary, description, amenities, etc.) for a listing using Repull AI. When `photos` are provided the vision model is used for photo-grounded copy. Persists into the listing by default.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5986,6 +6720,8 @@ func (c *Client) GenerateListingContentWithBody(ctx context.Context, id int, con
 //
 // Generate guest-facing copy (title, summary, description, amenities, etc.) for a listing using Repull AI. When `photos` are provided the vision model is used for photo-grounded copy. Persists into the listing by default.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
@@ -6004,6 +6740,8 @@ func (c *Client) GenerateListingContent(ctx context.Context, id int, body Genera
 // DeleteListingPhotoWithBody Delete a stored listing photo
 //
 // Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6024,6 +6762,8 @@ func (c *Client) DeleteListingPhotoWithBody(ctx context.Context, id int, content
 //
 // Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with DELETE /v1/listings/{id}/photos (the `DeleteListingPhoto` operationId).
@@ -6043,6 +6783,8 @@ func (c *Client) DeleteListingPhoto(ctx context.Context, id int, body DeleteList
 //
 // Returns the photo set currently stored for this listing.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/listings/{id}/photos (the `ListListingPhotos` operationId).
 func (c *Client) ListListingPhotos(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListListingPhotosRequest(c.Server, id)
@@ -6061,6 +6803,8 @@ func (c *Client) ListListingPhotos(ctx context.Context, id int, reqEditors ...Re
 // Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 //
 // Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6083,6 +6827,8 @@ func (c *Client) CreateListingPhotoUploadUrlWithBody(ctx context.Context, id int
 //
 // Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/listings/{id}/photos/upload-url (the `CreateListingPhotoUploadUrl` operationId).
@@ -6102,6 +6848,8 @@ func (c *Client) CreateListingPhotoUploadUrl(ctx context.Context, id int, body C
 //
 // Returns date-by-date pricing recommendations for a listing's upcoming calendar window, plus the listing's base-price context and a 5km comp summary. Recommendations come from the Atlas pricing model — pre-computed nightly and stored in `pricing_recommendations`. Use POST to apply or decline pending recommendations.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/listings/{id}/pricing (the `GetListingPricing` operationId).
 func (c *Client) GetListingPricing(ctx context.Context, id int, params *GetListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetListingPricingRequest(c.Server, id, params)
@@ -6118,6 +6866,8 @@ func (c *Client) GetListingPricing(ctx context.Context, id int, params *GetListi
 // ApplyListingPricingWithBody Apply or decline pricing recommendations
 //
 // Apply: writes the recommended price to the listing's calendar for the given dates and triggers the platform fan-out (Airbnb / Booking.com / VRBO). Decline: marks the recommendation as `declined` so it stops surfacing — the model can re-recommend on the next training cycle.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6137,6 +6887,8 @@ func (c *Client) ApplyListingPricingWithBody(ctx context.Context, id int, conten
 // ApplyListingPricing Apply or decline pricing recommendations
 //
 // Apply: writes the recommended price to the listing's calendar for the given dates and triggers the platform fan-out (Airbnb / Booking.com / VRBO). Decline: marks the recommendation as `declined` so it stops surfacing — the model can re-recommend on the next training cycle.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6161,6 +6913,8 @@ func (c *Client) ApplyListingPricing(ctx context.Context, id int, body ApplyList
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/listings/{id}/pricing/history (the `GetListingPricingHistory` operationId).
 func (c *Client) GetListingPricingHistory(ctx context.Context, id int, params *GetListingPricingHistoryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetListingPricingHistoryRequest(c.Server, id, params)
@@ -6178,6 +6932,8 @@ func (c *Client) GetListingPricingHistory(ctx context.Context, id int, params *G
 //
 // Returns the strategy that constrains how the Atlas pricing model behaves for this listing. If no strategy row exists yet, returns sane defaults flagged with `isDefault: true`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/listings/{id}/pricing/strategy (the `GetListingPricingStrategy` operationId).
 func (c *Client) GetListingPricingStrategy(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetListingPricingStrategyRequest(c.Server, id)
@@ -6194,6 +6950,8 @@ func (c *Client) GetListingPricingStrategy(ctx context.Context, id int, reqEdito
 // UpdateListingPricingStrategyWithBody Update pricing strategy
 //
 // Upserts the strategy on `(listing_id, customer_id)` — repeated PUTs are idempotent. Send only the fields you want to change; omitted fields take server-side defaults.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6214,6 +6972,8 @@ func (c *Client) UpdateListingPricingStrategyWithBody(ctx context.Context, id in
 //
 // Upserts the strategy on `(listing_id, customer_id)` — repeated PUTs are idempotent. Send only the fields you want to change; omitted fields take server-side defaults.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/listings/{id}/pricing/strategy (the `UpdateListingPricingStrategy` operationId).
@@ -6233,6 +6993,8 @@ func (c *Client) UpdateListingPricingStrategy(ctx context.Context, id int, body 
 //
 // Returns connection state and sync activity per channel. `channels` is sync activity (empty until first push). `connections` is connection state (populated as soon as a channel is linked). Recommended polling cadence: at most once per 30s per listing — for bulk views, prefer `GET /v1/listings` and filter client-side.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/listings/{id}/publish-status (the `GetListingPublishStatus` operationId).
 func (c *Client) GetListingPublishStatus(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetListingPublishStatusRequest(c.Server, id)
@@ -6249,6 +7011,8 @@ func (c *Client) GetListingPublishStatus(ctx context.Context, id int, reqEditors
 // PublishListingToAirbnbWithBody Publish a listing to Airbnb
 //
 // Push a Repull listing to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6269,6 +7033,8 @@ func (c *Client) PublishListingToAirbnbWithBody(ctx context.Context, id int, con
 //
 // Push a Repull listing to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/listings/{id}/publish/airbnb (the `PublishListingToAirbnb` operationId).
@@ -6287,6 +7053,8 @@ func (c *Client) PublishListingToAirbnb(ctx context.Context, id int, body Publis
 // PublishListingToBooking Publish a listing to Booking.com
 //
 // Push a Repull listing to Booking.com. The listing must already be mapped to a Booking property + room (created via the Booking-claim Connect flow).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
 func (c *Client) PublishListingToBooking(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6309,6 +7077,8 @@ func (c *Client) PublishListingToBooking(ctx context.Context, id int, reqEditors
 // - What's the ADR uplift for moving up a tier?
 //
 // DNA coverage is still ramping — segments are scored asynchronously. Cities and radii without scored comps return `totalCompsAnalyzed: 0` plus a `low_dna_coverage` recommendation rather than fabricated data.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/listings/{id}/segments (the `GetListingSegments` operationId).
 func (c *Client) GetListingSegments(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6405,6 +7175,8 @@ func (c *Client) GetMarketCalendar(ctx context.Context, city string, params *Get
 //
 // **Incremental sync (only changes since last poll):** pass `?updated_since=<ISO8601>` to receive only properties changed at or after that instant. Each property carries `updatedAt` — the last row of the final page is your next watermark. `updated_since` changes the page ordering to `updatedAt ASC, id ASC` (and the cursor with it); see the parameter description. `GET /v1/listings` does NOT yet accept `updated_since` — use this endpoint for property-side incremental sync.
 //
+// **Inactive properties:** an inactive property keeps syncing, but cannot be read or changed through the API until it is activated. They are only listed when `status` asks for them, and then with `id`, `name`, `status`, `lifecycleStatus`, `channels` and `updatedAt` only — enough to choose what to activate with `PATCH /v1/listings/{id}`.
+//
 // Corresponds with GET /v1/properties (the `ListProperties` operationId).
 func (c *Client) ListProperties(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPropertiesRequest(c.Server, params)
@@ -6424,6 +7196,8 @@ func (c *Client) ListProperties(ctx context.Context, params *ListPropertiesParam
 //
 // **Optional expansions:** Pass `?include=amenities` to enrich the response with the property's amenities (sourced from the unified `listings_amenities` table). Returns `[]` when the property has no amenity rows. The default response stays lean; consumers must opt in.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Corresponds with GET /v1/properties/{id} (the `GetProperty` operationId).
 func (c *Client) GetProperty(ctx context.Context, id int, params *GetPropertyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPropertyRequest(c.Server, id, params)
@@ -6442,6 +7216,8 @@ func (c *Client) GetProperty(ctx context.Context, id int, params *GetPropertyPar
 // Returns the full price breakdown for a stay — nightly total, length-of-stay discount, cleaning fee, pet and other fees, taxes, and the total.
 //
 // A quote is priced against a booking website, because the markup, custom fees and tax overrides that decide what a guest is actually charged live there. A workspace with no booking site receives `422 quote_unavailable` rather than a number computed from different rules than the ones applied at checkout.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/quotes (the `GetQuote` operationId).
 func (c *Client) GetQuote(ctx context.Context, params *GetQuoteParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6465,6 +7241,8 @@ func (c *Client) GetQuote(ctx context.Context, params *GetQuoteParams, reqEditor
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. For deep pagination cursor remains O(1) per page; offset > 10000 returns 422 with a docs link.
 //
 // **Incremental sync (only changes since last poll):** pass `?updated_since=<ISO8601>` to receive only reservations amended, cancelled, or created at or after that instant — no full re-walk. Each row carries `updatedAt`; the last row of the final page is your next watermark. Note that `updated_since` changes the page ordering to `updatedAt ASC, id ASC` (and the cursor with it) so mid-walk amendments cannot be skipped — see the parameter description for the full contract.
+//
+// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
 // Corresponds with GET /v1/reservations (the `ListReservations` operationId).
 func (c *Client) ListReservations(ctx context.Context, params *ListReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6492,6 +7270,8 @@ func (c *Client) ListReservations(ctx context.Context, params *ListReservationsP
 // **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
 //
 // Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6522,6 +7302,8 @@ func (c *Client) CreateReservationWithBody(ctx context.Context, params *CreateRe
 //
 // Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
@@ -6540,6 +7322,8 @@ func (c *Client) CreateReservation(ctx context.Context, params *CreateReservatio
 // GetReservation Get reservation details
 //
 // Returns the full record for a single reservation, scoped to the authenticated workspace. Response shape is identical to a single row in `GET /v1/reservations` so SDK consumers can use the same type for both. Returns **404** if the id does not exist OR belongs to a different workspace — the API never differentiates the two so caller can't enumerate other workspaces' ids.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/reservations/{id} (the `GetReservation` operationId).
 func (c *Client) GetReservation(ctx context.Context, id int, params *GetReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6575,6 +7359,8 @@ func (c *Client) GetReservation(ctx context.Context, id int, params *GetReservat
 // | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 //
 // **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+//
+// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6613,6 +7399,8 @@ func (c *Client) UpdateReservationWithBody(ctx context.Context, id int, params *
 //
 // **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 //
+// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+//
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
@@ -6636,6 +7424,8 @@ func (c *Client) UpdateReservation(ctx context.Context, id int, params *UpdateRe
 //
 // Filters: `platform` (`airbnb`|`booking`|`vrbo`), `listing_id` (internal Repull listing id), `rating_min` / `rating_max` (inclusive bounds, 0..5), `status` (`responded`|`unanswered`|`all`), `reviewer_role` (`guest` (default) | `host` | `all`).
 //
+// **Inactive listings:** reviews of inactive listings are left out of the page and of `pagination.total`. Filtering by an inactive `listing_id` returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
+//
 // Corresponds with GET /v1/reviews (the `ListReviews` operationId).
 func (c *Client) ListReviews(ctx context.Context, params *ListReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListReviewsRequest(c.Server, params)
@@ -6652,6 +7442,8 @@ func (c *Client) ListReviews(ctx context.Context, params *ListReviewsParams, req
 // GetReview Get review
 //
 // Returns one review (the bare `Review` object — NOT wrapped in `{ data: ... }`). Scoped to the authenticated workspace via the listings join — reviews that don't belong to the workspace return 404 (we don't differentiate to avoid leaking other customers' ids).
+//
+// A review of an inactive listing returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 //
 // Corresponds with GET /v1/reviews/{id} (the `GetReview` operationId).
 func (c *Client) GetReview(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6671,6 +7463,8 @@ func (c *Client) GetReview(ctx context.Context, id int, params *GetReviewParams,
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
 // Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6692,6 +7486,8 @@ func (c *Client) ReplyToReviewWithBody(ctx context.Context, id int, contentType 
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
 // Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6845,7 +7641,7 @@ func (c *Client) UpdateCustomSchema(ctx context.Context, id openapi_types.UUID, 
 
 // GetUsageLogs List API request logs
 //
-// Cursor-paginated raw API request log for the authenticated workspace, newest first. Filter by time `range`, `operation` id(s), status class, or free-text `q`. Walk pages with `cursor` from `pagination.next_cursor` until `pagination.has_more` is `false`; `offset` is accepted as a shallow alias (deep walks must use `cursor`).
+// Cursor-paginated raw API request log for the authenticated workspace, newest first. Filter by time `range`, `operation` id(s), status class, or free-text `q`. Walk pages with `cursor` from `pagination.nextCursor` until `pagination.hasMore` is `false`; `offset` is accepted as a shallow alias (deep walks must use `cursor`).
 //
 // Corresponds with GET /v1/usage/logs (the `GetUsageLogs` operationId).
 func (c *Client) GetUsageLogs(ctx context.Context, params *GetUsageLogsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6913,7 +7709,7 @@ func (c *Client) ListWebhooks(ctx context.Context, reqEditors ...RequestEditorFn
 
 // CreateWebhookWithBody Create webhook subscription
 //
-// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events.
+// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6932,7 +7728,7 @@ func (c *Client) CreateWebhookWithBody(ctx context.Context, contentType string, 
 
 // CreateWebhook Create webhook subscription
 //
-// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events.
+// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7112,7 +7908,7 @@ func (c *Client) GetWebhookDelivery(ctx context.Context, id openapi_types.UUID, 
 
 // ReplayWebhookDelivery Replay webhook delivery
 //
-// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1). A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
 //
 // Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
 func (c *Client) ReplayWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -11427,7 +12223,7 @@ func NewSubmitVrboCredentialsRequestWithBody(server string, contentType string, 
 }
 
 // NewDeleteConnectionRequest constructs an http.Request for the DeleteConnection method
-func NewDeleteConnectionRequest(server string, provider Provider) (*http.Request, error) {
+func NewDeleteConnectionRequest(server string, provider Provider, params *DeleteConnectionParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -11450,6 +12246,33 @@ func NewDeleteConnectionRequest(server string, provider Provider) (*http.Request
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.AccountId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "accountId", *params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
@@ -12809,6 +13632,46 @@ func NewBulkApplyPricingRequestWithBody(server string, contentType string, body 
 	}
 
 	operationPath := fmt.Sprintf("/v1/listings/pricing/bulk")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSetListingsStatusRequest calls the generic SetListingsStatus builder with application/json body
+func NewSetListingsStatusRequest(server string, body SetListingsStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSetListingsStatusRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSetListingsStatusRequestWithBody constructs an http.Request for the SetListingsStatus method, with any body, and a specified content type
+func NewSetListingsStatusRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/status")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -16104,6 +16967,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Per-property *different* values are separate calls — presenting them as one request would be a false claim about atomicity.
 	//
+	// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PATCH /v1/availability/batch (the `BatchUpdateAvailability` operationId).
@@ -16116,6 +16981,8 @@ type ClientWithResponsesInterface interface {
 	// Ownership is checked before anything is written: a batch containing a property from another workspace is refused as a whole and names the offending ids, rather than being partially applied.
 	//
 	// Per-property *different* values are separate calls — presenting them as one request would be a false claim about atomicity.
+	//
+	// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16132,6 +16999,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// This endpoint is read-only, and the projected per-date shape carries **availability, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). Availability **writes** always stay per-channel: `PUT /v1/channels/airbnb/listings/{id}/availability` (Airbnb) or `PUT /v1/channels/booking/availability` (Booking.com).
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/availability/{propertyId} (the `GetAvailability` operationId).
@@ -16141,6 +17010,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/availability/{propertyId} (the `UpdateAvailability` operationId).
@@ -16149,6 +17020,8 @@ type ClientWithResponsesInterface interface {
 	// UpdateAvailabilityWithResponse Set prices, block or unblock dates
 	//
 	// Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16179,6 +17052,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `dataFreshness` envelope.
 	//
+	// Alterations of reservations on inactive listings are left out. Filtering by a reservation on an inactive listing (`reservation_code`) returns `403 listing_inactive`.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/alterations (the `ListAirbnbAlterations` operationId).
@@ -16187,6 +17062,8 @@ type ClientWithResponsesInterface interface {
 	// CreateAirbnbAlterationWithBodyWithResponse Create Airbnb alteration
 	//
 	// Create a reservation alteration request (change dates, guest count, or price) on Airbnb. **Write-side** — calls Airbnb upstream. Requires a connected Airbnb host for the workspace, else `404 no_connection`.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16197,6 +17074,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Create a reservation alteration request (change dates, guest count, or price) on Airbnb. **Write-side** — calls Airbnb upstream. Requires a connected Airbnb host for the workspace, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/alterations (the `CreateAirbnbAlteration` operationId).
@@ -16205,6 +17084,8 @@ type ClientWithResponsesInterface interface {
 	// GetAirbnbAlterationWithResponse Get Airbnb alteration
 	//
 	// Fetch a single Airbnb reservation alteration by its Airbnb alteration id. **Pure DB read**, workspace-scoped via the reservations join. Returns `404 not_found` when no alteration matches the id in your workspace.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16215,6 +17096,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Accept a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to approve the proposed date / guest-count / price change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/alterations/{id}/accept (the `AcceptAirbnbAlteration` operationId).
@@ -16223,6 +17106,8 @@ type ClientWithResponsesInterface interface {
 	// AcceptAirbnbAlterationWithResponse Accept Airbnb alteration
 	//
 	// Accept a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to approve the proposed date / guest-count / price change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16233,6 +17118,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Decline a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to reject the proposed change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/alterations/{id}/decline (the `DeclineAirbnbAlteration` operationId).
@@ -16241,6 +17128,8 @@ type ClientWithResponsesInterface interface {
 	// DeclineAirbnbAlterationWithResponse Decline Airbnb alteration
 	//
 	// Decline a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to reject the proposed change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16268,6 +17157,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Pass `?include=amenities` to enrich each connection with its locally-cached amenity set. Returns `null` per connection when the cache is empty.
 	//
+	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings (the `ListAirbnbListings` operationId).
@@ -16280,6 +17171,8 @@ type ClientWithResponsesInterface interface {
 	// Discover the `airbnbId` (+ `hostId`) via `GET /v1/channels/airbnb/listings`, then re-point it at the `listingId` of your choice — the dedup / consolidation case where the Airbnb sync auto-created its own listing but you want the inventory under an existing property.
 	//
 	// Repoints both the Airbnb record and its platform link to the target listing in one transaction. Idempotent — re-mapping to the same listing is a 200 no-op (`alreadyMapped: true`). Scope is enforced against your workspace on both the target listing and the existing Airbnb record; a listing that already links a different Airbnb listing returns 409.
+	//
+	// Returns `403 listing_inactive` when the target listing, or the listing the Airbnb listing is mapped to now, is inactive; nothing is changed.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16294,6 +17187,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Repoints both the Airbnb record and its platform link to the target listing in one transaction. Idempotent — re-mapping to the same listing is a 200 no-op (`alreadyMapped: true`). Scope is enforced against your workspace on both the target listing and the existing Airbnb record; a listing that already links a different Airbnb listing returns 409.
 	//
+	// Returns `403 listing_inactive` when the target listing, or the listing the Airbnb listing is mapped to now, is inactive; nothing is changed.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/listings/map (the `MapAirbnbListing` operationId).
@@ -16302,6 +17197,8 @@ type ClientWithResponsesInterface interface {
 	// GetAirbnbListingWithResponse Get Airbnb listing
 	//
 	// Fetch all Airbnb connection rows for a single Vanio listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16318,6 +17215,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Any other action (e.g. `pull`, `unlist`) returns a structured 422 naming the supported actions.
 	//
+	// Returns `403 listing_inactive` for `push`/`publish` when the listing is inactive. `delete` (deactivation) is always accepted.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/listings/{id} (the `AirbnbListingAction` operationId).
@@ -16333,6 +17232,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Any other action (e.g. `pull`, `unlist`) returns a structured 422 naming the supported actions.
 	//
+	// Returns `403 listing_inactive` for `push`/`publish` when the listing is inactive. `delete` (deactivation) is always accepted.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/listings/{id} (the `AirbnbListingAction` operationId).
@@ -16341,6 +17242,8 @@ type ClientWithResponsesInterface interface {
 	// ListAirbnbListingAmenitiesWithResponse List Airbnb amenities
 	//
 	// List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16351,6 +17254,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Read the per-day availability calendar for an Airbnb listing. Returns one row per day including price overrides, min-stay, and blocked status.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/availability (the `GetAirbnbListingAvailability` operationId).
@@ -16359,6 +17264,14 @@ type ClientWithResponsesInterface interface {
 	// UpdateAirbnbListingAvailabilityWithBodyWithResponse Update Airbnb availability
 	//
 	// Push availability + restrictions to Airbnb. `type: "calendar"` writes per-date restrictions — min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`) — via a batch of operations that each target either a date range or an explicit date list. `type: "rules"` writes listing-level availability rules (default min/max nights, booking lead time, turnover days, seasonal/day-of-week min nights). Restrictions never leak across channels — this endpoint writes only to Airbnb.
+	//
+	// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+	//
+	// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+	//
+	// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+	//
+	// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16369,6 +17282,14 @@ type ClientWithResponsesInterface interface {
 	//
 	// Push availability + restrictions to Airbnb. `type: "calendar"` writes per-date restrictions — min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`) — via a batch of operations that each target either a date range or an explicit date list. `type: "rules"` writes listing-level availability rules (default min/max nights, booking lead time, turnover days, seasonal/day-of-week min nights). Restrictions never leak across channels — this endpoint writes only to Airbnb.
 	//
+	// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+	//
+	// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+	//
+	// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+	//
+	// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/availability (the `UpdateAirbnbListingAvailability` operationId).
@@ -16377,6 +17298,8 @@ type ClientWithResponsesInterface interface {
 	// GetAirbnbCheckinGuideWithResponse Get Airbnb check-in guide
 	//
 	// Return every published locale variant of an Airbnb listing's check-in guide. **Pure DB read** from `listings_airbnb_check_in_guides`. Pass `?locale=en` to filter to one locale (prefix match). Returns `404` when the listing has no Airbnb connection in this workspace.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16387,6 +17310,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Upsert the check-in guide for one locale on an Airbnb listing. **Write-side** — calls Airbnb upstream; the DB mirror is reconciled by the sync worker once the upstream call returns. Target the locale with `?locale=en` (defaults to `en`). Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
@@ -16395,6 +17320,8 @@ type ClientWithResponsesInterface interface {
 	// GetAirbnbCheckoutGuideWithResponse Get Airbnb checkout guide
 	//
 	// Return the checkout tasks an Airbnb listing shows guests at departure. **Pure DB read** from `listings_airbnb_checkout_tasks`. Returns `404` when the listing has no Airbnb connection in this workspace.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16405,6 +17332,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// List an Airbnb listing's per-locale content (name, summary, house rules, etc). **Pure DB read** from `listings_airbnb_descriptions`. Filter to one locale with `?locale=en` (the legacy `?country=` param is accepted as a soft alias). Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/descriptions (the `ListAirbnbListingDescriptions` operationId).
@@ -16413,6 +17342,8 @@ type ClientWithResponsesInterface interface {
 	// DeleteAirbnbListingPhotoWithResponse Delete an Airbnb photo
 	//
 	// Remove a single photo from an Airbnb listing. Pass the Airbnb-side photo id as `?photoId=`. Write-side — calls Airbnb upstream; the local photo cache is reconciled by the sync worker afterwards.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16423,6 +17354,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// List photos attached to an Airbnb listing in display order. Returns the public CDN URL plus Airbnb-side metadata (id, caption, room).
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/photos (the `ListAirbnbListingPhotos` operationId).
@@ -16431,6 +17364,8 @@ type ClientWithResponsesInterface interface {
 	// UploadAirbnbListingPhotosWithResponse Upload photos to Airbnb
 	//
 	// Upload one or more photos to an Airbnb listing. Accepts public image URLs (Airbnb fetches them) — direct binary upload is not supported on this endpoint.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16441,6 +17376,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Read the current pricing config (base price, weekend uplift, length-of-stay discounts, smart-pricing bounds) for an Airbnb listing.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/pricing (the `GetAirbnbListingPricing` operationId).
@@ -16449,6 +17386,14 @@ type ClientWithResponsesInterface interface {
 	// UpdateAirbnbListingPricingWithBodyWithResponse Update Airbnb pricing
 	//
 	// Push pricing changes to Airbnb. The `type` discriminator selects the sub-resource (model, standard settings, LOS, rate-plan, fees, currency, rule, or per-date `calendar`). `type: "calendar"` carries the full per-date restriction set — nightly price, min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`). For settings sub-resources the full object is replaced — GET first, mutate locally, then PUT the whole object.
+	//
+	// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+	//
+	// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+	//
+	// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+	//
+	// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16459,6 +17404,14 @@ type ClientWithResponsesInterface interface {
 	//
 	// Push pricing changes to Airbnb. The `type` discriminator selects the sub-resource (model, standard settings, LOS, rate-plan, fees, currency, rule, or per-date `calendar`). `type: "calendar"` carries the full per-date restriction set — nightly price, min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`). For settings sub-resources the full object is replaced — GET first, mutate locally, then PUT the whole object.
 	//
+	// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+	//
+	// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+	//
+	// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+	//
+	// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/pricing (the `UpdateAirbnbListingPricing` operationId).
@@ -16467,6 +17420,8 @@ type ClientWithResponsesInterface interface {
 	// GetAirbnbListingQualityWithResponse Get Airbnb listing quality
 	//
 	// Return an Airbnb listing's quality signals — standards, reservation issues, and monthly quality stats. **Pure DB read** from the local quality mirrors. Scope the response with `?type=all|standards|issues|stats` (default `all`, which returns `{ standards, issues }`). Returns `404` when the listing has no Airbnb connection in this workspace.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16477,6 +17432,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Delete a room from an Airbnb listing. **Write-side** — calls Airbnb upstream. Pass the Airbnb-side room id as `?roomId=`. Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with DELETE /v1/channels/airbnb/listings/{id}/rooms (the `DeleteAirbnbListingRoom` operationId).
@@ -16485,6 +17442,8 @@ type ClientWithResponsesInterface interface {
 	// ListAirbnbListingRoomsWithResponse List Airbnb rooms
 	//
 	// List the rooms configured on an Airbnb listing, ordered by room number. **Pure DB read** from `listings_airbnb_rooms`. Returns `404` when the listing has no Airbnb connection in this workspace.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16495,6 +17454,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Create a new room on an Airbnb listing. **Write-side** — calls Airbnb upstream. Body is the full room object minus `room_id`. Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/listings/{id}/rooms (the `CreateAirbnbListingRoom` operationId).
@@ -16503,6 +17464,8 @@ type ClientWithResponsesInterface interface {
 	// CreateAirbnbListingRoomWithResponse Create an Airbnb room
 	//
 	// Create a new room on an Airbnb listing. **Write-side** — calls Airbnb upstream. Body is the full room object minus `room_id`. Requires a connected Airbnb host, else `404 no_connection`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16513,6 +17476,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Return an Airbnb listing's host roles, published locales, and regulatory permits. **Pure DB read** — host roles from `listings_airbnb_details.host_roles`, locales from distinct `listings_airbnb_descriptions.locale`, permits from `listings_airbnb_permits`. Scope with `?type=all|hosts|permits|locales` (default `all`, which returns `{ hosts, locales }`). Returns `404` when the listing has no Airbnb connection in this workspace.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/settings (the `GetAirbnbListingSettings` operationId).
@@ -16521,6 +17486,8 @@ type ClientWithResponsesInterface interface {
 	// ListAirbnbThreadsWithResponse List Airbnb message threads
 	//
 	// List Airbnb message threads (one per guest conversation). Cursor-paginated. Each thread includes a preview of the latest message.
+	//
+	// Threads on inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16531,6 +17498,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Fetch a single Airbnb message thread by its Airbnb thread id. **Pure DB read** from the local `message_threads` mirror, workspace-scoped. Returns `404 not_found` when no thread matches. For the messages within a thread use `GET /v1/channels/airbnb/messaging/{threadId}/messages`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/messaging/{threadId} (the `GetAirbnbThread` operationId).
@@ -16539,6 +17508,8 @@ type ClientWithResponsesInterface interface {
 	// ListAirbnbThreadMessagesWithResponse Get Airbnb messages
 	//
 	// Fetch the full message log for an Airbnb thread, ordered oldest-to-newest. Walk pages with `?cursor=` until `pagination.hasMore` is `false`.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16551,6 +17522,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/messaging/{threadId}/messages (the `SendAirbnbMessage` operationId).
@@ -16561,6 +17534,8 @@ type ClientWithResponsesInterface interface {
 	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
 	//
 	// The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16578,6 +17553,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PATCH /v1/channels/airbnb/messaging/{threadId}/messages/{messageId} (the `UpdateAirbnbMessage` operationId).
@@ -16593,6 +17570,8 @@ type ClientWithResponsesInterface interface {
 	// - `react` — add a reaction (requires `reaction`).
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16617,6 +17596,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
@@ -16631,6 +17612,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
@@ -16640,11 +17623,13 @@ type ClientWithResponsesInterface interface {
 	//
 	// Cursor-paginated list of reservations sourced directly from Airbnb. Use this when you need Airbnb-specific fields (guest payout split, cancellation policy snapshot) that the unified `/v1/reservations` endpoint flattens away.
 	//
-	// Walk pages with `?cursor=<pagination.next_cursor>` until `pagination.has_more` is `false`. The cursor is opaque — never construct or parse it client-side.
+	// Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. Internally this walks upstream Airbnb cursor pages to skip rows, so deep offsets cost N/limit upstream round-trips; cursor remains the better choice for deep pagination.
 	//
 	// When `status` is omitted, all statuses are returned (Airbnb defaults to `accepted` only on its own surface, but this endpoint normalises to "all"). Pass `?status=accepted` to scope.
+	//
+	// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16655,6 +17640,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Fetch a single Airbnb reservation by Airbnb confirmation code (e.g. `HMABCDEF12`).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/reservations/{code} (the `GetAirbnbReservation` operationId).
@@ -16663,6 +17650,8 @@ type ClientWithResponsesInterface interface {
 	// AirbnbReservationActionWithResponse Accept/decline/cancel Airbnb reservation
 	//
 	// Apply a state action to an Airbnb reservation — `accept` / `decline` (for inquiries and reservation requests), `cancel` (host cancellation, carries penalties), `pre-approve` (for inquiries).
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16673,6 +17662,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
 	//
+	// Reviews of inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/reviews (the `ListAirbnbReviews` operationId).
@@ -16681,6 +17672,8 @@ type ClientWithResponsesInterface interface {
 	// RespondAirbnbReviewLegacyWithResponse Respond to / submit Airbnb review (legacy)
 	//
 	// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `PUT /v1/channels/airbnb/reviews/{id}` (edit) and `POST /v1/channels/airbnb/reviews/{id}/respond` (reply) for new integrations.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16695,6 +17688,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
@@ -16706,6 +17701,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
@@ -16714,6 +17711,8 @@ type ClientWithResponsesInterface interface {
 	// RespondAirbnbReviewWithBodyWithResponse Respond to Airbnb review
 	//
 	// Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16724,6 +17723,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
@@ -16731,7 +17732,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListAirbnbTransactionsWithResponse List Airbnb transactions
 	//
-	// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `data_freshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+	// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `dataFreshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+	//
+	// Transactions of reservations on inactive listings are left out; payout rows, which belong to no listing, are always included.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16762,6 +17765,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Proxies Booking's `getRoomRateAvailability` — the returned fields (price, rooms-to-sell, min/max stay, closed-to-arrival/departure, stop-sell) are whatever Booking.com emits for the window. A listing-id-keyed equivalent is available at `GET /v1/channels/booking/listings/{id}/pricing`.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/availability (the `GetBookingAvailability` operationId).
@@ -16776,6 +17783,10 @@ type ClientWithResponsesInterface interface {
 	// - `derived-pricing` — occupancy-derived pricing rules.
 	//
 	// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16792,6 +17803,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/booking/availability (the `UpdateBookingAvailability` operationId).
@@ -16800,6 +17815,10 @@ type ClientWithResponsesInterface interface {
 	// GetBookingChargesWithResponse Get Booking.com charges
 	//
 	// Fetch the extra-charge set (cleaning fee, resort fee, city tax, etc.) configured for a Booking.com property. Pass the Booking.com `property_id` as a query param — required.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16810,6 +17829,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Replace the extra-charge set for a Booking.com property. The body carries the target `property_id` and the full `charges` array — Booking treats the write as a full replacement, so include every charge you want to keep.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/booking/charges (the `UpdateBookingCharges` operationId).
@@ -16818,6 +17841,10 @@ type ClientWithResponsesInterface interface {
 	// UpdateBookingChargesWithResponse Set Booking.com charges
 	//
 	// Replace the extra-charge set for a Booking.com property. The body carries the target `property_id` and the full `charges` array — Booking treats the write as a full replacement, so include every charge you want to keep.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16828,6 +17855,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Fetch the current content (descriptions, amenities, photos) for a Booking.com property. Used to round-trip edits through Repull.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/content (the `GetBookingContent` operationId).
@@ -16836,6 +17867,10 @@ type ClientWithResponsesInterface interface {
 	// UpdateBookingContentWithResponse Update Booking.com content
 	//
 	// Push content changes (descriptions, amenities, photos) to Booking.com. Booking enforces editorial review on text fields — changes appear after their content moderation queue clears.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16848,6 +17883,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Vanio listing ID across channels.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/listings/{id}/pricing (the `GetBookingListingPricing` operationId).
@@ -16856,6 +17893,8 @@ type ClientWithResponsesInterface interface {
 	// UpdateBookingListingPricingWithBodyWithResponse Update Booking.com pricing for a listing
 	//
 	// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16866,6 +17905,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
@@ -16874,6 +17915,10 @@ type ClientWithResponsesInterface interface {
 	// ListBookingConversationsWithResponse List Booking.com conversations
 	//
 	// List Booking.com guest conversations. Cursor-paginated. Use the messaging POST to send a reply.
+	//
+	// Scoped to this workspace. With `property_id`, the property must be connected to this workspace — any other id returns `404 not_found`. Without it, only messages for this workspace's own Booking.com properties are returned.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16884,6 +17929,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/messaging (the `SendBookingMessage` operationId).
@@ -16892,6 +17941,10 @@ type ClientWithResponsesInterface interface {
 	// SendBookingMessageWithResponse Send Booking.com message
 	//
 	// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16902,6 +17955,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// List Booking.com hotels claimed by this workspace. Each row includes the Booking-side hotel id and the connected room types.
 	//
+	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
@@ -16910,6 +17965,8 @@ type ClientWithResponsesInterface interface {
 	// GetBookingPropertyWithResponse Get Booking.com connection for a listing
 	//
 	// Return the Booking.com connection record(s) for a Vanio listing — the linked Booking hotel id, sync flags, markup, sync category, and suspension state. Scoped to the authenticated workspace; a listing with no Booking.com connection returns 404.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16922,6 +17979,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// `id` is a Vanio listing id — resolved to the Booking `hotel_id` via the workspace mapping (a listing with no active Booking.com mapping returns 404). Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/properties/{id}/rooms (the `ListBookingPropertyRooms` operationId).
@@ -16930,6 +17989,10 @@ type ClientWithResponsesInterface interface {
 	// ListBookingReservationsWithResponse List Booking.com reservations
 	//
 	// Pull reservations from Booking.com. `type=new` (default) returns un-acknowledged bookings; `type=modified` returns changed bookings. Pass both `reservation_id` and `hotel_id` to fetch a single reservation's full details. Acknowledge processed reservations with the POST so Booking stops re-serving them in the `new` queue.
+	//
+	// Scoped to this workspace. `hotel_id` (or its alias `property_id`) must be a property connected to this workspace; any other id returns `404 not_found`, the same as an id that does not exist. Without a hotel, `new`/`modified` cover every Booking.com property this workspace holds (and return `404 not_found` if it holds none). A `reservation_id` that belongs to another workspace returns `404 not_found`.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16940,6 +18003,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Acknowledge one or more reservations so Booking.com removes them from the `new` queue. The body carries `reservation_ids` (non-empty array). Acknowledge only after you have durably persisted each reservation.
 	//
+	// Only reservations that belong to this workspace can be acknowledged. If any id in `reservation_ids` is not one of this workspace's Booking.com reservations (`confirmationCode` on `GET /v1/reservations?platform=booking`), nothing is acknowledged and the response is `404 not_found` naming those ids in `reservation_ids`.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/reservations (the `AcknowledgeBookingReservations` operationId).
@@ -16949,6 +18014,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Acknowledge one or more reservations so Booking.com removes them from the `new` queue. The body carries `reservation_ids` (non-empty array). Acknowledge only after you have durably persisted each reservation.
 	//
+	// Only reservations that belong to this workspace can be acknowledged. If any id in `reservation_ids` is not one of this workspace's Booking.com reservations (`confirmationCode` on `GET /v1/reservations?platform=booking`), nothing is acknowledged and the response is `404 not_found` naming those ids in `reservation_ids`.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/reservations (the `AcknowledgeBookingReservations` operationId).
@@ -16957,6 +18024,10 @@ type ClientWithResponsesInterface interface {
 	// ListBookingReviewsWithResponse List Booking.com reviews
 	//
 	// List guest reviews for a Booking.com property. Pass `property_id` (the Booking.com hotel id) as a query param — required.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -16969,6 +18040,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Booking.com does NOT support host-authored reviews of guests via the API (platform-level limitation), so this endpoint is reply-only.
 	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/reviews (the `ReplyBookingReview` operationId).
@@ -16979,6 +18054,10 @@ type ClientWithResponsesInterface interface {
 	// Post a public host reply to a guest review on Booking.com. Booking allows one host reply per review — repeated POSTs are rejected by upstream.
 	//
 	// Booking.com does NOT support host-authored reviews of guests via the API (platform-level limitation), so this endpoint is reply-only.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -16998,6 +18077,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
 	//
+	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
@@ -17016,6 +18099,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
 	//
+	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
@@ -17023,43 +18110,53 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteBookingWebhookWithResponse Unsubscribe from a Booking.com notification
 	//
-	// Remove a Booking.com CNS subscription. Pass the `notification_type` to unsubscribe as a query param — required.
+	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with DELETE /v1/channels/booking/webhooks (the `DeleteBookingWebhook` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	DeleteBookingWebhookWithResponse(ctx context.Context, params *DeleteBookingWebhookParams, reqEditors ...RequestEditorFn) (*DeleteBookingWebhookClientResponse, error)
 
 	// ListBookingWebhooksWithResponse List Booking.com webhook subscriptions
 	//
-	// List the workspace's Booking.com Content Notification Service (CNS) subscriptions — the notification types Booking pushes to your callback URLs.
+	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/webhooks (the `ListBookingWebhooks` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	ListBookingWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingWebhooksClientResponse, error)
 
 	// CreateBookingWebhookWithBodyWithResponse Subscribe to a Booking.com notification
 	//
-	// Subscribe to a Booking.com CNS notification type, delivered to `callback_url`. Returns 201 on success.
+	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/webhooks (the `CreateBookingWebhook` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error)
 
 	// CreateBookingWebhookWithResponse Subscribe to a Booking.com notification
 	//
-	// Subscribe to a Booking.com CNS notification type, delivered to `callback_url`. Returns 201 on success.
+	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/webhooks (the `CreateBookingWebhook` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhookWithResponse(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error)
 
 	// GetPlumguideAvailabilityWithResponse Get Plumguide availability
 	//
 	// Read the per-day availability calendar for a Plumguide listing. Returns the same row shape as Airbnb availability for SDK convenience.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17070,6 +18167,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Push per-day availability changes to Plumguide. Plumguide accepts only the next 24 months — dates beyond that are silently ignored.
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/plumguide/availability (the `UpdatePlumguideAvailability` operationId).
@@ -17078,6 +18177,8 @@ type ClientWithResponsesInterface interface {
 	// ListPlumguideBookingsWithResponse List Plumguide bookings
 	//
 	// List Plumguide bookings. Default returns all bookings; pass `listing_id` to filter to one listing, or `booking_code` to fetch a single booking.
+	//
+	// Returns `403 listing_inactive` when `listing_id` or `booking_code` resolves to an inactive listing. The unfiltered list is read straight from Plum Guide and is not filtered by listing status.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17097,6 +18198,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Read the current pricing for a Plumguide listing (base price, currency, weekend uplift).
 	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/plumguide/pricing (the `GetPlumguidePricing` operationId).
@@ -17105,6 +18208,8 @@ type ClientWithResponsesInterface interface {
 	// UpdatePlumguidePricingWithResponse Push pricing to Plumguide
 	//
 	// Push pricing changes to Plumguide. Plumguide rounds all prices to whole units of the listing currency — sub-unit precision is silently truncated.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17151,6 +18256,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// List VRBO listings this workspace owns. VRBO is agency-model — Repull reads listings via the public iCal/HTTP feeds.
 	//
+	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/vrbo/listings (the `ListVrboListings` operationId).
@@ -17159,6 +18266,8 @@ type ClientWithResponsesInterface interface {
 	// ListVrboReservationsWithResponse List VRBO reservations
 	//
 	// Cursor-paginated list of VRBO reservations sourced from the public booking feed. Lag is typically 5-10 minutes vs. Airbnb / Booking.com. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
+	//
+	// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17570,16 +18679,20 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteConnectionWithResponse Disconnect provider
 	//
-	// Disconnect a PMS or OTA from this workspace.
+	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
 	//
-	// Currently supported for `booking` only: drops the stored connection and stops syncing the mapped rooms. Resources already synced remain queryable but become read-only and stop receiving updates.
+	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 	//
-	// Every other provider returns `501 not_implemented` with instructions for disconnecting on the provider's side — Airbnb in particular has to be revoked by the host (Account → Privacy & sharing → Connected apps), because the OAuth grant lives outside this service. The endpoint used to report `200 { disconnected: true }` for every provider while doing nothing; it now tells you the truth.
+	// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
+	//
+	// The change is all or nothing. For Airbnb, the host can also revoke access on Airbnb's side (Account → Privacy & sharing → Connected apps); that alone does not update this workspace, so call this endpoint as well.
+	//
+	// Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with DELETE /v1/connect/{provider} (the `DeleteConnection` operationId).
-	DeleteConnectionWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*DeleteConnectionClientResponse, error)
+	DeleteConnectionWithResponse(ctx context.Context, provider Provider, params *DeleteConnectionParams, reqEditors ...RequestEditorFn) (*DeleteConnectionClientResponse, error)
 
 	// GetConnectStatusWithResponse Get connection status
 	//
@@ -17628,6 +18741,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Filters: `platform` (`airbnb`|`booking`|`vrbo`|`website`|`email`), `status` (`open`|`archived` — `archived` is a stable no-op until the bit lands on `message_threads`).
 	//
+	// **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/conversations (the `ListConversations` operationId).
@@ -17636,6 +18751,8 @@ type ClientWithResponsesInterface interface {
 	// GetConversationWithResponse Get conversation detail
 	//
 	// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks.
+	//
+	// A conversation that belongs to an inactive listing (by the thread's listing or its reservation's listing) returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17647,6 +18764,8 @@ type ClientWithResponsesInterface interface {
 	// Cursor-paginated messages within one thread. Defaults to newest-first (`?order=desc`); pass `?order=asc` for chronological replay. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
+	//
+	// A conversation that belongs to an inactive listing returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17669,6 +18788,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
@@ -17690,6 +18811,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
@@ -17702,6 +18825,8 @@ type ClientWithResponsesInterface interface {
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 	//
 	// Filters: `q` (substring on name/email/phone), `has_reservation` (`true`|`false`), `listing_id` (restrict to guests with at least one reservation on that listing).
+	//
+	// **Inactive listings:** a guest whose every reservation is on an inactive listing is left out of the page and of `pagination.total`, and `totalReservations`, `totalRevenue`, `firstStayedAt` / `lastStayedAt`, `has_reservation` and `listing_id` only consider reservations that are not on an inactive listing. Guests with no reservations are tied to no listing and are always listed. Filtering by an inactive `listing_id` returns `403 listing_inactive`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17741,6 +18866,8 @@ type ClientWithResponsesInterface interface {
 	// GetGuestWithResponse Get guest profile
 	//
 	// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates. Aggregates main vanio's `GuestService.getGuestProfile()` into the public Repull shape so SDK consumers don't have to learn the internal schema.
+	//
+	// **Inactive listings:** a guest whose every reservation is on an inactive listing returns `403 listing_inactive` naming those listings (the guest is kept, so this is not a 404). Otherwise the reservation aggregates exclude reservations on inactive listings. A guest with no reservations is always readable.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17861,6 +18988,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Combine comma-separated, e.g. `?include=content,details`. The default response stays lean; consumers must opt in.
 	//
+	// **Inactive listings:** by default only active listings are returned. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated, so when `status` asks for inactive ones they carry only `id`, `name`, `status` and `channels` — enough to choose what to activate with `PATCH /v1/listings/{id}`. `?include=` expansions are not applied to them.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/listings (the `ListListings` operationId).
@@ -17894,6 +19023,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Apply path writes the recommended price to each listing's calendar via the calendar service (which fans out to Airbnb/Booking/VRBO) then marks the Atlas recommendation `applied`. Decline path is Atlas-only — fast.
 	//
+	// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
@@ -17909,10 +19040,54 @@ type ClientWithResponsesInterface interface {
 	//
 	// Apply path writes the recommended price to each listing's calendar via the calendar service (which fans out to Airbnb/Booking/VRBO) then marks the Atlas recommendation `applied`. Decline path is Atlas-only — fast.
 	//
+	// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
 	BulkApplyPricingWithResponse(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkApplyPricingClientResponse, error)
+
+	// SetListingsStatusWithBodyWithResponse Activate or deactivate listings in bulk
+	//
+	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
+	//
+	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	//
+	// **All or nothing.** Nothing changes unless the whole request can be applied:
+	// - If any id is not one of your listings, the call returns `404` naming those ids.
+	// - If activating would take you over your plan's listing limit, the call returns `402 listings_limit_exceeded`. Only listings that are currently inactive count toward the new total, so re-sending ids that are already active never trips the limit.
+	//
+	// Deactivating is always allowed, including when your account is already over its limit — it is how you get back under it.
+	//
+	// **Idempotent.** Ids already in the requested state are returned in `unchanged`; ids this call changed are returned in `updated`.
+	//
+	// For a single listing, `PATCH /v1/listings/{id}` does the same.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/status (the `SetListingsStatus` operationId).
+	SetListingsStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetListingsStatusClientResponse, error)
+
+	// SetListingsStatusWithResponse Activate or deactivate listings in bulk
+	//
+	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
+	//
+	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	//
+	// **All or nothing.** Nothing changes unless the whole request can be applied:
+	// - If any id is not one of your listings, the call returns `404` naming those ids.
+	// - If activating would take you over your plan's listing limit, the call returns `402 listings_limit_exceeded`. Only listings that are currently inactive count toward the new total, so re-sending ids that are already active never trips the limit.
+	//
+	// Deactivating is always allowed, including when your account is already over its limit — it is how you get back under it.
+	//
+	// **Idempotent.** Ids already in the requested state are returned in `unchanged`; ids this call changed are returned in `updated`.
+	//
+	// For a single listing, `PATCH /v1/listings/{id}` does the same.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/status (the `SetListingsStatus` operationId).
+	SetListingsStatusWithResponse(ctx context.Context, body SetListingsStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*SetListingsStatusClientResponse, error)
 
 	// DeactivateListingWithResponse Deactivate (exclude) a listing
 	//
@@ -17921,6 +19096,8 @@ type ClientWithResponsesInterface interface {
 	// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. This is the primary self-serve way for a free-tier customer to trim back under the plan-listings cap — `DELETE` is served even when the account is over the cap (a 402-locked account can still call it). To bring a listing back, use `PATCH` with `{ "active": true }`.
 	//
 	// Idempotent: deactivating an already-inactive listing returns 200.
+	//
+	// To deactivate many listings at once, use `POST /v1/listings/status` with `{ "active": false }`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17932,6 +19109,8 @@ type ClientWithResponsesInterface interface {
 	// Fetch a single listing by id. Returns the same shape as one element of the `GET /v1/listings` response, so you can bind the result to the same model. Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403, never reveals the listing's existence.
 	//
 	// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Combine comma-separated, e.g. `?include=amenities,content,details`. The default response stays lean; consumers must opt in.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17948,6 +19127,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Idempotent: setting a listing to the state it's already in returns 200.
 	//
+	// To change many listings at once, all or nothing, use `POST /v1/listings/status`.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PATCH /v1/listings/{id} (the `UpdateListingActive` operationId).
@@ -17963,6 +19144,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Idempotent: setting a listing to the state it's already in returns 200.
 	//
+	// To change many listings at once, all or nothing, use `POST /v1/listings/status`.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PATCH /v1/listings/{id} (the `UpdateListingActive` operationId).
@@ -17973,6 +19156,8 @@ type ClientWithResponsesInterface interface {
 	// Returns the actual comp set for a listing — the underlying competitor listings (with daily nightly pricing), not just the aggregated `compSummary` from `/pricing`. Each comp comes back with distance, bedrooms, ratings, lat/lng, platform link, and a per-day rate/availability series for the requested window.
 	//
 	// Powered by Atlas. Comps with no coordinates are excluded — there's no way to rank them by distance. Listings without coordinates return `data: []` and a `warning` field.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -17991,6 +19176,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/listings/{id}/content (the `UpdateListingContent` operationId).
@@ -18008,6 +19195,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/listings/{id}/content (the `UpdateListingContent` operationId).
@@ -18016,6 +19205,8 @@ type ClientWithResponsesInterface interface {
 	// GenerateListingContentWithBodyWithResponse AI-generate listing content
 	//
 	// Generate guest-facing copy (title, summary, description, amenities, etc.) for a listing using Repull AI. When `photos` are provided the vision model is used for photo-grounded copy. Persists into the listing by default.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18026,6 +19217,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Generate guest-facing copy (title, summary, description, amenities, etc.) for a listing using Repull AI. When `photos` are provided the vision model is used for photo-grounded copy. Persists into the listing by default.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
@@ -18034,6 +19227,8 @@ type ClientWithResponsesInterface interface {
 	// DeleteListingPhotoWithBodyWithResponse Delete a stored listing photo
 	//
 	// Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18044,6 +19239,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with DELETE /v1/listings/{id}/photos (the `DeleteListingPhoto` operationId).
@@ -18052,6 +19249,8 @@ type ClientWithResponsesInterface interface {
 	// ListListingPhotosWithResponse List a listing's stored photos
 	//
 	// Returns the photo set currently stored for this listing.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18064,6 +19263,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/{id}/photos/upload-url (the `CreateListingPhotoUploadUrl` operationId).
@@ -18075,6 +19276,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/{id}/photos/upload-url (the `CreateListingPhotoUploadUrl` operationId).
@@ -18083,6 +19286,8 @@ type ClientWithResponsesInterface interface {
 	// GetListingPricingWithResponse Get pricing recommendations
 	//
 	// Returns date-by-date pricing recommendations for a listing's upcoming calendar window, plus the listing's base-price context and a 5km comp summary. Recommendations come from the Atlas pricing model — pre-computed nightly and stored in `pricing_recommendations`. Use POST to apply or decline pending recommendations.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18093,6 +19298,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Apply: writes the recommended price to the listing's calendar for the given dates and triggers the platform fan-out (Airbnb / Booking.com / VRBO). Decline: marks the recommendation as `declined` so it stops surfacing — the model can re-recommend on the next training cycle.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/{id}/pricing (the `ApplyListingPricing` operationId).
@@ -18101,6 +19308,8 @@ type ClientWithResponsesInterface interface {
 	// ApplyListingPricingWithResponse Apply or decline pricing recommendations
 	//
 	// Apply: writes the recommended price to the listing's calendar for the given dates and triggers the platform fan-out (Airbnb / Booking.com / VRBO). Decline: marks the recommendation as `declined` so it stops surfacing — the model can re-recommend on the next training cycle.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18115,6 +19324,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/listings/{id}/pricing/history (the `GetListingPricingHistory` operationId).
@@ -18123,6 +19334,8 @@ type ClientWithResponsesInterface interface {
 	// GetListingPricingStrategyWithResponse Get pricing strategy
 	//
 	// Returns the strategy that constrains how the Atlas pricing model behaves for this listing. If no strategy row exists yet, returns sane defaults flagged with `isDefault: true`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18133,6 +19346,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Upserts the strategy on `(listing_id, customer_id)` — repeated PUTs are idempotent. Send only the fields you want to change; omitted fields take server-side defaults.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/listings/{id}/pricing/strategy (the `UpdateListingPricingStrategy` operationId).
@@ -18141,6 +19356,8 @@ type ClientWithResponsesInterface interface {
 	// UpdateListingPricingStrategyWithResponse Update pricing strategy
 	//
 	// Upserts the strategy on `(listing_id, customer_id)` — repeated PUTs are idempotent. Send only the fields you want to change; omitted fields take server-side defaults.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18151,6 +19368,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns connection state and sync activity per channel. `channels` is sync activity (empty until first push). `connections` is connection state (populated as soon as a channel is linked). Recommended polling cadence: at most once per 30s per listing — for bulk views, prefer `GET /v1/listings` and filter client-side.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/listings/{id}/publish-status (the `GetListingPublishStatus` operationId).
@@ -18159,6 +19378,8 @@ type ClientWithResponsesInterface interface {
 	// PublishListingToAirbnbWithBodyWithResponse Publish a listing to Airbnb
 	//
 	// Push a Repull listing to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18169,6 +19390,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Push a Repull listing to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/airbnb (the `PublishListingToAirbnb` operationId).
@@ -18177,6 +19400,8 @@ type ClientWithResponsesInterface interface {
 	// PublishListingToBookingWithResponse Publish a listing to Booking.com
 	//
 	// Push a Repull listing to Booking.com. The listing must already be mapped to a Booking property + room (created via the Booking-claim Connect flow).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18191,6 +19416,8 @@ type ClientWithResponsesInterface interface {
 	// - What's the ADR uplift for moving up a tier?
 	//
 	// DNA coverage is still ramping — segments are scored asynchronously. Cities and radii without scored comps return `totalCompsAnalyzed: 0` plus a `low_dna_coverage` recommendation rather than fabricated data.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18247,6 +19474,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Incremental sync (only changes since last poll):** pass `?updated_since=<ISO8601>` to receive only properties changed at or after that instant. Each property carries `updatedAt` — the last row of the final page is your next watermark. `updated_since` changes the page ordering to `updatedAt ASC, id ASC` (and the cursor with it); see the parameter description. `GET /v1/listings` does NOT yet accept `updated_since` — use this endpoint for property-side incremental sync.
 	//
+	// **Inactive properties:** an inactive property keeps syncing, but cannot be read or changed through the API until it is activated. They are only listed when `status` asks for them, and then with `id`, `name`, `status`, `lifecycleStatus`, `channels` and `updatedAt` only — enough to choose what to activate with `PATCH /v1/listings/{id}`.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/properties (the `ListProperties` operationId).
@@ -18258,6 +19487,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Optional expansions:** Pass `?include=amenities` to enrich the response with the property's amenities (sourced from the unified `listings_amenities` table). Returns `[]` when the property has no amenity rows. The default response stays lean; consumers must opt in.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/properties/{id} (the `GetProperty` operationId).
@@ -18268,6 +19499,8 @@ type ClientWithResponsesInterface interface {
 	// Returns the full price breakdown for a stay — nightly total, length-of-stay discount, cleaning fee, pet and other fees, taxes, and the total.
 	//
 	// A quote is priced against a booking website, because the markup, custom fees and tax overrides that decide what a guest is actually charged live there. A workspace with no booking site receives `422 quote_unavailable` rather than a number computed from different rules than the ones applied at checkout.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18283,6 +19516,8 @@ type ClientWithResponsesInterface interface {
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. For deep pagination cursor remains O(1) per page; offset > 10000 returns 422 with a docs link.
 	//
 	// **Incremental sync (only changes since last poll):** pass `?updated_since=<ISO8601>` to receive only reservations amended, cancelled, or created at or after that instant — no full re-walk. Each row carries `updatedAt`; the last row of the final page is your next watermark. Note that `updated_since` changes the page ordering to `updatedAt ASC, id ASC` (and the cursor with it) so mid-walk amendments cannot be skipped — see the parameter description for the full contract.
+	//
+	// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18303,6 +19538,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
@@ -18322,6 +19559,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
 	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
@@ -18330,6 +19569,8 @@ type ClientWithResponsesInterface interface {
 	// GetReservationWithResponse Get reservation details
 	//
 	// Returns the full record for a single reservation, scoped to the authenticated workspace. Response shape is identical to a single row in `GET /v1/reservations` so SDK consumers can use the same type for both. Returns **404** if the id does not exist OR belongs to a different workspace — the API never differentiates the two so caller can't enumerate other workspaces' ids.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18358,6 +19599,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 	//
+	// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
@@ -18385,6 +19628,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 	//
+	// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
@@ -18398,6 +19643,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Filters: `platform` (`airbnb`|`booking`|`vrbo`), `listing_id` (internal Repull listing id), `rating_min` / `rating_max` (inclusive bounds, 0..5), `status` (`responded`|`unanswered`|`all`), `reviewer_role` (`guest` (default) | `host` | `all`).
 	//
+	// **Inactive listings:** reviews of inactive listings are left out of the page and of `pagination.total`. Filtering by an inactive `listing_id` returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/reviews (the `ListReviews` operationId).
@@ -18406,6 +19653,8 @@ type ClientWithResponsesInterface interface {
 	// GetReviewWithResponse Get review
 	//
 	// Returns one review (the bare `Review` object — NOT wrapped in `{ data: ... }`). Scoped to the authenticated workspace via the listings join — reviews that don't belong to the workspace return 404 (we don't differentiate to avoid leaking other customers' ids).
+	//
+	// A review of an inactive listing returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18418,6 +19667,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 	//
+	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/reviews/{id}/reply (the `ReplyToReview` operationId).
@@ -18428,6 +19679,8 @@ type ClientWithResponsesInterface interface {
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
 	// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18507,7 +19760,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetUsageLogsWithResponse List API request logs
 	//
-	// Cursor-paginated raw API request log for the authenticated workspace, newest first. Filter by time `range`, `operation` id(s), status class, or free-text `q`. Walk pages with `cursor` from `pagination.next_cursor` until `pagination.has_more` is `false`; `offset` is accepted as a shallow alias (deep walks must use `cursor`).
+	// Cursor-paginated raw API request log for the authenticated workspace, newest first. Filter by time `range`, `operation` id(s), status class, or free-text `q`. Walk pages with `cursor` from `pagination.nextCursor` until `pagination.hasMore` is `false`; `offset` is accepted as a shallow alias (deep walks must use `cursor`).
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18543,7 +19796,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateWebhookWithBodyWithResponse Create webhook subscription
 	//
-	// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events.
+	// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18552,7 +19805,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateWebhookWithResponse Create webhook subscription
 	//
-	// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events.
+	// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -18642,7 +19895,7 @@ type ClientWithResponsesInterface interface {
 
 	// ReplayWebhookDeliveryWithResponse Replay webhook delivery
 	//
-	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1). A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -18684,6 +19937,8 @@ type BatchUpdateAvailabilityClientResponse struct {
 	JSON200 *AvailabilityWriteResult
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -18698,6 +19953,11 @@ func (r BatchUpdateAvailabilityClientResponse) GetJSON200() *AvailabilityWriteRe
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r BatchUpdateAvailabilityClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BatchUpdateAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -18744,6 +20004,8 @@ type GetAvailabilityClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *PropertyAvailability
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -18753,6 +20015,11 @@ type GetAvailabilityClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetAvailabilityClientResponse) GetJSON200() *PropertyAvailability {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -18801,6 +20068,8 @@ type UpdateAvailabilityClientResponse struct {
 	JSON200 *AvailabilityWriteResult
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -18815,6 +20084,11 @@ func (r UpdateAvailabilityClientResponse) GetJSON200() *AvailabilityWriteResult 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r UpdateAvailabilityClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -18902,6 +20176,8 @@ type ListAirbnbAlterationsClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
 }
@@ -18919,6 +20195,11 @@ func (r ListAirbnbAlterationsClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListAirbnbAlterationsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbAlterationsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
@@ -18960,6 +20241,8 @@ type CreateAirbnbAlterationClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -18969,6 +20252,11 @@ type CreateAirbnbAlterationClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r CreateAirbnbAlterationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateAirbnbAlterationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19023,6 +20311,8 @@ type GetAirbnbAlterationClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -19043,6 +20333,11 @@ func (r GetAirbnbAlterationClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetAirbnbAlterationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbAlterationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19089,6 +20384,8 @@ type AcceptAirbnbAlterationClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -19098,6 +20395,11 @@ type AcceptAirbnbAlterationClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r AcceptAirbnbAlterationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r AcceptAirbnbAlterationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19144,6 +20446,8 @@ type DeclineAirbnbAlterationClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -19153,6 +20457,11 @@ type DeclineAirbnbAlterationClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r DeclineAirbnbAlterationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeclineAirbnbAlterationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19295,6 +20604,8 @@ type MapAirbnbListingClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *MapAirbnbListingResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON409 the response for an HTTP 409 `application/json` response
@@ -19306,6 +20617,11 @@ type MapAirbnbListingClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r MapAirbnbListingClientResponse) GetJSON200() *MapAirbnbListingResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MapAirbnbListingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19357,11 +20673,18 @@ type GetAirbnbListingClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *AirbnbListing
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetAirbnbListingClientResponse) GetJSON200() *AirbnbListing {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbListingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -19396,8 +20719,15 @@ func (r GetAirbnbListingClientResponse) ContentType() string {
 type AirbnbListingActionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UnprocessableEntity
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r AirbnbListingActionClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -19449,6 +20779,8 @@ type ListAirbnbListingAmenitiesClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -19473,6 +20805,11 @@ func (r ListAirbnbListingAmenitiesClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListAirbnbListingAmenitiesClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbListingAmenitiesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19522,6 +20859,13 @@ func (r ListAirbnbListingAmenitiesClientResponse) ContentType() string {
 type GetAirbnbListingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbListingAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -19556,6 +20900,41 @@ func (r GetAirbnbListingAvailabilityClientResponse) ContentType() string {
 type UpdateAirbnbListingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *AirbnbWriteForbidden
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateAirbnbListingAvailabilityClientResponse) GetJSON403() *AirbnbWriteForbidden {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateAirbnbListingAvailabilityClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateAirbnbListingAvailabilityClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateAirbnbListingAvailabilityClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateAirbnbListingAvailabilityClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -19599,6 +20978,8 @@ type GetAirbnbCheckinGuideClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -19620,6 +21001,11 @@ func (r GetAirbnbCheckinGuideClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetAirbnbCheckinGuideClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbCheckinGuideClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19671,6 +21057,8 @@ type UpdateAirbnbCheckinGuideClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -19680,6 +21068,11 @@ type UpdateAirbnbCheckinGuideClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r UpdateAirbnbCheckinGuideClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateAirbnbCheckinGuideClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19733,6 +21126,8 @@ type GetAirbnbCheckoutGuideClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -19754,6 +21149,11 @@ func (r GetAirbnbCheckoutGuideClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetAirbnbCheckoutGuideClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbCheckoutGuideClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19812,6 +21212,8 @@ type ListAirbnbListingDescriptionsClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -19833,6 +21235,11 @@ func (r ListAirbnbListingDescriptionsClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListAirbnbListingDescriptionsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbListingDescriptionsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19887,6 +21294,8 @@ type DeleteAirbnbListingPhotoClientResponse struct {
 		// Deleted Example: true
 		Deleted *bool `json:"deleted,omitempty"`
 	}
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -19901,6 +21310,11 @@ func (r DeleteAirbnbListingPhotoClientResponse) GetJSON200() *struct {
 	Deleted *bool `json:"deleted,omitempty"`
 } {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteAirbnbListingPhotoClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -19950,6 +21364,13 @@ func (r DeleteAirbnbListingPhotoClientResponse) ContentType() string {
 type ListAirbnbListingPhotosClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbListingPhotosClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -19984,6 +21405,13 @@ func (r ListAirbnbListingPhotosClientResponse) ContentType() string {
 type UploadAirbnbListingPhotosClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UploadAirbnbListingPhotosClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -20018,6 +21446,13 @@ func (r UploadAirbnbListingPhotosClientResponse) ContentType() string {
 type GetAirbnbListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbListingPricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -20052,6 +21487,41 @@ func (r GetAirbnbListingPricingClientResponse) ContentType() string {
 type UpdateAirbnbListingPricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *AirbnbWriteForbidden
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateAirbnbListingPricingClientResponse) GetJSON403() *AirbnbWriteForbidden {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateAirbnbListingPricingClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateAirbnbListingPricingClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateAirbnbListingPricingClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateAirbnbListingPricingClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -20096,6 +21566,8 @@ type GetAirbnbListingQualityClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -20118,6 +21590,11 @@ func (r GetAirbnbListingQualityClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetAirbnbListingQualityClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbListingQualityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20174,6 +21651,8 @@ type DeleteAirbnbListingRoomClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -20193,6 +21672,11 @@ func (r DeleteAirbnbListingRoomClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r DeleteAirbnbListingRoomClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteAirbnbListingRoomClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20251,6 +21735,8 @@ type ListAirbnbListingRoomsClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -20272,6 +21758,11 @@ func (r ListAirbnbListingRoomsClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListAirbnbListingRoomsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbListingRoomsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20323,6 +21814,8 @@ type CreateAirbnbListingRoomClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -20332,6 +21825,11 @@ type CreateAirbnbListingRoomClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r CreateAirbnbListingRoomClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateAirbnbListingRoomClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20386,6 +21884,8 @@ type GetAirbnbListingSettingsClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -20408,6 +21908,11 @@ func (r GetAirbnbListingSettingsClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetAirbnbListingSettingsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbListingSettingsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20459,11 +21964,18 @@ type ListAirbnbThreadsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *AirbnbThreadListResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListAirbnbThreadsClientResponse) GetJSON200() *AirbnbThreadListResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbThreadsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -20508,6 +22020,8 @@ type GetAirbnbThreadClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -20528,6 +22042,11 @@ func (r GetAirbnbThreadClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetAirbnbThreadClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbThreadClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20574,11 +22093,18 @@ type ListAirbnbThreadMessagesClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *MessageListResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListAirbnbThreadMessagesClientResponse) GetJSON200() *MessageListResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbThreadMessagesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -20615,6 +22141,8 @@ type SendAirbnbMessageClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -20624,6 +22152,11 @@ type SendAirbnbMessageClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r SendAirbnbMessageClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SendAirbnbMessageClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20670,6 +22203,8 @@ type UpdateAirbnbMessageClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -20681,6 +22216,11 @@ type UpdateAirbnbMessageClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r UpdateAirbnbMessageClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateAirbnbMessageClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20794,6 +22334,8 @@ type CreateAirbnbOfferClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -20805,6 +22347,11 @@ type CreateAirbnbOfferClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r CreateAirbnbOfferClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateAirbnbOfferClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -20856,11 +22403,18 @@ type ListAirbnbReservationsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *AirbnbReservationListResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListAirbnbReservationsClientResponse) GetJSON200() *AirbnbReservationListResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbReservationsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -20897,11 +22451,18 @@ type GetAirbnbReservationClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *AirbnbReservation
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetAirbnbReservationClientResponse) GetJSON200() *AirbnbReservation {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbReservationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -20936,6 +22497,13 @@ func (r GetAirbnbReservationClientResponse) ContentType() string {
 type AirbnbReservationActionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r AirbnbReservationActionClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -20972,11 +22540,18 @@ type ListAirbnbReviewsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *AirbnbReviewListResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListAirbnbReviewsClientResponse) GetJSON200() *AirbnbReviewListResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListAirbnbReviewsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -21011,6 +22586,13 @@ func (r ListAirbnbReviewsClientResponse) ContentType() string {
 type RespondAirbnbReviewLegacyClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RespondAirbnbReviewLegacyClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -21049,6 +22631,8 @@ type EditAirbnbReviewClientResponse struct {
 	JSON200 *AirbnbReview
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -21065,6 +22649,11 @@ func (r EditAirbnbReviewClientResponse) GetJSON200() *AirbnbReview {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r EditAirbnbReviewClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r EditAirbnbReviewClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21118,6 +22707,8 @@ type RespondAirbnbReviewClientResponse struct {
 	JSON200 *AirbnbReview
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -21134,6 +22725,11 @@ func (r RespondAirbnbReviewClientResponse) GetJSON200() *AirbnbReview {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r RespondAirbnbReviewClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RespondAirbnbReviewClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21324,6 +22920,8 @@ type GetBookingAvailabilityClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -21343,6 +22941,11 @@ func (r GetBookingAvailabilityClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetBookingAvailabilityClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetBookingAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21391,6 +22994,8 @@ type UpdateBookingAvailabilityClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -21405,6 +23010,11 @@ func (r UpdateBookingAvailabilityClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r UpdateBookingAvailabilityClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateBookingAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21453,6 +23063,8 @@ type GetBookingChargesClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -21467,6 +23079,11 @@ func (r GetBookingChargesClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetBookingChargesClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetBookingChargesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21515,6 +23132,8 @@ type UpdateBookingChargesClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -21529,6 +23148,11 @@ func (r UpdateBookingChargesClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r UpdateBookingChargesClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateBookingChargesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21573,6 +23197,20 @@ func (r UpdateBookingChargesClientResponse) ContentType() string {
 type GetBookingContentClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetBookingContentClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetBookingContentClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
 }
 
 // GetBody returns the raw response body bytes
@@ -21607,6 +23245,20 @@ func (r GetBookingContentClientResponse) ContentType() string {
 type UpdateBookingContentClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateBookingContentClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateBookingContentClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
 }
 
 // GetBody returns the raw response body bytes
@@ -21647,6 +23299,8 @@ type GetBookingListingPricingClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -21666,6 +23320,11 @@ func (r GetBookingListingPricingClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetBookingListingPricingClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetBookingListingPricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21716,6 +23375,8 @@ type UpdateBookingListingPricingClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -21735,6 +23396,11 @@ func (r UpdateBookingListingPricingClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r UpdateBookingListingPricingClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateBookingListingPricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21781,11 +23447,25 @@ type ListBookingConversationsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *BookingConversationListResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListBookingConversationsClientResponse) GetJSON200() *BookingConversationListResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListBookingConversationsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListBookingConversationsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
 }
 
 // GetBody returns the raw response body bytes
@@ -21824,6 +23504,8 @@ type SendBookingMessageClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -21838,6 +23520,11 @@ func (r SendBookingMessageClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r SendBookingMessageClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SendBookingMessageClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21927,6 +23614,8 @@ type GetBookingPropertyClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -21941,6 +23630,11 @@ func (r GetBookingPropertyClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetBookingPropertyClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetBookingPropertyClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -21991,6 +23685,8 @@ type ListBookingPropertyRoomsClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -22010,6 +23706,11 @@ func (r ListBookingPropertyRoomsClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListBookingPropertyRoomsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListBookingPropertyRoomsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -22060,6 +23761,8 @@ type ListBookingReservationsClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -22079,6 +23782,11 @@ func (r ListBookingReservationsClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListBookingReservationsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListBookingReservationsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -22187,6 +23895,8 @@ type ListBookingReviewsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -22196,6 +23906,11 @@ type ListBookingReviewsClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListBookingReviewsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListBookingReviewsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -22246,6 +23961,10 @@ type ReplyBookingReviewClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UnprocessableEntity
 	// JSON502 the response for an HTTP 502 `application/json` response
@@ -22262,6 +23981,16 @@ func (r ReplyBookingReviewClientResponse) GetJSON200() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ReplyBookingReviewClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ReplyBookingReviewClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ReplyBookingReviewClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -22310,6 +24039,8 @@ type BookingSetupClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -22324,6 +24055,11 @@ func (r BookingSetupClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r BookingSetupClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BookingSetupClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -22368,19 +24104,10 @@ func (r BookingSetupClientResponse) ContentType() string {
 type DeleteBookingWebhookClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON400 the response for an HTTP 400 `application/json` response
-	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
-}
-
-// GetJSON400 returns the response for an HTTP 400 `application/json` response
-func (r DeleteBookingWebhookClientResponse) GetJSON400() *BadRequest {
-	return r.JSON400
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Forbidden
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -22388,14 +24115,9 @@ func (r DeleteBookingWebhookClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
 }
 
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r DeleteBookingWebhookClientResponse) GetJSON404() *NotFound {
-	return r.JSON404
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r DeleteBookingWebhookClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteBookingWebhookClientResponse) GetJSON403() *Forbidden {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -22432,10 +24154,8 @@ type ListBookingWebhooksClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Forbidden
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -22443,14 +24163,9 @@ func (r ListBookingWebhooksClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
 }
 
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r ListBookingWebhooksClientResponse) GetJSON404() *NotFound {
-	return r.JSON404
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r ListBookingWebhooksClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListBookingWebhooksClientResponse) GetJSON403() *Forbidden {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -22485,19 +24200,10 @@ func (r ListBookingWebhooksClientResponse) ContentType() string {
 type CreateBookingWebhookClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	// JSON400 the response for an HTTP 400 `application/json` response
-	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
-}
-
-// GetJSON400 returns the response for an HTTP 400 `application/json` response
-func (r CreateBookingWebhookClientResponse) GetJSON400() *BadRequest {
-	return r.JSON400
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Forbidden
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -22505,14 +24211,9 @@ func (r CreateBookingWebhookClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
 }
 
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r CreateBookingWebhookClientResponse) GetJSON404() *NotFound {
-	return r.JSON404
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r CreateBookingWebhookClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateBookingWebhookClientResponse) GetJSON403() *Forbidden {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -22547,6 +24248,13 @@ func (r CreateBookingWebhookClientResponse) ContentType() string {
 type GetPlumguideAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetPlumguideAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -22581,6 +24289,13 @@ func (r GetPlumguideAvailabilityClientResponse) ContentType() string {
 type UpdatePlumguideAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdatePlumguideAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -22617,6 +24332,8 @@ type ListPlumguideBookingsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -22626,6 +24343,11 @@ type ListPlumguideBookingsClientResponse struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListPlumguideBookingsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListPlumguideBookingsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -22711,6 +24433,13 @@ func (r ListPlumguideListingsClientResponse) ContentType() string {
 type GetPlumguidePricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetPlumguidePricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -22745,6 +24474,13 @@ func (r GetPlumguidePricingClientResponse) ContentType() string {
 type UpdatePlumguidePricingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdatePlumguidePricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -24237,15 +25973,60 @@ func (r SubmitVrboCredentialsClientResponse) ContentType() string {
 type DeleteConnectionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// AccountId The account that was disconnected. `null` only when the workspace had a stale connection record with no account to name, which was cleared.
+		AccountId *string `json:"accountId"`
+
+		// Disconnected Always `true` on success.
+		Disconnected bool `json:"disconnected"`
+
+		// ListingsDeactivated Ids of the listings this call deactivated. Listings still connected through another account or channel are not included and stay active.
+		ListingsDeactivated []string `json:"listingsDeactivated"`
+
+		// Provider The provider the account belonged to.
+		Provider string `json:"provider"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
 	// JSON501 the response for an HTTP 501 `application/json` response
 	JSON501 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteConnectionClientResponse) GetJSON200() *struct {
+	// AccountId The account that was disconnected. `null` only when the workspace had a stale connection record with no account to name, which was cleared.
+	AccountId *string `json:"accountId"`
+
+	// Disconnected Always `true` on success.
+	Disconnected bool `json:"disconnected"`
+
+	// ListingsDeactivated Ids of the listings this call deactivated. Listings still connected through another account or channel are not included and stay active.
+	ListingsDeactivated []string `json:"listingsDeactivated"`
+
+	// Provider The provider the account belonged to.
+	Provider string `json:"provider"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteConnectionClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r DeleteConnectionClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeleteConnectionClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
 }
 
 // GetJSON501 returns the response for an HTTP 501 `application/json` response
@@ -24442,6 +26223,8 @@ type GetConversationClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -24461,6 +26244,11 @@ func (r GetConversationClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetConversationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetConversationClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -24511,6 +26299,8 @@ type ListConversationMessagesClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -24532,6 +26322,11 @@ func (r ListConversationMessagesClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListConversationMessagesClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListConversationMessagesClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -24585,6 +26380,8 @@ type SendConversationMessageClientResponse struct {
 	JSON200 *SendMessageResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -24601,6 +26398,11 @@ func (r SendConversationMessageClientResponse) GetJSON200() *SendMessageResponse
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r SendConversationMessageClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SendConversationMessageClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -24656,6 +26458,8 @@ type ListGuestsClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UnprocessableEntity
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -24675,6 +26479,11 @@ func (r ListGuestsClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListGuestsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListGuestsClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -24794,6 +26603,8 @@ type GetGuestClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -24813,6 +26624,11 @@ func (r GetGuestClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetGuestClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetGuestClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -25556,6 +27372,8 @@ type BulkApplyPricingClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UnprocessableEntity
 	// JSON502 the response for an HTTP 502 `application/json` response
@@ -25575,6 +27393,11 @@ func (r BulkApplyPricingClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r BulkApplyPricingClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BulkApplyPricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -25610,6 +27433,82 @@ func (r BulkApplyPricingClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r BulkApplyPricingClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SetListingsStatusClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListingStatusBatchResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PaymentRequired
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SetListingsStatusClientResponse) GetJSON200() *ListingStatusBatchResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SetListingsStatusClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SetListingsStatusClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r SetListingsStatusClientResponse) GetJSON402() *PaymentRequired {
+	return r.JSON402
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SetListingsStatusClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SetListingsStatusClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r SetListingsStatusClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SetListingsStatusClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetListingsStatusClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SetListingsStatusClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -25685,6 +27584,8 @@ type GetListingClientResponse struct {
 	JSON200 *Listing
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -25699,6 +27600,11 @@ func (r GetListingClientResponse) GetJSON200() *Listing {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetListingClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -25818,6 +27724,8 @@ type ListListingCompsClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON502 the response for an HTTP 502 `application/json` response
@@ -25837,6 +27745,11 @@ func (r ListListingCompsClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListListingCompsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListListingCompsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -25885,6 +27798,8 @@ type UpdateListingContentClientResponse struct {
 	JSON200 *ListingContentUpdateResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -25899,6 +27814,11 @@ func (r UpdateListingContentClientResponse) GetJSON200() *ListingContentUpdateRe
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r UpdateListingContentClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateListingContentClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -25945,6 +27865,8 @@ type GenerateListingContentClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *ListingGenerateContentResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 }
@@ -25952,6 +27874,11 @@ type GenerateListingContentClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GenerateListingContentClientResponse) GetJSON200() *ListingGenerateContentResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GenerateListingContentClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -25995,6 +27922,8 @@ type DeleteListingPhotoClientResponse struct {
 	JSON200 *ListingPhotoDeleteResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -26009,6 +27938,11 @@ func (r DeleteListingPhotoClientResponse) GetJSON200() *ListingPhotoDeleteRespon
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r DeleteListingPhotoClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteListingPhotoClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -26057,6 +27991,8 @@ type ListListingPhotosClientResponse struct {
 	JSON200 *ListingPhotosResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 }
@@ -26069,6 +28005,11 @@ func (r ListListingPhotosClientResponse) GetJSON200() *ListingPhotosResponse {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListListingPhotosClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListListingPhotosClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -26112,6 +28053,8 @@ type CreateListingPhotoUploadUrlClientResponse struct {
 	JSON200 *ListingPhotoUploadUrlResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -26126,6 +28069,11 @@ func (r CreateListingPhotoUploadUrlClientResponse) GetJSON200() *ListingPhotoUpl
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r CreateListingPhotoUploadUrlClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateListingPhotoUploadUrlClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -26176,6 +28124,8 @@ type GetListingPricingClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -26191,6 +28141,11 @@ func (r GetListingPricingClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetListingPricingClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingPricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -26229,6 +28184,8 @@ type ApplyListingPricingClientResponse struct {
 	JSON200 *ListingPricingApplyResponse
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -26239,6 +28196,11 @@ func (r ApplyListingPricingClientResponse) GetJSON200() *ListingPricingApplyResp
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
 func (r ApplyListingPricingClientResponse) GetJSON400() *BadRequest {
 	return r.JSON400
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ApplyListingPricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -26279,6 +28241,8 @@ type GetListingPricingHistoryClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -26300,6 +28264,11 @@ func (r GetListingPricingHistoryClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetListingPricingHistoryClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingPricingHistoryClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -26353,6 +28322,8 @@ type GetListingPricingStrategyClientResponse struct {
 	JSON200 *ListingPricingStrategy
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -26363,6 +28334,11 @@ func (r GetListingPricingStrategyClientResponse) GetJSON200() *ListingPricingStr
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetListingPricingStrategyClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingPricingStrategyClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -26401,6 +28377,8 @@ type UpdateListingPricingStrategyClientResponse struct {
 	JSON200 *struct {
 		Ok *bool `json:"ok,omitempty"`
 	}
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -26408,6 +28386,11 @@ func (r UpdateListingPricingStrategyClientResponse) GetJSON200() *struct {
 	Ok *bool `json:"ok,omitempty"`
 } {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateListingPricingStrategyClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -26452,6 +28435,8 @@ type GetListingPublishStatusClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *ListingPublishStatusResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON429 the response for an HTTP 429 `application/json` response
@@ -26463,6 +28448,11 @@ type GetListingPublishStatusClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetListingPublishStatusClientResponse) GetJSON200() *ListingPublishStatusResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingPublishStatusClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -26511,6 +28501,8 @@ type PublishListingToAirbnbClientResponse struct {
 	JSON200 *ListingPublishResponse
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -26521,6 +28513,11 @@ func (r PublishListingToAirbnbClientResponse) GetJSON200() *ListingPublishRespon
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
 func (r PublishListingToAirbnbClientResponse) GetJSON400() *BadRequest {
 	return r.JSON400
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r PublishListingToAirbnbClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -26559,6 +28556,8 @@ type PublishListingToBookingClientResponse struct {
 	JSON200 *ListingPublishResponse
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -26569,6 +28568,11 @@ func (r PublishListingToBookingClientResponse) GetJSON200() *ListingPublishRespo
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
 func (r PublishListingToBookingClientResponse) GetJSON400() *BadRequest {
 	return r.JSON400
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r PublishListingToBookingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -26609,6 +28613,8 @@ type GetListingSegmentsClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON502 the response for an HTTP 502 `application/json` response
@@ -26628,6 +28634,11 @@ func (r GetListingSegmentsClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetListingSegmentsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingSegmentsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -26928,6 +28939,8 @@ type GetPropertyClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *Property
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -26937,6 +28950,11 @@ type GetPropertyClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetPropertyClientResponse) GetJSON200() *Property {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetPropertyClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -26985,6 +29003,8 @@ type GetQuoteClientResponse struct {
 	JSON200 *Quote
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -26999,6 +29019,11 @@ func (r GetQuoteClientResponse) GetJSON200() *Quote {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetQuoteClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetQuoteClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -27045,6 +29070,8 @@ type ListReservationsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *ReservationListResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UnprocessableEntity
 }
@@ -27052,6 +29079,11 @@ type ListReservationsClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListReservationsClientResponse) GetJSON200() *ReservationListResponse {
 	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListReservationsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -27095,6 +29127,8 @@ type CreateReservationClientResponse struct {
 	JSON201 *ReservationCreateResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -27111,6 +29145,11 @@ func (r CreateReservationClientResponse) GetJSON201() *ReservationCreateResponse
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r CreateReservationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateReservationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -27164,6 +29203,8 @@ type GetReservationClientResponse struct {
 	JSON200 *Reservation
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -27180,6 +29221,11 @@ func (r GetReservationClientResponse) GetJSON200() *Reservation {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetReservationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetReservationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -27233,6 +29279,8 @@ type UpdateReservationClientResponse struct {
 	JSON200 *ReservationUpdateResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -27249,6 +29297,11 @@ func (r UpdateReservationClientResponse) GetJSON200() *ReservationUpdateResponse
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r UpdateReservationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateReservationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -27304,6 +29357,8 @@ type ListReviewsClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UnprocessableEntity
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -27323,6 +29378,11 @@ func (r ListReviewsClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ListReviewsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListReviewsClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -27373,6 +29433,8 @@ type GetReviewClientResponse struct {
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
@@ -27392,6 +29454,11 @@ func (r GetReviewClientResponse) GetJSON400() *BadRequest {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r GetReviewClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetReviewClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -27444,6 +29511,8 @@ type ReplyToReviewClientResponse struct {
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
@@ -27462,6 +29531,11 @@ func (r ReplyToReviewClientResponse) GetJSON201() *struct {
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
 func (r ReplyToReviewClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ReplyToReviewClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
@@ -28515,6 +30589,13 @@ func (r GetWebhookDeliveryClientResponse) ContentType() string {
 type ReplayWebhookDeliveryClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ReplayWebhookDeliveryClientResponse) GetJSON403() *Error {
+	return r.JSON403
 }
 
 // GetBody returns the raw response body bytes
@@ -28671,6 +30752,8 @@ func (r TestFireWebhookClientResponse) ContentType() string {
 //
 // Per-property *different* values are separate calls — presenting them as one request would be a false claim about atomicity.
 //
+// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PATCH /v1/availability/batch (the `BatchUpdateAvailability` operationId).
@@ -28689,6 +30772,8 @@ func (c *ClientWithResponses) BatchUpdateAvailabilityWithBodyWithResponse(ctx co
 // Ownership is checked before anything is written: a batch containing a property from another workspace is refused as a whole and names the offending ids, rather than being partially applied.
 //
 // Per-property *different* values are separate calls — presenting them as one request would be a false claim about atomicity.
+//
+// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -28711,6 +30796,8 @@ func (c *ClientWithResponses) BatchUpdateAvailabilityWithResponse(ctx context.Co
 //
 // This endpoint is read-only, and the projected per-date shape carries **availability, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). Availability **writes** always stay per-channel: `PUT /v1/channels/airbnb/listings/{id}/availability` (Airbnb) or `PUT /v1/channels/booking/availability` (Booking.com).
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/availability/{propertyId} (the `GetAvailability` operationId).
@@ -28726,6 +30813,8 @@ func (c *ClientWithResponses) GetAvailabilityWithResponse(ctx context.Context, p
 //
 // Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/availability/{propertyId} (the `UpdateAvailability` operationId).
@@ -28740,6 +30829,8 @@ func (c *ClientWithResponses) UpdateAvailabilityWithBodyWithResponse(ctx context
 // UpdateAvailabilityWithResponse Set prices, block or unblock dates
 //
 // Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -28788,6 +30879,8 @@ func (c *ClientWithResponses) CreateBillingCheckoutWithResponse(ctx context.Cont
 //
 // Default returns only pending alterations; pass `?type=all` for the full history. Filter to a single reservation with `?reservation_code=<confirmation code>`. Every response carries the `dataFreshness` envelope.
 //
+// Alterations of reservations on inactive listings are left out. Filtering by a reservation on an inactive listing (`reservation_code`) returns `403 listing_inactive`.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/alterations (the `ListAirbnbAlterations` operationId).
@@ -28802,6 +30895,8 @@ func (c *ClientWithResponses) ListAirbnbAlterationsWithResponse(ctx context.Cont
 // CreateAirbnbAlterationWithBodyWithResponse Create Airbnb alteration
 //
 // Create a reservation alteration request (change dates, guest count, or price) on Airbnb. **Write-side** — calls Airbnb upstream. Requires a connected Airbnb host for the workspace, else `404 no_connection`.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -28818,6 +30913,8 @@ func (c *ClientWithResponses) CreateAirbnbAlterationWithBodyWithResponse(ctx con
 //
 // Create a reservation alteration request (change dates, guest count, or price) on Airbnb. **Write-side** — calls Airbnb upstream. Requires a connected Airbnb host for the workspace, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/alterations (the `CreateAirbnbAlteration` operationId).
@@ -28832,6 +30929,8 @@ func (c *ClientWithResponses) CreateAirbnbAlterationWithResponse(ctx context.Con
 // GetAirbnbAlterationWithResponse Get Airbnb alteration
 //
 // Fetch a single Airbnb reservation alteration by its Airbnb alteration id. **Pure DB read**, workspace-scoped via the reservations join. Returns `404 not_found` when no alteration matches the id in your workspace.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -28848,6 +30947,8 @@ func (c *ClientWithResponses) GetAirbnbAlterationWithResponse(ctx context.Contex
 //
 // Accept a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to approve the proposed date / guest-count / price change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/alterations/{id}/accept (the `AcceptAirbnbAlteration` operationId).
@@ -28862,6 +30963,8 @@ func (c *ClientWithResponses) AcceptAirbnbAlterationWithBodyWithResponse(ctx con
 // AcceptAirbnbAlterationWithResponse Accept Airbnb alteration
 //
 // Accept a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to approve the proposed date / guest-count / price change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -28878,6 +30981,8 @@ func (c *ClientWithResponses) AcceptAirbnbAlterationWithResponse(ctx context.Con
 //
 // Decline a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to reject the proposed change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/alterations/{id}/decline (the `DeclineAirbnbAlteration` operationId).
@@ -28892,6 +30997,8 @@ func (c *ClientWithResponses) DeclineAirbnbAlterationWithBodyWithResponse(ctx co
 // DeclineAirbnbAlterationWithResponse Decline Airbnb alteration
 //
 // Decline a pending Airbnb reservation alteration. **Write-side** — calls Airbnb upstream (`respondToAlteration`) to reject the proposed change. Requires a connected Airbnb host for the workspace (else `404 no_connection`) and that the alteration id belongs to a reservation in your workspace (else `404 not_found`). No request body is required.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -28931,6 +31038,8 @@ func (c *ClientWithResponses) GetAirbnbConnectionWithResponse(ctx context.Contex
 //
 // Pass `?include=amenities` to enrich each connection with its locally-cached amenity set. Returns `null` per connection when the cache is empty.
 //
+// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/listings (the `ListAirbnbListings` operationId).
@@ -28949,6 +31058,8 @@ func (c *ClientWithResponses) ListAirbnbListingsWithResponse(ctx context.Context
 // Discover the `airbnbId` (+ `hostId`) via `GET /v1/channels/airbnb/listings`, then re-point it at the `listingId` of your choice — the dedup / consolidation case where the Airbnb sync auto-created its own listing but you want the inventory under an existing property.
 //
 // Repoints both the Airbnb record and its platform link to the target listing in one transaction. Idempotent — re-mapping to the same listing is a 200 no-op (`alreadyMapped: true`). Scope is enforced against your workspace on both the target listing and the existing Airbnb record; a listing that already links a different Airbnb listing returns 409.
+//
+// Returns `403 listing_inactive` when the target listing, or the listing the Airbnb listing is mapped to now, is inactive; nothing is changed.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -28969,6 +31080,8 @@ func (c *ClientWithResponses) MapAirbnbListingWithBodyWithResponse(ctx context.C
 //
 // Repoints both the Airbnb record and its platform link to the target listing in one transaction. Idempotent — re-mapping to the same listing is a 200 no-op (`alreadyMapped: true`). Scope is enforced against your workspace on both the target listing and the existing Airbnb record; a listing that already links a different Airbnb listing returns 409.
 //
+// Returns `403 listing_inactive` when the target listing, or the listing the Airbnb listing is mapped to now, is inactive; nothing is changed.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/listings/map (the `MapAirbnbListing` operationId).
@@ -28983,6 +31096,8 @@ func (c *ClientWithResponses) MapAirbnbListingWithResponse(ctx context.Context, 
 // GetAirbnbListingWithResponse Get Airbnb listing
 //
 // Fetch all Airbnb connection rows for a single Vanio listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29005,6 +31120,8 @@ func (c *ClientWithResponses) GetAirbnbListingWithResponse(ctx context.Context, 
 //
 // Any other action (e.g. `pull`, `unlist`) returns a structured 422 naming the supported actions.
 //
+// Returns `403 listing_inactive` for `push`/`publish` when the listing is inactive. `delete` (deactivation) is always accepted.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/listings/{id} (the `AirbnbListingAction` operationId).
@@ -29026,6 +31143,8 @@ func (c *ClientWithResponses) AirbnbListingActionWithBodyWithResponse(ctx contex
 //
 // Any other action (e.g. `pull`, `unlist`) returns a structured 422 naming the supported actions.
 //
+// Returns `403 listing_inactive` for `push`/`publish` when the listing is inactive. `delete` (deactivation) is always accepted.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/listings/{id} (the `AirbnbListingAction` operationId).
@@ -29040,6 +31159,8 @@ func (c *ClientWithResponses) AirbnbListingActionWithResponse(ctx context.Contex
 // ListAirbnbListingAmenitiesWithResponse List Airbnb amenities
 //
 // List an Airbnb listing's amenities. **Pure DB read** from the local `listings_airbnb_amenities` cache — never calls Airbnb upstream. The response splits amenities into `amenities` (regular) and `accessibility_amenities` (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Both are arrays (`[]` when none). Consult `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty". Returns `404` when the listing has no Airbnb connection in this workspace.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29056,6 +31177,8 @@ func (c *ClientWithResponses) ListAirbnbListingAmenitiesWithResponse(ctx context
 //
 // Read the per-day availability calendar for an Airbnb listing. Returns one row per day including price overrides, min-stay, and blocked status.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/availability (the `GetAirbnbListingAvailability` operationId).
@@ -29070,6 +31193,14 @@ func (c *ClientWithResponses) GetAirbnbListingAvailabilityWithResponse(ctx conte
 // UpdateAirbnbListingAvailabilityWithBodyWithResponse Update Airbnb availability
 //
 // Push availability + restrictions to Airbnb. `type: "calendar"` writes per-date restrictions — min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`) — via a batch of operations that each target either a date range or an explicit date list. `type: "rules"` writes listing-level availability rules (default min/max nights, booking lead time, turnover days, seasonal/day-of-week min nights). Restrictions never leak across channels — this endpoint writes only to Airbnb.
+//
+// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+//
+// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+//
+// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+//
+// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29086,6 +31217,14 @@ func (c *ClientWithResponses) UpdateAirbnbListingAvailabilityWithBodyWithRespons
 //
 // Push availability + restrictions to Airbnb. `type: "calendar"` writes per-date restrictions — min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`) — via a batch of operations that each target either a date range or an explicit date list. `type: "rules"` writes listing-level availability rules (default min/max nights, booking lead time, turnover days, seasonal/day-of-week min nights). Restrictions never leak across channels — this endpoint writes only to Airbnb.
 //
+// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+//
+// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+//
+// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+//
+// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/availability (the `UpdateAirbnbListingAvailability` operationId).
@@ -29100,6 +31239,8 @@ func (c *ClientWithResponses) UpdateAirbnbListingAvailabilityWithResponse(ctx co
 // GetAirbnbCheckinGuideWithResponse Get Airbnb check-in guide
 //
 // Return every published locale variant of an Airbnb listing's check-in guide. **Pure DB read** from `listings_airbnb_check_in_guides`. Pass `?locale=en` to filter to one locale (prefix match). Returns `404` when the listing has no Airbnb connection in this workspace.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29116,6 +31257,8 @@ func (c *ClientWithResponses) GetAirbnbCheckinGuideWithResponse(ctx context.Cont
 //
 // Upsert the check-in guide for one locale on an Airbnb listing. **Write-side** — calls Airbnb upstream; the DB mirror is reconciled by the sync worker once the upstream call returns. Target the locale with `?locale=en` (defaults to `en`). Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
@@ -29130,6 +31273,8 @@ func (c *ClientWithResponses) UpdateAirbnbCheckinGuideWithResponse(ctx context.C
 // GetAirbnbCheckoutGuideWithResponse Get Airbnb checkout guide
 //
 // Return the checkout tasks an Airbnb listing shows guests at departure. **Pure DB read** from `listings_airbnb_checkout_tasks`. Returns `404` when the listing has no Airbnb connection in this workspace.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29146,6 +31291,8 @@ func (c *ClientWithResponses) GetAirbnbCheckoutGuideWithResponse(ctx context.Con
 //
 // List an Airbnb listing's per-locale content (name, summary, house rules, etc). **Pure DB read** from `listings_airbnb_descriptions`. Filter to one locale with `?locale=en` (the legacy `?country=` param is accepted as a soft alias). Returns `404` when the listing has no Airbnb connection in this workspace.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/descriptions (the `ListAirbnbListingDescriptions` operationId).
@@ -29160,6 +31307,8 @@ func (c *ClientWithResponses) ListAirbnbListingDescriptionsWithResponse(ctx cont
 // DeleteAirbnbListingPhotoWithResponse Delete an Airbnb photo
 //
 // Remove a single photo from an Airbnb listing. Pass the Airbnb-side photo id as `?photoId=`. Write-side — calls Airbnb upstream; the local photo cache is reconciled by the sync worker afterwards.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29176,6 +31325,8 @@ func (c *ClientWithResponses) DeleteAirbnbListingPhotoWithResponse(ctx context.C
 //
 // List photos attached to an Airbnb listing in display order. Returns the public CDN URL plus Airbnb-side metadata (id, caption, room).
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/photos (the `ListAirbnbListingPhotos` operationId).
@@ -29190,6 +31341,8 @@ func (c *ClientWithResponses) ListAirbnbListingPhotosWithResponse(ctx context.Co
 // UploadAirbnbListingPhotosWithResponse Upload photos to Airbnb
 //
 // Upload one or more photos to an Airbnb listing. Accepts public image URLs (Airbnb fetches them) — direct binary upload is not supported on this endpoint.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29206,6 +31359,8 @@ func (c *ClientWithResponses) UploadAirbnbListingPhotosWithResponse(ctx context.
 //
 // Read the current pricing config (base price, weekend uplift, length-of-stay discounts, smart-pricing bounds) for an Airbnb listing.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/pricing (the `GetAirbnbListingPricing` operationId).
@@ -29220,6 +31375,14 @@ func (c *ClientWithResponses) GetAirbnbListingPricingWithResponse(ctx context.Co
 // UpdateAirbnbListingPricingWithBodyWithResponse Update Airbnb pricing
 //
 // Push pricing changes to Airbnb. The `type` discriminator selects the sub-resource (model, standard settings, LOS, rate-plan, fees, currency, rule, or per-date `calendar`). `type: "calendar"` carries the full per-date restriction set — nightly price, min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`). For settings sub-resources the full object is replaced — GET first, mutate locally, then PUT the whole object.
+//
+// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+//
+// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+//
+// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+//
+// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29236,6 +31399,14 @@ func (c *ClientWithResponses) UpdateAirbnbListingPricingWithBodyWithResponse(ctx
 //
 // Push pricing changes to Airbnb. The `type` discriminator selects the sub-resource (model, standard settings, LOS, rate-plan, fees, currency, rule, or per-date `calendar`). `type: "calendar"` carries the full per-date restriction set — nightly price, min/max nights, closed-to-arrival, closed-to-departure, and stop-sell (`availability: "unavailable"`). For settings sub-resources the full object is replaced — GET first, mutate locally, then PUT the whole object.
 //
+// `{id}` is the **Repull listing id** (from `GET /v1/properties` or `GET /v1/channels/airbnb/listings`), not the Airbnb listing id — Repull translates it before calling Airbnb.
+//
+// The body is validated before anything reaches Airbnb: a malformed body is `422 invalid_params` naming the `field`. Calendar operations accept only the documented fields.
+//
+// **Blocking dates:** Airbnb requires a `busy_subtype` whenever `availability` is `"unavailable"`. If an operation leaves it out, Repull sends `busy_subtype: "BLOCKED_BY_HOST"`; send `"OUTSIDE_RESERVATION"` for dates held by a booking made on another channel.
+//
+// **Errors:** `403 connection_reauth_required` — Airbnb no longer accepts the connection for this listing (reconnect; retrying won't help). `403 listing_inactive` — the listing is inactive. `404 not_found` — no Airbnb-connected listing with this id in the workspace. `422 airbnb_rejected` — Airbnb refused the change; `message` carries its reason. `429 airbnb_rate_limited` — back off. `502 airbnb_error` — Airbnb outage or timeout; retry.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/pricing (the `UpdateAirbnbListingPricing` operationId).
@@ -29250,6 +31421,8 @@ func (c *ClientWithResponses) UpdateAirbnbListingPricingWithResponse(ctx context
 // GetAirbnbListingQualityWithResponse Get Airbnb listing quality
 //
 // Return an Airbnb listing's quality signals — standards, reservation issues, and monthly quality stats. **Pure DB read** from the local quality mirrors. Scope the response with `?type=all|standards|issues|stats` (default `all`, which returns `{ standards, issues }`). Returns `404` when the listing has no Airbnb connection in this workspace.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29266,6 +31439,8 @@ func (c *ClientWithResponses) GetAirbnbListingQualityWithResponse(ctx context.Co
 //
 // Delete a room from an Airbnb listing. **Write-side** — calls Airbnb upstream. Pass the Airbnb-side room id as `?roomId=`. Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with DELETE /v1/channels/airbnb/listings/{id}/rooms (the `DeleteAirbnbListingRoom` operationId).
@@ -29280,6 +31455,8 @@ func (c *ClientWithResponses) DeleteAirbnbListingRoomWithResponse(ctx context.Co
 // ListAirbnbListingRoomsWithResponse List Airbnb rooms
 //
 // List the rooms configured on an Airbnb listing, ordered by room number. **Pure DB read** from `listings_airbnb_rooms`. Returns `404` when the listing has no Airbnb connection in this workspace.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29296,6 +31473,8 @@ func (c *ClientWithResponses) ListAirbnbListingRoomsWithResponse(ctx context.Con
 //
 // Create a new room on an Airbnb listing. **Write-side** — calls Airbnb upstream. Body is the full room object minus `room_id`. Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/listings/{id}/rooms (the `CreateAirbnbListingRoom` operationId).
@@ -29310,6 +31489,8 @@ func (c *ClientWithResponses) CreateAirbnbListingRoomWithBodyWithResponse(ctx co
 // CreateAirbnbListingRoomWithResponse Create an Airbnb room
 //
 // Create a new room on an Airbnb listing. **Write-side** — calls Airbnb upstream. Body is the full room object minus `room_id`. Requires a connected Airbnb host, else `404 no_connection`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29326,6 +31507,8 @@ func (c *ClientWithResponses) CreateAirbnbListingRoomWithResponse(ctx context.Co
 //
 // Return an Airbnb listing's host roles, published locales, and regulatory permits. **Pure DB read** — host roles from `listings_airbnb_details.host_roles`, locales from distinct `listings_airbnb_descriptions.locale`, permits from `listings_airbnb_permits`. Scope with `?type=all|hosts|permits|locales` (default `all`, which returns `{ hosts, locales }`). Returns `404` when the listing has no Airbnb connection in this workspace.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/listings/{id}/settings (the `GetAirbnbListingSettings` operationId).
@@ -29340,6 +31523,8 @@ func (c *ClientWithResponses) GetAirbnbListingSettingsWithResponse(ctx context.C
 // ListAirbnbThreadsWithResponse List Airbnb message threads
 //
 // List Airbnb message threads (one per guest conversation). Cursor-paginated. Each thread includes a preview of the latest message.
+//
+// Threads on inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29356,6 +31541,8 @@ func (c *ClientWithResponses) ListAirbnbThreadsWithResponse(ctx context.Context,
 //
 // Fetch a single Airbnb message thread by its Airbnb thread id. **Pure DB read** from the local `message_threads` mirror, workspace-scoped. Returns `404 not_found` when no thread matches. For the messages within a thread use `GET /v1/channels/airbnb/messaging/{threadId}/messages`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/messaging/{threadId} (the `GetAirbnbThread` operationId).
@@ -29370,6 +31557,8 @@ func (c *ClientWithResponses) GetAirbnbThreadWithResponse(ctx context.Context, t
 // ListAirbnbThreadMessagesWithResponse Get Airbnb messages
 //
 // Fetch the full message log for an Airbnb thread, ordered oldest-to-newest. Walk pages with `?cursor=` until `pagination.hasMore` is `false`.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29388,6 +31577,8 @@ func (c *ClientWithResponses) ListAirbnbThreadMessagesWithResponse(ctx context.C
 //
 // The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/messaging/{threadId}/messages (the `SendAirbnbMessage` operationId).
@@ -29404,6 +31595,8 @@ func (c *ClientWithResponses) SendAirbnbMessageWithBodyWithResponse(ctx context.
 // Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
 //
 // The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29427,6 +31620,8 @@ func (c *ClientWithResponses) SendAirbnbMessageWithResponse(ctx context.Context,
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PATCH /v1/channels/airbnb/messaging/{threadId}/messages/{messageId} (the `UpdateAirbnbMessage` operationId).
@@ -29448,6 +31643,8 @@ func (c *ClientWithResponses) UpdateAirbnbMessageWithBodyWithResponse(ctx contex
 // - `react` — add a reaction (requires `reaction`).
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29484,6 +31681,8 @@ func (c *ClientWithResponses) WithdrawAirbnbOfferWithResponse(ctx context.Contex
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
@@ -29504,6 +31703,8 @@ func (c *ClientWithResponses) CreateAirbnbOfferWithBodyWithResponse(ctx context.
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
@@ -29519,11 +31720,13 @@ func (c *ClientWithResponses) CreateAirbnbOfferWithResponse(ctx context.Context,
 //
 // Cursor-paginated list of reservations sourced directly from Airbnb. Use this when you need Airbnb-specific fields (guest payout split, cancellation policy snapshot) that the unified `/v1/reservations` endpoint flattens away.
 //
-// Walk pages with `?cursor=<pagination.next_cursor>` until `pagination.has_more` is `false`. The cursor is opaque — never construct or parse it client-side.
+// Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. Internally this walks upstream Airbnb cursor pages to skip rows, so deep offsets cost N/limit upstream round-trips; cursor remains the better choice for deep pagination.
 //
 // When `status` is omitted, all statuses are returned (Airbnb defaults to `accepted` only on its own surface, but this endpoint normalises to "all"). Pass `?status=accepted` to scope.
+//
+// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29540,6 +31743,8 @@ func (c *ClientWithResponses) ListAirbnbReservationsWithResponse(ctx context.Con
 //
 // Fetch a single Airbnb reservation by Airbnb confirmation code (e.g. `HMABCDEF12`).
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/reservations/{code} (the `GetAirbnbReservation` operationId).
@@ -29554,6 +31759,8 @@ func (c *ClientWithResponses) GetAirbnbReservationWithResponse(ctx context.Conte
 // AirbnbReservationActionWithResponse Accept/decline/cancel Airbnb reservation
 //
 // Apply a state action to an Airbnb reservation — `accept` / `decline` (for inquiries and reservation requests), `cancel` (host cancellation, carries penalties), `pre-approve` (for inquiries).
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29570,6 +31777,8 @@ func (c *ClientWithResponses) AirbnbReservationActionWithResponse(ctx context.Co
 //
 // List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
 //
+// Reviews of inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/reviews (the `ListAirbnbReviews` operationId).
@@ -29584,6 +31793,8 @@ func (c *ClientWithResponses) ListAirbnbReviewsWithResponse(ctx context.Context,
 // RespondAirbnbReviewLegacyWithResponse Respond to / submit Airbnb review (legacy)
 //
 // Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `PUT /v1/channels/airbnb/reviews/{id}` (edit) and `POST /v1/channels/airbnb/reviews/{id}/respond` (reply) for new integrations.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29604,6 +31815,8 @@ func (c *ClientWithResponses) RespondAirbnbReviewLegacyWithResponse(ctx context.
 //
 // Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
@@ -29621,6 +31834,8 @@ func (c *ClientWithResponses) EditAirbnbReviewWithBodyWithResponse(ctx context.C
 //
 // Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
@@ -29635,6 +31850,8 @@ func (c *ClientWithResponses) EditAirbnbReviewWithResponse(ctx context.Context, 
 // RespondAirbnbReviewWithBodyWithResponse Respond to Airbnb review
 //
 // Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29651,6 +31868,8 @@ func (c *ClientWithResponses) RespondAirbnbReviewWithBodyWithResponse(ctx contex
 //
 // Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
@@ -29664,7 +31883,9 @@ func (c *ClientWithResponses) RespondAirbnbReviewWithResponse(ctx context.Contex
 
 // ListAirbnbTransactionsWithResponse List Airbnb transactions
 //
-// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `data_freshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `dataFreshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+//
+// Transactions of reservations on inactive listings are left out; payout rows, which belong to no listing, are always included.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29713,6 +31934,10 @@ func (c *ClientWithResponses) SyncAirbnbTransactionsWithResponse(ctx context.Con
 //
 // Proxies Booking's `getRoomRateAvailability` — the returned fields (price, rooms-to-sell, min/max stay, closed-to-arrival/departure, stop-sell) are whatever Booking.com emits for the window. A listing-id-keyed equivalent is available at `GET /v1/channels/booking/listings/{id}/pricing`.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/availability (the `GetBookingAvailability` operationId).
@@ -29733,6 +31958,10 @@ func (c *ClientWithResponses) GetBookingAvailabilityWithResponse(ctx context.Con
 // - `derived-pricing` — occupancy-derived pricing rules.
 //
 // Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29755,6 +31984,10 @@ func (c *ClientWithResponses) UpdateBookingAvailabilityWithBodyWithResponse(ctx 
 //
 // Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/booking/availability (the `UpdateBookingAvailability` operationId).
@@ -29769,6 +32002,10 @@ func (c *ClientWithResponses) UpdateBookingAvailabilityWithResponse(ctx context.
 // GetBookingChargesWithResponse Get Booking.com charges
 //
 // Fetch the extra-charge set (cleaning fee, resort fee, city tax, etc.) configured for a Booking.com property. Pass the Booking.com `property_id` as a query param — required.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29785,6 +32022,10 @@ func (c *ClientWithResponses) GetBookingChargesWithResponse(ctx context.Context,
 //
 // Replace the extra-charge set for a Booking.com property. The body carries the target `property_id` and the full `charges` array — Booking treats the write as a full replacement, so include every charge you want to keep.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/booking/charges (the `UpdateBookingCharges` operationId).
@@ -29799,6 +32040,10 @@ func (c *ClientWithResponses) UpdateBookingChargesWithBodyWithResponse(ctx conte
 // UpdateBookingChargesWithResponse Set Booking.com charges
 //
 // Replace the extra-charge set for a Booking.com property. The body carries the target `property_id` and the full `charges` array — Booking treats the write as a full replacement, so include every charge you want to keep.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29815,6 +32060,10 @@ func (c *ClientWithResponses) UpdateBookingChargesWithResponse(ctx context.Conte
 //
 // Fetch the current content (descriptions, amenities, photos) for a Booking.com property. Used to round-trip edits through Repull.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/content (the `GetBookingContent` operationId).
@@ -29829,6 +32078,10 @@ func (c *ClientWithResponses) GetBookingContentWithResponse(ctx context.Context,
 // UpdateBookingContentWithResponse Update Booking.com content
 //
 // Push content changes (descriptions, amenities, photos) to Booking.com. Booking enforces editorial review on text fields — changes appear after their content moderation queue clears.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29847,6 +32100,8 @@ func (c *ClientWithResponses) UpdateBookingContentWithResponse(ctx context.Conte
 //
 // Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Vanio listing ID across channels.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/listings/{id}/pricing (the `GetBookingListingPricing` operationId).
@@ -29861,6 +32116,8 @@ func (c *ClientWithResponses) GetBookingListingPricingWithResponse(ctx context.C
 // UpdateBookingListingPricingWithBodyWithResponse Update Booking.com pricing for a listing
 //
 // Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29877,6 +32134,8 @@ func (c *ClientWithResponses) UpdateBookingListingPricingWithBodyWithResponse(ct
 //
 // Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
@@ -29891,6 +32150,10 @@ func (c *ClientWithResponses) UpdateBookingListingPricingWithResponse(ctx contex
 // ListBookingConversationsWithResponse List Booking.com conversations
 //
 // List Booking.com guest conversations. Cursor-paginated. Use the messaging POST to send a reply.
+//
+// Scoped to this workspace. With `property_id`, the property must be connected to this workspace — any other id returns `404 not_found`. Without it, only messages for this workspace's own Booking.com properties are returned.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29907,6 +32170,10 @@ func (c *ClientWithResponses) ListBookingConversationsWithResponse(ctx context.C
 //
 // Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/messaging (the `SendBookingMessage` operationId).
@@ -29921,6 +32188,10 @@ func (c *ClientWithResponses) SendBookingMessageWithBodyWithResponse(ctx context
 // SendBookingMessageWithResponse Send Booking.com message
 //
 // Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -29937,6 +32208,8 @@ func (c *ClientWithResponses) SendBookingMessageWithResponse(ctx context.Context
 //
 // List Booking.com hotels claimed by this workspace. Each row includes the Booking-side hotel id and the connected room types.
 //
+// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
@@ -29951,6 +32224,8 @@ func (c *ClientWithResponses) ListBookingPropertiesWithResponse(ctx context.Cont
 // GetBookingPropertyWithResponse Get Booking.com connection for a listing
 //
 // Return the Booking.com connection record(s) for a Vanio listing — the linked Booking hotel id, sync flags, markup, sync category, and suspension state. Scoped to the authenticated workspace; a listing with no Booking.com connection returns 404.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29969,6 +32244,8 @@ func (c *ClientWithResponses) GetBookingPropertyWithResponse(ctx context.Context
 //
 // `id` is a Vanio listing id — resolved to the Booking `hotel_id` via the workspace mapping (a listing with no active Booking.com mapping returns 404). Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/properties/{id}/rooms (the `ListBookingPropertyRooms` operationId).
@@ -29983,6 +32260,10 @@ func (c *ClientWithResponses) ListBookingPropertyRoomsWithResponse(ctx context.C
 // ListBookingReservationsWithResponse List Booking.com reservations
 //
 // Pull reservations from Booking.com. `type=new` (default) returns un-acknowledged bookings; `type=modified` returns changed bookings. Pass both `reservation_id` and `hotel_id` to fetch a single reservation's full details. Acknowledge processed reservations with the POST so Booking stops re-serving them in the `new` queue.
+//
+// Scoped to this workspace. `hotel_id` (or its alias `property_id`) must be a property connected to this workspace; any other id returns `404 not_found`, the same as an id that does not exist. Without a hotel, `new`/`modified` cover every Booking.com property this workspace holds (and return `404 not_found` if it holds none). A `reservation_id` that belongs to another workspace returns `404 not_found`.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -29999,6 +32280,8 @@ func (c *ClientWithResponses) ListBookingReservationsWithResponse(ctx context.Co
 //
 // Acknowledge one or more reservations so Booking.com removes them from the `new` queue. The body carries `reservation_ids` (non-empty array). Acknowledge only after you have durably persisted each reservation.
 //
+// Only reservations that belong to this workspace can be acknowledged. If any id in `reservation_ids` is not one of this workspace's Booking.com reservations (`confirmationCode` on `GET /v1/reservations?platform=booking`), nothing is acknowledged and the response is `404 not_found` naming those ids in `reservation_ids`.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/reservations (the `AcknowledgeBookingReservations` operationId).
@@ -30014,6 +32297,8 @@ func (c *ClientWithResponses) AcknowledgeBookingReservationsWithBodyWithResponse
 //
 // Acknowledge one or more reservations so Booking.com removes them from the `new` queue. The body carries `reservation_ids` (non-empty array). Acknowledge only after you have durably persisted each reservation.
 //
+// Only reservations that belong to this workspace can be acknowledged. If any id in `reservation_ids` is not one of this workspace's Booking.com reservations (`confirmationCode` on `GET /v1/reservations?platform=booking`), nothing is acknowledged and the response is `404 not_found` naming those ids in `reservation_ids`.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/reservations (the `AcknowledgeBookingReservations` operationId).
@@ -30028,6 +32313,10 @@ func (c *ClientWithResponses) AcknowledgeBookingReservationsWithResponse(ctx con
 // ListBookingReviewsWithResponse List Booking.com reviews
 //
 // List guest reviews for a Booking.com property. Pass `property_id` (the Booking.com hotel id) as a query param — required.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -30046,6 +32335,10 @@ func (c *ClientWithResponses) ListBookingReviewsWithResponse(ctx context.Context
 //
 // Booking.com does NOT support host-authored reviews of guests via the API (platform-level limitation), so this endpoint is reply-only.
 //
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/reviews (the `ReplyBookingReview` operationId).
@@ -30062,6 +32355,10 @@ func (c *ClientWithResponses) ReplyBookingReviewWithBodyWithResponse(ctx context
 // Post a public host reply to a guest review on Booking.com. Booking allows one host reply per review — repeated POSTs are rejected by upstream.
 //
 // Booking.com does NOT support host-authored reviews of guests via the API (platform-level limitation), so this endpoint is reply-only.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -30087,6 +32384,10 @@ func (c *ClientWithResponses) ReplyBookingReviewWithResponse(ctx context.Context
 //
 // Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
 //
+// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
@@ -30111,6 +32412,10 @@ func (c *ClientWithResponses) BookingSetupWithBodyWithResponse(ctx context.Conte
 //
 // Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
 //
+// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
@@ -30124,11 +32429,13 @@ func (c *ClientWithResponses) BookingSetupWithResponse(ctx context.Context, body
 
 // DeleteBookingWebhookWithResponse Unsubscribe from a Booking.com notification
 //
-// Remove a Booking.com CNS subscription. Pass the `notification_type` to unsubscribe as a query param — required.
+// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with DELETE /v1/channels/booking/webhooks (the `DeleteBookingWebhook` operationId).
+//
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *ClientWithResponses) DeleteBookingWebhookWithResponse(ctx context.Context, params *DeleteBookingWebhookParams, reqEditors ...RequestEditorFn) (*DeleteBookingWebhookClientResponse, error) {
 	rsp, err := c.DeleteBookingWebhook(ctx, params, reqEditors...)
 	if err != nil {
@@ -30139,11 +32446,13 @@ func (c *ClientWithResponses) DeleteBookingWebhookWithResponse(ctx context.Conte
 
 // ListBookingWebhooksWithResponse List Booking.com webhook subscriptions
 //
-// List the workspace's Booking.com Content Notification Service (CNS) subscriptions — the notification types Booking pushes to your callback URLs.
+// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/webhooks (the `ListBookingWebhooks` operationId).
+//
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *ClientWithResponses) ListBookingWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingWebhooksClientResponse, error) {
 	rsp, err := c.ListBookingWebhooks(ctx, reqEditors...)
 	if err != nil {
@@ -30154,11 +32463,13 @@ func (c *ClientWithResponses) ListBookingWebhooksWithResponse(ctx context.Contex
 
 // CreateBookingWebhookWithBodyWithResponse Subscribe to a Booking.com notification
 //
-// Subscribe to a Booking.com CNS notification type, delivered to `callback_url`. Returns 201 on success.
+// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/webhooks (the `CreateBookingWebhook` operationId).
+//
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *ClientWithResponses) CreateBookingWebhookWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error) {
 	rsp, err := c.CreateBookingWebhookWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
@@ -30169,11 +32480,12 @@ func (c *ClientWithResponses) CreateBookingWebhookWithBodyWithResponse(ctx conte
 
 // CreateBookingWebhookWithResponse Subscribe to a Booking.com notification
 //
-// Subscribe to a Booking.com CNS notification type, delivered to `callback_url`. Returns 201 on success.
+// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/webhooks (the `CreateBookingWebhook` operationId).
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *ClientWithResponses) CreateBookingWebhookWithResponse(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error) {
 	rsp, err := c.CreateBookingWebhook(ctx, body, reqEditors...)
 	if err != nil {
@@ -30185,6 +32497,8 @@ func (c *ClientWithResponses) CreateBookingWebhookWithResponse(ctx context.Conte
 // GetPlumguideAvailabilityWithResponse Get Plumguide availability
 //
 // Read the per-day availability calendar for a Plumguide listing. Returns the same row shape as Airbnb availability for SDK convenience.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -30201,6 +32515,8 @@ func (c *ClientWithResponses) GetPlumguideAvailabilityWithResponse(ctx context.C
 //
 // Push per-day availability changes to Plumguide. Plumguide accepts only the next 24 months — dates beyond that are silently ignored.
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/plumguide/availability (the `UpdatePlumguideAvailability` operationId).
@@ -30215,6 +32531,8 @@ func (c *ClientWithResponses) UpdatePlumguideAvailabilityWithResponse(ctx contex
 // ListPlumguideBookingsWithResponse List Plumguide bookings
 //
 // List Plumguide bookings. Default returns all bookings; pass `listing_id` to filter to one listing, or `booking_code` to fetch a single booking.
+//
+// Returns `403 listing_inactive` when `listing_id` or `booking_code` resolves to an inactive listing. The unfiltered list is read straight from Plum Guide and is not filtered by listing status.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -30246,6 +32564,8 @@ func (c *ClientWithResponses) ListPlumguideListingsWithResponse(ctx context.Cont
 //
 // Read the current pricing for a Plumguide listing (base price, currency, weekend uplift).
 //
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/plumguide/pricing (the `GetPlumguidePricing` operationId).
@@ -30260,6 +32580,8 @@ func (c *ClientWithResponses) GetPlumguidePricingWithResponse(ctx context.Contex
 // UpdatePlumguidePricingWithResponse Push pricing to Plumguide
 //
 // Push pricing changes to Plumguide. Plumguide rounds all prices to whole units of the listing currency — sub-unit precision is silently truncated.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -30336,6 +32658,8 @@ func (c *ClientWithResponses) UpdatePlumguideWebhooksWithResponse(ctx context.Co
 //
 // List VRBO listings this workspace owns. VRBO is agency-model — Repull reads listings via the public iCal/HTTP feeds.
 //
+// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/vrbo/listings (the `ListVrboListings` operationId).
@@ -30350,6 +32674,8 @@ func (c *ClientWithResponses) ListVrboListingsWithResponse(ctx context.Context, 
 // ListVrboReservationsWithResponse List VRBO reservations
 //
 // Cursor-paginated list of VRBO reservations sourced from the public booking feed. Lag is typically 5-10 minutes vs. Airbnb / Booking.com. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
+//
+// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -30965,17 +33291,21 @@ func (c *ClientWithResponses) SubmitVrboCredentialsWithResponse(ctx context.Cont
 
 // DeleteConnectionWithResponse Disconnect provider
 //
-// Disconnect a PMS or OTA from this workspace.
+// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
 //
-// Currently supported for `booking` only: drops the stored connection and stops syncing the mapped rooms. Resources already synced remain queryable but become read-only and stop receiving updates.
+// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 //
-// Every other provider returns `501 not_implemented` with instructions for disconnecting on the provider's side — Airbnb in particular has to be revoked by the host (Account → Privacy & sharing → Connected apps), because the OAuth grant lives outside this service. The endpoint used to report `200 { disconnected: true }` for every provider while doing nothing; it now tells you the truth.
+// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
+//
+// The change is all or nothing. For Airbnb, the host can also revoke access on Airbnb's side (Account → Privacy & sharing → Connected apps); that alone does not update this workspace, so call this endpoint as well.
+//
+// Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side.
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with DELETE /v1/connect/{provider} (the `DeleteConnection` operationId).
-func (c *ClientWithResponses) DeleteConnectionWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*DeleteConnectionClientResponse, error) {
-	rsp, err := c.DeleteConnection(ctx, provider, reqEditors...)
+func (c *ClientWithResponses) DeleteConnectionWithResponse(ctx context.Context, provider Provider, params *DeleteConnectionParams, reqEditors ...RequestEditorFn) (*DeleteConnectionClientResponse, error) {
+	rsp, err := c.DeleteConnection(ctx, provider, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -31047,6 +33377,8 @@ func (c *ClientWithResponses) CreateConnectionWithResponse(ctx context.Context, 
 //
 // Filters: `platform` (`airbnb`|`booking`|`vrbo`|`website`|`email`), `status` (`open`|`archived` — `archived` is a stable no-op until the bit lands on `message_threads`).
 //
+// **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/conversations (the `ListConversations` operationId).
@@ -31061,6 +33393,8 @@ func (c *ClientWithResponses) ListConversationsWithResponse(ctx context.Context,
 // GetConversationWithResponse Get conversation detail
 //
 // Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks.
+//
+// A conversation that belongs to an inactive listing (by the thread's listing or its reservation's listing) returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31078,6 +33412,8 @@ func (c *ClientWithResponses) GetConversationWithResponse(ctx context.Context, i
 // Cursor-paginated messages within one thread. Defaults to newest-first (`?order=desc`); pass `?order=asc` for chronological replay. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
+//
+// A conversation that belongs to an inactive listing returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31106,6 +33442,8 @@ func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.C
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
@@ -31133,6 +33471,8 @@ func (c *ClientWithResponses) SendConversationMessageWithBodyWithResponse(ctx co
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
@@ -31151,6 +33491,8 @@ func (c *ClientWithResponses) SendConversationMessageWithResponse(ctx context.Co
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 //
 // Filters: `q` (substring on name/email/phone), `has_reservation` (`true`|`false`), `listing_id` (restrict to guests with at least one reservation on that listing).
+//
+// **Inactive listings:** a guest whose every reservation is on an inactive listing is left out of the page and of `pagination.total`, and `totalReservations`, `totalRevenue`, `firstStayedAt` / `lastStayedAt`, `has_reservation` and `listing_id` only consider reservations that are not on an inactive listing. Guests with no reservations are tied to no listing and are always listed. Filtering by an inactive `listing_id` returns `403 listing_inactive`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31208,6 +33550,8 @@ func (c *ClientWithResponses) CreateGuestWithResponse(ctx context.Context, param
 // GetGuestWithResponse Get guest profile
 //
 // Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates. Aggregates main vanio's `GuestService.getGuestProfile()` into the public Repull shape so SDK consumers don't have to learn the internal schema.
+//
+// **Inactive listings:** a guest whose every reservation is on an inactive listing returns `403 listing_inactive` naming those listings (the guest is kept, so this is not a 404). Otherwise the reservation aggregates exclude reservations on inactive listings. A guest with no reservations is always readable.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31406,6 +33750,8 @@ func (c *ClientWithResponses) SetKvWithResponse(ctx context.Context, key string,
 //
 // **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Combine comma-separated, e.g. `?include=content,details`. The default response stays lean; consumers must opt in.
 //
+// **Inactive listings:** by default only active listings are returned. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated, so when `status` asks for inactive ones they carry only `id`, `name`, `status` and `channels` — enough to choose what to activate with `PATCH /v1/listings/{id}`. `?include=` expansions are not applied to them.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/listings (the `ListListings` operationId).
@@ -31457,6 +33803,8 @@ func (c *ClientWithResponses) CreateListingWithResponse(ctx context.Context, bod
 //
 // Apply path writes the recommended price to each listing's calendar via the calendar service (which fans out to Airbnb/Booking/VRBO) then marks the Atlas recommendation `applied`. Decline path is Atlas-only — fast.
 //
+// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
@@ -31478,6 +33826,8 @@ func (c *ClientWithResponses) BulkApplyPricingWithBodyWithResponse(ctx context.C
 //
 // Apply path writes the recommended price to each listing's calendar via the calendar service (which fans out to Airbnb/Booking/VRBO) then marks the Atlas recommendation `applied`. Decline path is Atlas-only — fast.
 //
+// Returns `403 listing_inactive` naming every inactive listing when any listing in the request is inactive; nothing is written.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
@@ -31489,6 +33839,60 @@ func (c *ClientWithResponses) BulkApplyPricingWithResponse(ctx context.Context, 
 	return ParseBulkApplyPricingClientResponse(rsp)
 }
 
+// SetListingsStatusWithBodyWithResponse Activate or deactivate listings in bulk
+//
+// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
+//
+// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+//
+// **All or nothing.** Nothing changes unless the whole request can be applied:
+// - If any id is not one of your listings, the call returns `404` naming those ids.
+// - If activating would take you over your plan's listing limit, the call returns `402 listings_limit_exceeded`. Only listings that are currently inactive count toward the new total, so re-sending ids that are already active never trips the limit.
+//
+// Deactivating is always allowed, including when your account is already over its limit — it is how you get back under it.
+//
+// **Idempotent.** Ids already in the requested state are returned in `unchanged`; ids this call changed are returned in `updated`.
+//
+// For a single listing, `PATCH /v1/listings/{id}` does the same.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/status (the `SetListingsStatus` operationId).
+func (c *ClientWithResponses) SetListingsStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetListingsStatusClientResponse, error) {
+	rsp, err := c.SetListingsStatusWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetListingsStatusClientResponse(rsp)
+}
+
+// SetListingsStatusWithResponse Activate or deactivate listings in bulk
+//
+// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
+//
+// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+//
+// **All or nothing.** Nothing changes unless the whole request can be applied:
+// - If any id is not one of your listings, the call returns `404` naming those ids.
+// - If activating would take you over your plan's listing limit, the call returns `402 listings_limit_exceeded`. Only listings that are currently inactive count toward the new total, so re-sending ids that are already active never trips the limit.
+//
+// Deactivating is always allowed, including when your account is already over its limit — it is how you get back under it.
+//
+// **Idempotent.** Ids already in the requested state are returned in `unchanged`; ids this call changed are returned in `updated`.
+//
+// For a single listing, `PATCH /v1/listings/{id}` does the same.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/status (the `SetListingsStatus` operationId).
+func (c *ClientWithResponses) SetListingsStatusWithResponse(ctx context.Context, body SetListingsStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*SetListingsStatusClientResponse, error) {
+	rsp, err := c.SetListingsStatus(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetListingsStatusClientResponse(rsp)
+}
+
 // DeactivateListingWithResponse Deactivate (exclude) a listing
 //
 // Deactivate a listing — sets it inactive and excludes it from Repull. This is a **soft** operation: the listing row is KEPT (never hard-deleted) and the upstream channel (Airbnb / Hospitable / Booking.com) is NEVER touched. Repull only mutates its own copy.
@@ -31496,6 +33900,8 @@ func (c *ClientWithResponses) BulkApplyPricingWithResponse(ctx context.Context, 
 // Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. This is the primary self-serve way for a free-tier customer to trim back under the plan-listings cap — `DELETE` is served even when the account is over the cap (a 402-locked account can still call it). To bring a listing back, use `PATCH` with `{ "active": true }`.
 //
 // Idempotent: deactivating an already-inactive listing returns 200.
+//
+// To deactivate many listings at once, use `POST /v1/listings/status` with `{ "active": false }`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31513,6 +33919,8 @@ func (c *ClientWithResponses) DeactivateListingWithResponse(ctx context.Context,
 // Fetch a single listing by id. Returns the same shape as one element of the `GET /v1/listings` response, so you can bind the result to the same model. Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403, never reveals the listing's existence.
 //
 // **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Combine comma-separated, e.g. `?include=amenities,content,details`. The default response stays lean; consumers must opt in.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31535,6 +33943,8 @@ func (c *ClientWithResponses) GetListingWithResponse(ctx context.Context, id int
 //
 // Idempotent: setting a listing to the state it's already in returns 200.
 //
+// To change many listings at once, all or nothing, use `POST /v1/listings/status`.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PATCH /v1/listings/{id} (the `UpdateListingActive` operationId).
@@ -31556,6 +33966,8 @@ func (c *ClientWithResponses) UpdateListingActiveWithBodyWithResponse(ctx contex
 //
 // Idempotent: setting a listing to the state it's already in returns 200.
 //
+// To change many listings at once, all or nothing, use `POST /v1/listings/status`.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PATCH /v1/listings/{id} (the `UpdateListingActive` operationId).
@@ -31572,6 +33984,8 @@ func (c *ClientWithResponses) UpdateListingActiveWithResponse(ctx context.Contex
 // Returns the actual comp set for a listing — the underlying competitor listings (with daily nightly pricing), not just the aggregated `compSummary` from `/pricing`. Each comp comes back with distance, bedrooms, ratings, lat/lng, platform link, and a per-day rate/availability series for the requested window.
 //
 // Powered by Atlas. Comps with no coordinates are excluded — there's no way to rank them by distance. Listings without coordinates return `data: []` and a `warning` field.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31596,6 +34010,8 @@ func (c *ClientWithResponses) ListListingCompsWithResponse(ctx context.Context, 
 //
 // Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/listings/{id}/content (the `UpdateListingContent` operationId).
@@ -31619,6 +34035,8 @@ func (c *ClientWithResponses) UpdateListingContentWithBodyWithResponse(ctx conte
 //
 // Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/listings/{id}/content (the `UpdateListingContent` operationId).
@@ -31633,6 +34051,8 @@ func (c *ClientWithResponses) UpdateListingContentWithResponse(ctx context.Conte
 // GenerateListingContentWithBodyWithResponse AI-generate listing content
 //
 // Generate guest-facing copy (title, summary, description, amenities, etc.) for a listing using Repull AI. When `photos` are provided the vision model is used for photo-grounded copy. Persists into the listing by default.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31649,6 +34069,8 @@ func (c *ClientWithResponses) GenerateListingContentWithBodyWithResponse(ctx con
 //
 // Generate guest-facing copy (title, summary, description, amenities, etc.) for a listing using Repull AI. When `photos` are provided the vision model is used for photo-grounded copy. Persists into the listing by default.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
@@ -31663,6 +34085,8 @@ func (c *ClientWithResponses) GenerateListingContentWithResponse(ctx context.Con
 // DeleteListingPhotoWithBodyWithResponse Delete a stored listing photo
 //
 // Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31679,6 +34103,8 @@ func (c *ClientWithResponses) DeleteListingPhotoWithBodyWithResponse(ctx context
 //
 // Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with DELETE /v1/listings/{id}/photos (the `DeleteListingPhoto` operationId).
@@ -31693,6 +34119,8 @@ func (c *ClientWithResponses) DeleteListingPhotoWithResponse(ctx context.Context
 // ListListingPhotosWithResponse List a listing's stored photos
 //
 // Returns the photo set currently stored for this listing.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31711,6 +34139,8 @@ func (c *ClientWithResponses) ListListingPhotosWithResponse(ctx context.Context,
 //
 // Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/{id}/photos/upload-url (the `CreateListingPhotoUploadUrl` operationId).
@@ -31728,6 +34158,8 @@ func (c *ClientWithResponses) CreateListingPhotoUploadUrlWithBodyWithResponse(ct
 //
 // Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/{id}/photos/upload-url (the `CreateListingPhotoUploadUrl` operationId).
@@ -31742,6 +34174,8 @@ func (c *ClientWithResponses) CreateListingPhotoUploadUrlWithResponse(ctx contex
 // GetListingPricingWithResponse Get pricing recommendations
 //
 // Returns date-by-date pricing recommendations for a listing's upcoming calendar window, plus the listing's base-price context and a 5km comp summary. Recommendations come from the Atlas pricing model — pre-computed nightly and stored in `pricing_recommendations`. Use POST to apply or decline pending recommendations.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31758,6 +34192,8 @@ func (c *ClientWithResponses) GetListingPricingWithResponse(ctx context.Context,
 //
 // Apply: writes the recommended price to the listing's calendar for the given dates and triggers the platform fan-out (Airbnb / Booking.com / VRBO). Decline: marks the recommendation as `declined` so it stops surfacing — the model can re-recommend on the next training cycle.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/{id}/pricing (the `ApplyListingPricing` operationId).
@@ -31772,6 +34208,8 @@ func (c *ClientWithResponses) ApplyListingPricingWithBodyWithResponse(ctx contex
 // ApplyListingPricingWithResponse Apply or decline pricing recommendations
 //
 // Apply: writes the recommended price to the listing's calendar for the given dates and triggers the platform fan-out (Airbnb / Booking.com / VRBO). Decline: marks the recommendation as `declined` so it stops surfacing — the model can re-recommend on the next training cycle.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31792,6 +34230,8 @@ func (c *ClientWithResponses) ApplyListingPricingWithResponse(ctx context.Contex
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/listings/{id}/pricing/history (the `GetListingPricingHistory` operationId).
@@ -31806,6 +34246,8 @@ func (c *ClientWithResponses) GetListingPricingHistoryWithResponse(ctx context.C
 // GetListingPricingStrategyWithResponse Get pricing strategy
 //
 // Returns the strategy that constrains how the Atlas pricing model behaves for this listing. If no strategy row exists yet, returns sane defaults flagged with `isDefault: true`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31822,6 +34264,8 @@ func (c *ClientWithResponses) GetListingPricingStrategyWithResponse(ctx context.
 //
 // Upserts the strategy on `(listing_id, customer_id)` — repeated PUTs are idempotent. Send only the fields you want to change; omitted fields take server-side defaults.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/listings/{id}/pricing/strategy (the `UpdateListingPricingStrategy` operationId).
@@ -31836,6 +34280,8 @@ func (c *ClientWithResponses) UpdateListingPricingStrategyWithBodyWithResponse(c
 // UpdateListingPricingStrategyWithResponse Update pricing strategy
 //
 // Upserts the strategy on `(listing_id, customer_id)` — repeated PUTs are idempotent. Send only the fields you want to change; omitted fields take server-side defaults.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31852,6 +34298,8 @@ func (c *ClientWithResponses) UpdateListingPricingStrategyWithResponse(ctx conte
 //
 // Returns connection state and sync activity per channel. `channels` is sync activity (empty until first push). `connections` is connection state (populated as soon as a channel is linked). Recommended polling cadence: at most once per 30s per listing — for bulk views, prefer `GET /v1/listings` and filter client-side.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/listings/{id}/publish-status (the `GetListingPublishStatus` operationId).
@@ -31866,6 +34314,8 @@ func (c *ClientWithResponses) GetListingPublishStatusWithResponse(ctx context.Co
 // PublishListingToAirbnbWithBodyWithResponse Publish a listing to Airbnb
 //
 // Push a Repull listing to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -31882,6 +34332,8 @@ func (c *ClientWithResponses) PublishListingToAirbnbWithBodyWithResponse(ctx con
 //
 // Push a Repull listing to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/{id}/publish/airbnb (the `PublishListingToAirbnb` operationId).
@@ -31896,6 +34348,8 @@ func (c *ClientWithResponses) PublishListingToAirbnbWithResponse(ctx context.Con
 // PublishListingToBookingWithResponse Publish a listing to Booking.com
 //
 // Push a Repull listing to Booking.com. The listing must already be mapped to a Booking property + room (created via the Booking-claim Connect flow).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -31916,6 +34370,8 @@ func (c *ClientWithResponses) PublishListingToBookingWithResponse(ctx context.Co
 // - What's the ADR uplift for moving up a tier?
 //
 // DNA coverage is still ramping — segments are scored asynchronously. Cities and radii without scored comps return `totalCompsAnalyzed: 0` plus a `low_dna_coverage` recommendation rather than fabricated data.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32002,6 +34458,8 @@ func (c *ClientWithResponses) GetMarketCalendarWithResponse(ctx context.Context,
 //
 // **Incremental sync (only changes since last poll):** pass `?updated_since=<ISO8601>` to receive only properties changed at or after that instant. Each property carries `updatedAt` — the last row of the final page is your next watermark. `updated_since` changes the page ordering to `updatedAt ASC, id ASC` (and the cursor with it); see the parameter description. `GET /v1/listings` does NOT yet accept `updated_since` — use this endpoint for property-side incremental sync.
 //
+// **Inactive properties:** an inactive property keeps syncing, but cannot be read or changed through the API until it is activated. They are only listed when `status` asks for them, and then with `id`, `name`, `status`, `lifecycleStatus`, `channels` and `updatedAt` only — enough to choose what to activate with `PATCH /v1/listings/{id}`.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/properties (the `ListProperties` operationId).
@@ -32019,6 +34477,8 @@ func (c *ClientWithResponses) ListPropertiesWithResponse(ctx context.Context, pa
 //
 // **Optional expansions:** Pass `?include=amenities` to enrich the response with the property's amenities (sourced from the unified `listings_amenities` table). Returns `[]` when the property has no amenity rows. The default response stays lean; consumers must opt in.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/properties/{id} (the `GetProperty` operationId).
@@ -32035,6 +34495,8 @@ func (c *ClientWithResponses) GetPropertyWithResponse(ctx context.Context, id in
 // Returns the full price breakdown for a stay — nightly total, length-of-stay discount, cleaning fee, pet and other fees, taxes, and the total.
 //
 // A quote is priced against a booking website, because the markup, custom fees and tax overrides that decide what a guest is actually charged live there. A workspace with no booking site receives `422 quote_unavailable` rather than a number computed from different rules than the ones applied at checkout.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32056,6 +34518,8 @@ func (c *ClientWithResponses) GetQuoteWithResponse(ctx context.Context, params *
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. For deep pagination cursor remains O(1) per page; offset > 10000 returns 422 with a docs link.
 //
 // **Incremental sync (only changes since last poll):** pass `?updated_since=<ISO8601>` to receive only reservations amended, cancelled, or created at or after that instant — no full re-walk. Each row carries `updatedAt`; the last row of the final page is your next watermark. Note that `updated_since` changes the page ordering to `updatedAt ASC, id ASC` (and the cursor with it) so mid-walk amendments cannot be skipped — see the parameter description for the full contract.
+//
+// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32082,6 +34546,8 @@ func (c *ClientWithResponses) ListReservationsWithResponse(ctx context.Context, 
 //
 // Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
@@ -32107,6 +34573,8 @@ func (c *ClientWithResponses) CreateReservationWithBodyWithResponse(ctx context.
 //
 // Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
 //
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
@@ -32121,6 +34589,8 @@ func (c *ClientWithResponses) CreateReservationWithResponse(ctx context.Context,
 // GetReservationWithResponse Get reservation details
 //
 // Returns the full record for a single reservation, scoped to the authenticated workspace. Response shape is identical to a single row in `GET /v1/reservations` so SDK consumers can use the same type for both. Returns **404** if the id does not exist OR belongs to a different workspace — the API never differentiates the two so caller can't enumerate other workspaces' ids.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32155,6 +34625,8 @@ func (c *ClientWithResponses) GetReservationWithResponse(ctx context.Context, id
 //
 // **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 //
+// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
@@ -32188,6 +34660,8 @@ func (c *ClientWithResponses) UpdateReservationWithBodyWithResponse(ctx context.
 //
 // **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 //
+// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+//
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
@@ -32207,6 +34681,8 @@ func (c *ClientWithResponses) UpdateReservationWithResponse(ctx context.Context,
 //
 // Filters: `platform` (`airbnb`|`booking`|`vrbo`), `listing_id` (internal Repull listing id), `rating_min` / `rating_max` (inclusive bounds, 0..5), `status` (`responded`|`unanswered`|`all`), `reviewer_role` (`guest` (default) | `host` | `all`).
 //
+// **Inactive listings:** reviews of inactive listings are left out of the page and of `pagination.total`. Filtering by an inactive `listing_id` returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/reviews (the `ListReviews` operationId).
@@ -32221,6 +34697,8 @@ func (c *ClientWithResponses) ListReviewsWithResponse(ctx context.Context, param
 // GetReviewWithResponse Get review
 //
 // Returns one review (the bare `Review` object — NOT wrapped in `{ data: ... }`). Scoped to the authenticated workspace via the listings join — reviews that don't belong to the workspace return 404 (we don't differentiate to avoid leaking other customers' ids).
+//
+// A review of an inactive listing returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32239,6 +34717,8 @@ func (c *ClientWithResponses) GetReviewWithResponse(ctx context.Context, id int,
 //
 // Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 //
+// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/reviews/{id}/reply (the `ReplyToReview` operationId).
@@ -32255,6 +34735,8 @@ func (c *ClientWithResponses) ReplyToReviewWithBodyWithResponse(ctx context.Cont
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
 // Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32382,7 +34864,7 @@ func (c *ClientWithResponses) UpdateCustomSchemaWithResponse(ctx context.Context
 
 // GetUsageLogsWithResponse List API request logs
 //
-// Cursor-paginated raw API request log for the authenticated workspace, newest first. Filter by time `range`, `operation` id(s), status class, or free-text `q`. Walk pages with `cursor` from `pagination.next_cursor` until `pagination.has_more` is `false`; `offset` is accepted as a shallow alias (deep walks must use `cursor`).
+// Cursor-paginated raw API request log for the authenticated workspace, newest first. Filter by time `range`, `operation` id(s), status class, or free-text `q`. Walk pages with `cursor` from `pagination.nextCursor` until `pagination.hasMore` is `false`; `offset` is accepted as a shallow alias (deep walks must use `cursor`).
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32442,7 +34924,7 @@ func (c *ClientWithResponses) ListWebhooksWithResponse(ctx context.Context, reqE
 
 // CreateWebhookWithBodyWithResponse Create webhook subscription
 //
-// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events.
+// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32457,7 +34939,7 @@ func (c *ClientWithResponses) CreateWebhookWithBodyWithResponse(ctx context.Cont
 
 // CreateWebhookWithResponse Create webhook subscription
 //
-// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events.
+// Register a new endpoint. Returns the plaintext signing secret ONCE — capture it from the response and store it securely. After this call the secret is masked everywhere; mint a new one with `POST /v1/webhooks/{id}/rotate-secret` if you lose it. See `GET /v1/webhooks/event-types` for the full list of subscribable events. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -32607,7 +35089,7 @@ func (c *ClientWithResponses) GetWebhookDeliveryWithResponse(ctx context.Context
 
 // ReplayWebhookDeliveryWithResponse Replay webhook delivery
 //
-// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1). A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -32693,6 +35175,13 @@ func ParseBatchUpdateAvailabilityClientResponse(rsp *http.Response) (*BatchUpdat
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -32732,6 +35221,13 @@ func ParseGetAvailabilityClientResponse(rsp *http.Response) (*GetAvailabilityCli
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -32779,6 +35275,13 @@ func ParseUpdateAvailabilityClientResponse(rsp *http.Response) (*UpdateAvailabil
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -32848,6 +35351,13 @@ func ParseListAirbnbAlterationsClientResponse(rsp *http.Response) (*ListAirbnbAl
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -32883,6 +35393,13 @@ func ParseCreateAirbnbAlterationClientResponse(rsp *http.Response) (*CreateAirbn
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -32937,6 +35454,13 @@ func ParseGetAirbnbAlterationClientResponse(rsp *http.Response) (*GetAirbnbAlter
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -32980,6 +35504,13 @@ func ParseAcceptAirbnbAlterationClientResponse(rsp *http.Response) (*AcceptAirbn
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -33022,6 +35553,13 @@ func ParseDeclineAirbnbAlterationClientResponse(rsp *http.Response) (*DeclineAir
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -33129,6 +35667,13 @@ func ParseMapAirbnbListingClientResponse(rsp *http.Response) (*MapAirbnbListingC
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -33176,6 +35721,13 @@ func ParseGetAirbnbListingClientResponse(rsp *http.Response) (*GetAirbnbListingC
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -33197,6 +35749,13 @@ func ParseAirbnbListingActionClientResponse(rsp *http.Response) (*AirbnbListingA
 	switch {
 	case rsp.StatusCode == 200:
 		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
@@ -33246,6 +35805,13 @@ func ParseListAirbnbListingAmenitiesClientResponse(rsp *http.Response) (*ListAir
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -33285,6 +35851,19 @@ func ParseGetAirbnbListingAvailabilityClientResponse(rsp *http.Response) (*GetAi
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -33299,6 +35878,47 @@ func ParseUpdateAirbnbListingAvailabilityClientResponse(rsp *http.Response) (*Up
 	response := &UpdateAirbnbListingAvailabilityClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest AirbnbWriteForbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -33336,6 +35956,13 @@ func ParseGetAirbnbCheckinGuideClientResponse(rsp *http.Response) (*GetAirbnbChe
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -33386,6 +36013,13 @@ func ParseUpdateAirbnbCheckinGuideClientResponse(rsp *http.Response) (*UpdateAir
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -33438,6 +36072,13 @@ func ParseGetAirbnbCheckoutGuideClientResponse(rsp *http.Response) (*GetAirbnbCh
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -33498,6 +36139,13 @@ func ParseListAirbnbListingDescriptionsClientResponse(rsp *http.Response) (*List
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -33548,6 +36196,13 @@ func ParseDeleteAirbnbListingPhotoClientResponse(rsp *http.Response) (*DeleteAir
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -33587,6 +36242,19 @@ func ParseListAirbnbListingPhotosClientResponse(rsp *http.Response) (*ListAirbnb
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -33601,6 +36269,19 @@ func ParseUploadAirbnbListingPhotosClientResponse(rsp *http.Response) (*UploadAi
 	response := &UploadAirbnbListingPhotosClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 201:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -33619,6 +36300,19 @@ func ParseGetAirbnbListingPricingClientResponse(rsp *http.Response) (*GetAirbnbL
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -33633,6 +36327,47 @@ func ParseUpdateAirbnbListingPricingClientResponse(rsp *http.Response) (*UpdateA
 	response := &UpdateAirbnbListingPricingClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest AirbnbWriteForbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -33671,6 +36406,13 @@ func ParseGetAirbnbListingQualityClientResponse(rsp *http.Response) (*GetAirbnbL
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -33728,6 +36470,13 @@ func ParseDeleteAirbnbListingRoomClientResponse(rsp *http.Response) (*DeleteAirb
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -33788,6 +36537,13 @@ func ParseListAirbnbListingRoomsClientResponse(rsp *http.Response) (*ListAirbnbL
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -33837,6 +36593,13 @@ func ParseCreateAirbnbListingRoomClientResponse(rsp *http.Response) (*CreateAirb
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -33891,6 +36654,13 @@ func ParseGetAirbnbListingSettingsClientResponse(rsp *http.Response) (*GetAirbnb
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -33938,6 +36708,13 @@ func ParseListAirbnbThreadsClientResponse(rsp *http.Response) (*ListAirbnbThread
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -33976,6 +36753,13 @@ func ParseGetAirbnbThreadClientResponse(rsp *http.Response) (*GetAirbnbThreadCli
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -34017,6 +36801,13 @@ func ParseListAirbnbThreadMessagesClientResponse(rsp *http.Response) (*ListAirbn
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -34045,6 +36836,13 @@ func ParseSendAirbnbMessageClientResponse(rsp *http.Response) (*SendAirbnbMessag
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -34088,6 +36886,13 @@ func ParseUpdateAirbnbMessageClientResponse(rsp *http.Response) (*UpdateAirbnbMe
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -34189,6 +36994,13 @@ func ParseCreateAirbnbOfferClientResponse(rsp *http.Response) (*CreateAirbnbOffe
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -34236,6 +37048,13 @@ func ParseListAirbnbReservationsClientResponse(rsp *http.Response) (*ListAirbnbR
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -34262,6 +37081,13 @@ func ParseGetAirbnbReservationClientResponse(rsp *http.Response) (*GetAirbnbRese
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -34278,6 +37104,19 @@ func ParseAirbnbReservationActionClientResponse(rsp *http.Response) (*AirbnbRese
 	response := &AirbnbReservationActionClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -34304,6 +37143,13 @@ func ParseListAirbnbReviewsClientResponse(rsp *http.Response) (*ListAirbnbReview
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -34320,6 +37166,22 @@ func ParseRespondAirbnbReviewLegacyClientResponse(rsp *http.Response) (*RespondA
 	response := &RespondAirbnbReviewLegacyClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case rsp.StatusCode == 201:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -34352,6 +37214,13 @@ func ParseEditAirbnbReviewClientResponse(rsp *http.Response) (*EditAirbnbReviewC
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -34406,6 +37275,13 @@ func ParseRespondAirbnbReviewClientResponse(rsp *http.Response) (*RespondAirbnbR
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -34564,6 +37440,13 @@ func ParseGetBookingAvailabilityClientResponse(rsp *http.Response) (*GetBookingA
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -34613,6 +37496,13 @@ func ParseUpdateBookingAvailabilityClientResponse(rsp *http.Response) (*UpdateBo
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -34664,6 +37554,13 @@ func ParseGetBookingChargesClientResponse(rsp *http.Response) (*GetBookingCharge
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -34714,6 +37611,13 @@ func ParseUpdateBookingChargesClientResponse(rsp *http.Response) (*UpdateBooking
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -34746,6 +37650,26 @@ func ParseGetBookingContentClientResponse(rsp *http.Response) (*GetBookingConten
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -34760,6 +37684,26 @@ func ParseUpdateBookingContentClientResponse(rsp *http.Response) (*UpdateBooking
 	response := &UpdateBookingContentClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	}
 
 	return response, nil
@@ -34799,6 +37743,13 @@ func ParseGetBookingListingPricingClientResponse(rsp *http.Response) (*GetBookin
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -34854,6 +37805,13 @@ func ParseUpdateBookingListingPricingClientResponse(rsp *http.Response) (*Update
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -34894,6 +37852,20 @@ func ParseListBookingConversationsClientResponse(rsp *http.Response) (*ListBooki
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	}
 
 	return response, nil
@@ -34929,6 +37901,13 @@ func ParseSendBookingMessageClientResponse(rsp *http.Response) (*SendBookingMess
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -35006,6 +37985,13 @@ func ParseGetBookingPropertyClientResponse(rsp *http.Response) (*GetBookingPrope
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -35060,6 +38046,13 @@ func ParseListBookingPropertyRoomsClientResponse(rsp *http.Response) (*ListBooki
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -35113,6 +38106,13 @@ func ParseListBookingReservationsClientResponse(rsp *http.Response) (*ListBookin
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -35207,6 +38207,13 @@ func ParseListBookingReviewsClientResponse(rsp *http.Response) (*ListBookingRevi
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -35255,6 +38262,20 @@ func ParseReplyBookingReviewClientResponse(rsp *http.Response) (*ReplyBookingRev
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
@@ -35309,6 +38330,13 @@ func ParseBookingSetupClientResponse(rsp *http.Response) (*BookingSetupClientRes
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -35342,16 +38370,6 @@ func ParseDeleteBookingWebhookClientResponse(rsp *http.Response) (*DeleteBooking
 	}
 
 	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequest
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -35359,19 +38377,12 @@ func ParseDeleteBookingWebhookClientResponse(rsp *http.Response) (*DeleteBooking
 		}
 		response.JSON401 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
+		response.JSON403 = &dest
 
 	}
 
@@ -35392,9 +38403,6 @@ func ParseListBookingWebhooksClientResponse(rsp *http.Response) (*ListBookingWeb
 	}
 
 	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -35402,19 +38410,12 @@ func ParseListBookingWebhooksClientResponse(rsp *http.Response) (*ListBookingWeb
 		}
 		response.JSON401 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
+		response.JSON403 = &dest
 
 	}
 
@@ -35435,16 +38436,6 @@ func ParseCreateBookingWebhookClientResponse(rsp *http.Response) (*CreateBooking
 	}
 
 	switch {
-	case rsp.StatusCode == 201:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequest
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -35452,19 +38443,12 @@ func ParseCreateBookingWebhookClientResponse(rsp *http.Response) (*CreateBooking
 		}
 		response.JSON401 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
+		response.JSON403 = &dest
 
 	}
 
@@ -35484,6 +38468,19 @@ func ParseGetPlumguideAvailabilityClientResponse(rsp *http.Response) (*GetPlumgu
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -35498,6 +38495,19 @@ func ParseUpdatePlumguideAvailabilityClientResponse(rsp *http.Response) (*Update
 	response := &UpdatePlumguideAvailabilityClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -35526,6 +38536,13 @@ func ParseListPlumguideBookingsClientResponse(rsp *http.Response) (*ListPlumguid
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -35585,6 +38602,19 @@ func ParseGetPlumguidePricingClientResponse(rsp *http.Response) (*GetPlumguidePr
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -35599,6 +38629,19 @@ func ParseUpdatePlumguidePricingClientResponse(rsp *http.Response) (*UpdatePlumg
 	response := &UpdatePlumguidePricingClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -36713,8 +39756,31 @@ func ParseDeleteConnectionClientResponse(rsp *http.Response) (*DeleteConnectionC
 	}
 
 	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// AccountId The account that was disconnected. `null` only when the workspace had a stale connection record with no account to name, which was cleared.
+			AccountId *string `json:"accountId"`
+
+			// Disconnected Always `true` on success.
+			Disconnected bool `json:"disconnected"`
+
+			// ListingsDeactivated Ids of the listings this call deactivated. Listings still connected through another account or channel are not included and stay active.
+			ListingsDeactivated []string `json:"listingsDeactivated"`
+
+			// Provider The provider the account belonged to.
+			Provider string `json:"provider"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -36722,6 +39788,13 @@ func ParseDeleteConnectionClientResponse(rsp *http.Response) (*DeleteConnectionC
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 501:
 		var dest Error
@@ -36876,6 +39949,13 @@ func ParseGetConversationClientResponse(rsp *http.Response) (*GetConversationCli
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -36930,6 +40010,13 @@ func ParseListConversationMessagesClientResponse(rsp *http.Response) (*ListConve
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -36983,6 +40070,13 @@ func ParseSendConversationMessageClientResponse(rsp *http.Response) (*SendConver
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
@@ -37044,6 +40138,13 @@ func ParseListGuestsClientResponse(rsp *http.Response) (*ListGuestsClientRespons
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
@@ -37152,6 +40253,13 @@ func ParseGetGuestClientResponse(rsp *http.Response) (*GetGuestClientResponse, e
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -37674,6 +40782,13 @@ func ParseBulkApplyPricingClientResponse(rsp *http.Response) (*BulkApplyPricingC
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -37687,6 +40802,67 @@ func ParseBulkApplyPricingClientResponse(rsp *http.Response) (*BulkApplyPricingC
 			return nil, err
 		}
 		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetListingsStatusClientResponse parses an HTTP response from a SetListingsStatusWithResponse call
+func ParseSetListingsStatusClientResponse(rsp *http.Response) (*SetListingsStatusClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetListingsStatusClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingStatusBatchResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PaymentRequired
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -37767,6 +40943,13 @@ func ParseGetListingClientResponse(rsp *http.Response) (*GetListingClientRespons
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -37876,6 +41059,13 @@ func ParseListListingCompsClientResponse(rsp *http.Response) (*ListListingCompsC
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -37923,6 +41113,13 @@ func ParseUpdateListingContentClientResponse(rsp *http.Response) (*UpdateListing
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -37962,6 +41159,13 @@ func ParseGenerateListingContentClientResponse(rsp *http.Response) (*GenerateLis
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -38005,6 +41209,13 @@ func ParseDeleteListingPhotoClientResponse(rsp *http.Response) (*DeleteListingPh
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -38053,6 +41264,13 @@ func ParseListListingPhotosClientResponse(rsp *http.Response) (*ListListingPhoto
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -38092,6 +41310,13 @@ func ParseCreateListingPhotoUploadUrlClientResponse(rsp *http.Response) (*Create
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -38147,6 +41372,13 @@ func ParseGetListingPricingClientResponse(rsp *http.Response) (*GetListingPricin
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case rsp.StatusCode == 502:
 		break // No content-type
 
@@ -38182,6 +41414,13 @@ func ParseApplyListingPricingClientResponse(rsp *http.Response) (*ApplyListingPr
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	}
 
@@ -38222,6 +41461,13 @@ func ParseGetListingPricingHistoryClientResponse(rsp *http.Response) (*GetListin
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -38277,6 +41523,13 @@ func ParseGetListingPricingStrategyClientResponse(rsp *http.Response) (*GetListi
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -38305,6 +41558,13 @@ func ParseUpdateListingPricingStrategyClientResponse(rsp *http.Response) (*Updat
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -38330,6 +41590,13 @@ func ParseGetListingPublishStatusClientResponse(rsp *http.Response) (*GetListing
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -38412,6 +41679,13 @@ func ParsePublishListingToAirbnbClientResponse(rsp *http.Response) (*PublishList
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -38444,6 +41718,13 @@ func ParsePublishListingToBookingClientResponse(rsp *http.Response) (*PublishLis
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	}
 
@@ -38484,6 +41765,13 @@ func ParseGetListingSegmentsClientResponse(rsp *http.Response) (*GetListingSegme
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -38713,6 +42001,13 @@ func ParseGetPropertyClientResponse(rsp *http.Response) (*GetPropertyClientRespo
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -38760,6 +42055,13 @@ func ParseGetQuoteClientResponse(rsp *http.Response) (*GetQuoteClientResponse, e
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -38800,6 +42102,13 @@ func ParseListReservationsClientResponse(rsp *http.Response) (*ListReservationsC
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -38839,6 +42148,13 @@ func ParseCreateReservationClientResponse(rsp *http.Response) (*CreateReservatio
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
@@ -38894,6 +42210,13 @@ func ParseGetReservationClientResponse(rsp *http.Response) (*GetReservationClien
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -38947,6 +42270,13 @@ func ParseUpdateReservationClientResponse(rsp *http.Response) (*UpdateReservatio
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Error
@@ -39009,6 +42339,13 @@ func ParseListReviewsClientResponse(rsp *http.Response) (*ListReviewsClientRespo
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -39063,6 +42400,13 @@ func ParseGetReviewClientResponse(rsp *http.Response) (*GetReviewClientResponse,
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -39113,6 +42457,13 @@ func ParseReplyToReviewClientResponse(rsp *http.Response) (*ReplyToReviewClientR
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound
@@ -39813,6 +43164,19 @@ func ParseReplayWebhookDeliveryClientResponse(rsp *http.Response) (*ReplayWebhoo
 	response := &ReplayWebhookDeliveryClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil

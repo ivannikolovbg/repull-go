@@ -163,6 +163,24 @@ func (e AirbnbCalendarOperationAvailability) Valid() bool {
 	}
 }
 
+// Defines values for AirbnbCalendarOperationBusySubtype.
+const (
+	BLOCKEDBYHOST      AirbnbCalendarOperationBusySubtype = "BLOCKED_BY_HOST"
+	OUTSIDERESERVATION AirbnbCalendarOperationBusySubtype = "OUTSIDE_RESERVATION"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbCalendarOperationBusySubtype enum.
+func (e AirbnbCalendarOperationBusySubtype) Valid() bool {
+	switch e {
+	case BLOCKEDBYHOST:
+		return true
+	case OUTSIDERESERVATION:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AirbnbConnectionSummaryStatus.
 const (
 	Connected         AirbnbConnectionSummaryStatus = "connected"
@@ -202,6 +220,27 @@ func (e AirbnbListingActionRequestAction) Valid() bool {
 	case Publish:
 		return true
 	case Push:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbPricingWriteRequestModelType.
+const (
+	LOSRECORD AirbnbPricingWriteRequestModelType = "LOS_RECORD"
+	RATEPLAN  AirbnbPricingWriteRequestModelType = "RATE_PLAN"
+	STANDARD  AirbnbPricingWriteRequestModelType = "STANDARD"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbPricingWriteRequestModelType enum.
+func (e AirbnbPricingWriteRequestModelType) Valid() bool {
+	switch e {
+	case LOSRECORD:
+		return true
+	case RATEPLAN:
+		return true
+	case STANDARD:
 		return true
 	default:
 		return false
@@ -378,19 +417,43 @@ func (e BookingAvailabilityUpdateStatus) Valid() bool {
 
 // Defines values for BookingAvailabilityUpdateRequestType.
 const (
-	Availability   BookingAvailabilityUpdateRequestType = "availability"
-	DerivedPricing BookingAvailabilityUpdateRequestType = "derived-pricing"
-	Rates          BookingAvailabilityUpdateRequestType = "rates"
+	BookingAvailabilityUpdateRequestTypeAvailability   BookingAvailabilityUpdateRequestType = "availability"
+	BookingAvailabilityUpdateRequestTypeDerivedPricing BookingAvailabilityUpdateRequestType = "derived-pricing"
+	BookingAvailabilityUpdateRequestTypeRates          BookingAvailabilityUpdateRequestType = "rates"
 )
 
 // Valid indicates whether the value is a known member of the BookingAvailabilityUpdateRequestType enum.
 func (e BookingAvailabilityUpdateRequestType) Valid() bool {
 	switch e {
-	case Availability:
+	case BookingAvailabilityUpdateRequestTypeAvailability:
 		return true
-	case DerivedPricing:
+	case BookingAvailabilityUpdateRequestTypeDerivedPricing:
 		return true
-	case Rates:
+	case BookingAvailabilityUpdateRequestTypeRates:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingConnectRoomsResponseMissingCapabilities.
+const (
+	BookingConnectRoomsResponseMissingCapabilitiesContent      BookingConnectRoomsResponseMissingCapabilities = "content"
+	BookingConnectRoomsResponseMissingCapabilitiesMessaging    BookingConnectRoomsResponseMissingCapabilities = "messaging"
+	BookingConnectRoomsResponseMissingCapabilitiesRates        BookingConnectRoomsResponseMissingCapabilities = "rates"
+	BookingConnectRoomsResponseMissingCapabilitiesReservations BookingConnectRoomsResponseMissingCapabilities = "reservations"
+)
+
+// Valid indicates whether the value is a known member of the BookingConnectRoomsResponseMissingCapabilities enum.
+func (e BookingConnectRoomsResponseMissingCapabilities) Valid() bool {
+	switch e {
+	case BookingConnectRoomsResponseMissingCapabilitiesContent:
+		return true
+	case BookingConnectRoomsResponseMissingCapabilitiesMessaging:
+		return true
+	case BookingConnectRoomsResponseMissingCapabilitiesRates:
+		return true
+	case BookingConnectRoomsResponseMissingCapabilitiesReservations:
 		return true
 	default:
 		return false
@@ -475,6 +538,30 @@ func (e BookingReservationRoomStatus) Valid() bool {
 	case BookingReservationRoomStatusModified:
 		return true
 	case BookingReservationRoomStatusNew:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingVerifyHotelResponseMissingCapabilities.
+const (
+	BookingVerifyHotelResponseMissingCapabilitiesContent      BookingVerifyHotelResponseMissingCapabilities = "content"
+	BookingVerifyHotelResponseMissingCapabilitiesMessaging    BookingVerifyHotelResponseMissingCapabilities = "messaging"
+	BookingVerifyHotelResponseMissingCapabilitiesRates        BookingVerifyHotelResponseMissingCapabilities = "rates"
+	BookingVerifyHotelResponseMissingCapabilitiesReservations BookingVerifyHotelResponseMissingCapabilities = "reservations"
+)
+
+// Valid indicates whether the value is a known member of the BookingVerifyHotelResponseMissingCapabilities enum.
+func (e BookingVerifyHotelResponseMissingCapabilities) Valid() bool {
+	switch e {
+	case BookingVerifyHotelResponseMissingCapabilitiesContent:
+		return true
+	case BookingVerifyHotelResponseMissingCapabilitiesMessaging:
+		return true
+	case BookingVerifyHotelResponseMissingCapabilitiesRates:
+		return true
+	case BookingVerifyHotelResponseMissingCapabilitiesReservations:
 		return true
 	default:
 		return false
@@ -2028,19 +2115,19 @@ func (e BookingSetupJSONBodyAction) Valid() bool {
 
 // Defines values for CreateConnectionJSONBodyAccessType.
 const (
-	FullAccess CreateConnectionJSONBodyAccessType = "full_access"
-	Messaging  CreateConnectionJSONBodyAccessType = "messaging"
-	ReadOnly   CreateConnectionJSONBodyAccessType = "read_only"
+	CreateConnectionJSONBodyAccessTypeFullAccess CreateConnectionJSONBodyAccessType = "full_access"
+	CreateConnectionJSONBodyAccessTypeMessaging  CreateConnectionJSONBodyAccessType = "messaging"
+	CreateConnectionJSONBodyAccessTypeReadOnly   CreateConnectionJSONBodyAccessType = "read_only"
 )
 
 // Valid indicates whether the value is a known member of the CreateConnectionJSONBodyAccessType enum.
 func (e CreateConnectionJSONBodyAccessType) Valid() bool {
 	switch e {
-	case FullAccess:
+	case CreateConnectionJSONBodyAccessTypeFullAccess:
 		return true
-	case Messaging:
+	case CreateConnectionJSONBodyAccessTypeMessaging:
 		return true
-	case ReadOnly:
+	case CreateConnectionJSONBodyAccessTypeReadOnly:
 		return true
 	default:
 		return false
@@ -2137,6 +2224,7 @@ func (e GetChannelHealthParamsChannel) Valid() bool {
 // Defines values for ListListingsParamsStatus.
 const (
 	ListListingsParamsStatusActive   ListListingsParamsStatus = "active"
+	ListListingsParamsStatusAll      ListListingsParamsStatus = "all"
 	ListListingsParamsStatusArchived ListListingsParamsStatus = "archived"
 	ListListingsParamsStatusInactive ListListingsParamsStatus = "inactive"
 )
@@ -2145,6 +2233,8 @@ const (
 func (e ListListingsParamsStatus) Valid() bool {
 	switch e {
 	case ListListingsParamsStatusActive:
+		return true
+	case ListListingsParamsStatusAll:
 		return true
 	case ListListingsParamsStatusArchived:
 		return true
@@ -2689,10 +2779,13 @@ type AirbnbAvailabilityWriteRequest struct {
 // AirbnbAvailabilityWriteRequestType defines model for AirbnbAvailabilityWriteRequest.Type.
 type AirbnbAvailabilityWriteRequestType string
 
-// AirbnbCalendarOperation One calendar operation. Supply either `start_date` + `end_date` OR a `dates` array. Every restriction here is forwarded verbatim to Airbnb's batch calendar API.
+// AirbnbCalendarOperation One calendar operation, applied to every date it names. Supply either `dates` OR a `start_date` + `end_date` pair (not both). Unknown fields are refused with `422 invalid_params` rather than dropped, so a misspelling such as `price` (the field is `daily_price`) can never look like a successful write.
 type AirbnbCalendarOperation struct {
 	// Availability Stop-sell is expressed here: `unavailable` blocks the date(s); `available` re-opens; `default` reverts to rule-based availability.
 	Availability *AirbnbCalendarOperationAvailability `json:"availability,omitempty"`
+
+	// BusySubtype Why a blocked date is blocked. Airbnb requires it whenever `availability` is `unavailable`; when you leave it out, Repull sends **`BLOCKED_BY_HOST`**. Use `OUTSIDE_RESERVATION` for a date held by a booking made on another channel.
+	BusySubtype *AirbnbCalendarOperationBusySubtype `json:"busy_subtype,omitempty"`
 
 	// ClosedToArrival Closed-to-arrival — no check-ins on the affected date(s).
 	ClosedToArrival *bool `json:"closed_to_arrival,omitempty"`
@@ -2700,28 +2793,31 @@ type AirbnbCalendarOperation struct {
 	// ClosedToDeparture Closed-to-departure — no check-outs on the affected date(s).
 	ClosedToDeparture *bool `json:"closed_to_departure,omitempty"`
 
-	// DailyPrice Nightly price override.
+	// DailyPrice Nightly price override, in the listing currency.
 	DailyPrice *float32 `json:"daily_price,omitempty"`
 
-	// Dates Explicit date or `start:end` range strings, as an alternative to `start_date`/`end_date`.
+	// Dates Dates as `YYYY-MM-DD`, or inclusive ranges as `YYYY-MM-DD:YYYY-MM-DD` — an alternative to `start_date`/`end_date`.
 	Dates *[]string `json:"dates,omitempty"`
 
-	// EndDate Inclusive range end (pair with `start_date`).
+	// EndDate Inclusive range end, YYYY-MM-DD, on or after `start_date`.
 	EndDate *openapi_types.Date `json:"end_date,omitempty"`
 
-	// MaxNights Maximum length of stay for the date(s).
+	// MaxNights Maximum length of stay for the date(s); no lower than `min_nights`.
 	MaxNights *int `json:"max_nights,omitempty"`
 
 	// MinNights Minimum length of stay for the date(s).
 	MinNights *int    `json:"min_nights,omitempty"`
 	Notes     *string `json:"notes,omitempty"`
 
-	// StartDate Inclusive range start (pair with `end_date`).
+	// StartDate Inclusive range start, YYYY-MM-DD. Send together with `end_date`.
 	StartDate *openapi_types.Date `json:"start_date,omitempty"`
 }
 
 // AirbnbCalendarOperationAvailability Stop-sell is expressed here: `unavailable` blocks the date(s); `available` re-opens; `default` reverts to rule-based availability.
 type AirbnbCalendarOperationAvailability string
+
+// AirbnbCalendarOperationBusySubtype Why a blocked date is blocked. Airbnb requires it whenever `availability` is `unavailable`; when you leave it out, Repull sends **`BLOCKED_BY_HOST`**. Use `OUTSIDE_RESERVATION` for a date held by a booking made on another channel.
+type AirbnbCalendarOperationBusySubtype string
 
 // AirbnbConnection An Airbnb-side connection record for a Vanio listing. The same property may appear under multiple connections if it has been linked from multiple Airbnb host accounts.
 type AirbnbConnection struct {
@@ -2876,17 +2972,17 @@ type AirbnbListingListResponse struct {
 
 // AirbnbPricingWriteRequest Body for `PUT /v1/channels/airbnb/listings/{id}/pricing`. The `type` discriminator selects the pricing sub-resource. `type: "calendar"` shares the same per-date restriction shape as the availability endpoint (min/max nights, closed-to-arrival/departure, stop-sell via `availability: "unavailable"`).
 type AirbnbPricingWriteRequest struct {
-	// Currency Required for `type: "currency"` — ISO 4217 code.
+	// Currency Required for `type: "currency"` — ISO 4217 code in capitals, e.g. `USD`.
 	Currency *string `json:"currency,omitempty"`
 
 	// ModelType Required when `type: "model"` — the pricing-availability model to switch the listing to.
-	ModelType *string `json:"modelType,omitempty"`
+	ModelType *AirbnbPricingWriteRequestModelType `json:"modelType,omitempty"`
 
 	// Operations Required when `type: "calendar"`. Batch of per-date price + restriction operations.
 	Operations *[]AirbnbCalendarOperation `json:"operations,omitempty"`
 
 	// Records Required for `type: "los"` — length-of-stay records.
-	Records *[]map[string]interface{} `json:"records,omitempty"`
+	Records *[]AirbnbPricingWriteRequest_Records_Item `json:"records,omitempty"`
 
 	// Rule Required for `type: "rule"` — a single pricing rule appended to the listing.
 	Rule *map[string]interface{} `json:"rule,omitempty"`
@@ -2894,6 +2990,17 @@ type AirbnbPricingWriteRequest struct {
 	// Settings Required for `type: "standard" | "rate-plan" | "fees"` — the pricing-settings object to PUT.
 	Settings *map[string]interface{}       `json:"settings,omitempty"`
 	Type     AirbnbPricingWriteRequestType `json:"type"`
+}
+
+// AirbnbPricingWriteRequestModelType Required when `type: "model"` — the pricing-availability model to switch the listing to.
+type AirbnbPricingWriteRequestModelType string
+
+// AirbnbPricingWriteRequest_Records_Item defines model for AirbnbPricingWriteRequest.records.Item.
+type AirbnbPricingWriteRequest_Records_Item struct {
+	CheckInDate          openapi_types.Date     `json:"check_in_date"`
+	GuestCount           int                    `json:"guest_count"`
+	LosData              [][]float32            `json:"los_data"`
+	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // AirbnbPricingWriteRequestType defines model for AirbnbPricingWriteRequest.Type.
@@ -2919,7 +3026,7 @@ type AirbnbReservation struct {
 // AirbnbReservationStatus Example: accepted
 type AirbnbReservationStatus string
 
-// AirbnbReservationListResponse Cursor-paginated Airbnb reservation list. Pass `pagination.next_cursor` back as `?cursor=` to fetch the next page; stop when `pagination.has_more` is `false`.
+// AirbnbReservationListResponse Cursor-paginated Airbnb reservation list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page; stop when `pagination.hasMore` is `false`.
 type AirbnbReservationListResponse struct {
 	Data *[]AirbnbReservation `json:"data,omitempty"`
 
@@ -3265,12 +3372,18 @@ type BookingConnectRoom struct {
 type BookingConnectRoomsResponse struct {
 	HotelId        string                        `json:"hotelId"`
 	ListingOptions []BookingConnectListingOption `json:"listingOptions"`
-	Rooms          []BookingConnectRoom          `json:"rooms"`
-	SessionId      string                        `json:"sessionId"`
+
+	// MissingCapabilities Capabilities Booking.com explicitly refused for this property, usually empty. `content` means reservations, availability and messaging sync normally, but the Content API was never granted — so room names and photos are placeholders, and nightly prices cannot be published until the grant is added (the currency is unknown and is never guessed).
+	MissingCapabilities *[]BookingConnectRoomsResponseMissingCapabilities `json:"missingCapabilities,omitempty"`
+	Rooms               []BookingConnectRoom                              `json:"rooms"`
+	SessionId           string                                            `json:"sessionId"`
 
 	// Status `importing` — listings_booking row exists but rooms not yet imported. `ready` — rooms imported, awaiting mapping. `completed` — session already finished.
 	Status BookingConnectRoomsResponseStatus `json:"status"`
 }
+
+// BookingConnectRoomsResponseMissingCapabilities defines model for BookingConnectRoomsResponse.MissingCapabilities.
+type BookingConnectRoomsResponseMissingCapabilities string
 
 // BookingConnectRoomsResponseStatus `importing` — listings_booking row exists but rooms not yet imported. `ready` — rooms imported, awaiting mapping. `completed` — session already finished.
 type BookingConnectRoomsResponseStatus string
@@ -3447,9 +3560,12 @@ type BookingReservationRoom struct {
 // BookingReservationRoomStatus defines model for BookingReservationRoom.Status.
 type BookingReservationRoomStatus string
 
-// BookingRoomMapping A single room→listing assignment. Pass `listingId: null` to explicitly UNMAP a room (e.g. "skip this room for now") — this also removes the corresponding `listing_platform_links` row.
+// BookingRoomMapping A single room→listing assignment. Pass `listingId: null` to explicitly UNMAP a room (e.g. "skip this room for now") — this also removes the corresponding `listing_platform_links` row. Pass `create: true` instead of a `listingId` to have a listing created for the room, which is what a customer onboarding from Booking.com first needs, since they have no listings to map to yet.
 type BookingRoomMapping struct {
-	// ListingId Repull listing to bind to this room. `null` to unmap.
+	// Create Create a new listing for this room and map it, instead of binding an existing one. Mutually exclusive with `listingId` — sending both is rejected with 400 rather than silently resolved. Idempotent: a room that is already mapped keeps its existing listing and no duplicate is created.
+	Create *bool `json:"create,omitempty"`
+
+	// ListingId Repull listing to bind to this room. `null` to unmap. Omit when `create` is true.
 	ListingId *string `json:"listingId,omitempty"`
 
 	// RoomId Repull-side `listings_booking_rooms.id` from `listConnectBookingRooms`.
@@ -3512,11 +3628,17 @@ type BookingVerifyHotelResponse struct {
 
 	// HotelType Booking.com hotel/property type code (e.g. `apartment`, `hotel`).
 	HotelType *string `json:"hotelType,omitempty"`
-	SessionId string  `json:"sessionId"`
+
+	// MissingCapabilities Capabilities Booking.com explicitly refused for this property (HTTP 401/403), usually empty. `content` means the connection is live and syncs reservations, rates and messages normally, but the Content API was never granted, so the property name, rooms and photos cannot be read from Booking.com and are substituted. A capability whose probe failed for any other reason is omitted rather than listed here.
+	MissingCapabilities *[]BookingVerifyHotelResponseMissingCapabilities `json:"missingCapabilities,omitempty"`
+	SessionId           string                                           `json:"sessionId"`
 
 	// Valid Example: true
 	Valid bool `json:"valid"`
 }
+
+// BookingVerifyHotelResponseMissingCapabilities defines model for BookingVerifyHotelResponse.MissingCapabilities.
+type BookingVerifyHotelResponseMissingCapabilities string
 
 // BulkPricingFailure Per-item failure entry. Per-item failures DO NOT fail the whole batch — partial-success is the norm at this scale.
 type BulkPricingFailure struct {
@@ -3704,6 +3826,26 @@ type ConnectSession struct {
 
 // ConnectStatus Connection status response for a single provider. When `connected` is false, all other fields except `provider` and `host` may be omitted, and `host` is null.
 type ConnectStatus struct {
+	// Accounts Airbnb only: every Airbnb account this workspace has connected, including ones since disconnected. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account.
+	Accounts *[]struct {
+		// Connected True while the account is active and its authorization is usable.
+		//
+		// Example: true
+		Connected *bool `json:"connected,omitempty"`
+
+		// ExternalAccountId Airbnb host ID, as a string (it can exceed 2^53).
+		//
+		// Example: 79730216
+		ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+		// Name Example: Raiden
+		Name       *string `json:"name,omitempty"`
+		PictureUrl *string `json:"pictureUrl,omitempty"`
+
+		// Status Example: active
+		Status *string `json:"status,omitempty"`
+	} `json:"accounts,omitempty"`
+
 	// Connected Example: true
 	Connected *bool      `json:"connected,omitempty"`
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -4005,6 +4147,11 @@ type Error struct {
 		// Example: Pass check_in_after as a string in ISO 8601 format. Example: ?check_in_after=2026-01-15
 		Fix string `json:"fix"`
 
+		// ListingIds Every inactive listing the request involved. Present on `code: "listing_inactive"` (HTTP 403) — activate these ids and retry.
+		//
+		// Example: ["4118"]
+		ListingIds *[]string `json:"listing_ids,omitempty"`
+
 		// Message Human-readable cause. Echoes the offending value when relevant.
 		//
 		// Example: The check_in_after parameter must be an ISO 8601 date (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ). You sent: 'garbage'.
@@ -4221,6 +4368,8 @@ type GuestReservationsSummary struct {
 }
 
 // Listing A vacation rental listing in your Repull workspace.
+//
+// An **inactive** listing appears only in `GET /v1/listings`, and only when `?status=` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `channels` — so `address`, `thumbnailUrl`, `content`, `details`, `createdAt` and `updatedAt` are absent until the listing is activated. `GET /v1/listings/{id}` and every other listing endpoint answer `403 listing_inactive` for it.
 type Listing struct {
 	Address *struct {
 		City   *string `json:"city,omitempty"`
@@ -5106,6 +5255,27 @@ type ListingSegmentsResponseLevel string
 // ListingSegmentsResponseMyQualityTier defines model for ListingSegmentsResponse.MyQualityTier.
 type ListingSegmentsResponseMyQualityTier string
 
+// ListingStatusBatchRequest defines model for ListingStatusBatchRequest.
+type ListingStatusBatchRequest struct {
+	// Active `false` deactivates every listing in `listingIds`; `true` activates them. Active listings count toward your plan's listing limit.
+	Active bool `json:"active"`
+
+	// ListingIds Listing ids to change, 1 to 500, each at most once. Send them as returned by `GET /v1/listings` (strings); plain integers are accepted too.
+	ListingIds []string `json:"listingIds"`
+}
+
+// ListingStatusBatchResponse defines model for ListingStatusBatchResponse.
+type ListingStatusBatchResponse struct {
+	// Active The state every listing in the request is now in.
+	Active bool `json:"active"`
+
+	// Unchanged Listing ids that were already in the requested state, in request order.
+	Unchanged []string `json:"unchanged"`
+
+	// Updated Listing ids whose state this call changed, in request order.
+	Updated []string `json:"updated"`
+}
+
 // ListingUpdatedEvent defines model for ListingUpdatedEvent.
 type ListingUpdatedEvent struct {
 	ApiVersion *string    `json:"apiVersion,omitempty"`
@@ -5182,8 +5352,11 @@ type MapConnectBookingRoomsResponse struct {
 	ConnectionId string `json:"connectionId"`
 
 	// Mapped Number of rooms processed (mapped + unmapped).
-	Mapped    int    `json:"mapped"`
-	SessionId string `json:"sessionId"`
+	Mapped int `json:"mapped"`
+
+	// ReservationsImported Reservations pulled from Booking.com once the rooms were mapped. Mapping triggers the same full property sync the dashboard's Sync button runs, because a reservation can only be resolved to a listing through a mapped room. `null` means the sync could not be run — the connection and mapping are still good, and the property can be synced from the dashboard.
+	ReservationsImported *int   `json:"reservationsImported,omitempty"`
+	SessionId            string `json:"sessionId"`
 
 	// Success Example: true
 	Success bool `json:"success"`
@@ -5572,6 +5745,8 @@ type PlumguideListingListResponse struct {
 // Field availability differs by endpoint:
 // - `channels` is returned by the list endpoint (`GET /v1/properties`) only.
 // - `latitude`, `longitude`, `createdAt`, and `amenities` are returned by the detail endpoint (`GET /v1/properties/{id}`) only. `amenities` requires `?include=amenities`.
+//
+// An **inactive** property (`status: inactive`) appears only in the list endpoint, and only when `?status=inactive|all` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `lifecycleStatus`, `channels`, `updatedAt` — so every other field is absent until the property is activated. Every other endpoint answers `403 listing_inactive` for it.
 type Property struct {
 	// Address Street address (from the listing's `street` field).
 	Address *string `json:"address,omitempty"`
@@ -6619,7 +6794,7 @@ type WebhookDeliveryDetail struct {
 	EventType *WebhookEventType `json:"eventType,omitempty"`
 	Id        *string           `json:"id,omitempty"`
 
-	// Payload The full event envelope POSTed to your webhook URL. Discriminated on `type` — narrow `event.data` by switching on `event.type`. Use the matching `*Event` variant directly if your SDK lacks discriminator support.
+	// Payload The full event envelope POSTed to your webhook URL. Discriminated on `type` — narrow `event.data` by switching on `event.type`. Use the matching `*Event` variant directly if your SDK lacks discriminator support. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 	Payload         *WebhookEvent           `json:"payload,omitempty"`
 	RequestHeaders  *map[string]interface{} `json:"requestHeaders,omitempty"`
 	ResponseBody    *string                 `json:"responseBody,omitempty"`
@@ -6637,7 +6812,7 @@ type WebhookDeliveryListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
-// WebhookEvent The full event envelope POSTed to your webhook URL. Discriminated on `type` — narrow `event.data` by switching on `event.type`. Use the matching `*Event` variant directly if your SDK lacks discriminator support.
+// WebhookEvent The full event envelope POSTed to your webhook URL. Discriminated on `type` — narrow `event.data` by switching on `event.type`. Use the matching `*Event` variant directly if your SDK lacks discriminator support. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 type WebhookEvent struct {
 	union json.RawMessage
 }
@@ -6735,6 +6910,18 @@ type Limit = int
 // Provider defines model for provider.
 type Provider = string
 
+// AirbnbRateLimited Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type AirbnbRateLimited = Error
+
+// AirbnbUpstreamError Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type AirbnbUpstreamError = Error
+
+// AirbnbWriteForbidden Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type AirbnbWriteForbidden = Error
+
+// AirbnbWriteRejected Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type AirbnbWriteRejected = Error
+
 // BadRequest Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type BadRequest = Error
 
@@ -6746,6 +6933,9 @@ type Forbidden = Error
 
 // InternalError Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type InternalError = Error
+
+// ListingInactive Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type ListingInactive = Error
 
 // NotFound Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type NotFound = Error
@@ -6930,10 +7120,10 @@ type CreateAirbnbOfferJSONBodyType string
 
 // ListAirbnbReservationsParams defines parameters for ListAirbnbReservations.
 type ListAirbnbReservationsParams struct {
-	// Cursor Opaque cursor returned by the previous response's `pagination.next_cursor`. Omit to fetch the first page.
+	// Cursor Opaque cursor returned by the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Limit Max items per page. Hard cap is 100.
@@ -7129,7 +7319,7 @@ type ListVrboReservationsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -7261,9 +7451,15 @@ type SubmitVrboCredentialsJSONBody struct {
 	SessionId *string `json:"sessionId,omitempty"`
 }
 
+// DeleteConnectionParams defines parameters for DeleteConnection.
+type DeleteConnectionParams struct {
+	// AccountId The account to disconnect: the Airbnb host id (`accounts[].externalAccountId` on `GET /v1/connect/airbnb`) or the Booking.com hotel id. Required when the workspace has more than one connected account for the provider. Not the same as the `X-Account-Id` header.
+	AccountId *string `form:"accountId,omitempty" json:"accountId,omitempty"`
+}
+
 // CreateConnectionJSONBody defines parameters for CreateConnection.
 type CreateConnectionJSONBody struct {
-	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants read-only scopes; 'messaging' grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; 'full_access' (default) grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it).
+	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants read-only scopes; 'messaging' grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; 'full_access' (default) grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The hosted consent screen normally lets the host pick a tier; passing `accessType` explicitly fixes the tier and hides that choice, so the host can only continue with the tier you requested. Omit it to let the host choose.
 	AccessType *CreateConnectionJSONBodyAccessType `json:"accessType,omitempty"`
 
 	// ApiKey PMS providers — API key.
@@ -7292,7 +7488,7 @@ type ListConversationsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Limit Max items per page. Hard cap is 100.
@@ -7325,7 +7521,7 @@ type ListConversationMessagesParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -7354,7 +7550,7 @@ type ListGuestsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Limit Max items per page. Hard cap is 100.
@@ -7438,7 +7634,7 @@ type ListListingsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Limit Max items per page. Hard cap is 100.
@@ -7447,7 +7643,7 @@ type ListListingsParams struct {
 	// Q Case-insensitive substring search on name, street, or city.
 	Q *string `form:"q,omitempty" json:"q,omitempty"`
 
-	// Status Filter by listing status.
+	// Status Filter by listing status. Defaults to `active`. Pass `inactive` to list the listings you can activate, `archived` for archived ones, or `all` for every status. Inactive listings are returned with identity fields only — `id`, `name`, `status` and `channels` — and never with `address`, `thumbnailUrl`, `content` or `details`; activate one to see the rest.
 	Status *ListListingsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Channel Restrict to listings published on the given channel (`airbnb`, `booking`, `vrbo`, etc.). Joins through `listing_platform_links` and matches active links only.
@@ -7508,7 +7704,7 @@ type GetListingPricingHistoryParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
@@ -7538,7 +7734,7 @@ type ListMarketBrowseParams struct {
 	// Cursor Opaque cursor returned by the previous page's `pagination.nextCursor`.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset                     `form:"offset,omitempty" json:"offset,omitempty"`
 	Limit  *int                        `form:"limit,omitempty" json:"limit,omitempty"`
 	Sort   *ListMarketBrowseParamsSort `form:"sort,omitempty" json:"sort,omitempty"`
@@ -7573,13 +7769,13 @@ type ListPropertiesParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Q Case-insensitive substring search on name, street, or city.
 	Q *string `form:"q,omitempty" json:"q,omitempty"`
 
-	// Status Filter by status. Default returns active only; pass `inactive` to invert or `all` to include both.
+	// Status Filter by status. Default returns active only; pass `inactive` to invert or `all` to include both. Inactive properties carry identity fields only — `id`, `name`, `status`, `lifecycleStatus`, `channels` and `updatedAt` — never `address`, `city` or `currency`.
 	Status *ListPropertiesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// LifecycleStatus Filter by lifecycle status (e.g. `live`, `draft`, `archived`). Pass `all` to disable the filter.
@@ -7648,7 +7844,7 @@ type ListReservationsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Platform Filter by booking platform
@@ -7757,7 +7953,7 @@ type ListReviewsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset   *Offset                    `form:"offset,omitempty" json:"offset,omitempty"`
 	Limit    *int                       `form:"limit,omitempty" json:"limit,omitempty"`
 	Platform *ListReviewsParamsPlatform `form:"platform,omitempty" json:"platform,omitempty"`
@@ -7815,10 +8011,10 @@ type GetUsageLogsParams struct {
 	// Limit Page size (max 200).
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// Cursor Opaque cursor from the previous response's `pagination.next_cursor`.
+	// Cursor Opaque cursor from the previous response's `pagination.nextCursor`.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
@@ -7873,7 +8069,7 @@ type ListWebhookDeliveriesParams struct {
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
-	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.next_cursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset                            `form:"offset,omitempty" json:"offset,omitempty"`
 	Status *ListWebhookDeliveriesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 }
@@ -7954,6 +8150,8 @@ type ReplyBookingReviewJSONRequestBody ReplyBookingReviewJSONBody
 type BookingSetupJSONRequestBody BookingSetupJSONBody
 
 // CreateBookingWebhookJSONRequestBody defines body for CreateBookingWebhook for application/json ContentType.
+//
+// Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type CreateBookingWebhookJSONRequestBody CreateBookingWebhookJSONBody
 
 // UpdatePlumguideWebhooksJSONRequestBody defines body for UpdatePlumguideWebhooks for application/json ContentType.
@@ -8021,6 +8219,9 @@ type CreateListingJSONRequestBody = ListingCreateRequest
 
 // BulkApplyPricingJSONRequestBody defines body for BulkApplyPricing for application/json ContentType.
 type BulkApplyPricingJSONRequestBody = BulkPricingRequest
+
+// SetListingsStatusJSONRequestBody defines body for SetListingsStatus for application/json ContentType.
+type SetListingsStatusJSONRequestBody = ListingStatusBatchRequest
 
 // UpdateListingActiveJSONRequestBody defines body for UpdateListingActive for application/json ContentType.
 type UpdateListingActiveJSONRequestBody = ListingActiveRequest
@@ -8381,6 +8582,100 @@ func (a AirbnbAlteration) MarshalJSON() ([]byte, error) {
 		object["updatedAt"], err = json.Marshal(a.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'updatedAt': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for AirbnbPricingWriteRequest_Records_Item. Returns the specified
+// element and whether it was found
+func (a AirbnbPricingWriteRequest_Records_Item) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for AirbnbPricingWriteRequest_Records_Item
+func (a *AirbnbPricingWriteRequest_Records_Item) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for AirbnbPricingWriteRequest_Records_Item to handle AdditionalProperties
+func (a *AirbnbPricingWriteRequest_Records_Item) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["check_in_date"]; found {
+		err = json.Unmarshal(raw, &a.CheckInDate)
+		if err != nil {
+			return fmt.Errorf("error reading 'check_in_date': %w", err)
+		}
+		delete(object, "check_in_date")
+	}
+
+	if raw, found := object["guest_count"]; found {
+		err = json.Unmarshal(raw, &a.GuestCount)
+		if err != nil {
+			return fmt.Errorf("error reading 'guest_count': %w", err)
+		}
+		delete(object, "guest_count")
+	}
+
+	if raw, found := object["los_data"]; found {
+		err = json.Unmarshal(raw, &a.LosData)
+		if err != nil {
+			return fmt.Errorf("error reading 'los_data': %w", err)
+		}
+		delete(object, "los_data")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for AirbnbPricingWriteRequest_Records_Item to handle AdditionalProperties
+func (a AirbnbPricingWriteRequest_Records_Item) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["check_in_date"], err = json.Marshal(a.CheckInDate)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'check_in_date': %w", err)
+	}
+
+	object["guest_count"], err = json.Marshal(a.GuestCount)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'guest_count': %w", err)
+	}
+
+	if a.LosData != nil {
+		object["los_data"], err = json.Marshal(a.LosData)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'los_data': %w", err)
 		}
 	}
 

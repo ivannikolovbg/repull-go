@@ -33,7 +33,7 @@ func main() {
 
 	ctx := context.Background()
 	provider := repull.Provider("airbnb")
-	access := repull.FullAccess
+	access := repull.CreateConnectionJSONBodyAccessTypeFullAccess
 	redirect := "https://example.com/airbnb/return"
 
 	mint, err := client.CreateConnectionWithResponse(ctx, provider, repull.CreateConnectionJSONRequestBody{
