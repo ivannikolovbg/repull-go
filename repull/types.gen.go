@@ -181,6 +181,27 @@ func (e AirbnbCalendarOperationBusySubtype) Valid() bool {
 	}
 }
 
+// Defines values for AirbnbConnectionSyncCategory.
+const (
+	None                     AirbnbConnectionSyncCategory = "none"
+	SyncAll                  AirbnbConnectionSyncCategory = "sync_all"
+	SyncRatesAndAvailability AirbnbConnectionSyncCategory = "sync_rates_and_availability"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbConnectionSyncCategory enum.
+func (e AirbnbConnectionSyncCategory) Valid() bool {
+	switch e {
+	case None:
+		return true
+	case SyncAll:
+		return true
+	case SyncRatesAndAvailability:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AirbnbConnectionSummaryStatus.
 const (
 	Connected         AirbnbConnectionSummaryStatus = "connected"
@@ -207,19 +228,142 @@ func (e AirbnbConnectionSummaryStatus) Valid() bool {
 
 // Defines values for AirbnbListingActionRequestAction.
 const (
-	Delete  AirbnbListingActionRequestAction = "delete"
-	Publish AirbnbListingActionRequestAction = "publish"
-	Push    AirbnbListingActionRequestAction = "push"
+	AirbnbListingActionRequestActionDelete  AirbnbListingActionRequestAction = "delete"
+	AirbnbListingActionRequestActionPublish AirbnbListingActionRequestAction = "publish"
+	AirbnbListingActionRequestActionPush    AirbnbListingActionRequestAction = "push"
+	AirbnbListingActionRequestActionRelist  AirbnbListingActionRequestAction = "relist"
+	AirbnbListingActionRequestActionUnlist  AirbnbListingActionRequestAction = "unlist"
 )
 
 // Valid indicates whether the value is a known member of the AirbnbListingActionRequestAction enum.
 func (e AirbnbListingActionRequestAction) Valid() bool {
 	switch e {
-	case Delete:
+	case AirbnbListingActionRequestActionDelete:
 		return true
-	case Publish:
+	case AirbnbListingActionRequestActionPublish:
 		return true
-	case Push:
+	case AirbnbListingActionRequestActionPush:
+		return true
+	case AirbnbListingActionRequestActionRelist:
+		return true
+	case AirbnbListingActionRequestActionUnlist:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbListingDetailsWriteRequestCheckInOptionCategory.
+const (
+	AirbnbListingDetailsWriteRequestCheckInOptionCategoryDoormanEntry AirbnbListingDetailsWriteRequestCheckInOptionCategory = "doorman_entry"
+	AirbnbListingDetailsWriteRequestCheckInOptionCategoryHostCheckin  AirbnbListingDetailsWriteRequestCheckInOptionCategory = "host_checkin"
+	AirbnbListingDetailsWriteRequestCheckInOptionCategoryKeypad       AirbnbListingDetailsWriteRequestCheckInOptionCategory = "keypad"
+	AirbnbListingDetailsWriteRequestCheckInOptionCategoryLockbox      AirbnbListingDetailsWriteRequestCheckInOptionCategory = "lockbox"
+	AirbnbListingDetailsWriteRequestCheckInOptionCategoryOtherCheckin AirbnbListingDetailsWriteRequestCheckInOptionCategory = "other_checkin"
+	AirbnbListingDetailsWriteRequestCheckInOptionCategorySmartlock    AirbnbListingDetailsWriteRequestCheckInOptionCategory = "smartlock"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbListingDetailsWriteRequestCheckInOptionCategory enum.
+func (e AirbnbListingDetailsWriteRequestCheckInOptionCategory) Valid() bool {
+	switch e {
+	case AirbnbListingDetailsWriteRequestCheckInOptionCategoryDoormanEntry:
+		return true
+	case AirbnbListingDetailsWriteRequestCheckInOptionCategoryHostCheckin:
+		return true
+	case AirbnbListingDetailsWriteRequestCheckInOptionCategoryKeypad:
+		return true
+	case AirbnbListingDetailsWriteRequestCheckInOptionCategoryLockbox:
+		return true
+	case AirbnbListingDetailsWriteRequestCheckInOptionCategoryOtherCheckin:
+		return true
+	case AirbnbListingDetailsWriteRequestCheckInOptionCategorySmartlock:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbListingDetailsWriteRequestPropertyTypeGroup.
+const (
+	Apartments            AirbnbListingDetailsWriteRequestPropertyTypeGroup = "apartments"
+	Bnb                   AirbnbListingDetailsWriteRequestPropertyTypeGroup = "bnb"
+	BoutiqueHotelsAndMore AirbnbListingDetailsWriteRequestPropertyTypeGroup = "boutique_hotels_and_more"
+	Houses                AirbnbListingDetailsWriteRequestPropertyTypeGroup = "houses"
+	SecondaryUnits        AirbnbListingDetailsWriteRequestPropertyTypeGroup = "secondary_units"
+	UniqueHomes           AirbnbListingDetailsWriteRequestPropertyTypeGroup = "unique_homes"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbListingDetailsWriteRequestPropertyTypeGroup enum.
+func (e AirbnbListingDetailsWriteRequestPropertyTypeGroup) Valid() bool {
+	switch e {
+	case Apartments:
+		return true
+	case Bnb:
+		return true
+	case BoutiqueHotelsAndMore:
+		return true
+	case Houses:
+		return true
+	case SecondaryUnits:
+		return true
+	case UniqueHomes:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbListingDetailsWriteRequestRoomTypeCategory.
+const (
+	AirbnbListingDetailsWriteRequestRoomTypeCategoryEntireHome  AirbnbListingDetailsWriteRequestRoomTypeCategory = "entire_home"
+	AirbnbListingDetailsWriteRequestRoomTypeCategoryHotelRoom   AirbnbListingDetailsWriteRequestRoomTypeCategory = "hotel_room"
+	AirbnbListingDetailsWriteRequestRoomTypeCategoryPrivateRoom AirbnbListingDetailsWriteRequestRoomTypeCategory = "private_room"
+	AirbnbListingDetailsWriteRequestRoomTypeCategorySharedRoom  AirbnbListingDetailsWriteRequestRoomTypeCategory = "shared_room"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbListingDetailsWriteRequestRoomTypeCategory enum.
+func (e AirbnbListingDetailsWriteRequestRoomTypeCategory) Valid() bool {
+	switch e {
+	case AirbnbListingDetailsWriteRequestRoomTypeCategoryEntireHome:
+		return true
+	case AirbnbListingDetailsWriteRequestRoomTypeCategoryHotelRoom:
+		return true
+	case AirbnbListingDetailsWriteRequestRoomTypeCategoryPrivateRoom:
+		return true
+	case AirbnbListingDetailsWriteRequestRoomTypeCategorySharedRoom:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbListingLifecycleResponseAction.
+const (
+	AirbnbListingLifecycleResponseActionRelist AirbnbListingLifecycleResponseAction = "relist"
+	AirbnbListingLifecycleResponseActionUnlist AirbnbListingLifecycleResponseAction = "unlist"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbListingLifecycleResponseAction enum.
+func (e AirbnbListingLifecycleResponseAction) Valid() bool {
+	switch e {
+	case AirbnbListingLifecycleResponseActionRelist:
+		return true
+	case AirbnbListingLifecycleResponseActionUnlist:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbListingLifecycleResponseChannel.
+const (
+	AirbnbListingLifecycleResponseChannelAirbnb AirbnbListingLifecycleResponseChannel = "airbnb"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbListingLifecycleResponseChannel enum.
+func (e AirbnbListingLifecycleResponseChannel) Valid() bool {
+	switch e {
+	case AirbnbListingLifecycleResponseChannelAirbnb:
 		return true
 	default:
 		return false
@@ -304,6 +448,60 @@ func (e AirbnbReservationStatus) Valid() bool {
 	case AirbnbReservationStatusInquiry:
 		return true
 	case AirbnbReservationStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbSafetyDisclosureType.
+const (
+	Animals                  AirbnbSafetyDisclosureType = "animals"
+	ClimbingOrPlayStructure  AirbnbSafetyDisclosureType = "climbing_or_play_structure"
+	HasPets                  AirbnbSafetyDisclosureType = "has_pets"
+	HeightsWithNoFence       AirbnbSafetyDisclosureType = "heights_with_no_fence"
+	LakeOrRiverOrWaterBody   AirbnbSafetyDisclosureType = "lake_or_river_or_water_body"
+	LimitedAmenities         AirbnbSafetyDisclosureType = "limited_amenities"
+	LimitedParking           AirbnbSafetyDisclosureType = "limited_parking"
+	NoiseMonitor             AirbnbSafetyDisclosureType = "noise_monitor"
+	PoolOrJacuzziWithNoFence AirbnbSafetyDisclosureType = "pool_or_jacuzzi_with_no_fence"
+	PotentialNoise           AirbnbSafetyDisclosureType = "potential_noise"
+	RequiresStairs           AirbnbSafetyDisclosureType = "requires_stairs"
+	SharedSpaces             AirbnbSafetyDisclosureType = "shared_spaces"
+	Surveillance             AirbnbSafetyDisclosureType = "surveillance"
+	Weapons                  AirbnbSafetyDisclosureType = "weapons"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbSafetyDisclosureType enum.
+func (e AirbnbSafetyDisclosureType) Valid() bool {
+	switch e {
+	case Animals:
+		return true
+	case ClimbingOrPlayStructure:
+		return true
+	case HasPets:
+		return true
+	case HeightsWithNoFence:
+		return true
+	case LakeOrRiverOrWaterBody:
+		return true
+	case LimitedAmenities:
+		return true
+	case LimitedParking:
+		return true
+	case NoiseMonitor:
+		return true
+	case PoolOrJacuzziWithNoFence:
+		return true
+	case PotentialNoise:
+		return true
+	case RequiresStairs:
+		return true
+	case SharedSpaces:
+		return true
+	case Surveillance:
+		return true
+	case Weapons:
 		return true
 	default:
 		return false
@@ -669,19 +867,19 @@ func (e ConnectProviderConnectPattern) Valid() bool {
 
 // Defines values for ConnectProviderStatus.
 const (
-	Beta       ConnectProviderStatus = "beta"
-	ComingSoon ConnectProviderStatus = "coming-soon"
-	Live       ConnectProviderStatus = "live"
+	ConnectProviderStatusBeta       ConnectProviderStatus = "beta"
+	ConnectProviderStatusComingSoon ConnectProviderStatus = "coming-soon"
+	ConnectProviderStatusLive       ConnectProviderStatus = "live"
 )
 
 // Valid indicates whether the value is a known member of the ConnectProviderStatus enum.
 func (e ConnectProviderStatus) Valid() bool {
 	switch e {
-	case Beta:
+	case ConnectProviderStatusBeta:
 		return true
-	case ComingSoon:
+	case ConnectProviderStatusComingSoon:
 		return true
-	case Live:
+	case ConnectProviderStatusLive:
 		return true
 	default:
 		return false
@@ -859,6 +1057,30 @@ func (e ListingStatus) Valid() bool {
 	}
 }
 
+// Defines values for ListingContentUpdateRequestDetailsRoomTypeCategory.
+const (
+	ListingContentUpdateRequestDetailsRoomTypeCategoryEntireHome  ListingContentUpdateRequestDetailsRoomTypeCategory = "entire_home"
+	ListingContentUpdateRequestDetailsRoomTypeCategoryHotelRoom   ListingContentUpdateRequestDetailsRoomTypeCategory = "hotel_room"
+	ListingContentUpdateRequestDetailsRoomTypeCategoryPrivateRoom ListingContentUpdateRequestDetailsRoomTypeCategory = "private_room"
+	ListingContentUpdateRequestDetailsRoomTypeCategorySharedRoom  ListingContentUpdateRequestDetailsRoomTypeCategory = "shared_room"
+)
+
+// Valid indicates whether the value is a known member of the ListingContentUpdateRequestDetailsRoomTypeCategory enum.
+func (e ListingContentUpdateRequestDetailsRoomTypeCategory) Valid() bool {
+	switch e {
+	case ListingContentUpdateRequestDetailsRoomTypeCategoryEntireHome:
+		return true
+	case ListingContentUpdateRequestDetailsRoomTypeCategoryHotelRoom:
+		return true
+	case ListingContentUpdateRequestDetailsRoomTypeCategoryPrivateRoom:
+		return true
+	case ListingContentUpdateRequestDetailsRoomTypeCategorySharedRoom:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingContentUpdateRequestPhotosMode.
 const (
 	Append  ListingContentUpdateRequestPhotosMode = "append"
@@ -877,24 +1099,54 @@ func (e ListingContentUpdateRequestPhotosMode) Valid() bool {
 	}
 }
 
+// Defines values for ListingContentUpdateRequestPoliciesCheckInMethod.
+const (
+	ListingContentUpdateRequestPoliciesCheckInMethodDoormanEntry ListingContentUpdateRequestPoliciesCheckInMethod = "doorman_entry"
+	ListingContentUpdateRequestPoliciesCheckInMethodHostCheckin  ListingContentUpdateRequestPoliciesCheckInMethod = "host_checkin"
+	ListingContentUpdateRequestPoliciesCheckInMethodKeypad       ListingContentUpdateRequestPoliciesCheckInMethod = "keypad"
+	ListingContentUpdateRequestPoliciesCheckInMethodLockbox      ListingContentUpdateRequestPoliciesCheckInMethod = "lockbox"
+	ListingContentUpdateRequestPoliciesCheckInMethodOtherCheckin ListingContentUpdateRequestPoliciesCheckInMethod = "other_checkin"
+	ListingContentUpdateRequestPoliciesCheckInMethodSmartlock    ListingContentUpdateRequestPoliciesCheckInMethod = "smartlock"
+)
+
+// Valid indicates whether the value is a known member of the ListingContentUpdateRequestPoliciesCheckInMethod enum.
+func (e ListingContentUpdateRequestPoliciesCheckInMethod) Valid() bool {
+	switch e {
+	case ListingContentUpdateRequestPoliciesCheckInMethodDoormanEntry:
+		return true
+	case ListingContentUpdateRequestPoliciesCheckInMethodHostCheckin:
+		return true
+	case ListingContentUpdateRequestPoliciesCheckInMethodKeypad:
+		return true
+	case ListingContentUpdateRequestPoliciesCheckInMethodLockbox:
+		return true
+	case ListingContentUpdateRequestPoliciesCheckInMethodOtherCheckin:
+		return true
+	case ListingContentUpdateRequestPoliciesCheckInMethodSmartlock:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingCreateRequestCancellationPolicy.
 const (
-	Flexible    ListingCreateRequestCancellationPolicy = "flexible"
-	Moderate    ListingCreateRequestCancellationPolicy = "moderate"
-	Strict      ListingCreateRequestCancellationPolicy = "strict"
-	SuperStrict ListingCreateRequestCancellationPolicy = "super_strict"
+	ListingCreateRequestCancellationPolicyFlexible    ListingCreateRequestCancellationPolicy = "flexible"
+	ListingCreateRequestCancellationPolicyModerate    ListingCreateRequestCancellationPolicy = "moderate"
+	ListingCreateRequestCancellationPolicyStrict      ListingCreateRequestCancellationPolicy = "strict"
+	ListingCreateRequestCancellationPolicySuperStrict ListingCreateRequestCancellationPolicy = "super_strict"
 )
 
 // Valid indicates whether the value is a known member of the ListingCreateRequestCancellationPolicy enum.
 func (e ListingCreateRequestCancellationPolicy) Valid() bool {
 	switch e {
-	case Flexible:
+	case ListingCreateRequestCancellationPolicyFlexible:
 		return true
-	case Moderate:
+	case ListingCreateRequestCancellationPolicyModerate:
 		return true
-	case Strict:
+	case ListingCreateRequestCancellationPolicyStrict:
 		return true
-	case SuperStrict:
+	case ListingCreateRequestCancellationPolicySuperStrict:
 		return true
 	default:
 		return false
@@ -1093,6 +1345,21 @@ func (e ListingPricingStrategyInputMode) Valid() bool {
 	}
 }
 
+// Defines values for ListingPublishAirbnbResponseChannel.
+const (
+	ListingPublishAirbnbResponseChannelAirbnb ListingPublishAirbnbResponseChannel = "airbnb"
+)
+
+// Valid indicates whether the value is a known member of the ListingPublishAirbnbResponseChannel enum.
+func (e ListingPublishAirbnbResponseChannel) Valid() bool {
+	switch e {
+	case ListingPublishAirbnbResponseChannelAirbnb:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingPublishResponseChannel.
 const (
 	ListingPublishResponseChannelAirbnb  ListingPublishResponseChannel = "airbnb"
@@ -1129,6 +1396,21 @@ func (e ListingPublishStatusChannelPushStatus) Valid() bool {
 	case ListingPublishStatusChannelPushStatusPushing:
 		return true
 	case ListingPublishStatusChannelPushStatusSuccess:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPullResponseChannel.
+const (
+	ListingPullResponseChannelAirbnb ListingPullResponseChannel = "airbnb"
+)
+
+// Valid indicates whether the value is a known member of the ListingPullResponseChannel enum.
+func (e ListingPullResponseChannel) Valid() bool {
+	switch e {
+	case ListingPullResponseChannelAirbnb:
 		return true
 	default:
 		return false
@@ -1354,6 +1636,63 @@ func (e PropertyStatus) Valid() bool {
 	case PropertyStatusActive:
 		return true
 	case PropertyStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublishSectionErrorCode.
+const (
+	Locked    PublishSectionErrorCode = "locked"
+	NoContent PublishSectionErrorCode = "no_content"
+	Rejected  PublishSectionErrorCode = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the PublishSectionErrorCode enum.
+func (e PublishSectionErrorCode) Valid() bool {
+	switch e {
+	case Locked:
+		return true
+	case NoContent:
+		return true
+	case Rejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublishSectionErrorSection.
+const (
+	PublishSectionErrorSectionAmenities     PublishSectionErrorSection = "amenities"
+	PublishSectionErrorSectionCheckoutTasks PublishSectionErrorSection = "checkout_tasks"
+	PublishSectionErrorSectionDescription   PublishSectionErrorSection = "description"
+	PublishSectionErrorSectionDetails       PublishSectionErrorSection = "details"
+	PublishSectionErrorSectionPhotos        PublishSectionErrorSection = "photos"
+	PublishSectionErrorSectionPolicies      PublishSectionErrorSection = "policies"
+	PublishSectionErrorSectionPricing       PublishSectionErrorSection = "pricing"
+	PublishSectionErrorSectionRooms         PublishSectionErrorSection = "rooms"
+)
+
+// Valid indicates whether the value is a known member of the PublishSectionErrorSection enum.
+func (e PublishSectionErrorSection) Valid() bool {
+	switch e {
+	case PublishSectionErrorSectionAmenities:
+		return true
+	case PublishSectionErrorSectionCheckoutTasks:
+		return true
+	case PublishSectionErrorSectionDescription:
+		return true
+	case PublishSectionErrorSectionDetails:
+		return true
+	case PublishSectionErrorSectionPhotos:
+		return true
+	case PublishSectionErrorSectionPolicies:
+		return true
+	case PublishSectionErrorSectionPricing:
+		return true
+	case PublishSectionErrorSectionRooms:
 		return true
 	default:
 		return false
@@ -1921,6 +2260,345 @@ func (e ListAirbnbAlterationsParamsType) Valid() bool {
 	}
 }
 
+// Defines values for GetAirbnbBookingSettings200JSONResponseBodyDataBookingMode.
+const (
+	GetAirbnbBookingSettings200JSONResponseBodyDataBookingModeInstantBook   GetAirbnbBookingSettings200JSONResponseBodyDataBookingMode = "instant_book"
+	GetAirbnbBookingSettings200JSONResponseBodyDataBookingModeRequestToBook GetAirbnbBookingSettings200JSONResponseBodyDataBookingMode = "request_to_book"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbBookingSettings200JSONResponseBodyDataBookingMode enum.
+func (e GetAirbnbBookingSettings200JSONResponseBodyDataBookingMode) Valid() bool {
+	switch e {
+	case GetAirbnbBookingSettings200JSONResponseBodyDataBookingModeInstantBook:
+		return true
+	case GetAirbnbBookingSettings200JSONResponseBodyDataBookingModeRequestToBook:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy.
+const (
+	GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicyFirm        GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy = "firm"
+	GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicyFlexible    GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy = "flexible"
+	GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicyModerate    GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy = "moderate"
+	GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicyStrict      GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy = "strict"
+	GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicySuperStrict GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy = "super_strict"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy enum.
+func (e GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy) Valid() bool {
+	switch e {
+	case GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicyFirm:
+		return true
+	case GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicyFlexible:
+		return true
+	case GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicyModerate:
+		return true
+	case GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicyStrict:
+		return true
+	case GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicySuperStrict:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1.
+const (
+	GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1FLEXIBLE GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1 = "FLEXIBLE"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1 enum.
+func (e GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1) Valid() bool {
+	switch e {
+	case GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1FLEXIBLE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1.
+const (
+	GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1FLEXIBLE GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1 = "FLEXIBLE"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1 enum.
+func (e GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1) Valid() bool {
+	switch e {
+	case GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1FLEXIBLE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory.
+const (
+	GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryEveryone              GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory = "everyone"
+	GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryExperiencedGuestsOnly GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory = "experienced_guests_only"
+	GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryOff                   GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory = "off"
+	GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryRecommendedGuestsOnly GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory = "recommended_guests_only"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory enum.
+func (e GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory) Valid() bool {
+	switch e {
+	case GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryEveryone:
+		return true
+	case GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryExperiencedGuestsOnly:
+		return true
+	case GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryOff:
+		return true
+	case GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryRecommendedGuestsOnly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy.
+const (
+	UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicyFirm        UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy = "firm"
+	UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicyFlexible    UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy = "flexible"
+	UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicyModerate    UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy = "moderate"
+	UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicyStrict      UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy = "strict"
+	UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicySuperStrict UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy = "super_strict"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy enum.
+func (e UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicyFirm:
+		return true
+	case UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicyFlexible:
+		return true
+	case UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicyModerate:
+		return true
+	case UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicyStrict:
+		return true
+	case UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicySuperStrict:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1.
+const (
+	UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1FLEXIBLE UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1 = "FLEXIBLE"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1 enum.
+func (e UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1FLEXIBLE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettingsJSONBodyCheckInStart1.
+const (
+	UpdateAirbnbBookingSettingsJSONBodyCheckInStart1FLEXIBLE UpdateAirbnbBookingSettingsJSONBodyCheckInStart1 = "FLEXIBLE"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettingsJSONBodyCheckInStart1 enum.
+func (e UpdateAirbnbBookingSettingsJSONBodyCheckInStart1) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettingsJSONBodyCheckInStart1FLEXIBLE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory.
+const (
+	UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategoryEveryone              UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory = "everyone"
+	UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategoryExperiencedGuestsOnly UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory = "experienced_guests_only"
+	UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategoryOff                   UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory = "off"
+	UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategoryRecommendedGuestsOnly UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory = "recommended_guests_only"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory enum.
+func (e UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategoryEveryone:
+		return true
+	case UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategoryExperiencedGuestsOnly:
+		return true
+	case UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategoryOff:
+		return true
+	case UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategoryRecommendedGuestsOnly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied.
+const (
+	AvailabilityRules UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied = "availabilityRules"
+	BookingSettings   UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied = "bookingSettings"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied enum.
+func (e UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied) Valid() bool {
+	switch e {
+	case AvailabilityRules:
+		return true
+	case BookingSettings:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingMode.
+const (
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingModeInstantBook   UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingMode = "instant_book"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingModeRequestToBook UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingMode = "request_to_book"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingMode enum.
+func (e UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingMode) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingModeInstantBook:
+		return true
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingModeRequestToBook:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy.
+const (
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicyFirm        UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy = "firm"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicyFlexible    UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy = "flexible"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicyModerate    UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy = "moderate"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicyStrict      UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy = "strict"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicySuperStrict UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy = "super_strict"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy enum.
+func (e UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicyFirm:
+		return true
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicyFlexible:
+		return true
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicyModerate:
+		return true
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicyStrict:
+		return true
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicySuperStrict:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1.
+const (
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1FLEXIBLE UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1 = "FLEXIBLE"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1 enum.
+func (e UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1FLEXIBLE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1.
+const (
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1FLEXIBLE UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1 = "FLEXIBLE"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1 enum.
+func (e UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1FLEXIBLE:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory.
+const (
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategoryEveryone              UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory = "everyone"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategoryExperiencedGuestsOnly UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory = "experienced_guests_only"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategoryOff                   UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory = "off"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategoryRecommendedGuestsOnly UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory = "recommended_guests_only"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory enum.
+func (e UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory) Valid() bool {
+	switch e {
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategoryEveryone:
+		return true
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategoryExperiencedGuestsOnly:
+		return true
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategoryOff:
+		return true
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategoryRecommendedGuestsOnly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListAirbnbListingPermitsParamsSource.
+const (
+	ListAirbnbListingPermitsParamsSourceCache ListAirbnbListingPermitsParamsSource = "cache"
+	ListAirbnbListingPermitsParamsSourceLive  ListAirbnbListingPermitsParamsSource = "live"
+)
+
+// Valid indicates whether the value is a known member of the ListAirbnbListingPermitsParamsSource enum.
+func (e ListAirbnbListingPermitsParamsSource) Valid() bool {
+	switch e {
+	case ListAirbnbListingPermitsParamsSourceCache:
+		return true
+	case ListAirbnbListingPermitsParamsSourceLive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UploadAirbnbListingPhotosJSONBodyPhotosCategory.
+const (
+	UploadAirbnbListingPhotosJSONBodyPhotosCategoryListing        UploadAirbnbListingPhotosJSONBodyPhotosCategory = "listing"
+	UploadAirbnbListingPhotosJSONBodyPhotosCategoryListingAmenity UploadAirbnbListingPhotosJSONBodyPhotosCategory = "listing_amenity"
+	UploadAirbnbListingPhotosJSONBodyPhotosCategoryRoom           UploadAirbnbListingPhotosJSONBodyPhotosCategory = "room"
+	UploadAirbnbListingPhotosJSONBodyPhotosCategoryRoomAmenity    UploadAirbnbListingPhotosJSONBodyPhotosCategory = "room_amenity"
+)
+
+// Valid indicates whether the value is a known member of the UploadAirbnbListingPhotosJSONBodyPhotosCategory enum.
+func (e UploadAirbnbListingPhotosJSONBodyPhotosCategory) Valid() bool {
+	switch e {
+	case UploadAirbnbListingPhotosJSONBodyPhotosCategoryListing:
+		return true
+	case UploadAirbnbListingPhotosJSONBodyPhotosCategoryListingAmenity:
+		return true
+	case UploadAirbnbListingPhotosJSONBodyPhotosCategoryRoom:
+		return true
+	case UploadAirbnbListingPhotosJSONBodyPhotosCategoryRoomAmenity:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetAirbnbListingQualityParamsType.
 const (
 	GetAirbnbListingQualityParamsTypeAll       GetAirbnbListingQualityParamsType = "all"
@@ -1939,6 +2617,108 @@ func (e GetAirbnbListingQualityParamsType) Valid() bool {
 	case GetAirbnbListingQualityParamsTypeStandards:
 		return true
 	case GetAirbnbListingQualityParamsTypeStats:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateAirbnbListingRoomJSONBodyRoomType.
+const (
+	CreateAirbnbListingRoomJSONBodyRoomTypeBathroom       CreateAirbnbListingRoomJSONBodyRoomType = "bathroom"
+	CreateAirbnbListingRoomJSONBodyRoomTypeBedroom        CreateAirbnbListingRoomJSONBodyRoomType = "bedroom"
+	CreateAirbnbListingRoomJSONBodyRoomTypeDiningRoom     CreateAirbnbListingRoomJSONBodyRoomType = "dining_room"
+	CreateAirbnbListingRoomJSONBodyRoomTypeEntranceToHome CreateAirbnbListingRoomJSONBodyRoomType = "entrance_to_home"
+	CreateAirbnbListingRoomJSONBodyRoomTypeFamilyRoom     CreateAirbnbListingRoomJSONBodyRoomType = "family_room"
+	CreateAirbnbListingRoomJSONBodyRoomTypeGarage         CreateAirbnbListingRoomJSONBodyRoomType = "garage"
+	CreateAirbnbListingRoomJSONBodyRoomTypeKitchen        CreateAirbnbListingRoomJSONBodyRoomType = "kitchen"
+	CreateAirbnbListingRoomJSONBodyRoomTypeLaundryRoom    CreateAirbnbListingRoomJSONBodyRoomType = "laundry_room"
+	CreateAirbnbListingRoomJSONBodyRoomTypeLivingRoom     CreateAirbnbListingRoomJSONBodyRoomType = "living_room"
+	CreateAirbnbListingRoomJSONBodyRoomTypeOffice         CreateAirbnbListingRoomJSONBodyRoomType = "office"
+	CreateAirbnbListingRoomJSONBodyRoomTypeOutdoorSpace   CreateAirbnbListingRoomJSONBodyRoomType = "outdoor_space"
+	CreateAirbnbListingRoomJSONBodyRoomTypeRecreationArea CreateAirbnbListingRoomJSONBodyRoomType = "recreation_area"
+	CreateAirbnbListingRoomJSONBodyRoomTypeStudio         CreateAirbnbListingRoomJSONBodyRoomType = "studio"
+)
+
+// Valid indicates whether the value is a known member of the CreateAirbnbListingRoomJSONBodyRoomType enum.
+func (e CreateAirbnbListingRoomJSONBodyRoomType) Valid() bool {
+	switch e {
+	case CreateAirbnbListingRoomJSONBodyRoomTypeBathroom:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeBedroom:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeDiningRoom:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeEntranceToHome:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeFamilyRoom:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeGarage:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeKitchen:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeLaundryRoom:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeLivingRoom:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeOffice:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeOutdoorSpace:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeRecreationArea:
+		return true
+	case CreateAirbnbListingRoomJSONBodyRoomTypeStudio:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbListingRoomJSONBodyRoomType.
+const (
+	UpdateAirbnbListingRoomJSONBodyRoomTypeBathroom       UpdateAirbnbListingRoomJSONBodyRoomType = "bathroom"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeBedroom        UpdateAirbnbListingRoomJSONBodyRoomType = "bedroom"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeDiningRoom     UpdateAirbnbListingRoomJSONBodyRoomType = "dining_room"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeEntranceToHome UpdateAirbnbListingRoomJSONBodyRoomType = "entrance_to_home"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeFamilyRoom     UpdateAirbnbListingRoomJSONBodyRoomType = "family_room"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeGarage         UpdateAirbnbListingRoomJSONBodyRoomType = "garage"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeKitchen        UpdateAirbnbListingRoomJSONBodyRoomType = "kitchen"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeLaundryRoom    UpdateAirbnbListingRoomJSONBodyRoomType = "laundry_room"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeLivingRoom     UpdateAirbnbListingRoomJSONBodyRoomType = "living_room"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeOffice         UpdateAirbnbListingRoomJSONBodyRoomType = "office"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeOutdoorSpace   UpdateAirbnbListingRoomJSONBodyRoomType = "outdoor_space"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeRecreationArea UpdateAirbnbListingRoomJSONBodyRoomType = "recreation_area"
+	UpdateAirbnbListingRoomJSONBodyRoomTypeStudio         UpdateAirbnbListingRoomJSONBodyRoomType = "studio"
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbListingRoomJSONBodyRoomType enum.
+func (e UpdateAirbnbListingRoomJSONBodyRoomType) Valid() bool {
+	switch e {
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeBathroom:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeBedroom:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeDiningRoom:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeEntranceToHome:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeFamilyRoom:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeGarage:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeKitchen:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeLaundryRoom:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeLivingRoom:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeOffice:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeOutdoorSpace:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeRecreationArea:
+		return true
+	case UpdateAirbnbListingRoomJSONBodyRoomTypeStudio:
 		return true
 	default:
 		return false
@@ -2325,13 +3105,13 @@ func (e ListPropertiesParamsChannel) Valid() bool {
 
 // Defines values for GetPropertyParamsInclude.
 const (
-	Amenities GetPropertyParamsInclude = "amenities"
+	GetPropertyParamsIncludeAmenities GetPropertyParamsInclude = "amenities"
 )
 
 // Valid indicates whether the value is a known member of the GetPropertyParamsInclude enum.
 func (e GetPropertyParamsInclude) Valid() bool {
 	switch e {
-	case Amenities:
+	case GetPropertyParamsIncludeAmenities:
 		return true
 	default:
 		return false
@@ -2694,8 +3474,43 @@ type AiOperationFailedPayload struct {
 	Type *string `json:"type,omitempty"`
 }
 
-// AirbnbAlteration An Airbnb reservation alteration request (date change, guest-count change, or price change), mirrored locally in `reservation_alterations`. Fields prefixed `original*` describe the reservation as it stands today; `new*` fields describe the proposed change. Compare them to render a diff and decide whether to accept (`POST .../{id}/accept`) or decline (`POST .../{id}/decline`).
+// AirbnbAccountFreshness Freshness of ONE connected Airbnb account. Freshness is a property of an account, not of a workspace: one host's token expiring says nothing about another host's data.
+type AirbnbAccountFreshness struct {
+	// AccountId Airbnb host id, as a string (they exceed 2^53). The same value `?account_id=` accepts and `GET /v1/connect/airbnb` returns as `accounts[].externalAccountId`.
+	//
+	// Example: 1772489413932732258
+	AccountId string `json:"accountId"`
+
+	// AccountName Display name of the connected account.
+	//
+	// Example: Pomello
+	AccountName *string `json:"accountName,omitempty"`
+
+	// FixUrl Where to reconnect this account. Omitted when it is fresh.
+	FixUrl *string `json:"fixUrl,omitempty"`
+
+	// LastSyncedAt When this account last COMPLETED an Airbnb import. `null` when it never has. A run that failed or was rate-limited does not move it.
+	LastSyncedAt *time.Time `json:"lastSyncedAt"`
+
+	// Reason Why THIS account is stale. Omitted when it is fresh.
+	Reason *string `json:"reason,omitempty"`
+
+	// Stale `true` when this account is disconnected, has never synced, or has not refreshed in 24h+.
+	Stale bool `json:"stale"`
+}
+
+// AirbnbAlteration An Airbnb reservation alteration request (date change, guest-count change, price change, or a move to another listing), mirrored locally in `reservation_alterations`. Fields prefixed `original*` describe the reservation as it stands today; `new*` fields describe the proposed change. Compare them to render a diff and decide whether to accept (`POST .../{id}/accept`) or decline (`POST .../{id}/decline`) — or, for one you proposed yourself, to withdraw it (`POST .../{id}/cancel`).
 type AirbnbAlteration struct {
+	// AccountId Which connected Airbnb account this row belongs to — the Airbnb host id, as a string (they exceed 2^53). The same value `?account_id=` accepts and `GET /v1/connect/airbnb` returns as `accounts[].externalAccountId`.
+	//
+	// Example: 1772489413932732258
+	AccountId *string `json:"accountId,omitempty"`
+
+	// AccountName Display name of that connected Airbnb account.
+	//
+	// Example: Pomello
+	AccountName *string `json:"accountName,omitempty"`
+
 	// AlterationId Airbnb alteration id. This is the `{id}` you pass to `GET/POST /v1/channels/airbnb/alterations/{id}` and the accept / decline sub-routes.
 	AlterationId *string `json:"alterationId,omitempty"`
 
@@ -2708,6 +3523,11 @@ type AirbnbAlteration struct {
 	// Initiator Who proposed the alteration — e.g. `host` or `guest`.
 	Initiator *string `json:"initiator,omitempty"`
 
+	// NewAirbnbListingId The same transfer target as Airbnb spells it (the Airbnb listing id). Present alongside `newListingId`; it is also the only one of the two that is set when the destination listing has not been imported into this workspace.
+	//
+	// Example: 18871326
+	NewAirbnbListingId *string `json:"newAirbnbListingId,omitempty"`
+
 	// NewCheckIn Proposed new check-in.
 	NewCheckIn *time.Time `json:"newCheckIn,omitempty"`
 
@@ -2716,6 +3536,11 @@ type AirbnbAlteration struct {
 
 	// NewGuestCount Proposed new guest count.
 	NewGuestCount *int `json:"newGuestCount,omitempty"`
+
+	// NewListingId Repull listing id the alteration moves the reservation to — a **listing transfer**. `null` when the alteration does not change the listing, which is the usual case. Compare it with the reservation's current `listingId` to render the move. Like every id on this API it is a string.
+	//
+	// Example: 4118
+	NewListingId *string `json:"newListingId,omitempty"`
 
 	// NewTotalPrice Proposed new total price (decimal string).
 	NewTotalPrice *string `json:"newTotalPrice,omitempty"`
@@ -2752,6 +3577,46 @@ type AirbnbAlteration struct {
 	// UpdatedAt When the alteration mirror row was last updated.
 	UpdatedAt            *time.Time             `json:"updatedAt,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// AirbnbAlterationCreateRequest A proposed change to an existing Airbnb reservation. `confirmation_code` names the reservation; at least one of `check_in`, `check_out`, `number_of_guests`, `total_price` or `listing_id` must be sent with it, because an alteration that changes nothing is not something Airbnb can act on (it is refused with `422 invalid_params`).
+//
+// Unknown fields are refused rather than silently dropped. The older connector-native spellings (`start_date`, `end_date`, `total_price_override`, and an Airbnb guest-details object in place of `number_of_guests`) are still accepted for existing integrations; send the canonical names above in new code, and never a canonical field and its older spelling with different values.
+type AirbnbAlterationCreateRequest struct {
+	// AirbnbListingId The transfer target as the **Airbnb** listing id, for callers who hold that instead of the Repull id. Prefer `listing_id`. Sending both is allowed only when they name the same listing.
+	//
+	// Example: 18871326
+	AirbnbListingId *string `json:"airbnb_listing_id,omitempty"`
+
+	// CheckIn New check-in date, `YYYY-MM-DD`.
+	//
+	// Example: 2026-08-02
+	CheckIn *openapi_types.Date `json:"check_in,omitempty"`
+
+	// CheckOut New check-out date, `YYYY-MM-DD`. Must be after `check_in` when both are sent.
+	//
+	// Example: 2026-08-06
+	CheckOut *openapi_types.Date `json:"check_out,omitempty"`
+
+	// ConfirmationCode Airbnb confirmation code of the reservation to alter. `GET /v1/channels/airbnb/reservations` lists them.
+	//
+	// Example: HMX4CMA2X9
+	ConfirmationCode string `json:"confirmation_code"`
+
+	// ListingId Move the reservation to this listing — a **listing transfer**. This is the **Repull** listing id (the `id` from `GET /v1/properties`), the same id every other Airbnb channel route takes; Repull verifies you own it, that it is active and connected to Airbnb, and translates it to the Airbnb listing id before sending it. Airbnb decides whether to honour the move.
+	//
+	// Example: 4118
+	ListingId *int `json:"listing_id,omitempty"`
+
+	// NumberOfGuests New guest count for the stay.
+	//
+	// Example: 3
+	NumberOfGuests *int `json:"number_of_guests,omitempty"`
+
+	// TotalPrice New total for the whole stay, in the listing currency. Sent to Airbnb as the alteration's price override.
+	//
+	// Example: 640
+	TotalPrice *float32 `json:"total_price,omitempty"`
 }
 
 // AirbnbAmenity A single Airbnb amenity from the local cache.
@@ -2828,7 +3693,17 @@ type AirbnbConnection struct {
 		Instruction *string `json:"instruction,omitempty"`
 		IsPresent   *bool   `json:"is_present,omitempty"`
 	} `json:"accessibility_amenities,omitempty"`
-	Active *bool `json:"active,omitempty"`
+
+	// AccountId Which connected Airbnb account this row belongs to — the Airbnb host id, as a string (they exceed 2^53). The same value `?account_id=` accepts and `GET /v1/connect/airbnb` returns as `accounts[].externalAccountId`.
+	//
+	// Example: 1772489413932732258
+	AccountId *string `json:"accountId,omitempty"`
+
+	// AccountName Display name of that connected Airbnb account.
+	//
+	// Example: Pomello
+	AccountName *string `json:"accountName,omitempty"`
+	Active      *bool   `json:"active,omitempty"`
 
 	// AirbnbId Airbnb-side listing id
 	//
@@ -2846,17 +3721,52 @@ type AirbnbConnection struct {
 	} `json:"amenities,omitempty"`
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 
-	// HostId Airbnb host user id
+	// HostId Alias of `accountId`, kept for compatibility — same Airbnb host id, same string.
 	HostId *string `json:"hostId,omitempty"`
+
+	// HostName Alias of `accountName`, kept for compatibility.
+	HostName *string `json:"hostName,omitempty"`
 
 	// Id Connection row id
 	Id *string `json:"id,omitempty"`
 
+	// LockedFields Fields Airbnb will NOT let you change on this listing — `property_type_category`, `name`, `check_in_option`, `summary`, `space`, individual amenities, … Airbnb does not refuse a write to a locked field: it returns 200, reports the field as locked, and applies nothing. Check this before a content write; `[]` means nothing is known to be locked. Recorded at sync time, so a lock added on Airbnb since the last sync will show up on the write instead (as `blockedFields` in the response).
+	//
+	// Example: ["name","summary","property_type_category"]
+	LockedFields *[]string `json:"lockedFields,omitempty"`
+
 	// Markup Decimal markup (e.g. "1.10" for +10%).
-	Markup      *string `json:"markup,omitempty"`
-	Primary     *bool   `json:"primary,omitempty"`
-	SyncEnabled *bool   `json:"syncEnabled,omitempty"`
+	Markup  *string `json:"markup,omitempty"`
+	Primary *bool   `json:"primary,omitempty"`
+
+	// SyncCategory Airbnb's own API sync decision for THIS listing, as Airbnb reports it. Airbnb authorises sync one listing at a time, so a connected account can still contain listings it will not accept writes for.
+	//
+	// - `sync_all` — Repull manages content, rates and availability.
+	// - `sync_rates_and_availability` — Repull manages rates and availability; listing content is managed by the host on Airbnb.
+	// - `none` — the listing is **not** connected to Repull on Airbnb's side. Every write to it is refused with `403 listing_not_api_connected`; reconnecting the Airbnb account does not change this, the host must switch the listing on in Airbnb.
+	//
+	// `null` when the listing has not synced yet. Not to be confused with `syncEnabled`, which is a Repull-side flag and says nothing about what Airbnb accepts.
+	//
+	// Example: sync_all
+	SyncCategory *AirbnbConnectionSyncCategory `json:"syncCategory,omitempty"`
+	SyncEnabled  *bool                         `json:"syncEnabled,omitempty"`
+
+	// Writable Whether Repull will send a write for this listing to Airbnb. `false` exactly when `syncCategory` is `none` — such a write is refused with `403 listing_not_api_connected` before anything reaches Airbnb. Check this before a portfolio-wide push instead of discovering it one 403 at a time.
+	//
+	// Example: true
+	Writable *bool `json:"writable,omitempty"`
 }
+
+// AirbnbConnectionSyncCategory Airbnb's own API sync decision for THIS listing, as Airbnb reports it. Airbnb authorises sync one listing at a time, so a connected account can still contain listings it will not accept writes for.
+//
+// - `sync_all` — Repull manages content, rates and availability.
+// - `sync_rates_and_availability` — Repull manages rates and availability; listing content is managed by the host on Airbnb.
+// - `none` — the listing is **not** connected to Repull on Airbnb's side. Every write to it is refused with `403 listing_not_api_connected`; reconnecting the Airbnb account does not change this, the host must switch the listing on in Airbnb.
+//
+// `null` when the listing has not synced yet. Not to be confused with `syncEnabled`, which is a Repull-side flag and says nothing about what Airbnb accepts.
+//
+// Example: sync_all
+type AirbnbConnectionSyncCategory string
 
 // AirbnbConnectionHost One Airbnb host record under the workspace, decorated with its most recent disconnect reason from `airbnb_host_events` (backfill events excluded).
 type AirbnbConnectionHost struct {
@@ -2876,7 +3786,7 @@ type AirbnbConnectionHost struct {
 	// Example: token_refresh_rejected
 	LastDisconnectReason *string `json:"lastDisconnectReason"`
 
-	// LastSyncedAt When the host record was last touched (token refresh / activation / restriction). Closest available proxy for "last successful sync".
+	// LastSyncedAt When this account last COMPLETED an Airbnb import. `null` when it never has. A run that failed or was rate-limited does not move it, and neither does anything other than a sync.
 	LastSyncedAt *time.Time `json:"lastSyncedAt"`
 
 	// Name Display name (preferred form, falling back to legal first name). Null when both fields are empty.
@@ -2895,7 +3805,7 @@ type AirbnbConnectionResponse struct {
 type AirbnbConnectionSummary struct {
 	// FixUrl Self-serve recovery URL. Set whenever `status` is anything other than `connected`. Points at the dashboard surface where the host re-authorizes (or initiates the first OAuth flow for `never_connected` workspaces).
 	//
-	// Example: https://repull.dev/dashboard/connections/airbnb
+	// Example: https://repull.dev/dashboard/connections
 	FixUrl *string `json:"fixUrl,omitempty"`
 
 	// HostCount Example: 2
@@ -2909,19 +3819,72 @@ type AirbnbConnectionSummary struct {
 // AirbnbConnectionSummaryStatus `connected` — every host is currently connected. `reconnect_required` — at least one host is connected, at least one is not. `disconnected` — every host has been disconnected. `never_connected` — the workspace has never linked an Airbnb account.
 type AirbnbConnectionSummaryStatus string
 
+// AirbnbContentWriteResponse Result of a content write. **A 200 does not by itself mean the change was applied**: Airbnb locks host-managed fields on established listings and answers 200 while applying nothing for them. `blockedFields` is the list of fields YOU sent that Airbnb dropped; `blockedFields: []` is what a landed write looks like.
+type AirbnbContentWriteResponse struct {
+	// AirbnbListingId The Airbnb-side listing id the write went to.
+	AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+	// BlockedFields Fields you sent that Airbnb refused to change. Not retryable — the content is managed on Airbnb.
+	BlockedFields []string `json:"blockedFields"`
+
+	// Fix Present only when `blockedFields` is non-empty: what to do about it.
+	Fix       *string `json:"fix,omitempty"`
+	ListingId string  `json:"listingId"`
+
+	// Locale Descriptions only — the locale written.
+	Locale *string `json:"locale,omitempty"`
+
+	// Message Present only when `blockedFields` is non-empty: what was not applied.
+	Message *string `json:"message,omitempty"`
+
+	// Result Airbnb's raw response.
+	Result *map[string]interface{} `json:"result,omitempty"`
+
+	// Written Fields that were applied.
+	Written []string `json:"written"`
+}
+
 // AirbnbDataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+//
+// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
 type AirbnbDataFreshness struct {
-	// FixUrl Dashboard URL the consumer can open to resolve the staleness (typically the Airbnb reconnect screen). Omitted when `stale` is `false`.
+	// Accounts Per-account freshness, sorted by `accountId`. Omitted on responses that have no connected account to attribute (e.g. a workspace that has never connected Airbnb).
+	Accounts *[]AirbnbAccountFreshness `json:"accounts,omitempty"`
+
+	// FixUrl Dashboard URL the consumer can open to resolve the staleness (the Airbnb connections screen). Present whenever `reason` is, including on `partial_account_staleness`.
 	FixUrl *string `json:"fixUrl,omitempty"`
 
-	// LastSyncedAt Most recent sync timestamp across the rows in the response. `null` when nothing has ever synced for this customer.
+	// LastSyncedAt The most recent Airbnb import COMPLETED by any account in scope. `null` when none of them ever has. A run that failed or was rate-limited does not move it.
 	LastSyncedAt *time.Time `json:"lastSyncedAt"`
 
-	// Reason Why the data is stale. One of `host_disconnected_since_<iso>`, `sync_lag_>_24h`, `never_synced`. Omitted when `stale` is `false`.
+	// Reason Why the data is stale. One of `host_disconnected_since_<iso>`, `host_not_activated`, `sync_lag_>_24h`, `never_synced`, `host_disconnected`, or `partial_account_staleness`. The last one appears WITH `stale: false`: the response is usable, but at least one connected account needs attention — deliberately surfaced so a consumer reading only the aggregate is never told everything is fine while an account is down.
 	Reason *string `json:"reason,omitempty"`
 
-	// Stale `true` when any host is disconnected, when the local cache is empty, or when the cache hasn't been refreshed in 24h+. `false` when hosts are healthy and sync is fresh.
+	// Stale `true` only when EVERY connected Airbnb account is stale — nothing in this response can be trusted to be current. With one account (the common case) that is the same as it has always been. With several, one disconnected host no longer condemns the other's rows: `stale` stays `false` and `reason` becomes `partial_account_staleness`. Read `accounts[]` for which is which.
 	Stale bool `json:"stale"`
+}
+
+// AirbnbDescriptionWriteRequest Write one locale's copy. Airbnb keeps a separate description per locale, which is why the locale is explicit: writing Italian copy into the English row is how a translation gets lost. Only the fields you send are written.
+type AirbnbDescriptionWriteRequest struct {
+	// Description At least one field required. `description` itself is NOT accepted: Airbnb composes the public description from these sections and ignores a directly-supplied one, so accepting it would be taking a value and discarding it. An unknown field is refused by name rather than dropped.
+	Description struct {
+		Access               *string `json:"access,omitempty"`
+		HouseRules           *string `json:"house_rules,omitempty"`
+		Interaction          *string `json:"interaction,omitempty"`
+		Name                 *string `json:"name,omitempty"`
+		NeighborhoodOverview *string `json:"neighborhood_overview,omitempty"`
+		Notes                *string `json:"notes,omitempty"`
+		Space                *string `json:"space,omitempty"`
+
+		// Summary Airbnb hard-caps this at 500 characters and refuses the whole write if it is longer.
+		Summary *string `json:"summary,omitempty"`
+		Transit *string `json:"transit,omitempty"`
+	} `json:"description"`
+
+	// Locale Language tag — `en`, `it`, `pt-BR`. `GET /v1/channels/airbnb/listings/{id}/settings?type=locales` lists the locales already synced for this listing.
+	//
+	// Example: it
+	Locale string `json:"locale"`
 }
 
 // AirbnbListing A Vanio listing paired with its Airbnb connection rows. The list endpoint groups every `listings_airbnb` row that points at the same Vanio `listingId` under a single `connections[]` array.
@@ -2939,14 +3902,17 @@ type AirbnbListing struct {
 	//
 	// Example: Oceanview Villa
 	Name *string `json:"name,omitempty"`
+
+	// ThumbnailUrl Cover photo URL for the Vanio listing. **Only present when the caller passes `?include=thumbnail`.** `null` when the listing has no cover photo stored — the listing is still returned.
+	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
 }
 
 // AirbnbListingActionRequest Body for `POST /v1/channels/airbnb/listings/{id}`.
 type AirbnbListingActionRequest struct {
-	// Action `delete` deactivates the Repull record. `push`/`publish` push content to Airbnb.
+	// Action `delete` deactivates the REPULL RECORD — billing and API visibility — and never calls Airbnb. `push`/`publish` push content to Airbnb. `unlist` takes the LIVE AIRBNB LISTING down so it stops taking bookings; `relist` puts it back up. Deactivating and unlisting are different operations with different blast radii and are deliberately different action names.
 	Action AirbnbListingActionRequestAction `json:"action"`
 
-	// AirbnbConnectionId For `push`/`publish`: the Airbnb connection to update (from `GET /v1/channels/airbnb/listings/{id}`). Pass this OR `hostId`.
+	// AirbnbConnectionId For `push`/`publish`: the Airbnb connection to update (from `GET /v1/channels/airbnb/listings/{id}`). Pass this OR `hostId`. REQUIRED for `unlist`/`relist`: a listing can be connected to more than one Airbnb listing and the wrong one cannot be un-taken-down through this API.
 	AirbnbConnectionId *string `json:"airbnbConnectionId,omitempty"`
 
 	// Force For `push`/`publish`: re-push every field, ignoring dirty-field tracking.
@@ -2956,18 +3922,144 @@ type AirbnbListingActionRequest struct {
 	HostId *string `json:"hostId,omitempty"`
 }
 
-// AirbnbListingActionRequestAction `delete` deactivates the Repull record. `push`/`publish` push content to Airbnb.
+// AirbnbListingActionRequestAction `delete` deactivates the REPULL RECORD — billing and API visibility — and never calls Airbnb. `push`/`publish` push content to Airbnb. `unlist` takes the LIVE AIRBNB LISTING down so it stops taking bookings; `relist` puts it back up. Deactivating and unlisting are different operations with different blast radii and are deliberately different action names.
 type AirbnbListingActionRequestAction string
+
+// AirbnbListingDetailsResponse The Airbnb-side detail row(s) for the listing, from the local mirror. One entry per Airbnb connection.
+type AirbnbListingDetailsResponse struct {
+	Bathrooms *string `json:"bathrooms,omitempty"`
+	Bedrooms  *int    `json:"bedrooms,omitempty"`
+	Beds      *int    `json:"beds,omitempty"`
+
+	// CheckInOption `{ category, instruction }` — how the guest gets in.
+	CheckInOption *map[string]interface{} `json:"checkInOption,omitempty"`
+
+	// HasAvailability Whether the Airbnb listing is live. `false` means unlisted on Airbnb — unrelated to the Repull record being active.
+	HasAvailability *bool   `json:"hasAvailability,omitempty"`
+	ListingAirbnbId *string `json:"listingAirbnbId,omitempty"`
+	ListingNickname *string `json:"listingNickname,omitempty"`
+
+	// LockedFields Attributes Airbnb refuses to change on this listing.
+	LockedFields         *[]string  `json:"lockedFields,omitempty"`
+	Name                 *string    `json:"name,omitempty"`
+	PersonCapacity       *int       `json:"personCapacity,omitempty"`
+	PropertyTypeCategory *string    `json:"propertyTypeCategory,omitempty"`
+	PropertyTypeGroup    *string    `json:"propertyTypeGroup,omitempty"`
+	RoomTypeCategory     *string    `json:"roomTypeCategory,omitempty"`
+	UpdatedAt            *time.Time `json:"updatedAt,omitempty"`
+}
+
+// AirbnbListingDetailsWriteRequest Update what kind of property this is, when the quiet hours are, or how the guest gets in. At least one field required. These are among the attributes Airbnb locks on established listings — see `blockedFields` on the response.
+type AirbnbListingDetailsWriteRequest struct {
+	// CheckInOption How the guest lets themselves in — Airbnb's `check_in_option`.
+	CheckInOption *struct {
+		Category    AirbnbListingDetailsWriteRequestCheckInOptionCategory `json:"category"`
+		Instruction *string                                               `json:"instruction,omitempty"`
+	} `json:"check_in_option,omitempty"`
+
+	// PropertyTypeCategory The specific type inside the group, e.g. `apartment`, `condominium`, `townhouse`, `guesthouse`. Airbnb validates it against the group, so send both when you are changing the kind of property.
+	PropertyTypeCategory *string `json:"property_type_category,omitempty"`
+
+	// PropertyTypeGroup The coarse building family.
+	PropertyTypeGroup *AirbnbListingDetailsWriteRequestPropertyTypeGroup `json:"property_type_group,omitempty"`
+
+	// QuietHours Whole hours on a 24h clock, as strings.
+	QuietHours *[]struct {
+		// EndTime Example: 7
+		EndTime string `json:"end_time"`
+
+		// StartTime Example: 22
+		StartTime string `json:"start_time"`
+	} `json:"quiet_hours,omitempty"`
+
+	// RoomTypeCategory What the guest gets of the property.
+	RoomTypeCategory *AirbnbListingDetailsWriteRequestRoomTypeCategory `json:"room_type_category,omitempty"`
+}
+
+// AirbnbListingDetailsWriteRequestCheckInOptionCategory defines model for AirbnbListingDetailsWriteRequest.CheckInOption.Category.
+type AirbnbListingDetailsWriteRequestCheckInOptionCategory string
+
+// AirbnbListingDetailsWriteRequestPropertyTypeGroup The coarse building family.
+type AirbnbListingDetailsWriteRequestPropertyTypeGroup string
+
+// AirbnbListingDetailsWriteRequestRoomTypeCategory What the guest gets of the property.
+type AirbnbListingDetailsWriteRequestRoomTypeCategory string
+
+// AirbnbListingLifecycleResponse Result of `unlist` / `relist`. Reports the state of the LIVE Airbnb listing. The Repull record's own `active` flag is untouched by both and is deliberately not echoed here, so the two ideas cannot be read as one field.
+type AirbnbListingLifecycleResponse struct {
+	Action             *AirbnbListingLifecycleResponseAction  `json:"action,omitempty"`
+	AirbnbConnectionId *string                                `json:"airbnbConnectionId,omitempty"`
+	Channel            *AirbnbListingLifecycleResponseChannel `json:"channel,omitempty"`
+
+	// Id Repull listing id.
+	Id *string `json:"id,omitempty"`
+
+	// Live Whether the Airbnb listing is taking bookings after this call. `false` after `unlist`, `true` after `relist`.
+	Live *bool `json:"live,omitempty"`
+
+	// Verified True when the result was confirmed by reading the listing back from Airbnb (done on `unlist`: Airbnb accepting the call is not proof the listing came down).
+	Verified *bool `json:"verified,omitempty"`
+}
+
+// AirbnbListingLifecycleResponseAction defines model for AirbnbListingLifecycleResponse.Action.
+type AirbnbListingLifecycleResponseAction string
+
+// AirbnbListingLifecycleResponseChannel defines model for AirbnbListingLifecycleResponse.Channel.
+type AirbnbListingLifecycleResponseChannel string
 
 // AirbnbListingListResponse defines model for AirbnbListingListResponse.
 type AirbnbListingListResponse struct {
 	Data []AirbnbListing `json:"data"`
 
 	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
 	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination Pagination `json:"pagination"`
+}
+
+// AirbnbPermitsResponse defines model for AirbnbPermitsResponse.
+type AirbnbPermitsResponse struct {
+	// Cached Permits as last mirrored by the sync worker: body, type, status, number. The RESULT of a permit, not the questions.
+	Cached *[]struct {
+		PermitData     *map[string]interface{} `json:"permitData,omitempty"`
+		PermitNumber   *string                 `json:"permitNumber,omitempty"`
+		RegulationType *string                 `json:"regulationType,omitempty"`
+		RegulatoryBody *string                 `json:"regulatoryBody,omitempty"`
+		Status         *string                 `json:"status,omitempty"`
+		UpdatedAt      *time.Time              `json:"updatedAt,omitempty"`
+	} `json:"cached,omitempty"`
+
+	// Permits The live permit flows from Airbnb — present only with `?source=live`, `null` otherwise. Each flow names its `regulatory_body`, `regulation_type`, `status`, and the `question_key` / `answer_type` / `options` of every question you have to answer, plus the answers already on file.
+	Permits *[]map[string]interface{} `json:"permits,omitempty"`
+}
+
+// AirbnbPermitsWriteRequest Answer the regulatory permit questions Airbnb asks for this listing. Read them first with `?source=live` on the GET — Airbnb refuses a `question_key` it did not ask for on this listing.
+type AirbnbPermitsWriteRequest struct {
+	Permits []struct {
+		Answers []struct {
+			// DateValue ISO date, YYYY-MM-DD.
+			DateValue            *string   `json:"date_value,omitempty"`
+			QuestionKey          string    `json:"question_key"`
+			SelectedOptionsValue *[]string `json:"selected_options_value,omitempty"`
+			TextValue            *string   `json:"text_value,omitempty"`
+		} `json:"answers"`
+		RegulationType string `json:"regulation_type"`
+
+		// RegulatoryBody As named by the GET, e.g. the city or registry asking.
+		RegulatoryBody string `json:"regulatory_body"`
+	} `json:"permits"`
+}
+
+// AirbnbPhotoPosition One photo's position in the tour. `sortOrder` is a relative sort key, not an address — lower sorts earlier.
+type AirbnbPhotoPosition struct {
+	// PhotoId Airbnb-side photo id.
+	PhotoId *string `json:"photoId,omitempty"`
+
+	// SortOrder Position in the tour, 1 first.
+	SortOrder *int `json:"sortOrder,omitempty"`
 }
 
 // AirbnbPricingWriteRequest Body for `PUT /v1/channels/airbnb/listings/{id}/pricing`. The `type` discriminator selects the pricing sub-resource. `type: "calendar"` shares the same per-date restriction shape as the availability endpoint (min/max nights, closed-to-arrival/departure, stop-sell via `availability: "unavailable"`).
@@ -3006,10 +4098,39 @@ type AirbnbPricingWriteRequest_Records_Item struct {
 // AirbnbPricingWriteRequestType defines model for AirbnbPricingWriteRequest.Type.
 type AirbnbPricingWriteRequestType string
 
+// AirbnbPublishResult A publish is not one call to Airbnb: it is up to eight independent ones (details, description, amenities, rooms, policies, photos, pricing, checkout_tasks), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback.
+type AirbnbPublishResult struct {
+	// Errors Per-section failures. Empty when `published` is true.
+	Errors []PublishSectionError `json:"errors"`
+
+	// LockedFields Fields Airbnb will not let this listing change — collected from the failures above and from the `locked_attributes` Airbnb recorded for the listing. Sending them again returns success and changes nothing.
+	LockedFields []string `json:"lockedFields"`
+
+	// Published True only when EVERY attempted section reached Airbnb.
+	Published bool `json:"published"`
+
+	// Reason Set when the publish never started at all (no connection, address missing, subscription gate).
+	Reason *string `json:"reason,omitempty"`
+
+	// Sections Sections that landed on Airbnb.
+	//
+	// Example: ["details","pricing","photos"]
+	Sections []string `json:"sections"`
+}
+
 // AirbnbReservation An Airbnb reservation as returned by the channel API. Use `confirmationCode` to address it in Airbnb operations.
 type AirbnbReservation struct {
-	CheckIn  *openapi_types.Date `json:"checkIn,omitempty"`
-	CheckOut *openapi_types.Date `json:"checkOut,omitempty"`
+	// AccountId Which connected Airbnb account this row belongs to — the Airbnb host id, as a string (they exceed 2^53). The same value `?account_id=` accepts and `GET /v1/connect/airbnb` returns as `accounts[].externalAccountId`.
+	//
+	// Example: 1772489413932732258
+	AccountId *string `json:"accountId,omitempty"`
+
+	// AccountName Display name of that connected Airbnb account.
+	//
+	// Example: Pomello
+	AccountName *string             `json:"accountName,omitempty"`
+	CheckIn     *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckOut    *openapi_types.Date `json:"checkOut,omitempty"`
 
 	// ConfirmationCode Example: HMABC12345
 	ConfirmationCode *string `json:"confirmationCode,omitempty"`
@@ -3030,12 +4151,26 @@ type AirbnbReservationStatus string
 type AirbnbReservationListResponse struct {
 	Data *[]AirbnbReservation `json:"data,omitempty"`
 
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness *AirbnbDataFreshness `json:"dataFreshness,omitempty"`
+
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
 // AirbnbReview An Airbnb review (guest → host or host → guest).
 type AirbnbReview struct {
+	// AccountId Which connected Airbnb account this row belongs to — the Airbnb host id, as a string (they exceed 2^53). The same value `?account_id=` accepts and `GET /v1/connect/airbnb` returns as `accounts[].externalAccountId`.
+	//
+	// Example: 1772489413932732258
+	AccountId *string `json:"accountId,omitempty"`
+
+	// AccountName Display name of that connected Airbnb account.
+	//
+	// Example: Pomello
+	AccountName     *string    `json:"accountName,omitempty"`
 	Comment         *string    `json:"comment,omitempty"`
 	CreatedAt       *time.Time `json:"createdAt,omitempty"`
 	Id              *string    `json:"id,omitempty"`
@@ -3048,12 +4183,55 @@ type AirbnbReview struct {
 type AirbnbReviewListResponse struct {
 	Data *[]AirbnbReview `json:"data,omitempty"`
 
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness *AirbnbDataFreshness `json:"dataFreshness,omitempty"`
+
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
+// AirbnbSafetyDisclosure defines model for AirbnbSafetyDisclosure.
+type AirbnbSafetyDisclosure struct {
+	// Declared Read only: whether Airbnb holds an explicit answer for this type on this listing (as opposed to it simply not being declared).
+	Declared *bool `json:"declared,omitempty"`
+
+	// Type What is being disclosed. `surveillance` = exterior security cameras or recording devices. `noise_monitor` = a decibel monitor is installed. `requires_stairs`, `potential_noise`, `animals` (farm or wild animals nearby), `has_pets` (the host's pets), `limited_parking`, `limited_amenities`, `shared_spaces`, `pool_or_jacuzzi_with_no_fence`, `heights_with_no_fence`, `climbing_or_play_structure`, `lake_or_river_or_water_body`, `weapons`.
+	Type AirbnbSafetyDisclosureType `json:"type"`
+
+	// Value Whether it applies to this property.
+	Value bool `json:"value"`
+}
+
+// AirbnbSafetyDisclosureType What is being disclosed. `surveillance` = exterior security cameras or recording devices. `noise_monitor` = a decibel monitor is installed. `requires_stairs`, `potential_noise`, `animals` (farm or wild animals nearby), `has_pets` (the host's pets), `limited_parking`, `limited_amenities`, `shared_spaces`, `pool_or_jacuzzi_with_no_fence`, `heights_with_no_fence`, `climbing_or_play_structure`, `lake_or_river_or_water_body`, `weapons`.
+type AirbnbSafetyDisclosureType string
+
+// AirbnbSafetyDisclosuresResponse defines model for AirbnbSafetyDisclosuresResponse.
+type AirbnbSafetyDisclosuresResponse struct {
+	// Declared Just the types that are true of this property.
+	Declared *[]string `json:"declared,omitempty"`
+
+	// Disclosures Every supported disclosure type, including the ones this listing has not declared (`value: false`), so "does this property have cameras?" has an answer rather than a missing key. Types Airbnb returns that are not in the documented set are passed through, never dropped.
+	Disclosures *[]AirbnbSafetyDisclosure `json:"disclosures,omitempty"`
+}
+
+// AirbnbSafetyDisclosuresWriteRequest A MERGE, not a replacement: Airbnb keeps one value per disclosure type, a type you leave out keeps the value it has, and to retract a disclosure you send it with `value: false`. A full replacement would let a partial request silently un-declare a security camera — which is a guest-safety statement, not a preference.
+type AirbnbSafetyDisclosuresWriteRequest struct {
+	Disclosures []AirbnbSafetyDisclosure `json:"disclosures"`
+}
+
 // AirbnbThread An Airbnb message thread.
 type AirbnbThread struct {
+	// AccountId Which connected Airbnb account this row belongs to — the Airbnb host id, as a string (they exceed 2^53). The same value `?account_id=` accepts and `GET /v1/connect/airbnb` returns as `accounts[].externalAccountId`.
+	//
+	// Example: 1772489413932732258
+	AccountId *string `json:"accountId,omitempty"`
+
+	// AccountName Display name of that connected Airbnb account.
+	//
+	// Example: Pomello
+	AccountName   *string    `json:"accountName,omitempty"`
 	GuestName     *string    `json:"guestName,omitempty"`
 	Id            *string    `json:"id,omitempty"`
 	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
@@ -3065,12 +4243,27 @@ type AirbnbThread struct {
 type AirbnbThreadListResponse struct {
 	Data *[]AirbnbThread `json:"data,omitempty"`
 
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness *AirbnbDataFreshness `json:"dataFreshness,omitempty"`
+
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // AirbnbTransaction One Airbnb host transaction — a reservation earning, a settled payout, or a resolution adjustment — with the genuine host- and guest-side financial breakdown Airbnb exposes. All money is in host currency; fees and withholding are negative (deductions). Two owner-statement concepts are NOT available from Airbnb and are listed in `unavailable_fields` rather than fabricated: property-management fee and itemised nightly discounts (the latter are already netted into `host_breakdown.accommodation_subtotal`).
 type AirbnbTransaction struct {
+	// AccountId Which connected Airbnb account this transaction belongs to — the Airbnb host id, as a string (they exceed 2^53). `null` on rows that name no listing (payouts).
+	//
+	// Example: 1772489413932732258
+	AccountId *string `json:"account_id,omitempty"`
+
+	// AccountName Display name of that connected Airbnb account.
+	//
+	// Example: Pomello
+	AccountName *string `json:"account_name,omitempty"`
+
 	// Amount Top-level transaction amount.
 	Amount   *float32   `json:"amount,omitempty"`
 	BookedAt *time.Time `json:"booked_at,omitempty"`
@@ -4117,6 +5310,11 @@ type CustomSchemaUpdate struct {
 // Error Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type Error struct {
 	Error struct {
+		// AirbnbListingId Airbnb's own id for that listing, so the host can find it in Airbnb. Present on `code: "listing_not_api_connected"` (HTTP 403).
+		//
+		// Example: 22616426
+		AirbnbListingId *string `json:"airbnb_listing_id,omitempty"`
+
 		// Code Stable machine-parseable error identifier. Match on this for retry logic. Codes are namespaced and never change meaning.
 		//
 		// Example: invalid_params
@@ -4147,6 +5345,11 @@ type Error struct {
 		// Example: Pass check_in_after as a string in ISO 8601 format. Example: ?check_in_after=2026-01-15
 		Fix string `json:"fix"`
 
+		// ListingId The single Repull listing the error is about. Present on `code: "listing_not_api_connected"` (HTTP 403).
+		//
+		// Example: 23901
+		ListingId *string `json:"listing_id,omitempty"`
+
 		// ListingIds Every inactive listing the request involved. Present on `code: "listing_inactive"` (HTTP 403) — activate these ids and retry.
 		//
 		// Example: ["4118"]
@@ -4175,6 +5378,11 @@ type Error struct {
 			Reference *string `json:"reference,omitempty"`
 			Url       *string `json:"url,omitempty"`
 		} `json:"support,omitempty"`
+
+		// SyncCategory The listing's current Airbnb API sync category — why the write was refused. Present on `code: "listing_not_api_connected"` (HTTP 403).
+		//
+		// Example: none
+		SyncCategory *string `json:"sync_category,omitempty"`
 
 		// ValidParams Sorted list of every query param this endpoint accepts. Present on `code: "unknown_params"` (HTTP 422) so SDK consumers can self-correct without reading docs.
 		//
@@ -4369,7 +5577,7 @@ type GuestReservationsSummary struct {
 
 // Listing A vacation rental listing in your Repull workspace.
 //
-// An **inactive** listing appears only in `GET /v1/listings`, and only when `?status=` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `channels` — so `address`, `thumbnailUrl`, `content`, `details`, `createdAt` and `updatedAt` are absent until the listing is activated. `GET /v1/listings/{id}` and every other listing endpoint answer `403 listing_inactive` for it.
+// An **inactive** listing appears only in `GET /v1/listings`, and only when `?status=` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `channels` — so `address`, `content`, `details`, `createdAt` and `updatedAt` are absent until the listing is activated. `GET /v1/listings/{id}` and every other listing endpoint answer `403 listing_inactive` for it. The one field you can add back is `thumbnailUrl`, by passing `?include=thumbnail` — enough to render an activate/deactivate picker with pictures from a single request.
 type Listing struct {
 	Address *struct {
 		City   *string `json:"city,omitempty"`
@@ -4393,10 +5601,12 @@ type Listing struct {
 	Id *string `json:"id,omitempty"`
 
 	// Name Example: I - Stafford Apartment
-	Name         *string        `json:"name,omitempty"`
-	Status       *ListingStatus `json:"status,omitempty"`
-	ThumbnailUrl *string        `json:"thumbnailUrl,omitempty"`
-	UpdatedAt    *time.Time     `json:"updatedAt,omitempty"`
+	Name   *string        `json:"name,omitempty"`
+	Status *ListingStatus `json:"status,omitempty"`
+
+	// ThumbnailUrl Cover photo URL. Always present on an active listing. On an **inactive** one it is present only when the caller passes `?include=thumbnail`; `null` means the listing has no cover photo stored, absent means the expansion was not requested.
+	ThumbnailUrl *string    `json:"thumbnailUrl,omitempty"`
+	UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
 }
 
 // ListingStatus defines model for Listing.Status.
@@ -4514,12 +5724,15 @@ type ListingContent struct {
 
 	// InteractionWithGuests Host’s description of how they engage with guests (e.g. "Self check-in, available via message").
 	InteractionWithGuests *string `json:"interactionWithGuests,omitempty"`
-	NeighborhoodOverview  *string `json:"neighborhoodOverview,omitempty"`
-	Notes                 *string `json:"notes,omitempty"`
-	Space                 *string `json:"space,omitempty"`
-	Summary               *string `json:"summary,omitempty"`
 
-	// Title Public listing title. Populated only by `generate-content`; not stored on `listings_descriptions`.
+	// Name The listing's stored public title, and the one a channel pull writes — after `POST /v1/listings/{id}/pull/airbnb` this is the title as it stands on Airbnb.
+	Name                 *string `json:"name,omitempty"`
+	NeighborhoodOverview *string `json:"neighborhoodOverview,omitempty"`
+	Notes                *string `json:"notes,omitempty"`
+	Space                *string `json:"space,omitempty"`
+	Summary              *string `json:"summary,omitempty"`
+
+	// Title Public listing title as proposed by `POST /v1/listings/{id}/generate-content`. The STORED title is `name` — read that one.
 	Title   *string `json:"title,omitempty"`
 	Transit *string `json:"transit,omitempty"`
 }
@@ -4542,6 +5755,25 @@ type ListingContentUpdateRequest struct {
 
 	// Description Long-form listing description.
 	Description *string `json:"description,omitempty"`
+
+	// Details What KIND of property this is. The publish path reads all three on every push, so setting them here is the update path for a listing that already exists — `POST /v1/listings` could only set the type at creation. Airbnb may lock these on an established listing; the publish response reports that in `lockedFields`.
+	Details *struct {
+		// PropertyType Free-form property type; mapped to Airbnb's property-type group at publish time.
+		//
+		// Example: apartment
+		PropertyType *string `json:"propertyType,omitempty"`
+
+		// PropertyTypeCategory Airbnb's `property_type_category`, e.g. `apartment`, `condominium`, `townhouse`.
+		PropertyTypeCategory *string `json:"propertyTypeCategory,omitempty"`
+
+		// RoomTypeCategory What the guest gets of the property.
+		RoomTypeCategory *ListingContentUpdateRequestDetailsRoomTypeCategory `json:"roomTypeCategory,omitempty"`
+	} `json:"details,omitempty"`
+
+	// Locale Which language the `title` / `description` / `summary` / `policies.houseRules` in THIS request are written in. Defaults to `en`. Canonical content is stored per locale — one row per (listing, locale) — so sending Italian copy with `locale: "it"` creates or updates the Italian row instead of overwriting the English one. Distribution of a non-primary locale to Airbnb is a separate call: `PUT /v1/channels/airbnb/listings/{id}/descriptions`.
+	//
+	// Example: it
+	Locale *string `json:"locale,omitempty"`
 
 	// Name Alias for `title`.
 	Name      *string `json:"name,omitempty"`
@@ -4570,7 +5802,13 @@ type ListingContentUpdateRequest struct {
 
 		// CancellationPolicy Cancellation policy slug/label.
 		CancellationPolicy *string `json:"cancellationPolicy,omitempty"`
-		CheckInTimeEnd     *string `json:"checkInTimeEnd,omitempty"`
+
+		// CheckInInstruction Instruction shown with the check-in method.
+		CheckInInstruction *string `json:"checkInInstruction,omitempty"`
+
+		// CheckInMethod How the guest lets themselves in. Canonical storage only — distributing it to Airbnb is `PUT /v1/channels/airbnb/listings/{id}/details` with `check_in_option`.
+		CheckInMethod  *ListingContentUpdateRequestPoliciesCheckInMethod `json:"checkInMethod,omitempty"`
+		CheckInTimeEnd *string                                           `json:"checkInTimeEnd,omitempty"`
 
 		// CheckInTimeStart e.g. "15" (3pm).
 		CheckInTimeStart *string `json:"checkInTimeStart,omitempty"`
@@ -4578,14 +5816,25 @@ type ListingContentUpdateRequest struct {
 		// CheckOutTime e.g. "11" (11am).
 		CheckOutTime *string `json:"checkOutTime,omitempty"`
 
+		// GuestSafetyDisclosures Guest-safety disclosures — exterior cameras, noise monitors, stairs, pets, an unfenced pool. FULL replacement of the canonical set: omit to leave untouched, send `[]` to clear. Canonical storage only — distributing them to Airbnb is `PUT /v1/channels/airbnb/listings/{id}/safety-disclosures`, which merges rather than replaces.
+		GuestSafetyDisclosures *[]AirbnbSafetyDisclosure `json:"guestSafetyDisclosures,omitempty"`
+
 		// HouseRules Free-text house rules.
 		HouseRules *string `json:"houseRules,omitempty"`
+
+		// QuietHoursEnd Example: 07:00
+		QuietHoursEnd *string `json:"quietHoursEnd,omitempty"`
+
+		// QuietHoursStart Quiet-hours window start, e.g. "22:00". Distributed to Airbnb by the publish path.
+		//
+		// Example: 22:00
+		QuietHoursStart *string `json:"quietHoursStart,omitempty"`
 	} `json:"policies,omitempty"`
 
 	// Summary Short summary / tagline.
 	Summary *string `json:"summary,omitempty"`
 
-	// Title Guest-facing title. Written to the listing name and the `en` description.
+	// Title Guest-facing title. Written to the listing name and the description row for `locale`.
 	Title *string `json:"title,omitempty"`
 }
 
@@ -4604,6 +5853,9 @@ type ListingContentUpdateRequestAmenities1 = []struct {
 type ListingContentUpdateRequest_Amenities struct {
 	union json.RawMessage
 }
+
+// ListingContentUpdateRequestDetailsRoomTypeCategory What the guest gets of the property.
+type ListingContentUpdateRequestDetailsRoomTypeCategory string
 
 // ListingContentUpdateRequestPhotos0 Hosted image URL (http/https).
 //
@@ -4636,9 +5888,12 @@ type ListingContentUpdateRequest_Photos_Item struct {
 // ListingContentUpdateRequestPhotosMode How `photos` is applied: `replace` (full replacement of the photo set) or `append` (add after the existing photos). Ignored when `photos` is absent.
 type ListingContentUpdateRequestPhotosMode string
 
+// ListingContentUpdateRequestPoliciesCheckInMethod How the guest lets themselves in. Canonical storage only — distributing it to Airbnb is `PUT /v1/channels/airbnb/listings/{id}/details` with `check_in_option`.
+type ListingContentUpdateRequestPoliciesCheckInMethod string
+
 // ListingContentUpdateResponse defines model for ListingContentUpdateResponse.
 type ListingContentUpdateResponse struct {
-	// Changed Content slabs that were actually written, e.g. ["title","occupancy","amenities"].
+	// Changed Content slabs that were actually written, e.g. ["title","occupancy","amenities"]. A non-English write also reports `locale:<tag>` so you can see which row was written.
 	Changed *[]string `json:"changed,omitempty"`
 
 	// Deferred Provided-but-not-applied fields — e.g. "photos" when a non-empty photos array carried no valid http(s) URL.
@@ -5124,6 +6379,18 @@ type ListingPublishAirbnbRequest struct {
 	HostId *string `json:"hostId,omitempty"`
 }
 
+// ListingPublishAirbnbResponse defines model for ListingPublishAirbnbResponse.
+type ListingPublishAirbnbResponse struct {
+	Channel   *ListingPublishAirbnbResponseChannel `json:"channel,omitempty"`
+	ListingId *string                              `json:"listingId,omitempty"`
+
+	// Result A publish is not one call to Airbnb: it is up to eight independent ones (details, description, amenities, rooms, policies, photos, pricing, checkout_tasks), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback.
+	Result *AirbnbPublishResult `json:"result,omitempty"`
+}
+
+// ListingPublishAirbnbResponseChannel defines model for ListingPublishAirbnbResponse.Channel.
+type ListingPublishAirbnbResponseChannel string
+
 // ListingPublishResponse defines model for ListingPublishResponse.
 type ListingPublishResponse struct {
 	Channel   *ListingPublishResponseChannel `json:"channel,omitempty"`
@@ -5177,6 +6444,46 @@ type ListingPublishStatusResponse struct {
 	Connections *[]ListingPublishStatusConnection `json:"connections,omitempty"`
 	ListingId   *string                           `json:"listingId,omitempty"`
 }
+
+// ListingPullAirbnbRequest Optional. Omit the body entirely to pull through the listing's primary Airbnb connection.
+type ListingPullAirbnbRequest struct {
+	// AirbnbConnectionId Pull through this specific Airbnb connection instead of the listing's primary one. Use when a listing carries several connections (merged properties, host migrations) — the ids come from `GET /v1/listings/{id}/publish-status`.
+	AirbnbConnectionId *string `json:"airbnbConnectionId,omitempty"`
+}
+
+// ListingPullResponse What the pull refreshed, and when. `pulledAt` is the same timestamp `GET /v1/listings/{id}/publish-status` reports as the channel's `lastPulledAt`.
+type ListingPullResponse struct {
+	Channel *ListingPullResponseChannel `json:"channel,omitempty"`
+
+	// ConnectionId The channel connection the values came from.
+	ConnectionId *string `json:"connectionId,omitempty"`
+
+	// ExternalId The listing id on the channel (the Airbnb listing id).
+	ExternalId *string `json:"externalId,omitempty"`
+	ListingId  *string `json:"listingId,omitempty"`
+
+	// MinIntervalSeconds Minimum seconds between pulls of one listing.
+	//
+	// Example: 900
+	MinIntervalSeconds *int `json:"minIntervalSeconds,omitempty"`
+
+	// NextPullAvailableAt Earliest time another pull of this listing is accepted. Calling before then returns `429`.
+	NextPullAvailableAt *time.Time `json:"nextPullAvailableAt,omitempty"`
+
+	// PulledAt When this refresh completed.
+	PulledAt *time.Time `json:"pulledAt,omitempty"`
+
+	// RefreshedFromChannel True when Airbnb itself answered and our stored copy was rewritten from that answer. False means Airbnb could not be read this time (expired grant, read-only host, upstream error) and the projection ran off the copy we already held — nothing is wrong with your data, it simply is not newer than it was. Check `GET /v1/listings/{id}/publish-status` when this is false.
+	RefreshedFromChannel *bool `json:"refreshedFromChannel,omitempty"`
+
+	// Sections Slabs that changed, e.g. `["details","description","photos","rooms","amenities","policies","pricing"]`. An empty array means Airbnb agreed with everything we already held.
+	//
+	// Example: ["details","description","photos","amenities"]
+	Sections *[]string `json:"sections,omitempty"`
+}
+
+// ListingPullResponseChannel defines model for ListingPullResponse.Channel.
+type ListingPullResponseChannel string
 
 // ListingQualityTier defines model for ListingQualityTier.
 type ListingQualityTier struct {
@@ -5867,6 +7174,27 @@ type PropertyListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
+// PublishSectionError One section of a publish that did not reach Airbnb.
+type PublishSectionError struct {
+	// Code `locked` — Airbnb refuses to change these fields on this listing; retrying cannot succeed and `lockedFields` names them. `no_content` — there was nothing canonical to send; write the content, then publish again. `rejected` — Airbnb refused the section as sent; fix the content and publish again.
+	Code PublishSectionErrorCode `json:"code"`
+
+	// LockedFields For `code: locked` — the fields Airbnb dropped.
+	LockedFields *[]string `json:"lockedFields,omitempty"`
+
+	// Message Airbnb's own reason, verbatim, or ours when we refused to send an empty section.
+	Message string `json:"message"`
+
+	// Section Which part of the listing this failure is about.
+	Section PublishSectionErrorSection `json:"section"`
+}
+
+// PublishSectionErrorCode `locked` — Airbnb refuses to change these fields on this listing; retrying cannot succeed and `lockedFields` names them. `no_content` — there was nothing canonical to send; write the content, then publish again. `rejected` — Airbnb refused the section as sent; fix the content and publish again.
+type PublishSectionErrorCode string
+
+// PublishSectionErrorSection Which part of the listing this failure is about.
+type PublishSectionErrorSection string
+
 // Quote defines model for Quote.
 type Quote struct {
 	// Available False when the listing is unavailable for the range or outside its min/max stay. That is an answer, not an error.
@@ -5924,8 +7252,18 @@ type Reservation struct {
 	// CheckIn Example: 2026-04-15
 	CheckIn openapi_types.Date `json:"checkIn"`
 
+	// CheckInTime Local check-in time for this stay, `HH:MM` on a 24-hour clock in the **property's own timezone** — not UTC. Usually inherited from the listing policy, overridden per reservation where an early check-in was agreed. `null` when unknown. This is the same field `PATCH /v1/reservations/{id}` writes.
+	//
+	// Example: 16:00
+	CheckInTime *string `json:"checkInTime,omitempty"`
+
 	// CheckOut Example: 2026-04-20
 	CheckOut openapi_types.Date `json:"checkOut"`
+
+	// CheckOutTime Local check-out time for this stay, `HH:MM` on a 24-hour clock in the property's own timezone. Pair with `checkOut` to schedule the turnover clean. `null` when unknown. This is the same field `PATCH /v1/reservations/{id}` writes.
+	//
+	// Example: 10:00
+	CheckOutTime *string `json:"checkOutTime,omitempty"`
 
 	// ConfirmationCode Channel-side confirmation code (Airbnb HMxxx, Booking.com numeric, etc.).
 	//
@@ -6087,6 +7425,10 @@ type ReservationCancelledPayload struct {
 	CancelledBy *ReservationCancelledPayloadCancelledBy `json:"cancelledBy,omitempty"`
 
 	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	//
+	// **Stay terms are the one exception to that rule.** `cancellationPolicy`, `checkInTime` and `checkOutTime` ride on every delivery, because the decisions they drive — is a refund owed, when can housekeeping turn the unit over — are made at the moment the webhook lands, not on a follow-up fetch. They are operational parameters of the booking, not contact or payment data. Guest email, payment method and payment reference stay off the snapshot; see `GET /v1/reservations/{id}`.
+	//
+	// All three are `null` when the source channel did not supply them. They are never defaulted: a fabricated policy is worse than a missing one.
 	Object ReservationWebhookObject `json:"object"`
 
 	// Reason Free-form cancellation reason from the source channel, if available.
@@ -6193,6 +7535,10 @@ type ReservationCreatedEventType string
 // ReservationCreatedPayload Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking. Stripe-pattern envelope: `data.object` carries the reservation snapshot.
 type ReservationCreatedPayload struct {
 	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	//
+	// **Stay terms are the one exception to that rule.** `cancellationPolicy`, `checkInTime` and `checkOutTime` ride on every delivery, because the decisions they drive — is a refund owed, when can housekeeping turn the unit over — are made at the moment the webhook lands, not on a follow-up fetch. They are operational parameters of the booking, not contact or payment data. Guest email, payment method and payment reference stay off the snapshot; see `GET /v1/reservations/{id}`.
+	//
+	// All three are `null` when the source channel did not supply them. They are never defaulted: a fabricated policy is worse than a missing one.
 	Object ReservationWebhookObject `json:"object"`
 }
 
@@ -6453,6 +7799,10 @@ type ReservationUpdatedEventType string
 // ReservationUpdatedPayload Payload for `reservation.updated`. Dates, status, or any tracked field changed on an existing reservation. `data.object` is the post-change snapshot; `data.previousAttributes` lists ONLY the fields that actually moved, with their prior values. Fields not in `previousAttributes` did not change.
 type ReservationUpdatedPayload struct {
 	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	//
+	// **Stay terms are the one exception to that rule.** `cancellationPolicy`, `checkInTime` and `checkOutTime` ride on every delivery, because the decisions they drive — is a refund owed, when can housekeeping turn the unit over — are made at the moment the webhook lands, not on a follow-up fetch. They are operational parameters of the booking, not contact or payment data. Guest email, payment method and payment reference stay off the snapshot; see `GET /v1/reservations/{id}`.
+	//
+	// All three are `null` when the source channel did not supply them. They are never defaulted: a fabricated policy is worse than a missing one.
 	Object ReservationWebhookObject `json:"object"`
 
 	// PreviousAttributes Sparse map: every key here is a field on the reservation snapshot whose value changed in this event, mapped to its prior value. Mirrors the keys of `ReservationWebhookObject` (e.g. `checkinDate`, `checkoutDate`, `status`). Receivers can diff `object[k]` vs `previousAttributes[k]` to know what moved.
@@ -6462,11 +7812,35 @@ type ReservationUpdatedPayload struct {
 }
 
 // ReservationWebhookObject Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+//
+// **Stay terms are the one exception to that rule.** `cancellationPolicy`, `checkInTime` and `checkOutTime` ride on every delivery, because the decisions they drive — is a refund owed, when can housekeeping turn the unit over — are made at the moment the webhook lands, not on a follow-up fetch. They are operational parameters of the booking, not contact or payment data. Guest email, payment method and payment reference stay off the snapshot; see `GET /v1/reservations/{id}`.
+//
+// All three are `null` when the source channel did not supply them. They are never defaulted: a fabricated policy is worse than a missing one.
 type ReservationWebhookObject struct {
+	// CancellationPolicy Cancellation policy the booking was made under, **verbatim from the source channel** — not normalised, because the codes do not mean the same thing across channels.
+	//
+	// - Airbnb, Vrbo, direct and owner bookings carry a named code: `flexible`, `moderate`, `firm_14`, `strict_14_with_grace_period`, `better_strict_with_grace_period`, `super_strict_30`, `super_strict_60`, `tiered_pricing_non_refundable`, `long_term_flexible`, `flexible_new`.
+	// - **Booking.com carries its numeric policy id as a string** (`"1"`, `"74"`, `"121"`). It is not self-describing — resolve it against the property's policy set on Booking.com.
+	//
+	// `null` when the channel supplied none (iCal-imported bookings, some legacy direct rows).
+	//
+	// Example: firm_14
+	CancellationPolicy *string `json:"cancellationPolicy,omitempty"`
+
 	// Channel Source channel — `airbnb`, `booking`, `vrbo`, `direct`, `owner`, `mid_stay_clean`, etc.
 	//
 	// Example: airbnb
 	Channel string `json:"channel"`
+
+	// CheckInTime Local check-in time, `HH:MM` on a 24-hour clock in the **property's own timezone** — not UTC, and not the subscriber's. Usually inherited from the listing policy, but per-reservation where the channel or an agreed early check-in overrides it. `null` when unknown.
+	//
+	// Example: 16:00
+	CheckInTime *string `json:"checkInTime,omitempty"`
+
+	// CheckOutTime Local check-out time, `HH:MM` on a 24-hour clock in the property's own timezone. Pair it with `checkoutDate` to schedule the turnover. `null` when unknown.
+	//
+	// Example: 10:00
+	CheckOutTime *string `json:"checkOutTime,omitempty"`
 
 	// CheckinDate Check-in date (local property date, no timezone).
 	//
@@ -6886,6 +8260,9 @@ type WebhookSubscription struct {
 // WebhookSubscriptionStatus defines model for WebhookSubscription.Status.
 type WebhookSubscriptionStatus string
 
+// AirbnbAccountId Example: 1772489413932732258
+type AirbnbAccountId = string
+
 // IdempotencyKey Example: 9f1c2f7e-4a3b-4f2e-9c8d-1b6a0e5d7c31
 type IdempotencyKey = string
 
@@ -6909,6 +8286,9 @@ type Limit = int
 
 // Provider defines model for provider.
 type Provider = string
+
+// AirbnbAccountNotFound Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type AirbnbAccountNotFound = Error
 
 // AirbnbRateLimited Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type AirbnbRateLimited = Error
@@ -6971,6 +8351,15 @@ type CreateBillingCheckoutJSONBodyPlan string
 
 // ListAirbnbAlterationsParams defines parameters for ListAirbnbAlterations.
 type ListAirbnbAlterationsParams struct {
+	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
+	//
+	// A workspace can connect several Airbnb accounts. Omit this and you get every account's rows (the default, unchanged). Every row carries `accountId` + `accountName` either way, so you can group without a second call.
+	//
+	// An id that is not connected to THIS workspace returns `404 not_found` with your own ids in `valid_values` — we do not distinguish "no such host" from "someone else's host", because confirming the latter would leak another workspace's account.
+	//
+	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
+	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
+
 	// Type Scope: `pending` (default) returns only alterations awaiting a decision; `all` returns every alteration.
 	Type *ListAirbnbAlterationsParamsType `form:"type,omitempty" json:"type,omitempty"`
 
@@ -6981,31 +8370,27 @@ type ListAirbnbAlterationsParams struct {
 // ListAirbnbAlterationsParamsType defines parameters for ListAirbnbAlterations.
 type ListAirbnbAlterationsParamsType string
 
-// CreateAirbnbAlterationJSONBody defines parameters for CreateAirbnbAlteration.
-type CreateAirbnbAlterationJSONBody struct {
-	// CheckIn New check-in date (YYYY-MM-DD).
-	CheckIn *openapi_types.Date `json:"check_in,omitempty"`
-
-	// CheckOut New check-out date (YYYY-MM-DD).
-	CheckOut *openapi_types.Date `json:"check_out,omitempty"`
-
-	// ConfirmationCode Airbnb confirmation code of the reservation to alter.
-	ConfirmationCode string `json:"confirmation_code"`
-
-	// NumberOfGuests New guest count.
-	NumberOfGuests       *int                   `json:"number_of_guests,omitempty"`
-	AdditionalProperties map[string]interface{} `json:"-"`
-}
-
 // AcceptAirbnbAlterationJSONBody defines parameters for AcceptAirbnbAlteration.
 type AcceptAirbnbAlterationJSONBody = map[string]interface{}
+
+// CancelAirbnbAlterationJSONBody defines parameters for CancelAirbnbAlteration.
+type CancelAirbnbAlterationJSONBody = map[string]interface{}
 
 // DeclineAirbnbAlterationJSONBody defines parameters for DeclineAirbnbAlteration.
 type DeclineAirbnbAlterationJSONBody = map[string]interface{}
 
 // ListAirbnbListingsParams defines parameters for ListAirbnbListings.
 type ListAirbnbListingsParams struct {
-	// Include Comma-separated expansions. Currently supported: `amenities` (adds `amenities` and `accessibility_amenities` arrays to each connection, sourced from the local `listings_airbnb_amenities` cache).
+	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
+	//
+	// A workspace can connect several Airbnb accounts. Omit this and you get every account's rows (the default, unchanged). Every row carries `accountId` + `accountName` either way, so you can group without a second call.
+	//
+	// An id that is not connected to THIS workspace returns `404 not_found` with your own ids in `valid_values` — we do not distinguish "no such host" from "someone else's host", because confirming the latter would leak another workspace's account.
+	//
+	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
+	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
+
+	// Include Comma-separated expansions. Currently supported: `amenities` (adds `amenities` and `accessibility_amenities` arrays to each connection, sourced from the local `listings_airbnb_amenities` cache) and `thumbnail` (adds `thumbnailUrl` to each listing). Unknown values return 422 with a `valid_values` envelope.
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 }
 
@@ -7014,6 +8399,196 @@ type GetAirbnbListingParams struct {
 	// Include Comma-separated expansions. Currently supported: `amenities`.
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 }
+
+// AirbnbListingActionParams defines parameters for AirbnbListingAction.
+type AirbnbListingActionParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// AirbnbListingAction200JSONResponseBody0 defines parameters for AirbnbListingAction.
+type AirbnbListingAction200JSONResponseBody0 struct {
+	Active *bool   `json:"active,omitempty"`
+	Id     *string `json:"id,omitempty"`
+}
+
+// AirbnbListingAction200JSONResponseBody1 defines parameters for AirbnbListingAction.
+type AirbnbListingAction200JSONResponseBody1 struct {
+	Action  *string `json:"action,omitempty"`
+	Channel *string `json:"channel,omitempty"`
+	Id      *string `json:"id,omitempty"`
+
+	// Result A publish is not one call to Airbnb: it is up to eight independent ones (details, description, amenities, rooms, policies, photos, pricing, checkout_tasks), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback.
+	Result *AirbnbPublishResult `json:"result,omitempty"`
+}
+
+// AirbnbListingAction200JSONResponseBody defines parameters for AirbnbListingAction.
+type AirbnbListingAction200JSONResponseBody struct {
+	union json.RawMessage
+}
+
+// UpdateAirbnbListingAmenitiesJSONBody defines parameters for UpdateAirbnbListingAmenities.
+type UpdateAirbnbListingAmenitiesJSONBody struct {
+	AccessibilityAmenities *[]struct {
+		Id          string  `json:"id"`
+		Instruction *string `json:"instruction,omitempty"`
+		IsPresent   bool    `json:"is_present"`
+
+		// PhotoIds Airbnb photo ids evidencing the accessibility claim (`photoAirbnbId` from `GET /photos`).
+		PhotoIds *[]string `json:"photo_ids,omitempty"`
+	} `json:"accessibility_amenities,omitempty"`
+	Amenities *[]struct {
+		// Id Airbnb amenity id, e.g. `wireless_internet`. Case is ignored.
+		Id string `json:"id"`
+
+		// Instruction Optional host note shown with the amenity.
+		Instruction *string `json:"instruction,omitempty"`
+
+		// IsPresent `true` claims the amenity, `false` removes it. Required — an amenity with no `is_present` would be a silent no-op.
+		IsPresent bool `json:"is_present"`
+	} `json:"amenities,omitempty"`
+}
+
+// GetAirbnbBookingSettings200JSONResponseBodyDataBookingMode defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBodyDataBookingMode string
+
+// GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBodyDataCancellationShortStayPolicy string
+
+// GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0 defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0 = int
+
+// GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1 defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1 string
+
+// GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End struct {
+	union json.RawMessage
+}
+
+// GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0 defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0 = int
+
+// GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1 defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1 string
+
+// GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start struct {
+	union json.RawMessage
+}
+
+// GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory defines parameters for GetAirbnbBookingSettings.
+type GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory string
+
+// UpdateAirbnbBookingSettingsJSONBody defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBody struct {
+	// AdvanceNotice Send `hours`, `allowRequestToBook`, or both. The half you omit keeps the value Airbnb currently holds.
+	AdvanceNotice *struct {
+		AllowRequestToBook *bool `json:"allowRequestToBook,omitempty"`
+		Hours              *int  `json:"hours,omitempty"`
+	} `json:"advanceNotice,omitempty"`
+
+	// BookingWindow Send `days`, or `unlimited: true`. Sending both is refused.
+	BookingWindow *struct {
+		Days      *int  `json:"days,omitempty"`
+		Unlimited *bool `json:"unlimited,omitempty"`
+	} `json:"bookingWindow,omitempty"`
+	Cancellation *struct {
+		LongStayPolicy *string `json:"longStayPolicy,omitempty"`
+
+		// NonRefundable `enabled: true` requires `discountPercent`; `enabled: false` sets the price factor to 1.0 (no discount). Repull converts the percentage to the factor Airbnb stores — 10% becomes 0.9 — and refuses anything over 30%, which is Airbnb's 0.7 floor.
+		NonRefundable *struct {
+			DiscountPercent *int  `json:"discountPercent,omitempty"`
+			Enabled         *bool `json:"enabled,omitempty"`
+		} `json:"nonRefundable,omitempty"`
+		ShortStayPolicy *UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy `json:"shortStayPolicy,omitempty"`
+	} `json:"cancellation,omitempty"`
+
+	// CheckIn `start` must be earlier than `end` unless either is `FLEXIBLE`.
+	CheckIn *struct {
+		End   *UpdateAirbnbBookingSettingsJSONBody_CheckIn_End   `json:"end,omitempty"`
+		Start *UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start `json:"start,omitempty"`
+	} `json:"checkIn,omitempty"`
+	CheckOut *struct {
+		Time int `json:"time"`
+	} `json:"checkOut,omitempty"`
+
+	// InstantBook Send `enabled`, `guestCategory`, or `enabled` + `requiresGoodTrackRecord`. `requiresGoodTrackRecord` alone is refused — it selects WHICH guests may Instant Book, so it needs `enabled: true` (or an explicit category) with it. Contradictory combinations are refused.
+	InstantBook *struct {
+		Enabled                 *bool                                                        `json:"enabled,omitempty"`
+		GuestCategory           *UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory `json:"guestCategory,omitempty"`
+		RequiresGoodTrackRecord *bool                                                        `json:"requiresGoodTrackRecord,omitempty"`
+	} `json:"instantBook,omitempty"`
+	PreparationTime *struct {
+		Nights int `json:"nights"`
+	} `json:"preparationTime,omitempty"`
+}
+
+// UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy string
+
+// UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0 defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0 = int
+
+// UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1 defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1 string
+
+// UpdateAirbnbBookingSettingsJSONBody_CheckIn_End defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBody_CheckIn_End struct {
+	union json.RawMessage
+}
+
+// UpdateAirbnbBookingSettingsJSONBodyCheckInStart0 defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBodyCheckInStart0 = int
+
+// UpdateAirbnbBookingSettingsJSONBodyCheckInStart1 defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBodyCheckInStart1 string
+
+// UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start struct {
+	union json.RawMessage
+}
+
+// UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory string
+
+// UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied string
+
+// UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingMode defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsBookingMode string
+
+// UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCancellationShortStayPolicy string
+
+// UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0 defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0 = int
+
+// UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1 defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1 string
+
+// UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End struct {
+	union json.RawMessage
+}
+
+// UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0 defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0 = int
+
+// UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1 defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1 string
+
+// UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start struct {
+	union json.RawMessage
+}
+
+// UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsInstantBookGuestCategory string
 
 // GetAirbnbCheckinGuideParams defines parameters for GetAirbnbCheckinGuide.
 type GetAirbnbCheckinGuideParams struct {
@@ -7036,10 +8611,117 @@ type ListAirbnbListingDescriptionsParams struct {
 	Country *string `form:"country,omitempty" json:"country,omitempty"`
 }
 
+// UpdateAirbnbListingDescriptionParams defines parameters for UpdateAirbnbListingDescription.
+type UpdateAirbnbListingDescriptionParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// UpdateAirbnbListingDetailsParams defines parameters for UpdateAirbnbListingDetails.
+type UpdateAirbnbListingDetailsParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// ListAirbnbListingPermitsParams defines parameters for ListAirbnbListingPermits.
+type ListAirbnbListingPermitsParams struct {
+	// Source `cache` (default) reads the local mirror only. `live` additionally asks Airbnb for the permit questions.
+	Source *ListAirbnbListingPermitsParamsSource `form:"source,omitempty" json:"source,omitempty"`
+}
+
+// ListAirbnbListingPermitsParamsSource defines parameters for ListAirbnbListingPermits.
+type ListAirbnbListingPermitsParamsSource string
+
+// UpdateAirbnbListingPermitsParams defines parameters for UpdateAirbnbListingPermits.
+type UpdateAirbnbListingPermitsParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // DeleteAirbnbListingPhotoParams defines parameters for DeleteAirbnbListingPhoto.
 type DeleteAirbnbListingPhotoParams struct {
 	// PhotoId Airbnb-side photo id to delete.
 	PhotoId string `form:"photoId" json:"photoId"`
+}
+
+// UpdateAirbnbListingPhotoJSONBody defines parameters for UpdateAirbnbListingPhoto.
+type UpdateAirbnbListingPhotoJSONBody struct {
+	// Caption New caption, or `null` to clear it.
+	Caption *string `json:"caption,omitempty"`
+
+	// Metadata At most 10 pairs; keys 40 characters or fewer.
+	Metadata *map[string]string `json:"metadata,omitempty"`
+
+	// PhotoId Airbnb-side photo id — the `photoAirbnbId` from `GET /photos`.
+	PhotoId string `json:"photo_id"`
+
+	// RoomId Airbnb room id to file the photo under (`roomId` from `GET /rooms`), or `null` to detach it.
+	RoomId *string `json:"room_id,omitempty"`
+
+	// SortOrder Position in the tour. Relative, not absolute — lower sorts earlier.
+	SortOrder *int `json:"sort_order,omitempty"`
+}
+
+// UploadAirbnbListingPhotosJSONBody defines parameters for UploadAirbnbListingPhotos.
+type UploadAirbnbListingPhotosJSONBody struct {
+	Photos []struct {
+		// Amenity Amenity id, when `category` is `listing_amenity` or `room_amenity`.
+		Amenity  *string                                          `json:"amenity,omitempty"`
+		Caption  *string                                          `json:"caption,omitempty"`
+		Category *UploadAirbnbListingPhotosJSONBodyPhotosCategory `json:"category,omitempty"`
+
+		// Image Base64 image data. A `data:image/jpeg;base64,` prefix is accepted and stripped. Maximum 25 MB decoded.
+		Image string `json:"image"`
+
+		// ListingId Accepted and ignored — the listing comes from the path.
+		// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+		ListingId *UploadAirbnbListingPhotosJSONBody_Photos_ListingId `json:"listing_id,omitempty"`
+
+		// Metadata At most 10 pairs; keys 40 characters or fewer.
+		Metadata *map[string]string `json:"metadata,omitempty"`
+
+		// RoomId Airbnb room id to file this photo under (`roomId` from `GET /rooms`).
+		RoomId    *string `json:"room_id,omitempty"`
+		SortOrder *int    `json:"sort_order,omitempty"`
+	} `json:"photos"`
+}
+
+// UploadAirbnbListingPhotosJSONBodyPhotosCategory defines parameters for UploadAirbnbListingPhotos.
+type UploadAirbnbListingPhotosJSONBodyPhotosCategory string
+
+// UploadAirbnbListingPhotosJSONBodyPhotosListingId0 defines parameters for UploadAirbnbListingPhotos.
+type UploadAirbnbListingPhotosJSONBodyPhotosListingId0 = string
+
+// UploadAirbnbListingPhotosJSONBodyPhotosListingId1 defines parameters for UploadAirbnbListingPhotos.
+type UploadAirbnbListingPhotosJSONBodyPhotosListingId1 = int
+
+// UploadAirbnbListingPhotosJSONBody_Photos_ListingId defines parameters for UploadAirbnbListingPhotos.
+type UploadAirbnbListingPhotosJSONBody_Photos_ListingId struct {
+	union json.RawMessage
+}
+
+// SetAirbnbListingCoverPhotoJSONBody defines parameters for SetAirbnbListingCoverPhoto.
+type SetAirbnbListingCoverPhotoJSONBody struct {
+	// PhotoId Airbnb photo id (`photoAirbnbId` from `GET /photos`) to lead the tour.
+	PhotoId string `json:"photo_id"`
+}
+
+// ReorderAirbnbListingPhotosJSONBody defines parameters for ReorderAirbnbListingPhotos.
+type ReorderAirbnbListingPhotosJSONBody struct {
+	// PhotoIds Airbnb photo ids (`photoAirbnbId` from `GET /photos`) in display order, first photo first. No duplicates; every id must be on this listing.
+	PhotoIds []string `json:"photo_ids"`
 }
 
 // GetAirbnbListingQualityParams defines parameters for GetAirbnbListingQuality.
@@ -7058,7 +8740,117 @@ type DeleteAirbnbListingRoomParams struct {
 }
 
 // CreateAirbnbListingRoomJSONBody defines parameters for CreateAirbnbListingRoom.
-type CreateAirbnbListingRoomJSONBody map[string]interface{}
+type CreateAirbnbListingRoomJSONBody struct {
+	// Beds The room's whole sleeping arrangement. Replaces what is there — send every bed, not just the changed one.
+	Beds *[]struct {
+		Quantity int `json:"quantity"`
+
+		// Type Airbnb bed type, lowercase snake_case. Seen on live listings: king_bed, queen_bed, double_bed, small_double_bed, single_bed, bunk_bed, sofa_bed, couch, air_mattress, floor_mattress, toddler_bed, crib, hammock. Not a closed enum here — Airbnb's vocabulary drifts, so an unknown type is refused by Airbnb with its own message rather than by us.
+		Type string `json:"type"`
+	} `json:"beds,omitempty"`
+	IsPrivate *bool `json:"is_private,omitempty"`
+
+	// ListingId Accepted and ignored — the listing comes from the path.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	ListingId *CreateAirbnbListingRoomJSONBody_ListingId `json:"listing_id,omitempty"`
+	Metadata  *map[string]interface{}                    `json:"metadata,omitempty"`
+
+	// RoomAmenities Amenities attached to this room, not to the listing.
+	RoomAmenities *[]struct {
+		Id    string                                               `json:"id"`
+		Name  *string                                              `json:"name,omitempty"`
+		Value *CreateAirbnbListingRoomJSONBody_RoomAmenities_Value `json:"value,omitempty"`
+	} `json:"room_amenities,omitempty"`
+
+	// RoomNumber The room's position among the listing's rooms. Airbnb keys rooms of the same type by this number, so two bedrooms are 1 and 2.
+	RoomNumber int                                     `json:"room_number"`
+	RoomType   CreateAirbnbListingRoomJSONBodyRoomType `json:"room_type"`
+}
+
+// CreateAirbnbListingRoomJSONBodyListingId0 defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBodyListingId0 = string
+
+// CreateAirbnbListingRoomJSONBodyListingId1 defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBodyListingId1 = int
+
+// CreateAirbnbListingRoomJSONBody_ListingId defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBody_ListingId struct {
+	union json.RawMessage
+}
+
+// CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 = string
+
+// CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 = float32
+
+// CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 = bool
+
+// CreateAirbnbListingRoomJSONBody_RoomAmenities_Value defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBody_RoomAmenities_Value struct {
+	union json.RawMessage
+}
+
+// CreateAirbnbListingRoomJSONBodyRoomType defines parameters for CreateAirbnbListingRoom.
+type CreateAirbnbListingRoomJSONBodyRoomType string
+
+// UpdateAirbnbListingRoomJSONBody defines parameters for UpdateAirbnbListingRoom.
+type UpdateAirbnbListingRoomJSONBody struct {
+	// Beds The room's whole sleeping arrangement. Replaces what is there — send every bed, not just the changed one.
+	Beds *[]struct {
+		Quantity int `json:"quantity"`
+
+		// Type Airbnb bed type, lowercase snake_case. Seen on live listings: king_bed, queen_bed, double_bed, small_double_bed, single_bed, bunk_bed, sofa_bed, couch, air_mattress, floor_mattress, toddler_bed, crib, hammock. Not a closed enum here — Airbnb's vocabulary drifts, so an unknown type is refused by Airbnb with its own message rather than by us.
+		Type string `json:"type"`
+	} `json:"beds,omitempty"`
+	IsPrivate *bool                   `json:"is_private,omitempty"`
+	Metadata  *map[string]interface{} `json:"metadata,omitempty"`
+
+	// RoomAmenities Amenities attached to this room, not to the listing.
+	RoomAmenities *[]struct {
+		Id    string                                               `json:"id"`
+		Name  *string                                              `json:"name,omitempty"`
+		Value *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value `json:"value,omitempty"`
+	} `json:"room_amenities,omitempty"`
+
+	// RoomNumber The room's position among the listing's rooms. Airbnb keys rooms of the same type by this number, so two bedrooms are 1 and 2.
+	RoomNumber *int                                     `json:"room_number,omitempty"`
+	RoomType   *UpdateAirbnbListingRoomJSONBodyRoomType `json:"room_type,omitempty"`
+}
+
+// UpdateAirbnbListingRoomParams defines parameters for UpdateAirbnbListingRoom.
+type UpdateAirbnbListingRoomParams struct {
+	// RoomId Airbnb-side room id to update.
+	RoomId string `form:"roomId" json:"roomId"`
+}
+
+// UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 defines parameters for UpdateAirbnbListingRoom.
+type UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 = string
+
+// UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 defines parameters for UpdateAirbnbListingRoom.
+type UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 = float32
+
+// UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 defines parameters for UpdateAirbnbListingRoom.
+type UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 = bool
+
+// UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value defines parameters for UpdateAirbnbListingRoom.
+type UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value struct {
+	union json.RawMessage
+}
+
+// UpdateAirbnbListingRoomJSONBodyRoomType defines parameters for UpdateAirbnbListingRoom.
+type UpdateAirbnbListingRoomJSONBodyRoomType string
+
+// UpdateAirbnbListingSafetyDisclosuresParams defines parameters for UpdateAirbnbListingSafetyDisclosures.
+type UpdateAirbnbListingSafetyDisclosuresParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
 
 // GetAirbnbListingSettingsParams defines parameters for GetAirbnbListingSettings.
 type GetAirbnbListingSettingsParams struct {
@@ -7068,6 +8860,18 @@ type GetAirbnbListingSettingsParams struct {
 
 // GetAirbnbListingSettingsParamsType defines parameters for GetAirbnbListingSettings.
 type GetAirbnbListingSettingsParamsType string
+
+// ListAirbnbThreadsParams defines parameters for ListAirbnbThreads.
+type ListAirbnbThreadsParams struct {
+	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
+	//
+	// A workspace can connect several Airbnb accounts. Omit this and you get every account's rows (the default, unchanged). Every row carries `accountId` + `accountName` either way, so you can group without a second call.
+	//
+	// An id that is not connected to THIS workspace returns `404 not_found` with your own ids in `valid_values` — we do not distinguish "no such host" from "someone else's host", because confirming the latter would leak another workspace's account.
+	//
+	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
+	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
+}
 
 // SendAirbnbMessageJSONBody defines parameters for SendAirbnbMessage.
 type SendAirbnbMessageJSONBody struct {
@@ -7120,6 +8924,15 @@ type CreateAirbnbOfferJSONBodyType string
 
 // ListAirbnbReservationsParams defines parameters for ListAirbnbReservations.
 type ListAirbnbReservationsParams struct {
+	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
+	//
+	// A workspace can connect several Airbnb accounts. Omit this and you get every account's rows (the default, unchanged). Every row carries `accountId` + `accountName` either way, so you can group without a second call.
+	//
+	// An id that is not connected to THIS workspace returns `404 not_found` with your own ids in `valid_values` — we do not distinguish "no such host" from "someone else's host", because confirming the latter would leak another workspace's account.
+	//
+	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
+	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
+
 	// Cursor Opaque cursor returned by the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
@@ -7148,10 +8961,34 @@ type ListAirbnbReservationsParams struct {
 // ListAirbnbReservationsParamsStatus defines parameters for ListAirbnbReservations.
 type ListAirbnbReservationsParamsStatus string
 
+// ListAirbnbReviewsParams defines parameters for ListAirbnbReviews.
+type ListAirbnbReviewsParams struct {
+	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
+	//
+	// A workspace can connect several Airbnb accounts. Omit this and you get every account's rows (the default, unchanged). Every row carries `accountId` + `accountName` either way, so you can group without a second call.
+	//
+	// An id that is not connected to THIS workspace returns `404 not_found` with your own ids in `valid_values` — we do not distinguish "no such host" from "someone else's host", because confirming the latter would leak another workspace's account.
+	//
+	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
+	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
+}
+
 // RespondAirbnbReviewJSONBody defines parameters for RespondAirbnbReview.
 type RespondAirbnbReviewJSONBody struct {
 	// Response Public response text. Capped at 1000 characters.
 	Response string `json:"response"`
+}
+
+// ListAirbnbTransactionsParams defines parameters for ListAirbnbTransactions.
+type ListAirbnbTransactionsParams struct {
+	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
+	//
+	// A workspace can connect several Airbnb accounts. Omit this and you get every account's rows (the default, unchanged). Every row carries `accountId` + `accountName` either way, so you can group without a second call.
+	//
+	// An id that is not connected to THIS workspace returns `404 not_found` with your own ids in `valid_values` — we do not distinguish "no such host" from "someone else's host", because confirming the latter would leak another workspace's account.
+	//
+	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
+	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
 }
 
 // SyncAirbnbTransactionsJSONBody defines parameters for SyncAirbnbTransactions.
@@ -7643,13 +9480,13 @@ type ListListingsParams struct {
 	// Q Case-insensitive substring search on name, street, or city.
 	Q *string `form:"q,omitempty" json:"q,omitempty"`
 
-	// Status Filter by listing status. Defaults to `active`. Pass `inactive` to list the listings you can activate, `archived` for archived ones, or `all` for every status. Inactive listings are returned with identity fields only — `id`, `name`, `status` and `channels` — and never with `address`, `thumbnailUrl`, `content` or `details`; activate one to see the rest.
+	// Status Filter by listing status. Defaults to `active`. Pass `inactive` to list the listings you can activate, `archived` for archived ones, or `all` for every status. Inactive listings are returned with identity fields only — `id`, `name`, `status` and `channels` — and never with `address`, `content` or `details`; activate one to see the rest. The only field you can add to an inactive row is `thumbnailUrl`, via `?include=thumbnail`.
 	Status *ListListingsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Channel Restrict to listings published on the given channel (`airbnb`, `booking`, `vrbo`, etc.). Joins through `listing_platform_links` and matches active links only.
 	Channel *string `form:"channel,omitempty" json:"channel,omitempty"`
 
-	// Include Comma-separated optional expansions. Currently supported: `content`, `details`. Unknown values return 422 with a `valid_values` envelope. (Note: `amenities` is not yet supported on the list endpoint — use the detail endpoint to fetch amenity rows for a single listing.)
+	// Include Comma-separated optional expansions. Currently supported: `content`, `details`, `thumbnail`. `thumbnail` guarantees `thumbnailUrl` on every row and is the only expansion that applies to inactive listings. Unknown values return 422 with a `valid_values` envelope. (Note: `amenities` is not yet supported on the list endpoint — use the detail endpoint to fetch amenity rows for a single listing.)
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
@@ -7683,6 +9520,16 @@ type ListListingCompsParams struct {
 	EndDate *openapi_types.Date `form:"endDate,omitempty" json:"endDate,omitempty"`
 }
 
+// UpdateListingContentParams defines parameters for UpdateListingContent.
+type UpdateListingContentParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // GetListingPricingParams defines parameters for GetListingPricing.
 type GetListingPricingParams struct {
 	// StartDate Inclusive start of the calendar window. Defaults to today.
@@ -7706,6 +9553,16 @@ type GetListingPricingHistoryParams struct {
 
 	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// PublishListingToAirbnbParams defines parameters for PublishListingToAirbnb.
+type PublishListingToAirbnbParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
 // GetListingSegmentsParams defines parameters for GetListingSegments.
@@ -8087,10 +9944,13 @@ type UpdateAvailabilityJSONRequestBody = AvailabilityWriteRequest
 type CreateBillingCheckoutJSONRequestBody CreateBillingCheckoutJSONBody
 
 // CreateAirbnbAlterationJSONRequestBody defines body for CreateAirbnbAlteration for application/json ContentType.
-type CreateAirbnbAlterationJSONRequestBody CreateAirbnbAlterationJSONBody
+type CreateAirbnbAlterationJSONRequestBody = AirbnbAlterationCreateRequest
 
 // AcceptAirbnbAlterationJSONRequestBody defines body for AcceptAirbnbAlteration for application/json ContentType.
 type AcceptAirbnbAlterationJSONRequestBody = AcceptAirbnbAlterationJSONBody
+
+// CancelAirbnbAlterationJSONRequestBody defines body for CancelAirbnbAlteration for application/json ContentType.
+type CancelAirbnbAlterationJSONRequestBody = CancelAirbnbAlterationJSONBody
 
 // DeclineAirbnbAlterationJSONRequestBody defines body for DeclineAirbnbAlteration for application/json ContentType.
 type DeclineAirbnbAlterationJSONRequestBody = DeclineAirbnbAlterationJSONBody
@@ -8101,14 +9961,47 @@ type MapAirbnbListingJSONRequestBody = MapAirbnbListingRequest
 // AirbnbListingActionJSONRequestBody defines body for AirbnbListingAction for application/json ContentType.
 type AirbnbListingActionJSONRequestBody = AirbnbListingActionRequest
 
+// UpdateAirbnbListingAmenitiesJSONRequestBody defines body for UpdateAirbnbListingAmenities for application/json ContentType.
+type UpdateAirbnbListingAmenitiesJSONRequestBody UpdateAirbnbListingAmenitiesJSONBody
+
 // UpdateAirbnbListingAvailabilityJSONRequestBody defines body for UpdateAirbnbListingAvailability for application/json ContentType.
 type UpdateAirbnbListingAvailabilityJSONRequestBody = AirbnbAvailabilityWriteRequest
+
+// UpdateAirbnbBookingSettingsJSONRequestBody defines body for UpdateAirbnbBookingSettings for application/json ContentType.
+type UpdateAirbnbBookingSettingsJSONRequestBody UpdateAirbnbBookingSettingsJSONBody
+
+// UpdateAirbnbListingDescriptionJSONRequestBody defines body for UpdateAirbnbListingDescription for application/json ContentType.
+type UpdateAirbnbListingDescriptionJSONRequestBody = AirbnbDescriptionWriteRequest
+
+// UpdateAirbnbListingDetailsJSONRequestBody defines body for UpdateAirbnbListingDetails for application/json ContentType.
+type UpdateAirbnbListingDetailsJSONRequestBody = AirbnbListingDetailsWriteRequest
+
+// UpdateAirbnbListingPermitsJSONRequestBody defines body for UpdateAirbnbListingPermits for application/json ContentType.
+type UpdateAirbnbListingPermitsJSONRequestBody = AirbnbPermitsWriteRequest
+
+// UpdateAirbnbListingPhotoJSONRequestBody defines body for UpdateAirbnbListingPhoto for application/json ContentType.
+type UpdateAirbnbListingPhotoJSONRequestBody UpdateAirbnbListingPhotoJSONBody
+
+// UploadAirbnbListingPhotosJSONRequestBody defines body for UploadAirbnbListingPhotos for application/json ContentType.
+type UploadAirbnbListingPhotosJSONRequestBody UploadAirbnbListingPhotosJSONBody
+
+// SetAirbnbListingCoverPhotoJSONRequestBody defines body for SetAirbnbListingCoverPhoto for application/json ContentType.
+type SetAirbnbListingCoverPhotoJSONRequestBody SetAirbnbListingCoverPhotoJSONBody
+
+// ReorderAirbnbListingPhotosJSONRequestBody defines body for ReorderAirbnbListingPhotos for application/json ContentType.
+type ReorderAirbnbListingPhotosJSONRequestBody ReorderAirbnbListingPhotosJSONBody
 
 // UpdateAirbnbListingPricingJSONRequestBody defines body for UpdateAirbnbListingPricing for application/json ContentType.
 type UpdateAirbnbListingPricingJSONRequestBody = AirbnbPricingWriteRequest
 
 // CreateAirbnbListingRoomJSONRequestBody defines body for CreateAirbnbListingRoom for application/json ContentType.
 type CreateAirbnbListingRoomJSONRequestBody CreateAirbnbListingRoomJSONBody
+
+// UpdateAirbnbListingRoomJSONRequestBody defines body for UpdateAirbnbListingRoom for application/json ContentType.
+type UpdateAirbnbListingRoomJSONRequestBody UpdateAirbnbListingRoomJSONBody
+
+// UpdateAirbnbListingSafetyDisclosuresJSONRequestBody defines body for UpdateAirbnbListingSafetyDisclosures for application/json ContentType.
+type UpdateAirbnbListingSafetyDisclosuresJSONRequestBody = AirbnbSafetyDisclosuresWriteRequest
 
 // SendAirbnbMessageJSONRequestBody defines body for SendAirbnbMessage for application/json ContentType.
 type SendAirbnbMessageJSONRequestBody SendAirbnbMessageJSONBody
@@ -8247,6 +10140,9 @@ type UpdateListingPricingStrategyJSONRequestBody = ListingPricingStrategyInput
 // PublishListingToAirbnbJSONRequestBody defines body for PublishListingToAirbnb for application/json ContentType.
 type PublishListingToAirbnbJSONRequestBody = ListingPublishAirbnbRequest
 
+// PullListingFromAirbnbJSONRequestBody defines body for PullListingFromAirbnb for application/json ContentType.
+type PullListingFromAirbnbJSONRequestBody = ListingPullAirbnbRequest
+
 // CreateReservationJSONRequestBody defines body for CreateReservation for application/json ContentType.
 type CreateReservationJSONRequestBody = ReservationCreateRequest
 
@@ -8296,6 +10192,22 @@ func (a *AirbnbAlteration) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
+	if raw, found := object["accountId"]; found {
+		err = json.Unmarshal(raw, &a.AccountId)
+		if err != nil {
+			return fmt.Errorf("error reading 'accountId': %w", err)
+		}
+		delete(object, "accountId")
+	}
+
+	if raw, found := object["accountName"]; found {
+		err = json.Unmarshal(raw, &a.AccountName)
+		if err != nil {
+			return fmt.Errorf("error reading 'accountName': %w", err)
+		}
+		delete(object, "accountName")
+	}
+
 	if raw, found := object["alterationId"]; found {
 		err = json.Unmarshal(raw, &a.AlterationId)
 		if err != nil {
@@ -8328,6 +10240,14 @@ func (a *AirbnbAlteration) UnmarshalJSON(b []byte) error {
 		delete(object, "initiator")
 	}
 
+	if raw, found := object["newAirbnbListingId"]; found {
+		err = json.Unmarshal(raw, &a.NewAirbnbListingId)
+		if err != nil {
+			return fmt.Errorf("error reading 'newAirbnbListingId': %w", err)
+		}
+		delete(object, "newAirbnbListingId")
+	}
+
 	if raw, found := object["newCheckIn"]; found {
 		err = json.Unmarshal(raw, &a.NewCheckIn)
 		if err != nil {
@@ -8350,6 +10270,14 @@ func (a *AirbnbAlteration) UnmarshalJSON(b []byte) error {
 			return fmt.Errorf("error reading 'newGuestCount': %w", err)
 		}
 		delete(object, "newGuestCount")
+	}
+
+	if raw, found := object["newListingId"]; found {
+		err = json.Unmarshal(raw, &a.NewListingId)
+		if err != nil {
+			return fmt.Errorf("error reading 'newListingId': %w", err)
+		}
+		delete(object, "newListingId")
 	}
 
 	if raw, found := object["newTotalPrice"]; found {
@@ -8459,6 +10387,20 @@ func (a AirbnbAlteration) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
+	if a.AccountId != nil {
+		object["accountId"], err = json.Marshal(a.AccountId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'accountId': %w", err)
+		}
+	}
+
+	if a.AccountName != nil {
+		object["accountName"], err = json.Marshal(a.AccountName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'accountName': %w", err)
+		}
+	}
+
 	if a.AlterationId != nil {
 		object["alterationId"], err = json.Marshal(a.AlterationId)
 		if err != nil {
@@ -8487,6 +10429,13 @@ func (a AirbnbAlteration) MarshalJSON() ([]byte, error) {
 		}
 	}
 
+	if a.NewAirbnbListingId != nil {
+		object["newAirbnbListingId"], err = json.Marshal(a.NewAirbnbListingId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'newAirbnbListingId': %w", err)
+		}
+	}
+
 	if a.NewCheckIn != nil {
 		object["newCheckIn"], err = json.Marshal(a.NewCheckIn)
 		if err != nil {
@@ -8505,6 +10454,13 @@ func (a AirbnbAlteration) MarshalJSON() ([]byte, error) {
 		object["newGuestCount"], err = json.Marshal(a.NewGuestCount)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'newGuestCount': %w", err)
+		}
+	}
+
+	if a.NewListingId != nil {
+		object["newListingId"], err = json.Marshal(a.NewListingId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'newListingId': %w", err)
 		}
 	}
 
@@ -9323,117 +11279,6 @@ func (a BookingReservationRoom) MarshalJSON() ([]byte, error) {
 		object["totalprice"], err = json.Marshal(a.Totalprice)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'totalprice': %w", err)
-		}
-	}
-
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
-		}
-	}
-	return json.Marshal(object)
-}
-
-// Getter for additional properties for CreateAirbnbAlterationJSONBody. Returns the specified
-// element and whether it was found
-func (a CreateAirbnbAlterationJSONBody) Get(fieldName string) (value interface{}, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
-
-// Setter for additional properties for CreateAirbnbAlterationJSONBody
-func (a *CreateAirbnbAlterationJSONBody) Set(fieldName string, value interface{}) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string]interface{})
-	}
-	a.AdditionalProperties[fieldName] = value
-}
-
-// Override default JSON handling for CreateAirbnbAlterationJSONBody to handle AdditionalProperties
-func (a *CreateAirbnbAlterationJSONBody) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if raw, found := object["check_in"]; found {
-		err = json.Unmarshal(raw, &a.CheckIn)
-		if err != nil {
-			return fmt.Errorf("error reading 'check_in': %w", err)
-		}
-		delete(object, "check_in")
-	}
-
-	if raw, found := object["check_out"]; found {
-		err = json.Unmarshal(raw, &a.CheckOut)
-		if err != nil {
-			return fmt.Errorf("error reading 'check_out': %w", err)
-		}
-		delete(object, "check_out")
-	}
-
-	if raw, found := object["confirmation_code"]; found {
-		err = json.Unmarshal(raw, &a.ConfirmationCode)
-		if err != nil {
-			return fmt.Errorf("error reading 'confirmation_code': %w", err)
-		}
-		delete(object, "confirmation_code")
-	}
-
-	if raw, found := object["number_of_guests"]; found {
-		err = json.Unmarshal(raw, &a.NumberOfGuests)
-		if err != nil {
-			return fmt.Errorf("error reading 'number_of_guests': %w", err)
-		}
-		delete(object, "number_of_guests")
-	}
-
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string]interface{})
-		for fieldName, fieldBuf := range object {
-			var fieldVal interface{}
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
-
-// Override default JSON handling for CreateAirbnbAlterationJSONBody to handle AdditionalProperties
-func (a CreateAirbnbAlterationJSONBody) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
-
-	if a.CheckIn != nil {
-		object["check_in"], err = json.Marshal(a.CheckIn)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'check_in': %w", err)
-		}
-	}
-
-	if a.CheckOut != nil {
-		object["check_out"], err = json.Marshal(a.CheckOut)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'check_out': %w", err)
-		}
-	}
-
-	object["confirmation_code"], err = json.Marshal(a.ConfirmationCode)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'confirmation_code': %w", err)
-	}
-
-	if a.NumberOfGuests != nil {
-		object["number_of_guests"], err = json.Marshal(a.NumberOfGuests)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'number_of_guests': %w", err)
 		}
 	}
 
@@ -10610,6 +12455,766 @@ func (t WebhookEvent) MarshalJSON() ([]byte, error) {
 }
 
 func (t *WebhookEvent) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAirbnbListingAction200JSONResponseBody0 returns the union data inside the AirbnbListingAction200JSONResponseBody as a AirbnbListingAction200JSONResponseBody0
+func (t AirbnbListingAction200JSONResponseBody) AsAirbnbListingAction200JSONResponseBody0() (AirbnbListingAction200JSONResponseBody0, error) {
+	var body AirbnbListingAction200JSONResponseBody0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAirbnbListingAction200JSONResponseBody0 overwrites any union data inside the AirbnbListingAction200JSONResponseBody as the provided AirbnbListingAction200JSONResponseBody0
+func (t *AirbnbListingAction200JSONResponseBody) FromAirbnbListingAction200JSONResponseBody0(v AirbnbListingAction200JSONResponseBody0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAirbnbListingAction200JSONResponseBody0 performs a merge with any union data inside the AirbnbListingAction200JSONResponseBody, using the provided AirbnbListingAction200JSONResponseBody0
+func (t *AirbnbListingAction200JSONResponseBody) MergeAirbnbListingAction200JSONResponseBody0(v AirbnbListingAction200JSONResponseBody0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAirbnbListingAction200JSONResponseBody1 returns the union data inside the AirbnbListingAction200JSONResponseBody as a AirbnbListingAction200JSONResponseBody1
+func (t AirbnbListingAction200JSONResponseBody) AsAirbnbListingAction200JSONResponseBody1() (AirbnbListingAction200JSONResponseBody1, error) {
+	var body AirbnbListingAction200JSONResponseBody1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAirbnbListingAction200JSONResponseBody1 overwrites any union data inside the AirbnbListingAction200JSONResponseBody as the provided AirbnbListingAction200JSONResponseBody1
+func (t *AirbnbListingAction200JSONResponseBody) FromAirbnbListingAction200JSONResponseBody1(v AirbnbListingAction200JSONResponseBody1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAirbnbListingAction200JSONResponseBody1 performs a merge with any union data inside the AirbnbListingAction200JSONResponseBody, using the provided AirbnbListingAction200JSONResponseBody1
+func (t *AirbnbListingAction200JSONResponseBody) MergeAirbnbListingAction200JSONResponseBody1(v AirbnbListingAction200JSONResponseBody1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAirbnbListingLifecycleResponse returns the union data inside the AirbnbListingAction200JSONResponseBody as a AirbnbListingLifecycleResponse
+func (t AirbnbListingAction200JSONResponseBody) AsAirbnbListingLifecycleResponse() (AirbnbListingLifecycleResponse, error) {
+	var body AirbnbListingLifecycleResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAirbnbListingLifecycleResponse overwrites any union data inside the AirbnbListingAction200JSONResponseBody as the provided AirbnbListingLifecycleResponse
+func (t *AirbnbListingAction200JSONResponseBody) FromAirbnbListingLifecycleResponse(v AirbnbListingLifecycleResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAirbnbListingLifecycleResponse performs a merge with any union data inside the AirbnbListingAction200JSONResponseBody, using the provided AirbnbListingLifecycleResponse
+func (t *AirbnbListingAction200JSONResponseBody) MergeAirbnbListingLifecycleResponse(v AirbnbListingLifecycleResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AirbnbListingAction200JSONResponseBody) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AirbnbListingAction200JSONResponseBody) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0 returns the union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End as a GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0
+func (t GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End) AsGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0() (GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0, error) {
+	var body GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0 overwrites any union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End as the provided GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End) FromGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0(v GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0 performs a merge with any union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End, using the provided GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End) MergeGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0(v GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1 returns the union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End as a GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1
+func (t GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End) AsGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1() (GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1, error) {
+	var body GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1 overwrites any union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End as the provided GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End) FromGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1(v GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1 performs a merge with any union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End, using the provided GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End) MergeGetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1(v GetAirbnbBookingSettings200JSONResponseBodyDataCheckInEnd1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_End) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0 returns the union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start as a GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0
+func (t GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start) AsGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0() (GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0, error) {
+	var body GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0 overwrites any union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start as the provided GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start) FromGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0(v GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0 performs a merge with any union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start, using the provided GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start) MergeGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0(v GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1 returns the union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start as a GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1
+func (t GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start) AsGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1() (GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1, error) {
+	var body GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1 overwrites any union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start as the provided GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start) FromGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1(v GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1 performs a merge with any union data inside the GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start, using the provided GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start) MergeGetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1(v GetAirbnbBookingSettings200JSONResponseBodyDataCheckInStart1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GetAirbnbBookingSettings200JSONResponseBody_Data_CheckIn_Start) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateAirbnbBookingSettingsJSONBodyCheckInEnd0 returns the union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_End as a UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0
+func (t UpdateAirbnbBookingSettingsJSONBody_CheckIn_End) AsUpdateAirbnbBookingSettingsJSONBodyCheckInEnd0() (UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0, error) {
+	var body UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbBookingSettingsJSONBodyCheckInEnd0 overwrites any union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_End as the provided UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_End) FromUpdateAirbnbBookingSettingsJSONBodyCheckInEnd0(v UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbBookingSettingsJSONBodyCheckInEnd0 performs a merge with any union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_End, using the provided UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_End) MergeUpdateAirbnbBookingSettingsJSONBodyCheckInEnd0(v UpdateAirbnbBookingSettingsJSONBodyCheckInEnd0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateAirbnbBookingSettingsJSONBodyCheckInEnd1 returns the union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_End as a UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1
+func (t UpdateAirbnbBookingSettingsJSONBody_CheckIn_End) AsUpdateAirbnbBookingSettingsJSONBodyCheckInEnd1() (UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1, error) {
+	var body UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbBookingSettingsJSONBodyCheckInEnd1 overwrites any union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_End as the provided UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_End) FromUpdateAirbnbBookingSettingsJSONBodyCheckInEnd1(v UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbBookingSettingsJSONBodyCheckInEnd1 performs a merge with any union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_End, using the provided UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_End) MergeUpdateAirbnbBookingSettingsJSONBodyCheckInEnd1(v UpdateAirbnbBookingSettingsJSONBodyCheckInEnd1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateAirbnbBookingSettingsJSONBody_CheckIn_End) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_End) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateAirbnbBookingSettingsJSONBodyCheckInStart0 returns the union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start as a UpdateAirbnbBookingSettingsJSONBodyCheckInStart0
+func (t UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start) AsUpdateAirbnbBookingSettingsJSONBodyCheckInStart0() (UpdateAirbnbBookingSettingsJSONBodyCheckInStart0, error) {
+	var body UpdateAirbnbBookingSettingsJSONBodyCheckInStart0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbBookingSettingsJSONBodyCheckInStart0 overwrites any union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start as the provided UpdateAirbnbBookingSettingsJSONBodyCheckInStart0
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start) FromUpdateAirbnbBookingSettingsJSONBodyCheckInStart0(v UpdateAirbnbBookingSettingsJSONBodyCheckInStart0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbBookingSettingsJSONBodyCheckInStart0 performs a merge with any union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start, using the provided UpdateAirbnbBookingSettingsJSONBodyCheckInStart0
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start) MergeUpdateAirbnbBookingSettingsJSONBodyCheckInStart0(v UpdateAirbnbBookingSettingsJSONBodyCheckInStart0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateAirbnbBookingSettingsJSONBodyCheckInStart1 returns the union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start as a UpdateAirbnbBookingSettingsJSONBodyCheckInStart1
+func (t UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start) AsUpdateAirbnbBookingSettingsJSONBodyCheckInStart1() (UpdateAirbnbBookingSettingsJSONBodyCheckInStart1, error) {
+	var body UpdateAirbnbBookingSettingsJSONBodyCheckInStart1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbBookingSettingsJSONBodyCheckInStart1 overwrites any union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start as the provided UpdateAirbnbBookingSettingsJSONBodyCheckInStart1
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start) FromUpdateAirbnbBookingSettingsJSONBodyCheckInStart1(v UpdateAirbnbBookingSettingsJSONBodyCheckInStart1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbBookingSettingsJSONBodyCheckInStart1 performs a merge with any union data inside the UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start, using the provided UpdateAirbnbBookingSettingsJSONBodyCheckInStart1
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start) MergeUpdateAirbnbBookingSettingsJSONBodyCheckInStart1(v UpdateAirbnbBookingSettingsJSONBodyCheckInStart1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateAirbnbBookingSettingsJSONBody_CheckIn_Start) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0 returns the union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End as a UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0
+func (t UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End) AsUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0() (UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0, error) {
+	var body UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0 overwrites any union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End as the provided UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End) FromUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0(v UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0 performs a merge with any union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End, using the provided UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End) MergeUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0(v UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1 returns the union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End as a UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1
+func (t UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End) AsUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1() (UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1, error) {
+	var body UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1 overwrites any union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End as the provided UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End) FromUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1(v UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1 performs a merge with any union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End, using the provided UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End) MergeUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1(v UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInEnd1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_End) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0 returns the union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start as a UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0
+func (t UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start) AsUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0() (UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0, error) {
+	var body UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0 overwrites any union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start as the provided UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start) FromUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0(v UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0 performs a merge with any union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start, using the provided UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start) MergeUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0(v UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1 returns the union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start as a UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1
+func (t UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start) AsUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1() (UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1, error) {
+	var body UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1 overwrites any union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start as the provided UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start) FromUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1(v UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1 performs a merge with any union data inside the UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start, using the provided UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start) MergeUpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1(v UpdateAirbnbBookingSettings200JSONResponseBodyDataSettingsCheckInStart1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateAirbnbBookingSettings200JSONResponseBody_Data_Settings_CheckIn_Start) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUploadAirbnbListingPhotosJSONBodyPhotosListingId0 returns the union data inside the UploadAirbnbListingPhotosJSONBody_Photos_ListingId as a UploadAirbnbListingPhotosJSONBodyPhotosListingId0
+func (t UploadAirbnbListingPhotosJSONBody_Photos_ListingId) AsUploadAirbnbListingPhotosJSONBodyPhotosListingId0() (UploadAirbnbListingPhotosJSONBodyPhotosListingId0, error) {
+	var body UploadAirbnbListingPhotosJSONBodyPhotosListingId0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUploadAirbnbListingPhotosJSONBodyPhotosListingId0 overwrites any union data inside the UploadAirbnbListingPhotosJSONBody_Photos_ListingId as the provided UploadAirbnbListingPhotosJSONBodyPhotosListingId0
+func (t *UploadAirbnbListingPhotosJSONBody_Photos_ListingId) FromUploadAirbnbListingPhotosJSONBodyPhotosListingId0(v UploadAirbnbListingPhotosJSONBodyPhotosListingId0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUploadAirbnbListingPhotosJSONBodyPhotosListingId0 performs a merge with any union data inside the UploadAirbnbListingPhotosJSONBody_Photos_ListingId, using the provided UploadAirbnbListingPhotosJSONBodyPhotosListingId0
+func (t *UploadAirbnbListingPhotosJSONBody_Photos_ListingId) MergeUploadAirbnbListingPhotosJSONBodyPhotosListingId0(v UploadAirbnbListingPhotosJSONBodyPhotosListingId0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUploadAirbnbListingPhotosJSONBodyPhotosListingId1 returns the union data inside the UploadAirbnbListingPhotosJSONBody_Photos_ListingId as a UploadAirbnbListingPhotosJSONBodyPhotosListingId1
+func (t UploadAirbnbListingPhotosJSONBody_Photos_ListingId) AsUploadAirbnbListingPhotosJSONBodyPhotosListingId1() (UploadAirbnbListingPhotosJSONBodyPhotosListingId1, error) {
+	var body UploadAirbnbListingPhotosJSONBodyPhotosListingId1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUploadAirbnbListingPhotosJSONBodyPhotosListingId1 overwrites any union data inside the UploadAirbnbListingPhotosJSONBody_Photos_ListingId as the provided UploadAirbnbListingPhotosJSONBodyPhotosListingId1
+func (t *UploadAirbnbListingPhotosJSONBody_Photos_ListingId) FromUploadAirbnbListingPhotosJSONBodyPhotosListingId1(v UploadAirbnbListingPhotosJSONBodyPhotosListingId1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUploadAirbnbListingPhotosJSONBodyPhotosListingId1 performs a merge with any union data inside the UploadAirbnbListingPhotosJSONBody_Photos_ListingId, using the provided UploadAirbnbListingPhotosJSONBodyPhotosListingId1
+func (t *UploadAirbnbListingPhotosJSONBody_Photos_ListingId) MergeUploadAirbnbListingPhotosJSONBodyPhotosListingId1(v UploadAirbnbListingPhotosJSONBodyPhotosListingId1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UploadAirbnbListingPhotosJSONBody_Photos_ListingId) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UploadAirbnbListingPhotosJSONBody_Photos_ListingId) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsCreateAirbnbListingRoomJSONBodyListingId0 returns the union data inside the CreateAirbnbListingRoomJSONBody_ListingId as a CreateAirbnbListingRoomJSONBodyListingId0
+func (t CreateAirbnbListingRoomJSONBody_ListingId) AsCreateAirbnbListingRoomJSONBodyListingId0() (CreateAirbnbListingRoomJSONBodyListingId0, error) {
+	var body CreateAirbnbListingRoomJSONBodyListingId0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateAirbnbListingRoomJSONBodyListingId0 overwrites any union data inside the CreateAirbnbListingRoomJSONBody_ListingId as the provided CreateAirbnbListingRoomJSONBodyListingId0
+func (t *CreateAirbnbListingRoomJSONBody_ListingId) FromCreateAirbnbListingRoomJSONBodyListingId0(v CreateAirbnbListingRoomJSONBodyListingId0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateAirbnbListingRoomJSONBodyListingId0 performs a merge with any union data inside the CreateAirbnbListingRoomJSONBody_ListingId, using the provided CreateAirbnbListingRoomJSONBodyListingId0
+func (t *CreateAirbnbListingRoomJSONBody_ListingId) MergeCreateAirbnbListingRoomJSONBodyListingId0(v CreateAirbnbListingRoomJSONBodyListingId0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateAirbnbListingRoomJSONBodyListingId1 returns the union data inside the CreateAirbnbListingRoomJSONBody_ListingId as a CreateAirbnbListingRoomJSONBodyListingId1
+func (t CreateAirbnbListingRoomJSONBody_ListingId) AsCreateAirbnbListingRoomJSONBodyListingId1() (CreateAirbnbListingRoomJSONBodyListingId1, error) {
+	var body CreateAirbnbListingRoomJSONBodyListingId1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateAirbnbListingRoomJSONBodyListingId1 overwrites any union data inside the CreateAirbnbListingRoomJSONBody_ListingId as the provided CreateAirbnbListingRoomJSONBodyListingId1
+func (t *CreateAirbnbListingRoomJSONBody_ListingId) FromCreateAirbnbListingRoomJSONBodyListingId1(v CreateAirbnbListingRoomJSONBodyListingId1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateAirbnbListingRoomJSONBodyListingId1 performs a merge with any union data inside the CreateAirbnbListingRoomJSONBody_ListingId, using the provided CreateAirbnbListingRoomJSONBodyListingId1
+func (t *CreateAirbnbListingRoomJSONBody_ListingId) MergeCreateAirbnbListingRoomJSONBodyListingId1(v CreateAirbnbListingRoomJSONBodyListingId1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateAirbnbListingRoomJSONBody_ListingId) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateAirbnbListingRoomJSONBody_ListingId) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 returns the union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value as a CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0
+func (t CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) AsCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0() (CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0, error) {
+	var body CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 overwrites any union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value as the provided CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0
+func (t *CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) FromCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0(v CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 performs a merge with any union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value, using the provided CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0
+func (t *CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) MergeCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0(v CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 returns the union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value as a CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1
+func (t CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) AsCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1() (CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1, error) {
+	var body CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 overwrites any union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value as the provided CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1
+func (t *CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) FromCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1(v CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 performs a merge with any union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value, using the provided CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1
+func (t *CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) MergeCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1(v CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 returns the union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value as a CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2
+func (t CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) AsCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2() (CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2, error) {
+	var body CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 overwrites any union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value as the provided CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2
+func (t *CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) FromCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2(v CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 performs a merge with any union data inside the CreateAirbnbListingRoomJSONBody_RoomAmenities_Value, using the provided CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2
+func (t *CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) MergeCreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2(v CreateAirbnbListingRoomJSONBodyRoomAmenitiesValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateAirbnbListingRoomJSONBody_RoomAmenities_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 returns the union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value as a UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0
+func (t UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) AsUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0() (UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0, error) {
+	var body UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 overwrites any union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value as the provided UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0
+func (t *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) FromUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0(v UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0 performs a merge with any union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value, using the provided UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0
+func (t *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) MergeUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0(v UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 returns the union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value as a UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1
+func (t UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) AsUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1() (UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1, error) {
+	var body UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 overwrites any union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value as the provided UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1
+func (t *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) FromUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1(v UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1 performs a merge with any union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value, using the provided UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1
+func (t *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) MergeUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1(v UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 returns the union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value as a UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2
+func (t UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) AsUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2() (UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2, error) {
+	var body UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 overwrites any union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value as the provided UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2
+func (t *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) FromUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2(v UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2 performs a merge with any union data inside the UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value, using the provided UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2
+func (t *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) MergeUpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2(v UpdateAirbnbListingRoomJSONBodyRoomAmenitiesValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

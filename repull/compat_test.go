@@ -19,3 +19,10 @@ func TestRenamedEnumAliasesKeepValues(t *testing.T) {
 	var _ CreateConnectionJSONBodyAccessType = FullAccess
 	var _ BookingAvailabilityUpdateRequestType = Rates
 }
+
+func TestRenamedAlterationRequestAliasStillCompiles(t *testing.T) {
+	var body CreateAirbnbAlterationJSONBody
+	body.ConfirmationCode = "HMX4CMA2X9"
+	var _ AirbnbAlterationCreateRequest = body
+	var _ CreateAirbnbAlterationJSONRequestBody = body
+}

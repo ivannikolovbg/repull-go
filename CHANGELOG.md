@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.2.13 — 2026-09-18
+
+### Additive
+
+- **Regenerated against the live spec (175 → 191 operations, nothing removed).** All 16 new operations are Airbnb listing content writes plus a new pull:
+  - `GetAirbnbBookingSettings` / `UpdateAirbnbBookingSettings` — `GET`/`PUT /v1/channels/airbnb/listings/{id}/booking-settings`. Booking mode, cancellation policy (incl. `super_strict` and a separate `cancellationShortStayPolicy`), non-refundable, instant-book guest category, check-in window.
+  - `GetAirbnbListingDetails` / `UpdateAirbnbListingDetails` — `GET`/`PUT .../details`. Property type group/category, room type category, bed/bath/room counts, quiet hours, check-in option (`category` + `instruction`), and read-only `lockedFields` naming what Airbnb refuses to change.
+  - `ListAirbnbListingPermits` / `UpdateAirbnbListingPermits` — `GET`/`PUT .../permits`.
+  - `ListAirbnbListingSafetyDisclosures` / `UpdateAirbnbListingSafetyDisclosures` — `GET`/`PUT .../safety-disclosures`.
+  - `UpdateAirbnbListingPhoto` — `PATCH .../photos`; `ReorderAirbnbListingPhotos` — `PUT .../photos/order`; `SetAirbnbListingCoverPhoto` — `PUT .../photos/cover`.
+  - `UpdateAirbnbListingRoom` — `PUT .../rooms`.
+  - `UpdateAirbnbListingAmenities` — `PUT .../amenities`.
+  - `UpdateAirbnbListingDescription` — `PUT .../descriptions`, per-locale (multiple description variants per listing).
+  - `CancelAirbnbAlteration` — `POST /v1/channels/airbnb/alterations/{id}/cancel`.
+  - `PullListingFromAirbnb` — `POST /v1/listings/{id}/pull/airbnb` (`ListingPullAirbnbRequest` → `ListingPullResponse`).
+- **Alteration create gains a listing-transfer path.** `AirbnbAlterationCreateRequest` (see BREAKING below) adds `ListingId` (Repull id, translated + ownership-checked) and `AirbnbListingId` (Airbnb id directly) to move a reservation to a different listing, plus `TotalPrice` to override the alteration's total.
+- **`?include=thumbnail`** on both `GET /v1/listings` and `GET /v1/properties` — adds `thumbnailUrl` to each row, including inactive listings (which otherwise carry identity fields only). `GET /v1/properties` also keeps its existing `?include=amenities`.
+- **`AirbnbConnection.SyncCategory` / `.Writable`** — `syncCategory` (`none` / `sync_rates_and_availability` / `sync_all`) is Airbnb's own per-listing sync authorization, reported per listing even within one connected account. `writable` is `false` exactly when `syncCategory` is `none`; check it before a portfolio-wide push instead of discovering it one `403` at a time.
+- **Per-account scoping.** `?account_id=` filters/targets a single Airbnb account across the affected list and write endpoints; `dataFreshness.accounts[]` (`AirbnbAccountFreshness`) reports sync recency per connected account instead of only account-wide.
+- **Reservation stay terms.** Airbnb reservations now carry cancellation policy and check-in/checkout time fields alongside the existing dates.
+- **New typed error responses**, declared wherever they apply: `403 listing_not_api_connected` (`ListingNotApiConnected` — write refused locally because `syncCategory` is `none`, never reaches Airbnb), `422 airbnb_rejected` (`AirbnbRejected`), `403 connection_reauth_required` (`ConnectionReauthRequired`), `429 airbnb_rate_limited` (`AirbnbRateLimited`).
+- **Unlist/relist lifecycle actions** — `AirbnbListingActionRequestAction` gains `unlist`/`relist`; `AirbnbListingLifecycleResponse` reports the resulting `action` and `channel`.
+- **Typed publish result.** `AirbnbPublishResult` (`published`, `sections`, `errors []PublishSectionError`, `lockedFields`, `reason`) replaces an untyped publish outcome for `PublishListingToAirbnb` — `Errors`/`Sections` show exactly which sections landed and which didn't, and `LockedFields` tells you which Airbnb-locked attributes to stop retrying.
+
+### BREAKING
+
+- **`CreateAirbnbAlterationJSONBody` was removed** — the spec moved the alteration-create request body from an inline schema to the named component `AirbnbAlterationCreateRequest`. `CreateAirbnbAlterationJSONRequestBody` (what `CreateAirbnbAlteration`/`CreateAirbnbAlterationWithResponse` actually take) is unaffected — it's still a type alias, now pointing at the new name, so existing calls compile unchanged. Code that referenced the old struct name directly still compiles: a `Deprecated: use AirbnbAlterationCreateRequest` alias was added to `repull/compat.go` (`TestRenamedAlterationRequestAliasStillCompiles` in `repull/compat_test.go` proves it).
+- No exported client methods were removed or had their signatures changed in this regen — only the one type rename above.
+
 ## v0.2.12 — 2026-09-15
 
 ### Additive

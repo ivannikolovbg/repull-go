@@ -27,3 +27,11 @@ const DerivedPricing = BookingAvailabilityUpdateRequestTypeDerivedPricing
 
 // Deprecated: use BookingAvailabilityUpdateRequestTypeRates.
 const Rates = BookingAvailabilityUpdateRequestTypeRates
+
+// Backward-compatible alias for a request body the spec moved from an inline
+// schema to a named component (2026-09-18 regen, 175 -> 191 operations). The
+// generator dropped the old struct name in favor of the new component name;
+// code referencing the old type name still compiles against the same shape.
+//
+// Deprecated: use AirbnbAlterationCreateRequest.
+type CreateAirbnbAlterationJSONBody = AirbnbAlterationCreateRequest
