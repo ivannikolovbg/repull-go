@@ -1627,6 +1627,21 @@ func (e ListingQualityTierTier) Valid() bool {
 	}
 }
 
+// Defines values for ListingReactivatedEventEvent.
+const (
+	ListingReactivatedEventEventListingReactivated ListingReactivatedEventEvent = "listing.reactivated"
+)
+
+// Valid indicates whether the value is a known member of the ListingReactivatedEventEvent enum.
+func (e ListingReactivatedEventEvent) Valid() bool {
+	switch e {
+	case ListingReactivatedEventEventListingReactivated:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingSegmentQualityTier.
 const (
 	ListingSegmentQualityTierBudget      ListingSegmentQualityTier = "budget"
@@ -1732,6 +1747,21 @@ func (e ListingSegmentsResponseMyQualityTier) Valid() bool {
 	}
 }
 
+// Defines values for ListingSuspendedEventEvent.
+const (
+	ListingSuspendedEventEventListingSuspended ListingSuspendedEventEvent = "listing.suspended"
+)
+
+// Valid indicates whether the value is a known member of the ListingSuspendedEventEvent enum.
+func (e ListingSuspendedEventEvent) Valid() bool {
+	switch e {
+	case ListingSuspendedEventEventListingSuspended:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingUpdatedEventEvent.
 const (
 	ListingUpdatedEventEventListingUpdated ListingUpdatedEventEvent = "listing.updated"
@@ -1741,6 +1771,36 @@ const (
 func (e ListingUpdatedEventEvent) Valid() bool {
 	switch e {
 	case ListingUpdatedEventEventListingUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingUpdatedPayloadArea.
+const (
+	ListingUpdatedPayloadAreaAvailability    ListingUpdatedPayloadArea = "availability"
+	ListingUpdatedPayloadAreaBookingSettings ListingUpdatedPayloadArea = "booking_settings"
+	ListingUpdatedPayloadAreaContent         ListingUpdatedPayloadArea = "content"
+	ListingUpdatedPayloadAreaPricing         ListingUpdatedPayloadArea = "pricing"
+	ListingUpdatedPayloadAreaRules           ListingUpdatedPayloadArea = "rules"
+	ListingUpdatedPayloadAreaSyncSettings    ListingUpdatedPayloadArea = "sync_settings"
+)
+
+// Valid indicates whether the value is a known member of the ListingUpdatedPayloadArea enum.
+func (e ListingUpdatedPayloadArea) Valid() bool {
+	switch e {
+	case ListingUpdatedPayloadAreaAvailability:
+		return true
+	case ListingUpdatedPayloadAreaBookingSettings:
+		return true
+	case ListingUpdatedPayloadAreaContent:
+		return true
+	case ListingUpdatedPayloadAreaPricing:
+		return true
+	case ListingUpdatedPayloadAreaRules:
+		return true
+	case ListingUpdatedPayloadAreaSyncSettings:
 		return true
 	default:
 		return false
@@ -1804,6 +1864,42 @@ const (
 func (e PaymentRefundedEventEvent) Valid() bool {
 	switch e {
 	case PaymentRefundedEventEventPaymentRefunded:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PaymentWebhookObjectTransactionType.
+const (
+	PaymentWebhookObjectTransactionTypeAdjustment       PaymentWebhookObjectTransactionType = "adjustment"
+	PaymentWebhookObjectTransactionTypeCharge           PaymentWebhookObjectTransactionType = "charge"
+	PaymentWebhookObjectTransactionTypeOther            PaymentWebhookObjectTransactionType = "other"
+	PaymentWebhookObjectTransactionTypePassThroughTax   PaymentWebhookObjectTransactionType = "pass_through_tax"
+	PaymentWebhookObjectTransactionTypePayout           PaymentWebhookObjectTransactionType = "payout"
+	PaymentWebhookObjectTransactionTypeRefund           PaymentWebhookObjectTransactionType = "refund"
+	PaymentWebhookObjectTransactionTypeReservation      PaymentWebhookObjectTransactionType = "reservation"
+	PaymentWebhookObjectTransactionTypeResolutionPayout PaymentWebhookObjectTransactionType = "resolution_payout"
+)
+
+// Valid indicates whether the value is a known member of the PaymentWebhookObjectTransactionType enum.
+func (e PaymentWebhookObjectTransactionType) Valid() bool {
+	switch e {
+	case PaymentWebhookObjectTransactionTypeAdjustment:
+		return true
+	case PaymentWebhookObjectTransactionTypeCharge:
+		return true
+	case PaymentWebhookObjectTransactionTypeOther:
+		return true
+	case PaymentWebhookObjectTransactionTypePassThroughTax:
+		return true
+	case PaymentWebhookObjectTransactionTypePayout:
+		return true
+	case PaymentWebhookObjectTransactionTypeRefund:
+		return true
+	case PaymentWebhookObjectTransactionTypeReservation:
+		return true
+	case PaymentWebhookObjectTransactionTypeResolutionPayout:
 		return true
 	default:
 		return false
@@ -2356,6 +2452,8 @@ const (
 	WebhookEventTypeCalendarUpdated                WebhookEventType = "calendar.updated"
 	WebhookEventTypeListingCreated                 WebhookEventType = "listing.created"
 	WebhookEventTypeListingDeleted                 WebhookEventType = "listing.deleted"
+	WebhookEventTypeListingReactivated             WebhookEventType = "listing.reactivated"
+	WebhookEventTypeListingSuspended               WebhookEventType = "listing.suspended"
 	WebhookEventTypeListingUpdated                 WebhookEventType = "listing.updated"
 	WebhookEventTypePaymentCompleted               WebhookEventType = "payment.completed"
 	WebhookEventTypePaymentRefunded                WebhookEventType = "payment.refunded"
@@ -2387,6 +2485,10 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeListingCreated:
 		return true
 	case WebhookEventTypeListingDeleted:
+		return true
+	case WebhookEventTypeListingReactivated:
+		return true
+	case WebhookEventTypeListingSuspended:
 		return true
 	case WebhookEventTypeListingUpdated:
 		return true
@@ -2661,16 +2763,16 @@ func (e UpdateAirbnbBookingSettingsJSONBodyInstantBookGuestCategory) Valid() boo
 
 // Defines values for UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied.
 const (
-	AvailabilityRules UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied = "availabilityRules"
-	BookingSettings   UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied = "bookingSettings"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataAppliedAvailabilityRules UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied = "availabilityRules"
+	UpdateAirbnbBookingSettings200JSONResponseBodyDataAppliedBookingSettings   UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied = "bookingSettings"
 )
 
 // Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied enum.
 func (e UpdateAirbnbBookingSettings200JSONResponseBodyDataApplied) Valid() bool {
 	switch e {
-	case AvailabilityRules:
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataAppliedAvailabilityRules:
 		return true
-	case BookingSettings:
+	case UpdateAirbnbBookingSettings200JSONResponseBodyDataAppliedBookingSettings:
 		return true
 	default:
 		return false
@@ -6599,7 +6701,7 @@ type ListingDeletedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `listing.deleted`. A property was removed from Repull or the upstream PMS.
+	// Data Payload for `listing.deleted`. The listing is no longer reachable on the channel — usually because the host unlinked it.
 	Data ListingDeletedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -6615,15 +6717,14 @@ type ListingDeletedEvent struct {
 // ListingDeletedEventEvent The event name. This field is `event`, not `type`.
 type ListingDeletedEventEvent string
 
-// ListingDeletedPayload Payload for `listing.deleted`. A property was removed from Repull or the upstream PMS.
+// ListingDeletedPayload Payload for `listing.deleted`. The listing is no longer reachable on the channel — usually because the host unlinked it.
 type ListingDeletedPayload struct {
-	// DeletedAt Example: 2026-05-01T16:00:00.000Z
-	DeletedAt *time.Time `json:"deletedAt,omitempty"`
+	DeletedAt time.Time `json:"deletedAt"`
 
-	// Id Example: 6250
-	Id *int `json:"id,omitempty"`
+	// Object The listing, in the shape `GET /v1/listings/{id}` returns. Hydrated at delivery, so a receiver gets the listing rather than a reason to fetch one.
+	Object ListingWebhookObject `json:"object"`
 
-	// Reason Example: deactivated_by_owner
+	// Reason Example: unlinked
 	Reason *string `json:"reason,omitempty"`
 }
 
@@ -7082,6 +7183,30 @@ type ListingQualityTier struct {
 // ListingQualityTierTier defines model for ListingQualityTier.Tier.
 type ListingQualityTierTier string
 
+// ListingReactivatedEvent defines model for ListingReactivatedEvent.
+type ListingReactivatedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `listing.suspended` and `listing.reactivated`. A suspended listing keeps accepting calendar and pricing writes and silently applies none of them, which is indistinguishable from an API fault unless you are told. It is also the one listing change a host cannot reverse alone.
+	Data ListingSuspensionPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ListingReactivatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ListingReactivatedEventEvent The event name. This field is `event`, not `type`.
+type ListingReactivatedEventEvent string
+
 // ListingSegment One Atlas DNA segment (e.g. `upscale-modern-2br`) with share + ADR aggregates across the scoped comp set or market.
 type ListingSegment struct {
 	AvgAdrInSegment *float32 `json:"avgAdrInSegment,omitempty"`
@@ -7169,6 +7294,42 @@ type ListingStatusBatchResponse struct {
 	Updated []string `json:"updated"`
 }
 
+// ListingSuspendedEvent defines model for ListingSuspendedEvent.
+type ListingSuspendedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `listing.suspended` and `listing.reactivated`. A suspended listing keeps accepting calendar and pricing writes and silently applies none of them, which is indistinguishable from an API fault unless you are told. It is also the one listing change a host cannot reverse alone.
+	Data ListingSuspensionPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ListingSuspendedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ListingSuspendedEventEvent The event name. This field is `event`, not `type`.
+type ListingSuspendedEventEvent string
+
+// ListingSuspensionPayload Payload for `listing.suspended` and `listing.reactivated`. A suspended listing keeps accepting calendar and pricing writes and silently applies none of them, which is indistinguishable from an API fault unless you are told. It is also the one listing change a host cannot reverse alone.
+type ListingSuspensionPayload struct {
+	// Object The listing, in the shape `GET /v1/listings/{id}` returns. Hydrated at delivery, so a receiver gets the listing rather than a reason to fetch one.
+	Object     ListingWebhookObject `json:"object"`
+	OccurredAt time.Time            `json:"occurredAt"`
+
+	// Reason The channel's stated reason, verbatim, when it gives one.
+	//
+	// Example: quality_standards
+	Reason *string `json:"reason,omitempty"`
+}
+
 // ListingUpdatedEvent defines model for ListingUpdatedEvent.
 type ListingUpdatedEvent struct {
 	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
@@ -7177,7 +7338,7 @@ type ListingUpdatedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `listing.updated`. Listing content, amenities, photos, or status changed.
+	// Data Payload for `listing.updated`. Something about the listing changed on the channel — content, pricing, booking settings, house rules, availability or sync settings.
 	Data ListingUpdatedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -7193,18 +7354,73 @@ type ListingUpdatedEvent struct {
 // ListingUpdatedEventEvent The event name. This field is `event`, not `type`.
 type ListingUpdatedEventEvent string
 
-// ListingUpdatedPayload Payload for `listing.updated`. Listing content, amenities, photos, or status changed.
+// ListingUpdatedPayload Payload for `listing.updated`. Something about the listing changed on the channel — content, pricing, booking settings, house rules, availability or sync settings.
 type ListingUpdatedPayload struct {
-	// Changes Map of `field` → `{ from, to }` pairs describing what changed.
+	// Area Which part moved. Airbnb sends one notification per area rather than a diff, so this is the signal for what to re-read.
 	//
-	// Example: {"title":{"from":"R-Sable 1302","to":"R-Sable 1302 — Radium Hot Springs"}}
-	Changes *map[string]interface{} `json:"changes,omitempty"`
+	// Example: content
+	Area *ListingUpdatedPayloadArea `json:"area,omitempty"`
+
+	// Object The listing, in the shape `GET /v1/listings/{id}` returns. Hydrated at delivery, so a receiver gets the listing rather than a reason to fetch one.
+	Object ListingWebhookObject `json:"object"`
+
+	// PreviousAttributes Fields that changed and their prior values, when the source reports them.
+	PreviousAttributes *map[string]interface{} `json:"previousAttributes,omitempty"`
+	Revision           *time.Time              `json:"revision,omitempty"`
+}
+
+// ListingUpdatedPayloadArea Which part moved. Airbnb sends one notification per area rather than a diff, so this is the signal for what to re-read.
+//
+// Example: content
+type ListingUpdatedPayloadArea string
+
+// ListingWebhookObject The listing, in the shape `GET /v1/listings/{id}` returns. Hydrated at delivery, so a receiver gets the listing rather than a reason to fetch one.
+type ListingWebhookObject struct {
+	// Active Example: true
+	Active  *bool `json:"active,omitempty"`
+	Address *struct {
+		City   *string `json:"city,omitempty"`
+		Region *string `json:"region,omitempty"`
+		Street *string `json:"street,omitempty"`
+	} `json:"address,omitempty"`
+
+	// Channel Example: airbnb
+	Channel *string `json:"channel,omitempty"`
+
+	// Channels Which channels this listing is on and whether each still accepts writes. `syncEnabled: false` means the channel refuses every write for this listing — the difference between a failing integration and a suspended listing.
+	Channels *[]struct {
+		Active *bool `json:"active,omitempty"`
+
+		// ExternalId Example: 21466093
+		ExternalId *string `json:"externalId,omitempty"`
+
+		// Platform Example: airbnb
+		Platform *string `json:"platform,omitempty"`
+
+		// SyncCategory Example: sync_all
+		SyncCategory *string `json:"syncCategory,omitempty"`
+		SyncEnabled  *bool   `json:"syncEnabled,omitempty"`
+	} `json:"channels,omitempty"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// CustomerId Example: 1
+	CustomerId int `json:"customerId"`
+
+	// ExternalListingId The channel's own listing id. Airbnb's exceed 2^53, so always a string.
+	//
+	// Example: 1234567890123456789
+	ExternalListingId *string `json:"externalListingId,omitempty"`
 
 	// Id Example: 6250
-	Id *int `json:"id,omitempty"`
+	Id string `json:"id"`
 
-	// UpdatedAt Example: 2026-05-01T12:30:00.000Z
-	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	// Name Example: R-Sable 1302 — Radium Hot Springs
+	Name *string `json:"name,omitempty"`
+
+	// Status Example: active
+	Status       *string    `json:"status,omitempty"`
+	ThumbnailUrl *string    `json:"thumbnailUrl,omitempty"`
+	UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
 }
 
 // MapAirbnbListingRequest Body for `POST /v1/channels/airbnb/listings/map`.
@@ -7566,7 +7782,7 @@ type PaymentCompletedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `payment.completed`. A guest payment was successfully captured.
+	// Data Payload for `payment.completed`. Money moved and settled — a guest charge, a host payout, a tourist-tax pass-through or a resolution payout. Fires only on a completed movement; scheduled intent is not an event.
 	Data PaymentCompletedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -7582,25 +7798,14 @@ type PaymentCompletedEvent struct {
 // PaymentCompletedEventEvent The event name. This field is `event`, not `type`.
 type PaymentCompletedEventEvent string
 
-// PaymentCompletedPayload Payload for `payment.completed`. A guest payment was successfully captured.
+// PaymentCompletedPayload Payload for `payment.completed`. Money moved and settled — a guest charge, a host payout, a tourist-tax pass-through or a resolution payout. Fires only on a completed movement; scheduled intent is not an event.
 type PaymentCompletedPayload struct {
-	// Amount Example: 1320.00
-	Amount *string `json:"amount,omitempty"`
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
 
-	// CapturedAt Example: 2026-05-01T12:35:00.000Z
-	CapturedAt *time.Time `json:"capturedAt,omitempty"`
-
-	// Currency Example: USD
-	Currency *string `json:"currency,omitempty"`
-
-	// Id Example: pay_01HX5XPQ2K
-	Id *string `json:"id,omitempty"`
-
-	// Method Example: card
-	Method *string `json:"method,omitempty"`
-
-	// ReservationId Example: 215906
-	ReservationId *int `json:"reservationId,omitempty"`
+	// Object A money movement: a guest charge, a host payout, a refund, a tourist-tax pass-through, a resolution payout, or an adjustment that claws money back.
+	Object   PaymentWebhookObject `json:"object"`
+	Reason   *string              `json:"reason,omitempty"`
+	Revision *time.Time           `json:"revision,omitempty"`
 }
 
 // PaymentRefundedEvent defines model for PaymentRefundedEvent.
@@ -7611,7 +7816,7 @@ type PaymentRefundedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `payment.refunded`. A previous payment was refunded in part or in full.
+	// Data Payload for `payment.refunded`. Money went back. Covers both a refund-typed movement and any adjustment with a negative amount — the sign on `object.amount` is preserved so the direction never has to be inferred.
 	Data PaymentRefundedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -7627,26 +7832,72 @@ type PaymentRefundedEvent struct {
 // PaymentRefundedEventEvent The event name. This field is `event`, not `type`.
 type PaymentRefundedEventEvent string
 
-// PaymentRefundedPayload Payload for `payment.refunded`. A previous payment was refunded in part or in full.
+// PaymentRefundedPayload Payload for `payment.refunded`. Money went back. Covers both a refund-typed movement and any adjustment with a negative amount — the sign on `object.amount` is preserved so the direction never has to be inferred.
 type PaymentRefundedPayload struct {
-	// Amount Example: 1320.00
-	Amount *string `json:"amount,omitempty"`
+	// Object A money movement: a guest charge, a host payout, a refund, a tourist-tax pass-through, a resolution payout, or an adjustment that claws money back.
+	Object PaymentWebhookObject `json:"object"`
 
-	// Currency Example: USD
+	// Reason Example: Resolution centre adjustment
+	Reason     *string    `json:"reason,omitempty"`
+	RefundedAt *time.Time `json:"refundedAt,omitempty"`
+	Revision   *time.Time `json:"revision,omitempty"`
+}
+
+// PaymentWebhookObject A money movement: a guest charge, a host payout, a refund, a tourist-tax pass-through, a resolution payout, or an adjustment that claws money back.
+type PaymentWebhookObject struct {
+	// Amount Gross amount. Negative on adjustments and clawbacks — the sign is preserved so the direction never has to be inferred.
+	//
+	// Example: 1792.17
+	Amount string `json:"amount"`
+
+	// ConfirmationCode The channel's confirmation code, when resolved.
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+
+	// Currency Example: CAD
 	Currency *string `json:"currency,omitempty"`
 
-	// Id Example: pay_01HX5XPQ2K
-	Id *string `json:"id,omitempty"`
+	// CustomerId Example: 1
+	CustomerId int `json:"customerId"`
 
-	// RefundId Example: rfn_01HX5XPQ2K
-	RefundId *string `json:"refundId,omitempty"`
+	// Id Example: 277919
+	Id        int  `json:"id"`
+	ListingId *int `json:"listingId,omitempty"`
 
-	// RefundedAt Example: 2026-05-01T19:00:00.000Z
-	RefundedAt *time.Time `json:"refundedAt,omitempty"`
+	// NetAmount Emitted only where the source carries it.
+	NetAmount *string `json:"netAmount,omitempty"`
 
-	// ReservationId Example: 215906
+	// Platform Example: airbnb
+	Platform *string `json:"platform,omitempty"`
+
+	// PlatformPaymentId The platform's own id. Airbnb payout ids look like `G-FRSLYC3ZKAJDQ`.
+	//
+	// Example: G-FRSLYC3ZKAJDQ
+	PlatformPaymentId *string `json:"platformPaymentId,omitempty"`
+
+	// ProcessingFee Emitted only where the source carries it.
+	ProcessingFee *string `json:"processingFee,omitempty"`
+
+	// ReservationId Present when the movement belongs to one reservation. Absent on batched payouts, which genuinely arrive without a reservation reference.
 	ReservationId *int `json:"reservationId,omitempty"`
+
+	// SourceType The source system's own type string, unmapped, for reconciling against the dashboard.
+	//
+	// Example: Payout
+	SourceType *string `json:"sourceType,omitempty"`
+
+	// Status Example: completed
+	Status *string `json:"status,omitempty"`
+
+	// TransactionType Repull's normalised vocabulary for what this movement is.
+	//
+	// Example: payout
+	TransactionType PaymentWebhookObjectTransactionType `json:"transactionType"`
 }
+
+// PaymentWebhookObjectTransactionType Repull's normalised vocabulary for what this movement is.
+//
+// Example: payout
+type PaymentWebhookObjectTransactionType string
 
 // PlumguideListing A Plumguide listing.
 type PlumguideListing struct {
@@ -13017,6 +13268,74 @@ func (t *WebhookEvent) MergeListingDeletedEvent(v ListingDeletedEvent) error {
 	return err
 }
 
+// AsListingSuspendedEvent returns the union data inside the WebhookEvent as a ListingSuspendedEvent
+func (t WebhookEvent) AsListingSuspendedEvent() (ListingSuspendedEvent, error) {
+	var body ListingSuspendedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingSuspendedEvent overwrites any union data inside the WebhookEvent as the provided ListingSuspendedEvent
+func (t *WebhookEvent) FromListingSuspendedEvent(v ListingSuspendedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.suspended"}`))
+	t.union = b
+	return err
+}
+
+// MergeListingSuspendedEvent performs a merge with any union data inside the WebhookEvent, using the provided ListingSuspendedEvent
+func (t *WebhookEvent) MergeListingSuspendedEvent(v ListingSuspendedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.suspended"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsListingReactivatedEvent returns the union data inside the WebhookEvent as a ListingReactivatedEvent
+func (t WebhookEvent) AsListingReactivatedEvent() (ListingReactivatedEvent, error) {
+	var body ListingReactivatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingReactivatedEvent overwrites any union data inside the WebhookEvent as the provided ListingReactivatedEvent
+func (t *WebhookEvent) FromListingReactivatedEvent(v ListingReactivatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.reactivated"}`))
+	t.union = b
+	return err
+}
+
+// MergeListingReactivatedEvent performs a merge with any union data inside the WebhookEvent, using the provided ListingReactivatedEvent
+func (t *WebhookEvent) MergeListingReactivatedEvent(v ListingReactivatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.reactivated"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsCalendarUpdatedEvent returns the union data inside the WebhookEvent as a CalendarUpdatedEvent
 func (t WebhookEvent) AsCalendarUpdatedEvent() (CalendarUpdatedEvent, error) {
 	var body CalendarUpdatedEvent
@@ -13419,6 +13738,10 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsListingCreatedEvent()
 	case "listing.deleted":
 		return t.AsListingDeletedEvent()
+	case "listing.reactivated":
+		return t.AsListingReactivatedEvent()
+	case "listing.suspended":
+		return t.AsListingSuspendedEvent()
 	case "listing.updated":
 		return t.AsListingUpdatedEvent()
 	case "payment.completed":
