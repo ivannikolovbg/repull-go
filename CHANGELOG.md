@@ -17,6 +17,10 @@
 ### Compatibility
 
 - `CreateAirbnbOfferJSONBody` now declares the full offer shape (`ListingId`, `StartDate`, `Nights`, `TotalPrice`, `GuestDetails`) and uses the snake_case wire names the endpoint documents; it no longer carries `AdditionalProperties`.
+- Three existing Airbnb methods changed signature because the spec now declares more of their inputs:
+  - `AirbnbReservationAction(ctx, code, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody)` — the action body is now declared (it was always required by the API), plus an optional `Idempotency-Key` in `params`.
+  - `CreateAirbnbOffer(ctx, params *CreateAirbnbOfferParams, body)` — optional `Idempotency-Key` in `params`; pass `nil` to keep the old behaviour.
+  - `ListAirbnbThreadMessages(ctx, threadId, params *ListAirbnbThreadMessagesParams)` — optional `Cursor` / `All`; pass `nil` to keep the old behaviour.
 - The short enum constants `Offer` / `Preapproval` were renamed by the generator to `CreateAirbnbOfferJSONBodyTypeOffer` / `...Preapproval`; deprecated aliases in `compat.go` keep the old names compiling.
 
 ## v0.2.13 — 2026-09-18
