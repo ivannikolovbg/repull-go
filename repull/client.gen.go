@@ -1356,13 +1356,23 @@ type ClientInterface interface {
 
 	// UpdateBookingAvailabilityWithBody Update Booking.com rates/availability
 	//
-	// Push availability, rates, and the full restriction set to Booking.com. `type` selects the write path:
+	// Write rates, availability and restrictions to a Booking.com property. `type` selects the write:
 	//
-	// - `rates` — nightly price + length-of-stay / arrival restrictions (min/max stay, closed-to-arrival, closed-to-departure, advance-reservation window).
-	// - `availability` — inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same restriction set.
+	// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
+	// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
 	// - `derived-pricing` — occupancy-derived pricing rules.
 	//
-	// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+	// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
+	//
+	// **A rate amount needs an occupancy.** Booking.com stores the amount against the party size the rate plan prices: sent above that number it declines the price in silence, sent below it it answers 400. Send `occupancy`, or omit it and Repull resolves it from Booking.com's own data and echoes the value and its `source` back in `occupancy[]`. If it cannot be resolved the write is refused with `422` naming `updates[N].occupancy`.
+	//
+	// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
+	//
+	// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
+	//
+	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	//
+	// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -1375,13 +1385,23 @@ type ClientInterface interface {
 
 	// UpdateBookingAvailability Update Booking.com rates/availability
 	//
-	// Push availability, rates, and the full restriction set to Booking.com. `type` selects the write path:
+	// Write rates, availability and restrictions to a Booking.com property. `type` selects the write:
 	//
-	// - `rates` — nightly price + length-of-stay / arrival restrictions (min/max stay, closed-to-arrival, closed-to-departure, advance-reservation window).
-	// - `availability` — inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same restriction set.
+	// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
+	// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
 	// - `derived-pricing` — occupancy-derived pricing rules.
 	//
-	// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+	// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
+	//
+	// **A rate amount needs an occupancy.** Booking.com stores the amount against the party size the rate plan prices: sent above that number it declines the price in silence, sent below it it answers 400. Send `occupancy`, or omit it and Repull resolves it from Booking.com's own data and echoes the value and its `source` back in `occupancy[]`. If it cannot be resolved the write is refused with `422` naming `updates[N].occupancy`.
+	//
+	// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
+	//
+	// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
+	//
+	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	//
+	// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -1453,9 +1473,11 @@ type ClientInterface interface {
 
 	// GetBookingListingPricing Get Booking.com pricing for a listing
 	//
-	// Resolves the Vanio listing ID to its Booking.com `hotel_id` (via the `listings_booking` mapping owned by the authenticated workspace), then proxies Booking's `getRoomRateAvailability` for the requested window. Pricing on Booking is per-room/per-rate-plan, so `room_id` and `room_level` flow through query params unchanged.
+	// Resolves the Repull listing id to its Booking.com `hotel_id` (via the room mapping the Connect flow records for the authenticated workspace), then proxies Booking's `getRoomRateAvailability` for the requested window. Pricing on Booking is per-room/per-rate-plan, so `room_id` and `room_level` flow through query params unchanged.
 	//
-	// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Vanio listing ID across channels.
+	// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Repull listing id across channels. `id` is a Repull listing id, never a Booking.com hotel id — the hotel-id surface is `/v1/channels/booking/availability`.
+	//
+	// A listing can be published under several Booking.com properties. GET uses the oldest and reports the rest in `otherHotelIds`; PUT refuses with `409 ambiguous_booking_mapping` rather than push rates into a property it guessed at. `?hotel_id=` names the property explicitly for either.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -1464,25 +1486,45 @@ type ClientInterface interface {
 
 	// UpdateBookingListingPricingWithBody Update Booking.com pricing for a listing
 	//
-	// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+	// Writes nightly prices for a listing's Booking.com room + rate plan. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`; `dateRange` is inclusive at both ends, so `start` equal to `end` writes exactly one night.
+	//
+	// **Occupancy.** Booking.com stores a rate amount against the party size the rate plan prices. Send `occupancy` and that is what is used; omit it and it is resolved from Booking.com's own data for that (room, rate plan) and echoed back in `occupancy[]` with its `source`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size, because Booking.com declines such an amount without saying so.
+	//
+	// **Inventory is a separate write.** `roomsToSell` on a rate update returns `422 inventory_not_in_rate_update`; use `PUT /v1/channels/booking/availability` with `type: "availability"`.
+	//
+	// **Restrictions ride along, on their own wire.** Send `restrictions` with the price and Booking.com receives two writes; the response reports each separately in `price` and `restrictions`, each with its own state, read-back and — when refused — Booking.com's own reason. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` (Booking.com's notification has no element for them — set those on the rate plan in the Extranet). Nothing you send is silently ignored.
+	//
+	// **The response says what is known.** Booking.com acknowledges a write without per-date status, so the affected nights are read back — prices and restrictions out of the same read — and `applied` reports `verified`, `mismatch`, `partial`, `rejected` or `unverified`. `partial` means one half landed and the other did not, which is never reported as a total failure. Send `verify: false` to skip the read-back; `applied` is then `unverified`. Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	//
+	// `id` is a Repull listing id. When it is published under several Booking.com properties this returns `409 ambiguous_booking_mapping` and pushes nothing — name the property with `?hotel_id=` instead.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
-	UpdateBookingListingPricingWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateBookingListingPricingWithBody(ctx context.Context, id int, params *UpdateBookingListingPricingParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateBookingListingPricing Update Booking.com pricing for a listing
 	//
-	// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+	// Writes nightly prices for a listing's Booking.com room + rate plan. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`; `dateRange` is inclusive at both ends, so `start` equal to `end` writes exactly one night.
+	//
+	// **Occupancy.** Booking.com stores a rate amount against the party size the rate plan prices. Send `occupancy` and that is what is used; omit it and it is resolved from Booking.com's own data for that (room, rate plan) and echoed back in `occupancy[]` with its `source`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size, because Booking.com declines such an amount without saying so.
+	//
+	// **Inventory is a separate write.** `roomsToSell` on a rate update returns `422 inventory_not_in_rate_update`; use `PUT /v1/channels/booking/availability` with `type: "availability"`.
+	//
+	// **Restrictions ride along, on their own wire.** Send `restrictions` with the price and Booking.com receives two writes; the response reports each separately in `price` and `restrictions`, each with its own state, read-back and — when refused — Booking.com's own reason. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` (Booking.com's notification has no element for them — set those on the rate plan in the Extranet). Nothing you send is silently ignored.
+	//
+	// **The response says what is known.** Booking.com acknowledges a write without per-date status, so the affected nights are read back — prices and restrictions out of the same read — and `applied` reports `verified`, `mismatch`, `partial`, `rejected` or `unverified`. `partial` means one half landed and the other did not, which is never reported as a total failure. Send `verify: false` to skip the read-back; `applied` is then `unverified`. Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	//
+	// `id` is a Repull listing id. When it is published under several Booking.com properties this returns `409 ambiguous_booking_mapping` and pushes nothing — name the property with `?hotel_id=` instead.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
-	UpdateBookingListingPricing(ctx context.Context, id int, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateBookingListingPricing(ctx context.Context, id int, params *UpdateBookingListingPricingParams, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListBookingConversations List Booking.com conversations
 	//
@@ -1523,16 +1565,24 @@ type ClientInterface interface {
 
 	// ListBookingProperties List Booking.com properties
 	//
-	// List Booking.com hotels claimed by this workspace. Each row includes the Booking-side hotel id and the connected room types.
+	// List every Booking.com property this workspace holds. Each property is returned ONCE, with the Repull listings mapped under it.
 	//
-	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	// A Booking.com property is a building; its rooms are what guests book, and each room is mapped to one Repull listing — so one property routinely carries many listings. `listings[].roomBookingId` is the Booking.com room id an ARI write takes.
+	//
+	// A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"` and an empty `listings` array. That is a real mid-onboarding state, not an error: finish `POST /v1/connect/booking/map-rooms` and the listings appear. Such a property used to be dropped silently, which made a mapped-but-unreadable workspace indistinguishable from one with no Booking connection at all.
+	//
+	// Inactive listings are left out of `listings`; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
 	//
 	// Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
 	ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetBookingProperty Get Booking.com connection for a listing
 	//
-	// Return the Booking.com connection record(s) for a Vanio listing — the linked Booking hotel id, sync flags, markup, sync category, and suspension state. Scoped to the authenticated workspace; a listing with no Booking.com connection returns 404.
+	// Return the Booking.com connection record(s) for a Repull listing — the linked Booking hotel id, sync flags, markup, sync category, suspension state, and the Booking room the mapping runs through.
+	//
+	// `id` is a **Repull listing id**, not a Booking.com hotel id, despite the `properties` segment. (The hotel-id surface is `/v1/channels/booking/availability`.) The mapping is read from wherever the Connect flow recorded it — `listings_booking_rooms` for anything mapped through `POST /v1/connect/booking/map-rooms`, which is essentially every live mapping.
+	//
+	// An ARRAY, because one listing can be published under several Booking.com properties at once; `mappedVia` says which record carries each mapping. A listing with no Booking.com mapping returns 404, and the message says which id space the path takes.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -1543,12 +1593,16 @@ type ClientInterface interface {
 	//
 	// Return every Booking.com room and its rate plans for a listing, each with the `roomId` / `rateId` needed to assemble a restriction write via `PUT /v1/channels/booking/availability`.
 	//
-	// `id` is a Vanio listing id — resolved to the Booking `hotel_id` via the workspace mapping (a listing with no active Booking.com mapping returns 404). Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
+	// `id` is a **Repull listing id**, not a Booking.com hotel id, despite the `properties` segment — resolved to the Booking `hotel_id` through the workspace mapping, read from wherever the Connect flow recorded it (`listings_booking_rooms` for anything mapped through `POST /v1/connect/booking/map-rooms`). A listing with no active Booking.com mapping returns 404, and the message says which id space the path takes. When the listing is published under several properties the oldest is used, the rest come back in `otherHotelIds`, and `?hotel_id=` names a different one. Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
+	//
+	// `source` says where the answer came from. `booking` means it was read live just now. If Booking.com returns nothing usable for the property, the rooms and rate plans recorded at the last import are served instead, `source` is `mirror`, and `mirrorReason` names what went wrong live — the ids are Booking.com's own and can be written against, but they can be stale, and `maxPersons`, `policy`, `policyId`, `pricingType` and `isChildRate` come back `null` because only the live feed states them. `rooms` is empty only when Booking.com and the last import both have nothing; a read that failed is an error, never an empty list.
+	//
+	// Each rate plan carries `maxPersons` — the party size that rate plan prices, which is the `occupancy` a rate amount must be written at. Each room carries `maxAdults`, Booking.com's capacity for the room, which is what a rate write falls back to when the rate plan states no `maxPersons`.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/booking/properties/{id}/rooms (the `ListBookingPropertyRooms` operationId).
-	ListBookingPropertyRooms(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListBookingPropertyRooms(ctx context.Context, id int, params *ListBookingPropertyRoomsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListBookingReservations List Booking.com reservations
 	//
@@ -3279,14 +3333,14 @@ type ClientInterface interface {
 
 	// GetUsageSummary Get usage summary
 	//
-	// Aggregated usage over the requested `range` — tier + plan limits, quota used/remaining, next reset, a per-operation breakdown (request/error counts, error rate, avg latency), a daily timeline, status-class distribution, and range totals.
+	// Aggregated usage over the requested `range` — tier + plan limits, quota used/remaining, next reset, a per-operation breakdown (request/error counts, error rate, avg latency), a daily timeline, status-class distribution, and range totals. Two request quotas are reported and they reset at different times: `dailyRequests` is the daily circuit breaker that stops runaway client loops (resets at `dailyResetsAt`, the next UTC midnight) and `monthlyRequests` is the billing quota (resets at `resetsAt`). `null` limits mean unlimited on that dimension.
 	//
 	// Corresponds with GET /v1/usage/summary (the `GetUsageSummary` operationId).
 	GetUsageSummary(ctx context.Context, params *GetUsageSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUsageTier Get tier and quota
 	//
-	// Lightweight current-tier snapshot for status badges and quota meters — plan limits (monthly requests, daily AI requests, dynamic-pricing listings), the amount used, the amount remaining, and the next reset. `null` limits mean unlimited on that dimension.
+	// Lightweight current-tier snapshot for status badges and quota meters — plan limits (daily requests, monthly requests, daily AI requests, dynamic-pricing listings), the amount used, the amount remaining, and the next reset. Two request quotas are reported and they reset at different times: `dailyRequests` is the daily circuit breaker that stops runaway client loops (resets at `dailyResetsAt`, the next UTC midnight) and `monthlyRequests` is the billing quota (resets at `resetsAt`). Exceeding the daily cap returns 429 `daily_limit_exceeded`; exceeding the monthly one returns 429 `rate_limit_exceeded`. `null` limits mean unlimited on that dimension.
 	//
 	// Corresponds with GET /v1/usage/tier (the `GetUsageTier` operationId).
 	GetUsageTier(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3387,12 +3441,35 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/webhooks/{id}/deliveries/{delivery_id} (the `GetWebhookDelivery` operationId).
 	GetWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ReplayWebhookDelivery Replay webhook delivery
+	// ReplayWebhookDeliveryWithBody Replay webhook delivery
 	//
-	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1). A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+	//
+	// A delivery may be replayed at most **3 times per rolling 60 minutes**; the 4th inside that window answers `409 replay_limit_reached` and names the time the next one is allowed. The limit is charged to the original delivery, so replaying the delivery a replay produced draws on the same budget. It is not a lifetime cap — a delivery that has not been replayed for an hour starts fresh.
+	//
+	// A delivery your endpoint already accepted is not re-sent (it would be a duplicate) and answers `409 delivery_already_succeeded`; send `{"force": true}` to replay it anyway, which still counts against the limit.
+	//
+	// A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+	//
+	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
-	ReplayWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ReplayWebhookDeliveryWithBody(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReplayWebhookDelivery Replay webhook delivery
+	//
+	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+	//
+	// A delivery may be replayed at most **3 times per rolling 60 minutes**; the 4th inside that window answers `409 replay_limit_reached` and names the time the next one is allowed. The limit is charged to the original delivery, so replaying the delivery a replay produced draws on the same budget. It is not a lifetime cap — a delivery that has not been replayed for an hour starts fresh.
+	//
+	// A delivery your endpoint already accepted is not re-sent (it would be a duplicate) and answers `409 delivery_already_succeeded`; send `{"force": true}` to replay it anyway, which still counts against the limit.
+	//
+	// A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
+	ReplayWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, body ReplayWebhookDeliveryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PingWebhook Send ping event
 	//
@@ -5599,13 +5676,23 @@ func (c *Client) GetBookingAvailability(ctx context.Context, params *GetBookingA
 
 // UpdateBookingAvailabilityWithBody Update Booking.com rates/availability
 //
-// Push availability, rates, and the full restriction set to Booking.com. `type` selects the write path:
+// Write rates, availability and restrictions to a Booking.com property. `type` selects the write:
 //
-// - `rates` — nightly price + length-of-stay / arrival restrictions (min/max stay, closed-to-arrival, closed-to-departure, advance-reservation window).
-// - `availability` — inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same restriction set.
+// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
+// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
 // - `derived-pricing` — occupancy-derived pricing rules.
 //
-// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
+//
+// **A rate amount needs an occupancy.** Booking.com stores the amount against the party size the rate plan prices: sent above that number it declines the price in silence, sent below it it answers 400. Send `occupancy`, or omit it and Repull resolves it from Booking.com's own data and echoes the value and its `source` back in `occupancy[]`. If it cannot be resolved the write is refused with `422` naming `updates[N].occupancy`.
+//
+// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
+//
+// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
+//
+// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+//
+// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -5628,13 +5715,23 @@ func (c *Client) UpdateBookingAvailabilityWithBody(ctx context.Context, contentT
 
 // UpdateBookingAvailability Update Booking.com rates/availability
 //
-// Push availability, rates, and the full restriction set to Booking.com. `type` selects the write path:
+// Write rates, availability and restrictions to a Booking.com property. `type` selects the write:
 //
-// - `rates` — nightly price + length-of-stay / arrival restrictions (min/max stay, closed-to-arrival, closed-to-departure, advance-reservation window).
-// - `availability` — inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same restriction set.
+// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
+// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
 // - `derived-pricing` — occupancy-derived pricing rules.
 //
-// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
+//
+// **A rate amount needs an occupancy.** Booking.com stores the amount against the party size the rate plan prices: sent above that number it declines the price in silence, sent below it it answers 400. Send `occupancy`, or omit it and Repull resolves it from Booking.com's own data and echoes the value and its `source` back in `occupancy[]`. If it cannot be resolved the write is refused with `422` naming `updates[N].occupancy`.
+//
+// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
+//
+// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
+//
+// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+//
+// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -5766,9 +5863,11 @@ func (c *Client) UpdateBookingContent(ctx context.Context, reqEditors ...Request
 
 // GetBookingListingPricing Get Booking.com pricing for a listing
 //
-// Resolves the Vanio listing ID to its Booking.com `hotel_id` (via the `listings_booking` mapping owned by the authenticated workspace), then proxies Booking's `getRoomRateAvailability` for the requested window. Pricing on Booking is per-room/per-rate-plan, so `room_id` and `room_level` flow through query params unchanged.
+// Resolves the Repull listing id to its Booking.com `hotel_id` (via the room mapping the Connect flow records for the authenticated workspace), then proxies Booking's `getRoomRateAvailability` for the requested window. Pricing on Booking is per-room/per-rate-plan, so `room_id` and `room_level` flow through query params unchanged.
 //
-// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Vanio listing ID across channels.
+// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Repull listing id across channels. `id` is a Repull listing id, never a Booking.com hotel id — the hotel-id surface is `/v1/channels/booking/availability`.
+//
+// A listing can be published under several Booking.com properties. GET uses the oldest and reports the rest in `otherHotelIds`; PUT refuses with `409 ambiguous_booking_mapping` rather than push rates into a property it guessed at. `?hotel_id=` names the property explicitly for either.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -5787,15 +5886,25 @@ func (c *Client) GetBookingListingPricing(ctx context.Context, id int, params *G
 
 // UpdateBookingListingPricingWithBody Update Booking.com pricing for a listing
 //
-// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+// Writes nightly prices for a listing's Booking.com room + rate plan. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`; `dateRange` is inclusive at both ends, so `start` equal to `end` writes exactly one night.
+//
+// **Occupancy.** Booking.com stores a rate amount against the party size the rate plan prices. Send `occupancy` and that is what is used; omit it and it is resolved from Booking.com's own data for that (room, rate plan) and echoed back in `occupancy[]` with its `source`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size, because Booking.com declines such an amount without saying so.
+//
+// **Inventory is a separate write.** `roomsToSell` on a rate update returns `422 inventory_not_in_rate_update`; use `PUT /v1/channels/booking/availability` with `type: "availability"`.
+//
+// **Restrictions ride along, on their own wire.** Send `restrictions` with the price and Booking.com receives two writes; the response reports each separately in `price` and `restrictions`, each with its own state, read-back and — when refused — Booking.com's own reason. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` (Booking.com's notification has no element for them — set those on the rate plan in the Extranet). Nothing you send is silently ignored.
+//
+// **The response says what is known.** Booking.com acknowledges a write without per-date status, so the affected nights are read back — prices and restrictions out of the same read — and `applied` reports `verified`, `mismatch`, `partial`, `rejected` or `unverified`. `partial` means one half landed and the other did not, which is never reported as a total failure. Send `verify: false` to skip the read-back; `applied` is then `unverified`. Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+//
+// `id` is a Repull listing id. When it is published under several Booking.com properties this returns `409 ambiguous_booking_mapping` and pushes nothing — name the property with `?hotel_id=` instead.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type.
 //
 // Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
-func (c *Client) UpdateBookingListingPricingWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateBookingListingPricingRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) UpdateBookingListingPricingWithBody(ctx context.Context, id int, params *UpdateBookingListingPricingParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingListingPricingRequestWithBody(c.Server, id, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5808,15 +5917,25 @@ func (c *Client) UpdateBookingListingPricingWithBody(ctx context.Context, id int
 
 // UpdateBookingListingPricing Update Booking.com pricing for a listing
 //
-// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+// Writes nightly prices for a listing's Booking.com room + rate plan. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`; `dateRange` is inclusive at both ends, so `start` equal to `end` writes exactly one night.
+//
+// **Occupancy.** Booking.com stores a rate amount against the party size the rate plan prices. Send `occupancy` and that is what is used; omit it and it is resolved from Booking.com's own data for that (room, rate plan) and echoed back in `occupancy[]` with its `source`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size, because Booking.com declines such an amount without saying so.
+//
+// **Inventory is a separate write.** `roomsToSell` on a rate update returns `422 inventory_not_in_rate_update`; use `PUT /v1/channels/booking/availability` with `type: "availability"`.
+//
+// **Restrictions ride along, on their own wire.** Send `restrictions` with the price and Booking.com receives two writes; the response reports each separately in `price` and `restrictions`, each with its own state, read-back and — when refused — Booking.com's own reason. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` (Booking.com's notification has no element for them — set those on the rate plan in the Extranet). Nothing you send is silently ignored.
+//
+// **The response says what is known.** Booking.com acknowledges a write without per-date status, so the affected nights are read back — prices and restrictions out of the same read — and `applied` reports `verified`, `mismatch`, `partial`, `rejected` or `unverified`. `partial` means one half landed and the other did not, which is never reported as a total failure. Send `verify: false` to skip the read-back; `applied` is then `unverified`. Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+//
+// `id` is a Repull listing id. When it is published under several Booking.com properties this returns `409 ambiguous_booking_mapping` and pushes nothing — name the property with `?hotel_id=` instead.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
-func (c *Client) UpdateBookingListingPricing(ctx context.Context, id int, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateBookingListingPricingRequest(c.Server, id, body)
+func (c *Client) UpdateBookingListingPricing(ctx context.Context, id int, params *UpdateBookingListingPricingParams, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingListingPricingRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5896,9 +6015,13 @@ func (c *Client) SendBookingMessage(ctx context.Context, body SendBookingMessage
 
 // ListBookingProperties List Booking.com properties
 //
-// List Booking.com hotels claimed by this workspace. Each row includes the Booking-side hotel id and the connected room types.
+// List every Booking.com property this workspace holds. Each property is returned ONCE, with the Repull listings mapped under it.
 //
-// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+// A Booking.com property is a building; its rooms are what guests book, and each room is mapped to one Repull listing — so one property routinely carries many listings. `listings[].roomBookingId` is the Booking.com room id an ARI write takes.
+//
+// A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"` and an empty `listings` array. That is a real mid-onboarding state, not an error: finish `POST /v1/connect/booking/map-rooms` and the listings appear. Such a property used to be dropped silently, which made a mapped-but-unreadable workspace indistinguishable from one with no Booking connection at all.
+//
+// Inactive listings are left out of `listings`; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
 //
 // Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
 func (c *Client) ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5915,7 +6038,11 @@ func (c *Client) ListBookingProperties(ctx context.Context, reqEditors ...Reques
 
 // GetBookingProperty Get Booking.com connection for a listing
 //
-// Return the Booking.com connection record(s) for a Vanio listing — the linked Booking hotel id, sync flags, markup, sync category, and suspension state. Scoped to the authenticated workspace; a listing with no Booking.com connection returns 404.
+// Return the Booking.com connection record(s) for a Repull listing — the linked Booking hotel id, sync flags, markup, sync category, suspension state, and the Booking room the mapping runs through.
+//
+// `id` is a **Repull listing id**, not a Booking.com hotel id, despite the `properties` segment. (The hotel-id surface is `/v1/channels/booking/availability`.) The mapping is read from wherever the Connect flow recorded it — `listings_booking_rooms` for anything mapped through `POST /v1/connect/booking/map-rooms`, which is essentially every live mapping.
+//
+// An ARRAY, because one listing can be published under several Booking.com properties at once; `mappedVia` says which record carries each mapping. A listing with no Booking.com mapping returns 404, and the message says which id space the path takes.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -5936,13 +6063,17 @@ func (c *Client) GetBookingProperty(ctx context.Context, id int, reqEditors ...R
 //
 // Return every Booking.com room and its rate plans for a listing, each with the `roomId` / `rateId` needed to assemble a restriction write via `PUT /v1/channels/booking/availability`.
 //
-// `id` is a Vanio listing id — resolved to the Booking `hotel_id` via the workspace mapping (a listing with no active Booking.com mapping returns 404). Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
+// `id` is a **Repull listing id**, not a Booking.com hotel id, despite the `properties` segment — resolved to the Booking `hotel_id` through the workspace mapping, read from wherever the Connect flow recorded it (`listings_booking_rooms` for anything mapped through `POST /v1/connect/booking/map-rooms`). A listing with no active Booking.com mapping returns 404, and the message says which id space the path takes. When the listing is published under several properties the oldest is used, the rest come back in `otherHotelIds`, and `?hotel_id=` names a different one. Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
+//
+// `source` says where the answer came from. `booking` means it was read live just now. If Booking.com returns nothing usable for the property, the rooms and rate plans recorded at the last import are served instead, `source` is `mirror`, and `mirrorReason` names what went wrong live — the ids are Booking.com's own and can be written against, but they can be stale, and `maxPersons`, `policy`, `policyId`, `pricingType` and `isChildRate` come back `null` because only the live feed states them. `rooms` is empty only when Booking.com and the last import both have nothing; a read that failed is an error, never an empty list.
+//
+// Each rate plan carries `maxPersons` — the party size that rate plan prices, which is the `occupancy` a rate amount must be written at. Each room carries `maxAdults`, Booking.com's capacity for the room, which is what a rate write falls back to when the rate plan states no `maxPersons`.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/booking/properties/{id}/rooms (the `ListBookingPropertyRooms` operationId).
-func (c *Client) ListBookingPropertyRooms(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListBookingPropertyRoomsRequest(c.Server, id)
+func (c *Client) ListBookingPropertyRooms(ctx context.Context, id int, params *ListBookingPropertyRoomsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBookingPropertyRoomsRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -9098,7 +9229,7 @@ func (c *Client) GetUsageLogs(ctx context.Context, params *GetUsageLogsParams, r
 
 // GetUsageSummary Get usage summary
 //
-// Aggregated usage over the requested `range` — tier + plan limits, quota used/remaining, next reset, a per-operation breakdown (request/error counts, error rate, avg latency), a daily timeline, status-class distribution, and range totals.
+// Aggregated usage over the requested `range` — tier + plan limits, quota used/remaining, next reset, a per-operation breakdown (request/error counts, error rate, avg latency), a daily timeline, status-class distribution, and range totals. Two request quotas are reported and they reset at different times: `dailyRequests` is the daily circuit breaker that stops runaway client loops (resets at `dailyResetsAt`, the next UTC midnight) and `monthlyRequests` is the billing quota (resets at `resetsAt`). `null` limits mean unlimited on that dimension.
 //
 // Corresponds with GET /v1/usage/summary (the `GetUsageSummary` operationId).
 func (c *Client) GetUsageSummary(ctx context.Context, params *GetUsageSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9115,7 +9246,7 @@ func (c *Client) GetUsageSummary(ctx context.Context, params *GetUsageSummaryPar
 
 // GetUsageTier Get tier and quota
 //
-// Lightweight current-tier snapshot for status badges and quota meters — plan limits (monthly requests, daily AI requests, dynamic-pricing listings), the amount used, the amount remaining, and the next reset. `null` limits mean unlimited on that dimension.
+// Lightweight current-tier snapshot for status badges and quota meters — plan limits (daily requests, monthly requests, daily AI requests, dynamic-pricing listings), the amount used, the amount remaining, and the next reset. Two request quotas are reported and they reset at different times: `dailyRequests` is the daily circuit breaker that stops runaway client loops (resets at `dailyResetsAt`, the next UTC midnight) and `monthlyRequests` is the billing quota (resets at `resetsAt`). Exceeding the daily cap returns 429 `daily_limit_exceeded`; exceeding the monthly one returns 429 `rate_limit_exceeded`. `null` limits mean unlimited on that dimension.
 //
 // Corresponds with GET /v1/usage/tier (the `GetUsageTier` operationId).
 func (c *Client) GetUsageTier(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9346,13 +9477,46 @@ func (c *Client) GetWebhookDelivery(ctx context.Context, id openapi_types.UUID, 
 	return c.Client.Do(req)
 }
 
-// ReplayWebhookDelivery Replay webhook delivery
+// ReplayWebhookDeliveryWithBody Replay webhook delivery
 //
-// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1). A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+//
+// A delivery may be replayed at most **3 times per rolling 60 minutes**; the 4th inside that window answers `409 replay_limit_reached` and names the time the next one is allowed. The limit is charged to the original delivery, so replaying the delivery a replay produced draws on the same budget. It is not a lifetime cap — a delivery that has not been replayed for an hour starts fresh.
+//
+// A delivery your endpoint already accepted is not re-sent (it would be a duplicate) and answers `409 delivery_already_succeeded`; send `{"force": true}` to replay it anyway, which still counts against the limit.
+//
+// A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+//
+// Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
-func (c *Client) ReplayWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewReplayWebhookDeliveryRequest(c.Server, id, deliveryId)
+func (c *Client) ReplayWebhookDeliveryWithBody(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReplayWebhookDeliveryRequestWithBody(c.Server, id, deliveryId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ReplayWebhookDelivery Replay webhook delivery
+//
+// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+//
+// A delivery may be replayed at most **3 times per rolling 60 minutes**; the 4th inside that window answers `409 replay_limit_reached` and names the time the next one is allowed. The limit is charged to the original delivery, so replaying the delivery a replay produced draws on the same budget. It is not a lifetime cap — a delivery that has not been replayed for an hour starts fresh.
+//
+// A delivery your endpoint already accepted is not re-sent (it would be a duplicate) and answers `409 delivery_already_succeeded`; send `{"force": true}` to replay it anyway, which still counts against the limit.
+//
+// A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
+func (c *Client) ReplayWebhookDelivery(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, body ReplayWebhookDeliveryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReplayWebhookDeliveryRequest(c.Server, id, deliveryId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -12859,6 +13023,18 @@ func NewGetBookingListingPricingRequest(server string, id int, params *GetBookin
 
 		}
 
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if encoded := queryValues.Encode(); encoded != "" {
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
@@ -12874,18 +13050,18 @@ func NewGetBookingListingPricingRequest(server string, id int, params *GetBookin
 }
 
 // NewUpdateBookingListingPricingRequest calls the generic UpdateBookingListingPricing builder with application/json body
-func NewUpdateBookingListingPricingRequest(server string, id int, body UpdateBookingListingPricingJSONRequestBody) (*http.Request, error) {
+func NewUpdateBookingListingPricingRequest(server string, id int, params *UpdateBookingListingPricingParams, body UpdateBookingListingPricingJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateBookingListingPricingRequestWithBody(server, id, "application/json", bodyReader)
+	return NewUpdateBookingListingPricingRequestWithBody(server, id, params, "application/json", bodyReader)
 }
 
 // NewUpdateBookingListingPricingRequestWithBody constructs an http.Request for the UpdateBookingListingPricing method, with any body, and a specified content type
-func NewUpdateBookingListingPricingRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateBookingListingPricingRequestWithBody(server string, id int, params *UpdateBookingListingPricingParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -12908,6 +13084,33 @@ func NewUpdateBookingListingPricingRequestWithBody(server string, id int, conten
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
@@ -13049,7 +13252,7 @@ func NewGetBookingPropertyRequest(server string, id int) (*http.Request, error) 
 }
 
 // NewListBookingPropertyRoomsRequest constructs an http.Request for the ListBookingPropertyRooms method
-func NewListBookingPropertyRoomsRequest(server string, id int) (*http.Request, error) {
+func NewListBookingPropertyRoomsRequest(server string, id int, params *ListBookingPropertyRoomsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -13072,6 +13275,33 @@ func NewListBookingPropertyRoomsRequest(server string, id int) (*http.Request, e
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -19190,8 +19420,19 @@ func NewGetWebhookDeliveryRequest(server string, id openapi_types.UUID, delivery
 	return req, nil
 }
 
-// NewReplayWebhookDeliveryRequest constructs an http.Request for the ReplayWebhookDelivery method
-func NewReplayWebhookDeliveryRequest(server string, id openapi_types.UUID, deliveryId openapi_types.UUID) (*http.Request, error) {
+// NewReplayWebhookDeliveryRequest calls the generic ReplayWebhookDelivery builder with application/json body
+func NewReplayWebhookDeliveryRequest(server string, id openapi_types.UUID, deliveryId openapi_types.UUID, body ReplayWebhookDeliveryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewReplayWebhookDeliveryRequestWithBody(server, id, deliveryId, "application/json", bodyReader)
+}
+
+// NewReplayWebhookDeliveryRequestWithBody constructs an http.Request for the ReplayWebhookDelivery method, with any body, and a specified content type
+func NewReplayWebhookDeliveryRequestWithBody(server string, id openapi_types.UUID, deliveryId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -19223,10 +19464,12 @@ func NewReplayWebhookDeliveryRequest(server string, id openapi_types.UUID, deliv
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -20716,13 +20959,23 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateBookingAvailabilityWithBodyWithResponse Update Booking.com rates/availability
 	//
-	// Push availability, rates, and the full restriction set to Booking.com. `type` selects the write path:
+	// Write rates, availability and restrictions to a Booking.com property. `type` selects the write:
 	//
-	// - `rates` — nightly price + length-of-stay / arrival restrictions (min/max stay, closed-to-arrival, closed-to-departure, advance-reservation window).
-	// - `availability` — inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same restriction set.
+	// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
+	// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
 	// - `derived-pricing` — occupancy-derived pricing rules.
 	//
-	// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+	// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
+	//
+	// **A rate amount needs an occupancy.** Booking.com stores the amount against the party size the rate plan prices: sent above that number it declines the price in silence, sent below it it answers 400. Send `occupancy`, or omit it and Repull resolves it from Booking.com's own data and echoes the value and its `source` back in `occupancy[]`. If it cannot be resolved the write is refused with `422` naming `updates[N].occupancy`.
+	//
+	// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
+	//
+	// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
+	//
+	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	//
+	// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -20735,13 +20988,23 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateBookingAvailabilityWithResponse Update Booking.com rates/availability
 	//
-	// Push availability, rates, and the full restriction set to Booking.com. `type` selects the write path:
+	// Write rates, availability and restrictions to a Booking.com property. `type` selects the write:
 	//
-	// - `rates` — nightly price + length-of-stay / arrival restrictions (min/max stay, closed-to-arrival, closed-to-departure, advance-reservation window).
-	// - `availability` — inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same restriction set.
+	// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
+	// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
 	// - `derived-pricing` — occupancy-derived pricing rules.
 	//
-	// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+	// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
+	//
+	// **A rate amount needs an occupancy.** Booking.com stores the amount against the party size the rate plan prices: sent above that number it declines the price in silence, sent below it it answers 400. Send `occupancy`, or omit it and Repull resolves it from Booking.com's own data and echoes the value and its `source` back in `occupancy[]`. If it cannot be resolved the write is refused with `422` naming `updates[N].occupancy`.
+	//
+	// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
+	//
+	// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
+	//
+	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	//
+	// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -20819,9 +21082,11 @@ type ClientWithResponsesInterface interface {
 
 	// GetBookingListingPricingWithResponse Get Booking.com pricing for a listing
 	//
-	// Resolves the Vanio listing ID to its Booking.com `hotel_id` (via the `listings_booking` mapping owned by the authenticated workspace), then proxies Booking's `getRoomRateAvailability` for the requested window. Pricing on Booking is per-room/per-rate-plan, so `room_id` and `room_level` flow through query params unchanged.
+	// Resolves the Repull listing id to its Booking.com `hotel_id` (via the room mapping the Connect flow records for the authenticated workspace), then proxies Booking's `getRoomRateAvailability` for the requested window. Pricing on Booking is per-room/per-rate-plan, so `room_id` and `room_level` flow through query params unchanged.
 	//
-	// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Vanio listing ID across channels.
+	// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Repull listing id across channels. `id` is a Repull listing id, never a Booking.com hotel id — the hotel-id surface is `/v1/channels/booking/availability`.
+	//
+	// A listing can be published under several Booking.com properties. GET uses the oldest and reports the rest in `otherHotelIds`; PUT refuses with `409 ambiguous_booking_mapping` rather than push rates into a property it guessed at. `?hotel_id=` names the property explicitly for either.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -20832,25 +21097,45 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateBookingListingPricingWithBodyWithResponse Update Booking.com pricing for a listing
 	//
-	// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+	// Writes nightly prices for a listing's Booking.com room + rate plan. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`; `dateRange` is inclusive at both ends, so `start` equal to `end` writes exactly one night.
+	//
+	// **Occupancy.** Booking.com stores a rate amount against the party size the rate plan prices. Send `occupancy` and that is what is used; omit it and it is resolved from Booking.com's own data for that (room, rate plan) and echoed back in `occupancy[]` with its `source`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size, because Booking.com declines such an amount without saying so.
+	//
+	// **Inventory is a separate write.** `roomsToSell` on a rate update returns `422 inventory_not_in_rate_update`; use `PUT /v1/channels/booking/availability` with `type: "availability"`.
+	//
+	// **Restrictions ride along, on their own wire.** Send `restrictions` with the price and Booking.com receives two writes; the response reports each separately in `price` and `restrictions`, each with its own state, read-back and — when refused — Booking.com's own reason. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` (Booking.com's notification has no element for them — set those on the rate plan in the Extranet). Nothing you send is silently ignored.
+	//
+	// **The response says what is known.** Booking.com acknowledges a write without per-date status, so the affected nights are read back — prices and restrictions out of the same read — and `applied` reports `verified`, `mismatch`, `partial`, `rejected` or `unverified`. `partial` means one half landed and the other did not, which is never reported as a total failure. Send `verify: false` to skip the read-back; `applied` is then `unverified`. Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	//
+	// `id` is a Repull listing id. When it is published under several Booking.com properties this returns `409 ambiguous_booking_mapping` and pushes nothing — name the property with `?hotel_id=` instead.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
-	UpdateBookingListingPricingWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error)
+	UpdateBookingListingPricingWithBodyWithResponse(ctx context.Context, id int, params *UpdateBookingListingPricingParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error)
 
 	// UpdateBookingListingPricingWithResponse Update Booking.com pricing for a listing
 	//
-	// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+	// Writes nightly prices for a listing's Booking.com room + rate plan. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`; `dateRange` is inclusive at both ends, so `start` equal to `end` writes exactly one night.
+	//
+	// **Occupancy.** Booking.com stores a rate amount against the party size the rate plan prices. Send `occupancy` and that is what is used; omit it and it is resolved from Booking.com's own data for that (room, rate plan) and echoed back in `occupancy[]` with its `source`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size, because Booking.com declines such an amount without saying so.
+	//
+	// **Inventory is a separate write.** `roomsToSell` on a rate update returns `422 inventory_not_in_rate_update`; use `PUT /v1/channels/booking/availability` with `type: "availability"`.
+	//
+	// **Restrictions ride along, on their own wire.** Send `restrictions` with the price and Booking.com receives two writes; the response reports each separately in `price` and `restrictions`, each with its own state, read-back and — when refused — Booking.com's own reason. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` (Booking.com's notification has no element for them — set those on the rate plan in the Extranet). Nothing you send is silently ignored.
+	//
+	// **The response says what is known.** Booking.com acknowledges a write without per-date status, so the affected nights are read back — prices and restrictions out of the same read — and `applied` reports `verified`, `mismatch`, `partial`, `rejected` or `unverified`. `partial` means one half landed and the other did not, which is never reported as a total failure. Send `verify: false` to skip the read-back; `applied` is then `unverified`. Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	//
+	// `id` is a Repull listing id. When it is published under several Booking.com properties this returns `409 ambiguous_booking_mapping` and pushes nothing — name the property with `?hotel_id=` instead.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
-	UpdateBookingListingPricingWithResponse(ctx context.Context, id int, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error)
+	UpdateBookingListingPricingWithResponse(ctx context.Context, id int, params *UpdateBookingListingPricingParams, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error)
 
 	// ListBookingConversationsWithResponse List Booking.com conversations
 	//
@@ -20893,9 +21178,13 @@ type ClientWithResponsesInterface interface {
 
 	// ListBookingPropertiesWithResponse List Booking.com properties
 	//
-	// List Booking.com hotels claimed by this workspace. Each row includes the Booking-side hotel id and the connected room types.
+	// List every Booking.com property this workspace holds. Each property is returned ONCE, with the Repull listings mapped under it.
 	//
-	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	// A Booking.com property is a building; its rooms are what guests book, and each room is mapped to one Repull listing — so one property routinely carries many listings. `listings[].roomBookingId` is the Booking.com room id an ARI write takes.
+	//
+	// A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"` and an empty `listings` array. That is a real mid-onboarding state, not an error: finish `POST /v1/connect/booking/map-rooms` and the listings appear. Such a property used to be dropped silently, which made a mapped-but-unreadable workspace indistinguishable from one with no Booking connection at all.
+	//
+	// Inactive listings are left out of `listings`; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -20904,7 +21193,11 @@ type ClientWithResponsesInterface interface {
 
 	// GetBookingPropertyWithResponse Get Booking.com connection for a listing
 	//
-	// Return the Booking.com connection record(s) for a Vanio listing — the linked Booking hotel id, sync flags, markup, sync category, and suspension state. Scoped to the authenticated workspace; a listing with no Booking.com connection returns 404.
+	// Return the Booking.com connection record(s) for a Repull listing — the linked Booking hotel id, sync flags, markup, sync category, suspension state, and the Booking room the mapping runs through.
+	//
+	// `id` is a **Repull listing id**, not a Booking.com hotel id, despite the `properties` segment. (The hotel-id surface is `/v1/channels/booking/availability`.) The mapping is read from wherever the Connect flow recorded it — `listings_booking_rooms` for anything mapped through `POST /v1/connect/booking/map-rooms`, which is essentially every live mapping.
+	//
+	// An ARRAY, because one listing can be published under several Booking.com properties at once; `mappedVia` says which record carries each mapping. A listing with no Booking.com mapping returns 404, and the message says which id space the path takes.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -20917,14 +21210,18 @@ type ClientWithResponsesInterface interface {
 	//
 	// Return every Booking.com room and its rate plans for a listing, each with the `roomId` / `rateId` needed to assemble a restriction write via `PUT /v1/channels/booking/availability`.
 	//
-	// `id` is a Vanio listing id — resolved to the Booking `hotel_id` via the workspace mapping (a listing with no active Booking.com mapping returns 404). Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
+	// `id` is a **Repull listing id**, not a Booking.com hotel id, despite the `properties` segment — resolved to the Booking `hotel_id` through the workspace mapping, read from wherever the Connect flow recorded it (`listings_booking_rooms` for anything mapped through `POST /v1/connect/booking/map-rooms`). A listing with no active Booking.com mapping returns 404, and the message says which id space the path takes. When the listing is published under several properties the oldest is used, the rest come back in `otherHotelIds`, and `?hotel_id=` names a different one. Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
+	//
+	// `source` says where the answer came from. `booking` means it was read live just now. If Booking.com returns nothing usable for the property, the rooms and rate plans recorded at the last import are served instead, `source` is `mirror`, and `mirrorReason` names what went wrong live — the ids are Booking.com's own and can be written against, but they can be stale, and `maxPersons`, `policy`, `policyId`, `pricingType` and `isChildRate` come back `null` because only the live feed states them. `rooms` is empty only when Booking.com and the last import both have nothing; a read that failed is an error, never an empty list.
+	//
+	// Each rate plan carries `maxPersons` — the party size that rate plan prices, which is the `occupancy` a rate amount must be written at. Each room carries `maxAdults`, Booking.com's capacity for the room, which is what a rate write falls back to when the rate plan states no `maxPersons`.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/properties/{id}/rooms (the `ListBookingPropertyRooms` operationId).
-	ListBookingPropertyRoomsWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*ListBookingPropertyRoomsClientResponse, error)
+	ListBookingPropertyRoomsWithResponse(ctx context.Context, id int, params *ListBookingPropertyRoomsParams, reqEditors ...RequestEditorFn) (*ListBookingPropertyRoomsClientResponse, error)
 
 	// ListBookingReservationsWithResponse List Booking.com reservations
 	//
@@ -22775,7 +23072,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetUsageSummaryWithResponse Get usage summary
 	//
-	// Aggregated usage over the requested `range` — tier + plan limits, quota used/remaining, next reset, a per-operation breakdown (request/error counts, error rate, avg latency), a daily timeline, status-class distribution, and range totals.
+	// Aggregated usage over the requested `range` — tier + plan limits, quota used/remaining, next reset, a per-operation breakdown (request/error counts, error rate, avg latency), a daily timeline, status-class distribution, and range totals. Two request quotas are reported and they reset at different times: `dailyRequests` is the daily circuit breaker that stops runaway client loops (resets at `dailyResetsAt`, the next UTC midnight) and `monthlyRequests` is the billing quota (resets at `resetsAt`). `null` limits mean unlimited on that dimension.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -22784,7 +23081,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetUsageTierWithResponse Get tier and quota
 	//
-	// Lightweight current-tier snapshot for status badges and quota meters — plan limits (monthly requests, daily AI requests, dynamic-pricing listings), the amount used, the amount remaining, and the next reset. `null` limits mean unlimited on that dimension.
+	// Lightweight current-tier snapshot for status badges and quota meters — plan limits (daily requests, monthly requests, daily AI requests, dynamic-pricing listings), the amount used, the amount remaining, and the next reset. Two request quotas are reported and they reset at different times: `dailyRequests` is the daily circuit breaker that stops runaway client loops (resets at `dailyResetsAt`, the next UTC midnight) and `monthlyRequests` is the billing quota (resets at `resetsAt`). Exceeding the daily cap returns 429 `daily_limit_exceeded`; exceeding the monthly one returns 429 `rate_limit_exceeded`. `null` limits mean unlimited on that dimension.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -22899,14 +23196,35 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/webhooks/{id}/deliveries/{delivery_id} (the `GetWebhookDelivery` operationId).
 	GetWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWebhookDeliveryClientResponse, error)
 
-	// ReplayWebhookDeliveryWithResponse Replay webhook delivery
+	// ReplayWebhookDeliveryWithBodyWithResponse Replay webhook delivery
 	//
-	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1). A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
 	//
-	// Returns a wrapper object for the known response body format(s).
+	// A delivery may be replayed at most **3 times per rolling 60 minutes**; the 4th inside that window answers `409 replay_limit_reached` and names the time the next one is allowed. The limit is charged to the original delivery, so replaying the delivery a replay produced draws on the same budget. It is not a lifetime cap — a delivery that has not been replayed for an hour starts fresh.
+	//
+	// A delivery your endpoint already accepted is not re-sent (it would be a duplicate) and answers `409 delivery_already_succeeded`; send `{"force": true}` to replay it anyway, which still counts against the limit.
+	//
+	// A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
-	ReplayWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ReplayWebhookDeliveryClientResponse, error)
+	ReplayWebhookDeliveryWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReplayWebhookDeliveryClientResponse, error)
+
+	// ReplayWebhookDeliveryWithResponse Replay webhook delivery
+	//
+	// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+	//
+	// A delivery may be replayed at most **3 times per rolling 60 minutes**; the 4th inside that window answers `409 replay_limit_reached` and names the time the next one is allowed. The limit is charged to the original delivery, so replaying the delivery a replay produced draws on the same budget. It is not a lifetime cap — a delivery that has not been replayed for an hour starts fresh.
+	//
+	// A delivery your endpoint already accepted is not re-sent (it would be a duplicate) and answers `409 delivery_already_succeeded`; send `{"force": true}` to replay it anyway, which still counts against the limit.
+	//
+	// A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
+	ReplayWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, body ReplayWebhookDeliveryJSONRequestBody, reqEditors ...RequestEditorFn) (*ReplayWebhookDeliveryClientResponse, error)
 
 	// PingWebhookWithResponse Send ping event
 	//
@@ -27793,6 +28111,8 @@ type GetBookingAvailabilityClientResponse struct {
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *BookingUpstreamError
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -27823,6 +28143,11 @@ func (r GetBookingAvailabilityClientResponse) GetJSON404() *NotFound {
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r GetBookingAvailabilityClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetBookingAvailabilityClientResponse) GetJSON502() *BookingUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -27857,6 +28182,8 @@ func (r GetBookingAvailabilityClientResponse) ContentType() string {
 type UpdateBookingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *BookingPricingUpdateResponse
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -27865,8 +28192,19 @@ type UpdateBookingAvailabilityClientResponse struct {
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *BookingWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *BookingRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *BookingUpstreamError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateBookingAvailabilityClientResponse) GetJSON200() *BookingPricingUpdateResponse {
+	return r.JSON200
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -27889,9 +28227,24 @@ func (r UpdateBookingAvailabilityClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
 }
 
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateBookingAvailabilityClientResponse) GetJSON422() *BookingWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateBookingAvailabilityClientResponse) GetJSON429() *BookingRateLimited {
+	return r.JSON429
+}
+
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r UpdateBookingAvailabilityClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateBookingAvailabilityClientResponse) GetJSON502() *BookingUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -28172,6 +28525,8 @@ type GetBookingListingPricingClientResponse struct {
 	JSON404 *NotFound
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *BookingUpstreamError
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -28202,6 +28557,11 @@ func (r GetBookingListingPricingClientResponse) GetJSON404() *NotFound {
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r GetBookingListingPricingClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetBookingListingPricingClientResponse) GetJSON502() *BookingUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -28246,8 +28606,16 @@ type UpdateBookingListingPricingClientResponse struct {
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *BookingWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *BookingRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *BookingUpstreamError
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -28275,9 +28643,29 @@ func (r UpdateBookingListingPricingClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
 }
 
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r UpdateBookingListingPricingClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateBookingListingPricingClientResponse) GetJSON422() *BookingWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateBookingListingPricingClientResponse) GetJSON429() *BookingRateLimited {
+	return r.JSON429
+}
+
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r UpdateBookingListingPricingClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateBookingListingPricingClientResponse) GetJSON502() *BookingUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -34979,12 +35367,15 @@ type GetUsageSummaryClientResponse struct {
 			OperationId  *string  `json:"operationId,omitempty"`
 			RequestCount *int     `json:"requestCount,omitempty"`
 		} `json:"breakdown,omitempty"`
-		Limits *struct {
+		DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
+		Limits        *struct {
 			DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
+			DailyRequests   *int `json:"dailyRequests,omitempty"`
 			MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 		} `json:"limits,omitempty"`
 		Range     *string `json:"range,omitempty"`
 		Remaining *struct {
+			Daily   *int `json:"daily,omitempty"`
 			DailyAi *int `json:"dailyAi,omitempty"`
 			Monthly *int `json:"monthly,omitempty"`
 		} `json:"remaining,omitempty"`
@@ -35007,6 +35398,7 @@ type GetUsageSummaryClientResponse struct {
 			Requests     *int `json:"requests,omitempty"`
 		} `json:"totals,omitempty"`
 		Used *struct {
+			Daily   *int `json:"daily,omitempty"`
 			DailyAi *int `json:"dailyAi,omitempty"`
 			Monthly *int `json:"monthly,omitempty"`
 		} `json:"used,omitempty"`
@@ -35026,12 +35418,15 @@ func (r GetUsageSummaryClientResponse) GetJSON200() *struct {
 		OperationId  *string  `json:"operationId,omitempty"`
 		RequestCount *int     `json:"requestCount,omitempty"`
 	} `json:"breakdown,omitempty"`
-	Limits *struct {
+	DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
+	Limits        *struct {
 		DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
+		DailyRequests   *int `json:"dailyRequests,omitempty"`
 		MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 	} `json:"limits,omitempty"`
 	Range     *string `json:"range,omitempty"`
 	Remaining *struct {
+		Daily   *int `json:"daily,omitempty"`
 		DailyAi *int `json:"dailyAi,omitempty"`
 		Monthly *int `json:"monthly,omitempty"`
 	} `json:"remaining,omitempty"`
@@ -35054,6 +35449,7 @@ func (r GetUsageSummaryClientResponse) GetJSON200() *struct {
 		Requests     *int `json:"requests,omitempty"`
 	} `json:"totals,omitempty"`
 	Used *struct {
+		Daily   *int `json:"daily,omitempty"`
 		DailyAi *int `json:"dailyAi,omitempty"`
 		Monthly *int `json:"monthly,omitempty"`
 	} `json:"used,omitempty"`
@@ -35105,12 +35501,15 @@ type GetUsageTierClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
-		Limits *struct {
+		DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
+		Limits        *struct {
 			DailyAiRequests        *int `json:"dailyAiRequests,omitempty"`
+			DailyRequests          *int `json:"dailyRequests,omitempty"`
 			DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 			MonthlyRequests        *int `json:"monthlyRequests,omitempty"`
 		} `json:"limits,omitempty"`
 		Remaining *struct {
+			Daily                  *int `json:"daily,omitempty"`
 			DailyAi                *int `json:"dailyAi,omitempty"`
 			DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 			Monthly                *int `json:"monthly,omitempty"`
@@ -35118,6 +35517,7 @@ type GetUsageTierClientResponse struct {
 		ResetsAt *time.Time `json:"resetsAt,omitempty"`
 		Tier     *string    `json:"tier,omitempty"`
 		Used     *struct {
+			Daily                  *int `json:"daily,omitempty"`
 			DailyAi                *int `json:"dailyAi,omitempty"`
 			DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 			Monthly                *int `json:"monthly,omitempty"`
@@ -35131,12 +35531,15 @@ type GetUsageTierClientResponse struct {
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetUsageTierClientResponse) GetJSON200() *struct {
-	Limits *struct {
+	DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
+	Limits        *struct {
 		DailyAiRequests        *int `json:"dailyAiRequests,omitempty"`
+		DailyRequests          *int `json:"dailyRequests,omitempty"`
 		DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 		MonthlyRequests        *int `json:"monthlyRequests,omitempty"`
 	} `json:"limits,omitempty"`
 	Remaining *struct {
+		Daily                  *int `json:"daily,omitempty"`
 		DailyAi                *int `json:"dailyAi,omitempty"`
 		DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 		Monthly                *int `json:"monthly,omitempty"`
@@ -35144,6 +35547,7 @@ func (r GetUsageTierClientResponse) GetJSON200() *struct {
 	ResetsAt *time.Time `json:"resetsAt,omitempty"`
 	Tier     *string    `json:"tier,omitempty"`
 	Used     *struct {
+		Daily                  *int `json:"daily,omitempty"`
 		DailyAi                *int `json:"dailyAi,omitempty"`
 		DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 		Monthly                *int `json:"monthly,omitempty"`
@@ -35551,11 +35955,25 @@ type ReplayWebhookDeliveryClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
 func (r ReplayWebhookDeliveryClientResponse) GetJSON403() *Error {
 	return r.JSON403
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r ReplayWebhookDeliveryClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ReplayWebhookDeliveryClientResponse) GetJSON422() *Error {
+	return r.JSON422
 }
 
 // GetBody returns the raw response body bytes
@@ -37588,13 +38006,23 @@ func (c *ClientWithResponses) GetBookingAvailabilityWithResponse(ctx context.Con
 
 // UpdateBookingAvailabilityWithBodyWithResponse Update Booking.com rates/availability
 //
-// Push availability, rates, and the full restriction set to Booking.com. `type` selects the write path:
+// Write rates, availability and restrictions to a Booking.com property. `type` selects the write:
 //
-// - `rates` — nightly price + length-of-stay / arrival restrictions (min/max stay, closed-to-arrival, closed-to-departure, advance-reservation window).
-// - `availability` — inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same restriction set.
+// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
+// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
 // - `derived-pricing` — occupancy-derived pricing rules.
 //
-// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
+//
+// **A rate amount needs an occupancy.** Booking.com stores the amount against the party size the rate plan prices: sent above that number it declines the price in silence, sent below it it answers 400. Send `occupancy`, or omit it and Repull resolves it from Booking.com's own data and echoes the value and its `source` back in `occupancy[]`. If it cannot be resolved the write is refused with `422` naming `updates[N].occupancy`.
+//
+// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
+//
+// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
+//
+// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+//
+// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -37613,13 +38041,23 @@ func (c *ClientWithResponses) UpdateBookingAvailabilityWithBodyWithResponse(ctx 
 
 // UpdateBookingAvailabilityWithResponse Update Booking.com rates/availability
 //
-// Push availability, rates, and the full restriction set to Booking.com. `type` selects the write path:
+// Write rates, availability and restrictions to a Booking.com property. `type` selects the write:
 //
-// - `rates` — nightly price + length-of-stay / arrival restrictions (min/max stay, closed-to-arrival, closed-to-departure, advance-reservation window).
-// - `availability` — inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same restriction set.
+// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
+// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
 // - `derived-pricing` — occupancy-derived pricing rules.
 //
-// Restrictions never leak across channels — this endpoint writes only to Booking.com. Errors from upstream surface as `booking_error`.
+// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
+//
+// **A rate amount needs an occupancy.** Booking.com stores the amount against the party size the rate plan prices: sent above that number it declines the price in silence, sent below it it answers 400. Send `occupancy`, or omit it and Repull resolves it from Booking.com's own data and echoes the value and its `source` back in `occupancy[]`. If it cannot be resolved the write is refused with `422` naming `updates[N].occupancy`.
+//
+// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
+//
+// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
+//
+// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+//
+// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -37733,9 +38171,11 @@ func (c *ClientWithResponses) UpdateBookingContentWithResponse(ctx context.Conte
 
 // GetBookingListingPricingWithResponse Get Booking.com pricing for a listing
 //
-// Resolves the Vanio listing ID to its Booking.com `hotel_id` (via the `listings_booking` mapping owned by the authenticated workspace), then proxies Booking's `getRoomRateAvailability` for the requested window. Pricing on Booking is per-room/per-rate-plan, so `room_id` and `room_level` flow through query params unchanged.
+// Resolves the Repull listing id to its Booking.com `hotel_id` (via the room mapping the Connect flow records for the authenticated workspace), then proxies Booking's `getRoomRateAvailability` for the requested window. Pricing on Booking is per-room/per-rate-plan, so `room_id` and `room_level` flow through query params unchanged.
 //
-// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Vanio listing ID across channels.
+// Mirrors the per-channel `/listings/{id}/pricing` shape used by Airbnb so SDK consumers can carry a Repull listing id across channels. `id` is a Repull listing id, never a Booking.com hotel id — the hotel-id surface is `/v1/channels/booking/availability`.
+//
+// A listing can be published under several Booking.com properties. GET uses the oldest and reports the rest in `otherHotelIds`; PUT refuses with `409 ambiguous_booking_mapping` rather than push rates into a property it guessed at. `?hotel_id=` names the property explicitly for either.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -37752,15 +38192,25 @@ func (c *ClientWithResponses) GetBookingListingPricingWithResponse(ctx context.C
 
 // UpdateBookingListingPricingWithBodyWithResponse Update Booking.com pricing for a listing
 //
-// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+// Writes nightly prices for a listing's Booking.com room + rate plan. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`; `dateRange` is inclusive at both ends, so `start` equal to `end` writes exactly one night.
+//
+// **Occupancy.** Booking.com stores a rate amount against the party size the rate plan prices. Send `occupancy` and that is what is used; omit it and it is resolved from Booking.com's own data for that (room, rate plan) and echoed back in `occupancy[]` with its `source`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size, because Booking.com declines such an amount without saying so.
+//
+// **Inventory is a separate write.** `roomsToSell` on a rate update returns `422 inventory_not_in_rate_update`; use `PUT /v1/channels/booking/availability` with `type: "availability"`.
+//
+// **Restrictions ride along, on their own wire.** Send `restrictions` with the price and Booking.com receives two writes; the response reports each separately in `price` and `restrictions`, each with its own state, read-back and — when refused — Booking.com's own reason. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` (Booking.com's notification has no element for them — set those on the rate plan in the Extranet). Nothing you send is silently ignored.
+//
+// **The response says what is known.** Booking.com acknowledges a write without per-date status, so the affected nights are read back — prices and restrictions out of the same read — and `applied` reports `verified`, `mismatch`, `partial`, `rejected` or `unverified`. `partial` means one half landed and the other did not, which is never reported as a total failure. Send `verify: false` to skip the read-back; `applied` is then `unverified`. Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+//
+// `id` is a Repull listing id. When it is published under several Booking.com properties this returns `409 ambiguous_booking_mapping` and pushes nothing — name the property with `?hotel_id=` instead.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
-func (c *ClientWithResponses) UpdateBookingListingPricingWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error) {
-	rsp, err := c.UpdateBookingListingPricingWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateBookingListingPricingWithBodyWithResponse(ctx context.Context, id int, params *UpdateBookingListingPricingParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error) {
+	rsp, err := c.UpdateBookingListingPricingWithBody(ctx, id, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -37769,15 +38219,25 @@ func (c *ClientWithResponses) UpdateBookingListingPricingWithBodyWithResponse(ct
 
 // UpdateBookingListingPricingWithResponse Update Booking.com pricing for a listing
 //
-// Pushes one or more rate updates to Booking.com via `updateRates`. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`. Field-level validation runs up front so callers don't have to parse Booking's XML error envelope to discover a missing `roomId`.
+// Writes nightly prices for a listing's Booking.com room + rate plan. Each update needs `roomId` + `rateId` + `dateRange` + `price` + `currency`; `dateRange` is inclusive at both ends, so `start` equal to `end` writes exactly one night.
+//
+// **Occupancy.** Booking.com stores a rate amount against the party size the rate plan prices. Send `occupancy` and that is what is used; omit it and it is resolved from Booking.com's own data for that (room, rate plan) and echoed back in `occupancy[]` with its `source`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size, because Booking.com declines such an amount without saying so.
+//
+// **Inventory is a separate write.** `roomsToSell` on a rate update returns `422 inventory_not_in_rate_update`; use `PUT /v1/channels/booking/availability` with `type: "availability"`.
+//
+// **Restrictions ride along, on their own wire.** Send `restrictions` with the price and Booking.com receives two writes; the response reports each separately in `price` and `restrictions`, each with its own state, read-back and — when refused — Booking.com's own reason. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` (Booking.com's notification has no element for them — set those on the rate plan in the Extranet). Nothing you send is silently ignored.
+//
+// **The response says what is known.** Booking.com acknowledges a write without per-date status, so the affected nights are read back — prices and restrictions out of the same read — and `applied` reports `verified`, `mismatch`, `partial`, `rejected` or `unverified`. `partial` means one half landed and the other did not, which is never reported as a total failure. Send `verify: false` to skip the read-back; `applied` is then `unverified`. Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+//
+// `id` is a Repull listing id. When it is published under several Booking.com properties this returns `409 ambiguous_booking_mapping` and pushes nothing — name the property with `?hotel_id=` instead.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/booking/listings/{id}/pricing (the `UpdateBookingListingPricing` operationId).
-func (c *ClientWithResponses) UpdateBookingListingPricingWithResponse(ctx context.Context, id int, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error) {
-	rsp, err := c.UpdateBookingListingPricing(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateBookingListingPricingWithResponse(ctx context.Context, id int, params *UpdateBookingListingPricingParams, body UpdateBookingListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingListingPricingClientResponse, error) {
+	rsp, err := c.UpdateBookingListingPricing(ctx, id, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -37843,9 +38303,13 @@ func (c *ClientWithResponses) SendBookingMessageWithResponse(ctx context.Context
 
 // ListBookingPropertiesWithResponse List Booking.com properties
 //
-// List Booking.com hotels claimed by this workspace. Each row includes the Booking-side hotel id and the connected room types.
+// List every Booking.com property this workspace holds. Each property is returned ONCE, with the Repull listings mapped under it.
 //
-// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+// A Booking.com property is a building; its rooms are what guests book, and each room is mapped to one Repull listing — so one property routinely carries many listings. `listings[].roomBookingId` is the Booking.com room id an ARI write takes.
+//
+// A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"` and an empty `listings` array. That is a real mid-onboarding state, not an error: finish `POST /v1/connect/booking/map-rooms` and the listings appear. Such a property used to be dropped silently, which made a mapped-but-unreadable workspace indistinguishable from one with no Booking connection at all.
+//
+// Inactive listings are left out of `listings`; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -37860,7 +38324,11 @@ func (c *ClientWithResponses) ListBookingPropertiesWithResponse(ctx context.Cont
 
 // GetBookingPropertyWithResponse Get Booking.com connection for a listing
 //
-// Return the Booking.com connection record(s) for a Vanio listing — the linked Booking hotel id, sync flags, markup, sync category, and suspension state. Scoped to the authenticated workspace; a listing with no Booking.com connection returns 404.
+// Return the Booking.com connection record(s) for a Repull listing — the linked Booking hotel id, sync flags, markup, sync category, suspension state, and the Booking room the mapping runs through.
+//
+// `id` is a **Repull listing id**, not a Booking.com hotel id, despite the `properties` segment. (The hotel-id surface is `/v1/channels/booking/availability`.) The mapping is read from wherever the Connect flow recorded it — `listings_booking_rooms` for anything mapped through `POST /v1/connect/booking/map-rooms`, which is essentially every live mapping.
+//
+// An ARRAY, because one listing can be published under several Booking.com properties at once; `mappedVia` says which record carries each mapping. A listing with no Booking.com mapping returns 404, and the message says which id space the path takes.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -37879,15 +38347,19 @@ func (c *ClientWithResponses) GetBookingPropertyWithResponse(ctx context.Context
 //
 // Return every Booking.com room and its rate plans for a listing, each with the `roomId` / `rateId` needed to assemble a restriction write via `PUT /v1/channels/booking/availability`.
 //
-// `id` is a Vanio listing id — resolved to the Booking `hotel_id` via the workspace mapping (a listing with no active Booking.com mapping returns 404). Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
+// `id` is a **Repull listing id**, not a Booking.com hotel id, despite the `properties` segment — resolved to the Booking `hotel_id` through the workspace mapping, read from wherever the Connect flow recorded it (`listings_booking_rooms` for anything mapped through `POST /v1/connect/booking/map-rooms`). A listing with no active Booking.com mapping returns 404, and the message says which id space the path takes. When the listing is published under several properties the oldest is used, the rest come back in `otherHotelIds`, and `?hotel_id=` names a different one. Sourced from Booking's B.XML roomrates feed, which returns rooms and rate plans together (the rooms-unit feed alone omits rate-plan ids). This is the API-key surface for the room/rate ids that were previously only reachable inside the hosted Connect room-mapping flow.
+//
+// `source` says where the answer came from. `booking` means it was read live just now. If Booking.com returns nothing usable for the property, the rooms and rate plans recorded at the last import are served instead, `source` is `mirror`, and `mirrorReason` names what went wrong live — the ids are Booking.com's own and can be written against, but they can be stale, and `maxPersons`, `policy`, `policyId`, `pricingType` and `isChildRate` come back `null` because only the live feed states them. `rooms` is empty only when Booking.com and the last import both have nothing; a read that failed is an error, never an empty list.
+//
+// Each rate plan carries `maxPersons` — the party size that rate plan prices, which is the `occupancy` a rate amount must be written at. Each room carries `maxAdults`, Booking.com's capacity for the room, which is what a rate write falls back to when the rate plan states no `maxPersons`.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/properties/{id}/rooms (the `ListBookingPropertyRooms` operationId).
-func (c *ClientWithResponses) ListBookingPropertyRoomsWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*ListBookingPropertyRoomsClientResponse, error) {
-	rsp, err := c.ListBookingPropertyRooms(ctx, id, reqEditors...)
+func (c *ClientWithResponses) ListBookingPropertyRoomsWithResponse(ctx context.Context, id int, params *ListBookingPropertyRoomsParams, reqEditors ...RequestEditorFn) (*ListBookingPropertyRoomsClientResponse, error) {
+	rsp, err := c.ListBookingPropertyRooms(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -40594,7 +41066,7 @@ func (c *ClientWithResponses) GetUsageLogsWithResponse(ctx context.Context, para
 
 // GetUsageSummaryWithResponse Get usage summary
 //
-// Aggregated usage over the requested `range` — tier + plan limits, quota used/remaining, next reset, a per-operation breakdown (request/error counts, error rate, avg latency), a daily timeline, status-class distribution, and range totals.
+// Aggregated usage over the requested `range` — tier + plan limits, quota used/remaining, next reset, a per-operation breakdown (request/error counts, error rate, avg latency), a daily timeline, status-class distribution, and range totals. Two request quotas are reported and they reset at different times: `dailyRequests` is the daily circuit breaker that stops runaway client loops (resets at `dailyResetsAt`, the next UTC midnight) and `monthlyRequests` is the billing quota (resets at `resetsAt`). `null` limits mean unlimited on that dimension.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -40609,7 +41081,7 @@ func (c *ClientWithResponses) GetUsageSummaryWithResponse(ctx context.Context, p
 
 // GetUsageTierWithResponse Get tier and quota
 //
-// Lightweight current-tier snapshot for status badges and quota meters — plan limits (monthly requests, daily AI requests, dynamic-pricing listings), the amount used, the amount remaining, and the next reset. `null` limits mean unlimited on that dimension.
+// Lightweight current-tier snapshot for status badges and quota meters — plan limits (daily requests, monthly requests, daily AI requests, dynamic-pricing listings), the amount used, the amount remaining, and the next reset. Two request quotas are reported and they reset at different times: `dailyRequests` is the daily circuit breaker that stops runaway client loops (resets at `dailyResetsAt`, the next UTC midnight) and `monthlyRequests` is the billing quota (resets at `resetsAt`). Exceeding the daily cap returns 429 `daily_limit_exceeded`; exceeding the monthly one returns 429 `rate_limit_exceeded`. `null` limits mean unlimited on that dimension.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -40802,15 +41274,42 @@ func (c *ClientWithResponses) GetWebhookDeliveryWithResponse(ctx context.Context
 	return ParseGetWebhookDeliveryClientResponse(rsp)
 }
 
-// ReplayWebhookDeliveryWithResponse Replay webhook delivery
+// ReplayWebhookDeliveryWithBodyWithResponse Replay webhook delivery
 //
-// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1). A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
 //
-// Returns a wrapper object for the known response body format(s).
+// A delivery may be replayed at most **3 times per rolling 60 minutes**; the 4th inside that window answers `409 replay_limit_reached` and names the time the next one is allowed. The limit is charged to the original delivery, so replaying the delivery a replay produced draws on the same budget. It is not a lifetime cap — a delivery that has not been replayed for an hour starts fresh.
+//
+// A delivery your endpoint already accepted is not re-sent (it would be a duplicate) and answers `409 delivery_already_succeeded`; send `{"force": true}` to replay it anyway, which still counts against the limit.
+//
+// A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
-func (c *ClientWithResponses) ReplayWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*ReplayWebhookDeliveryClientResponse, error) {
-	rsp, err := c.ReplayWebhookDelivery(ctx, id, deliveryId, reqEditors...)
+func (c *ClientWithResponses) ReplayWebhookDeliveryWithBodyWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReplayWebhookDeliveryClientResponse, error) {
+	rsp, err := c.ReplayWebhookDeliveryWithBody(ctx, id, deliveryId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReplayWebhookDeliveryClientResponse(rsp)
+}
+
+// ReplayWebhookDeliveryWithResponse Replay webhook delivery
+//
+// Re-sends the original payload (same eventId, fresh deliveryId, attempt + 1).
+//
+// A delivery may be replayed at most **3 times per rolling 60 minutes**; the 4th inside that window answers `409 replay_limit_reached` and names the time the next one is allowed. The limit is charged to the original delivery, so replaying the delivery a replay produced draws on the same budget. It is not a lifetime cap — a delivery that has not been replayed for an hour starts fresh.
+//
+// A delivery your endpoint already accepted is not re-sent (it would be a duplicate) and answers `409 delivery_already_succeeded`; send `{"force": true}` to replay it anyway, which still counts against the limit.
+//
+// A delivery about a listing that is inactive now is not re-sent and answers `403 listing_inactive`; activate the listing first.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/webhooks/{id}/deliveries/{delivery_id}/replay (the `ReplayWebhookDelivery` operationId).
+func (c *ClientWithResponses) ReplayWebhookDeliveryWithResponse(ctx context.Context, id openapi_types.UUID, deliveryId openapi_types.UUID, body ReplayWebhookDeliveryJSONRequestBody, reqEditors ...RequestEditorFn) (*ReplayWebhookDeliveryClientResponse, error) {
+	rsp, err := c.ReplayWebhookDelivery(ctx, id, deliveryId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -44557,6 +45056,13 @@ func ParseGetBookingAvailabilityClientResponse(rsp *http.Response) (*GetBookingA
 		}
 		response.JSON500 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest BookingUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -44576,8 +45082,12 @@ func ParseUpdateBookingAvailabilityClientResponse(rsp *http.Response) (*UpdateBo
 	}
 
 	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BookingPricingUpdateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest BadRequest
@@ -44607,12 +45117,33 @@ func ParseUpdateBookingAvailabilityClientResponse(rsp *http.Response) (*UpdateBo
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest BookingWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest BookingRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest BookingUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -44861,6 +45392,13 @@ func ParseGetBookingListingPricingClientResponse(rsp *http.Response) (*GetBookin
 		}
 		response.JSON500 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest BookingUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -44915,12 +45453,40 @@ func ParseUpdateBookingListingPricingClientResponse(rsp *http.Response) (*Update
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest BookingWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest BookingRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest BookingUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -50023,12 +50589,15 @@ func ParseGetUsageSummaryClientResponse(rsp *http.Response) (*GetUsageSummaryCli
 				OperationId  *string  `json:"operationId,omitempty"`
 				RequestCount *int     `json:"requestCount,omitempty"`
 			} `json:"breakdown,omitempty"`
-			Limits *struct {
+			DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
+			Limits        *struct {
 				DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
+				DailyRequests   *int `json:"dailyRequests,omitempty"`
 				MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 			} `json:"limits,omitempty"`
 			Range     *string `json:"range,omitempty"`
 			Remaining *struct {
+				Daily   *int `json:"daily,omitempty"`
 				DailyAi *int `json:"dailyAi,omitempty"`
 				Monthly *int `json:"monthly,omitempty"`
 			} `json:"remaining,omitempty"`
@@ -50051,6 +50620,7 @@ func ParseGetUsageSummaryClientResponse(rsp *http.Response) (*GetUsageSummaryCli
 				Requests     *int `json:"requests,omitempty"`
 			} `json:"totals,omitempty"`
 			Used *struct {
+				Daily   *int `json:"daily,omitempty"`
 				DailyAi *int `json:"dailyAi,omitempty"`
 				Monthly *int `json:"monthly,omitempty"`
 			} `json:"used,omitempty"`
@@ -50095,12 +50665,15 @@ func ParseGetUsageTierClientResponse(rsp *http.Response) (*GetUsageTierClientRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			Limits *struct {
+			DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
+			Limits        *struct {
 				DailyAiRequests        *int `json:"dailyAiRequests,omitempty"`
+				DailyRequests          *int `json:"dailyRequests,omitempty"`
 				DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 				MonthlyRequests        *int `json:"monthlyRequests,omitempty"`
 			} `json:"limits,omitempty"`
 			Remaining *struct {
+				Daily                  *int `json:"daily,omitempty"`
 				DailyAi                *int `json:"dailyAi,omitempty"`
 				DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 				Monthly                *int `json:"monthly,omitempty"`
@@ -50108,6 +50681,7 @@ func ParseGetUsageTierClientResponse(rsp *http.Response) (*GetUsageTierClientRes
 			ResetsAt *time.Time `json:"resetsAt,omitempty"`
 			Tier     *string    `json:"tier,omitempty"`
 			Used     *struct {
+				Daily                  *int `json:"daily,omitempty"`
 				DailyAi                *int `json:"dailyAi,omitempty"`
 				DynamicPricingListings *int `json:"dynamicPricingListings,omitempty"`
 				Monthly                *int `json:"monthly,omitempty"`
@@ -50374,6 +50948,20 @@ func ParseReplayWebhookDeliveryClientResponse(rsp *http.Response) (*ReplayWebhoo
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 

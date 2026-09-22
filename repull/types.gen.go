@@ -40,30 +40,30 @@ func (e AIOperationOperation) Valid() bool {
 	}
 }
 
-// Defines values for AccountCreatedEventType.
+// Defines values for AccountCreatedEventEvent.
 const (
-	AccountCreatedEventTypeAccountCreated AccountCreatedEventType = "account.created"
+	AccountCreatedEventEventAccountCreated AccountCreatedEventEvent = "account.created"
 )
 
-// Valid indicates whether the value is a known member of the AccountCreatedEventType enum.
-func (e AccountCreatedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the AccountCreatedEventEvent enum.
+func (e AccountCreatedEventEvent) Valid() bool {
 	switch e {
-	case AccountCreatedEventTypeAccountCreated:
+	case AccountCreatedEventEventAccountCreated:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for AccountDisconnectedEventType.
+// Defines values for AccountDisconnectedEventEvent.
 const (
-	AccountDisconnectedEventTypeAccountDisconnected AccountDisconnectedEventType = "account.disconnected"
+	AccountDisconnectedEventEventAccountDisconnected AccountDisconnectedEventEvent = "account.disconnected"
 )
 
-// Valid indicates whether the value is a known member of the AccountDisconnectedEventType enum.
-func (e AccountDisconnectedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the AccountDisconnectedEventEvent enum.
+func (e AccountDisconnectedEventEvent) Valid() bool {
 	switch e {
-	case AccountDisconnectedEventTypeAccountDisconnected:
+	case AccountDisconnectedEventEventAccountDisconnected:
 		return true
 	default:
 		return false
@@ -94,30 +94,30 @@ func (e AccountDisconnectedPayloadReason) Valid() bool {
 	}
 }
 
-// Defines values for AiOperationCompletedEventType.
+// Defines values for AiOperationCompletedEventEvent.
 const (
-	AiOperationCompletedEventTypeAiOperationCompleted AiOperationCompletedEventType = "ai.operation.completed"
+	AiOperationCompletedEventEventAiOperationCompleted AiOperationCompletedEventEvent = "ai.operation.completed"
 )
 
-// Valid indicates whether the value is a known member of the AiOperationCompletedEventType enum.
-func (e AiOperationCompletedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the AiOperationCompletedEventEvent enum.
+func (e AiOperationCompletedEventEvent) Valid() bool {
 	switch e {
-	case AiOperationCompletedEventTypeAiOperationCompleted:
+	case AiOperationCompletedEventEventAiOperationCompleted:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for AiOperationFailedEventType.
+// Defines values for AiOperationFailedEventEvent.
 const (
-	AiOperationFailedEventTypeAiOperationFailed AiOperationFailedEventType = "ai.operation.failed"
+	AiOperationFailedEventEventAiOperationFailed AiOperationFailedEventEvent = "ai.operation.failed"
 )
 
-// Valid indicates whether the value is a known member of the AiOperationFailedEventType enum.
-func (e AiOperationFailedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the AiOperationFailedEventEvent enum.
+func (e AiOperationFailedEventEvent) Valid() bool {
 	switch e {
-	case AiOperationFailedEventTypeAiOperationFailed:
+	case AiOperationFailedEventEventAiOperationFailed:
 		return true
 	default:
 		return false
@@ -679,6 +679,144 @@ func (e BookingConnectRoomsResponseStatus) Valid() bool {
 	}
 }
 
+// Defines values for BookingPricingUpdateResponseApplied.
+const (
+	BookingPricingUpdateResponseAppliedMismatch   BookingPricingUpdateResponseApplied = "mismatch"
+	BookingPricingUpdateResponseAppliedPartial    BookingPricingUpdateResponseApplied = "partial"
+	BookingPricingUpdateResponseAppliedRejected   BookingPricingUpdateResponseApplied = "rejected"
+	BookingPricingUpdateResponseAppliedUnverified BookingPricingUpdateResponseApplied = "unverified"
+	BookingPricingUpdateResponseAppliedVerified   BookingPricingUpdateResponseApplied = "verified"
+)
+
+// Valid indicates whether the value is a known member of the BookingPricingUpdateResponseApplied enum.
+func (e BookingPricingUpdateResponseApplied) Valid() bool {
+	switch e {
+	case BookingPricingUpdateResponseAppliedMismatch:
+		return true
+	case BookingPricingUpdateResponseAppliedPartial:
+		return true
+	case BookingPricingUpdateResponseAppliedRejected:
+		return true
+	case BookingPricingUpdateResponseAppliedUnverified:
+		return true
+	case BookingPricingUpdateResponseAppliedVerified:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingPropertyListingsMappedVia.
+const (
+	BookingPropertyListingsMappedViaProperty BookingPropertyListingsMappedVia = "property"
+	BookingPropertyListingsMappedViaRoom     BookingPropertyListingsMappedVia = "room"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyListingsMappedVia enum.
+func (e BookingPropertyListingsMappedVia) Valid() bool {
+	switch e {
+	case BookingPropertyListingsMappedViaProperty:
+		return true
+	case BookingPropertyListingsMappedViaRoom:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingPropertyMappingStatus.
+const (
+	Mapped   BookingPropertyMappingStatus = "mapped"
+	Unmapped BookingPropertyMappingStatus = "unmapped"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyMappingStatus enum.
+func (e BookingPropertyMappingStatus) Valid() bool {
+	switch e {
+	case Mapped:
+		return true
+	case Unmapped:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingRateWriteOccupancySource.
+const (
+	BookingRateWriteOccupancySourceRatePlan BookingRateWriteOccupancySource = "rate_plan"
+	BookingRateWriteOccupancySourceRequest  BookingRateWriteOccupancySource = "request"
+	BookingRateWriteOccupancySourceRoom     BookingRateWriteOccupancySource = "room"
+)
+
+// Valid indicates whether the value is a known member of the BookingRateWriteOccupancySource enum.
+func (e BookingRateWriteOccupancySource) Valid() bool {
+	switch e {
+	case BookingRateWriteOccupancySourceRatePlan:
+		return true
+	case BookingRateWriteOccupancySourceRequest:
+		return true
+	case BookingRateWriteOccupancySourceRoom:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingRateWritePriceHalfApplied.
+const (
+	BookingRateWritePriceHalfAppliedMismatch     BookingRateWritePriceHalfApplied = "mismatch"
+	BookingRateWritePriceHalfAppliedNotRequested BookingRateWritePriceHalfApplied = "not_requested"
+	BookingRateWritePriceHalfAppliedRejected     BookingRateWritePriceHalfApplied = "rejected"
+	BookingRateWritePriceHalfAppliedUnverified   BookingRateWritePriceHalfApplied = "unverified"
+	BookingRateWritePriceHalfAppliedVerified     BookingRateWritePriceHalfApplied = "verified"
+)
+
+// Valid indicates whether the value is a known member of the BookingRateWritePriceHalfApplied enum.
+func (e BookingRateWritePriceHalfApplied) Valid() bool {
+	switch e {
+	case BookingRateWritePriceHalfAppliedMismatch:
+		return true
+	case BookingRateWritePriceHalfAppliedNotRequested:
+		return true
+	case BookingRateWritePriceHalfAppliedRejected:
+		return true
+	case BookingRateWritePriceHalfAppliedUnverified:
+		return true
+	case BookingRateWritePriceHalfAppliedVerified:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingRateWriteRestrictionHalfApplied.
+const (
+	BookingRateWriteRestrictionHalfAppliedMismatch     BookingRateWriteRestrictionHalfApplied = "mismatch"
+	BookingRateWriteRestrictionHalfAppliedNotRequested BookingRateWriteRestrictionHalfApplied = "not_requested"
+	BookingRateWriteRestrictionHalfAppliedRejected     BookingRateWriteRestrictionHalfApplied = "rejected"
+	BookingRateWriteRestrictionHalfAppliedUnverified   BookingRateWriteRestrictionHalfApplied = "unverified"
+	BookingRateWriteRestrictionHalfAppliedVerified     BookingRateWriteRestrictionHalfApplied = "verified"
+)
+
+// Valid indicates whether the value is a known member of the BookingRateWriteRestrictionHalfApplied enum.
+func (e BookingRateWriteRestrictionHalfApplied) Valid() bool {
+	switch e {
+	case BookingRateWriteRestrictionHalfAppliedMismatch:
+		return true
+	case BookingRateWriteRestrictionHalfAppliedNotRequested:
+		return true
+	case BookingRateWriteRestrictionHalfAppliedRejected:
+		return true
+	case BookingRateWriteRestrictionHalfAppliedUnverified:
+		return true
+	case BookingRateWriteRestrictionHalfAppliedVerified:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BookingReservationPaymentStatus.
 const (
 	BookingReservationPaymentStatusCompleted BookingReservationPaymentStatus = "completed"
@@ -736,6 +874,54 @@ func (e BookingReservationRoomStatus) Valid() bool {
 	case BookingReservationRoomStatusModified:
 		return true
 	case BookingReservationRoomStatusNew:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingRestrictionVerificationRowField.
+const (
+	ClosedToArrival   BookingRestrictionVerificationRowField = "closedToArrival"
+	ClosedToDeparture BookingRestrictionVerificationRowField = "closedToDeparture"
+	MaxStay           BookingRestrictionVerificationRowField = "maxStay"
+	MaxStayArrival    BookingRestrictionVerificationRowField = "maxStayArrival"
+	MinStay           BookingRestrictionVerificationRowField = "minStay"
+	MinStayArrival    BookingRestrictionVerificationRowField = "minStayArrival"
+)
+
+// Valid indicates whether the value is a known member of the BookingRestrictionVerificationRowField enum.
+func (e BookingRestrictionVerificationRowField) Valid() bool {
+	switch e {
+	case ClosedToArrival:
+		return true
+	case ClosedToDeparture:
+		return true
+	case MaxStay:
+		return true
+	case MaxStayArrival:
+		return true
+	case MinStay:
+		return true
+	case MinStayArrival:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingRoomsRatesResponseSource.
+const (
+	BookingRoomsRatesResponseSourceBooking BookingRoomsRatesResponseSource = "booking"
+	BookingRoomsRatesResponseSourceMirror  BookingRoomsRatesResponseSource = "mirror"
+)
+
+// Valid indicates whether the value is a known member of the BookingRoomsRatesResponseSource enum.
+func (e BookingRoomsRatesResponseSource) Valid() bool {
+	switch e {
+	case BookingRoomsRatesResponseSourceBooking:
+		return true
+	case BookingRoomsRatesResponseSourceMirror:
 		return true
 	default:
 		return false
@@ -808,15 +994,15 @@ func (e BulkPricingRequestAction) Valid() bool {
 	}
 }
 
-// Defines values for CalendarUpdatedEventType.
+// Defines values for CalendarUpdatedEventEvent.
 const (
-	CalendarUpdatedEventTypeCalendarUpdated CalendarUpdatedEventType = "calendar.updated"
+	CalendarUpdatedEventEventCalendarUpdated CalendarUpdatedEventEvent = "calendar.updated"
 )
 
-// Valid indicates whether the value is a known member of the CalendarUpdatedEventType enum.
-func (e CalendarUpdatedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the CalendarUpdatedEventEvent enum.
+func (e CalendarUpdatedEventEvent) Valid() bool {
 	switch e {
-	case CalendarUpdatedEventTypeCalendarUpdated:
+	case CalendarUpdatedEventEventCalendarUpdated:
 		return true
 	default:
 		return false
@@ -1153,30 +1339,30 @@ func (e ListingCreateRequestCancellationPolicy) Valid() bool {
 	}
 }
 
-// Defines values for ListingCreatedEventType.
+// Defines values for ListingCreatedEventEvent.
 const (
-	ListingCreatedEventTypeListingCreated ListingCreatedEventType = "listing.created"
+	ListingCreatedEventEventListingCreated ListingCreatedEventEvent = "listing.created"
 )
 
-// Valid indicates whether the value is a known member of the ListingCreatedEventType enum.
-func (e ListingCreatedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ListingCreatedEventEvent enum.
+func (e ListingCreatedEventEvent) Valid() bool {
 	switch e {
-	case ListingCreatedEventTypeListingCreated:
+	case ListingCreatedEventEventListingCreated:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for ListingDeletedEventType.
+// Defines values for ListingDeletedEventEvent.
 const (
-	ListingDeletedEventTypeListingDeleted ListingDeletedEventType = "listing.deleted"
+	ListingDeletedEventEventListingDeleted ListingDeletedEventEvent = "listing.deleted"
 )
 
-// Valid indicates whether the value is a known member of the ListingDeletedEventType enum.
-func (e ListingDeletedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ListingDeletedEventEvent enum.
+func (e ListingDeletedEventEvent) Valid() bool {
 	switch e {
-	case ListingDeletedEventTypeListingDeleted:
+	case ListingDeletedEventEventListingDeleted:
 		return true
 	default:
 		return false
@@ -1546,15 +1732,15 @@ func (e ListingSegmentsResponseMyQualityTier) Valid() bool {
 	}
 }
 
-// Defines values for ListingUpdatedEventType.
+// Defines values for ListingUpdatedEventEvent.
 const (
-	ListingUpdatedEventTypeListingUpdated ListingUpdatedEventType = "listing.updated"
+	ListingUpdatedEventEventListingUpdated ListingUpdatedEventEvent = "listing.updated"
 )
 
-// Valid indicates whether the value is a known member of the ListingUpdatedEventType enum.
-func (e ListingUpdatedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ListingUpdatedEventEvent enum.
+func (e ListingUpdatedEventEvent) Valid() bool {
 	switch e {
-	case ListingUpdatedEventTypeListingUpdated:
+	case ListingUpdatedEventEventListingUpdated:
 		return true
 	default:
 		return false
@@ -1594,30 +1780,30 @@ func (e MessageDirection) Valid() bool {
 	}
 }
 
-// Defines values for PaymentCompletedEventType.
+// Defines values for PaymentCompletedEventEvent.
 const (
-	PaymentCompletedEventTypePaymentCompleted PaymentCompletedEventType = "payment.completed"
+	PaymentCompletedEventEventPaymentCompleted PaymentCompletedEventEvent = "payment.completed"
 )
 
-// Valid indicates whether the value is a known member of the PaymentCompletedEventType enum.
-func (e PaymentCompletedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the PaymentCompletedEventEvent enum.
+func (e PaymentCompletedEventEvent) Valid() bool {
 	switch e {
-	case PaymentCompletedEventTypePaymentCompleted:
+	case PaymentCompletedEventEventPaymentCompleted:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for PaymentRefundedEventType.
+// Defines values for PaymentRefundedEventEvent.
 const (
-	PaymentRefundedEventTypePaymentRefunded PaymentRefundedEventType = "payment.refunded"
+	PaymentRefundedEventEventPaymentRefunded PaymentRefundedEventEvent = "payment.refunded"
 )
 
-// Valid indicates whether the value is a known member of the PaymentRefundedEventType enum.
-func (e PaymentRefundedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the PaymentRefundedEventEvent enum.
+func (e PaymentRefundedEventEvent) Valid() bool {
 	switch e {
-	case PaymentRefundedEventTypePaymentRefunded:
+	case PaymentRefundedEventEventPaymentRefunded:
 		return true
 	default:
 		return false
@@ -1644,19 +1830,19 @@ func (e PropertyStatus) Valid() bool {
 
 // Defines values for PublishSectionErrorCode.
 const (
-	Locked    PublishSectionErrorCode = "locked"
-	NoContent PublishSectionErrorCode = "no_content"
-	Rejected  PublishSectionErrorCode = "rejected"
+	PublishSectionErrorCodeLocked    PublishSectionErrorCode = "locked"
+	PublishSectionErrorCodeNoContent PublishSectionErrorCode = "no_content"
+	PublishSectionErrorCodeRejected  PublishSectionErrorCode = "rejected"
 )
 
 // Valid indicates whether the value is a known member of the PublishSectionErrorCode enum.
 func (e PublishSectionErrorCode) Valid() bool {
 	switch e {
-	case Locked:
+	case PublishSectionErrorCodeLocked:
 		return true
-	case NoContent:
+	case PublishSectionErrorCodeNoContent:
 		return true
-	case Rejected:
+	case PublishSectionErrorCodeRejected:
 		return true
 	default:
 		return false
@@ -1699,15 +1885,15 @@ func (e PublishSectionErrorSection) Valid() bool {
 	}
 }
 
-// Defines values for RepullPingEventType.
+// Defines values for RepullPingEventEvent.
 const (
-	RepullPingEventTypeRepullPing RepullPingEventType = "repull.ping"
+	RepullPingEventEventRepullPing RepullPingEventEvent = "repull.ping"
 )
 
-// Valid indicates whether the value is a known member of the RepullPingEventType enum.
-func (e RepullPingEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the RepullPingEventEvent enum.
+func (e RepullPingEventEvent) Valid() bool {
 	switch e {
-	case RepullPingEventTypeRepullPing:
+	case RepullPingEventEventRepullPing:
 		return true
 	default:
 		return false
@@ -1810,45 +1996,45 @@ func (e ReservationStatus) Valid() bool {
 	}
 }
 
-// Defines values for ReservationAlterationCreatedEventType.
+// Defines values for ReservationAlterationCreatedEventEvent.
 const (
-	ReservationAlterationCreatedEventTypeReservationAlterationCreated ReservationAlterationCreatedEventType = "reservation.alteration.created"
+	ReservationAlterationCreatedEventEventReservationAlterationCreated ReservationAlterationCreatedEventEvent = "reservation.alteration.created"
 )
 
-// Valid indicates whether the value is a known member of the ReservationAlterationCreatedEventType enum.
-func (e ReservationAlterationCreatedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ReservationAlterationCreatedEventEvent enum.
+func (e ReservationAlterationCreatedEventEvent) Valid() bool {
 	switch e {
-	case ReservationAlterationCreatedEventTypeReservationAlterationCreated:
+	case ReservationAlterationCreatedEventEventReservationAlterationCreated:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for ReservationAlterationRespondedEventType.
+// Defines values for ReservationAlterationRespondedEventEvent.
 const (
-	ReservationAlterationRespondedEventTypeReservationAlterationResponded ReservationAlterationRespondedEventType = "reservation.alteration.responded"
+	ReservationAlterationRespondedEventEventReservationAlterationResponded ReservationAlterationRespondedEventEvent = "reservation.alteration.responded"
 )
 
-// Valid indicates whether the value is a known member of the ReservationAlterationRespondedEventType enum.
-func (e ReservationAlterationRespondedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ReservationAlterationRespondedEventEvent enum.
+func (e ReservationAlterationRespondedEventEvent) Valid() bool {
 	switch e {
-	case ReservationAlterationRespondedEventTypeReservationAlterationResponded:
+	case ReservationAlterationRespondedEventEventReservationAlterationResponded:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for ReservationCancelledEventType.
+// Defines values for ReservationCancelledEventEvent.
 const (
-	ReservationCancelledEventTypeReservationCancelled ReservationCancelledEventType = "reservation.cancelled"
+	ReservationCancelledEventEventReservationCancelled ReservationCancelledEventEvent = "reservation.cancelled"
 )
 
-// Valid indicates whether the value is a known member of the ReservationCancelledEventType enum.
-func (e ReservationCancelledEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ReservationCancelledEventEvent enum.
+func (e ReservationCancelledEventEvent) Valid() bool {
 	switch e {
-	case ReservationCancelledEventTypeReservationCancelled:
+	case ReservationCancelledEventEventReservationCancelled:
 		return true
 	default:
 		return false
@@ -1897,45 +2083,45 @@ func (e ReservationCreateRequestPlatform) Valid() bool {
 	}
 }
 
-// Defines values for ReservationCreatedEventType.
+// Defines values for ReservationCreatedEventEvent.
 const (
-	ReservationCreatedEventTypeReservationCreated ReservationCreatedEventType = "reservation.created"
+	ReservationCreatedEventEventReservationCreated ReservationCreatedEventEvent = "reservation.created"
 )
 
-// Valid indicates whether the value is a known member of the ReservationCreatedEventType enum.
-func (e ReservationCreatedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ReservationCreatedEventEvent enum.
+func (e ReservationCreatedEventEvent) Valid() bool {
 	switch e {
-	case ReservationCreatedEventTypeReservationCreated:
+	case ReservationCreatedEventEventReservationCreated:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for ReservationMessageReceivedEventType.
+// Defines values for ReservationMessageReceivedEventEvent.
 const (
-	ReservationMessageReceivedEventTypeReservationMessageReceived ReservationMessageReceivedEventType = "reservation.message.received"
+	ReservationMessageReceivedEventEventReservationMessageReceived ReservationMessageReceivedEventEvent = "reservation.message.received"
 )
 
-// Valid indicates whether the value is a known member of the ReservationMessageReceivedEventType enum.
-func (e ReservationMessageReceivedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ReservationMessageReceivedEventEvent enum.
+func (e ReservationMessageReceivedEventEvent) Valid() bool {
 	switch e {
-	case ReservationMessageReceivedEventTypeReservationMessageReceived:
+	case ReservationMessageReceivedEventEventReservationMessageReceived:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for ReservationUpdatedEventType.
+// Defines values for ReservationUpdatedEventEvent.
 const (
-	ReservationUpdatedEventTypeReservationUpdated ReservationUpdatedEventType = "reservation.updated"
+	ReservationUpdatedEventEventReservationUpdated ReservationUpdatedEventEvent = "reservation.updated"
 )
 
-// Valid indicates whether the value is a known member of the ReservationUpdatedEventType enum.
-func (e ReservationUpdatedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ReservationUpdatedEventEvent enum.
+func (e ReservationUpdatedEventEvent) Valid() bool {
 	switch e {
-	case ReservationUpdatedEventTypeReservationUpdated:
+	case ReservationUpdatedEventEventReservationUpdated:
 		return true
 	default:
 		return false
@@ -1981,30 +2167,30 @@ func (e ReviewReviewerRole) Valid() bool {
 	}
 }
 
-// Defines values for ReviewCreatedEventType.
+// Defines values for ReviewCreatedEventEvent.
 const (
-	ReviewCreatedEventTypeReviewCreated ReviewCreatedEventType = "review.created"
+	ReviewCreatedEventEventReviewCreated ReviewCreatedEventEvent = "review.created"
 )
 
-// Valid indicates whether the value is a known member of the ReviewCreatedEventType enum.
-func (e ReviewCreatedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ReviewCreatedEventEvent enum.
+func (e ReviewCreatedEventEvent) Valid() bool {
 	switch e {
-	case ReviewCreatedEventTypeReviewCreated:
+	case ReviewCreatedEventEventReviewCreated:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for ReviewRespondedEventType.
+// Defines values for ReviewRespondedEventEvent.
 const (
-	ReviewRespondedEventTypeReviewResponded ReviewRespondedEventType = "review.responded"
+	ReviewRespondedEventEventReviewResponded ReviewRespondedEventEvent = "review.responded"
 )
 
-// Valid indicates whether the value is a known member of the ReviewRespondedEventType enum.
-func (e ReviewRespondedEventType) Valid() bool {
+// Valid indicates whether the value is a known member of the ReviewRespondedEventEvent enum.
+func (e ReviewRespondedEventEvent) Valid() bool {
 	switch e {
-	case ReviewRespondedEventTypeReviewResponded:
+	case ReviewRespondedEventEventReviewResponded:
 		return true
 	default:
 		return false
@@ -2095,6 +2281,36 @@ func (e SendMessageResponseDirection) Valid() bool {
 	}
 }
 
+// Defines values for UsageQuotaWarningEventEvent.
+const (
+	UsageQuotaWarningEventEventUsageQuotaWarning UsageQuotaWarningEventEvent = "usage.quota.warning"
+)
+
+// Valid indicates whether the value is a known member of the UsageQuotaWarningEventEvent enum.
+func (e UsageQuotaWarningEventEvent) Valid() bool {
+	switch e {
+	case UsageQuotaWarningEventEventUsageQuotaWarning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UsageQuotaWarningPayloadScope.
+const (
+	DailyRequests UsageQuotaWarningPayloadScope = "daily_requests"
+)
+
+// Valid indicates whether the value is a known member of the UsageQuotaWarningPayloadScope enum.
+func (e UsageQuotaWarningPayloadScope) Valid() bool {
+	switch e {
+	case DailyRequests:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for WebhookEventCatalogEntryDomain.
 const (
 	WebhookEventCatalogEntryDomainAccounts     WebhookEventCatalogEntryDomain = "accounts"
@@ -2152,6 +2368,7 @@ const (
 	WebhookEventTypeReservationUpdated             WebhookEventType = "reservation.updated"
 	WebhookEventTypeReviewCreated                  WebhookEventType = "review.created"
 	WebhookEventTypeReviewResponded                WebhookEventType = "review.responded"
+	WebhookEventTypeUsageQuotaWarning              WebhookEventType = "usage.quota.warning"
 )
 
 // Valid indicates whether the value is a known member of the WebhookEventType enum.
@@ -2194,6 +2411,8 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeReviewCreated:
 		return true
 	case WebhookEventTypeReviewResponded:
+		return true
+	case WebhookEventTypeUsageQuotaWarning:
 		return true
 	default:
 		return false
@@ -3327,17 +3546,27 @@ type AIOperationOperation string
 
 // AccountCreatedEvent defines model for AccountCreatedEvent.
 type AccountCreatedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `account.created`. An OAuth or API credential connection was completed by an end user.
-	Data AccountCreatedPayload   `json:"data"`
-	Id   *openapi_types.UUID     `json:"id,omitempty"`
-	Type AccountCreatedEventType `json:"type"`
+	Data AccountCreatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AccountCreatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// AccountCreatedEventType defines model for AccountCreatedEvent.Type.
-type AccountCreatedEventType string
+// AccountCreatedEventEvent The event name. This field is `event`, not `type`.
+type AccountCreatedEventEvent string
 
 // AccountCreatedPayload Payload for `account.created`. An OAuth or API credential connection was completed by an end user.
 type AccountCreatedPayload struct {
@@ -3361,17 +3590,27 @@ type AccountCreatedPayload struct {
 
 // AccountDisconnectedEvent defines model for AccountDisconnectedEvent.
 type AccountDisconnectedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider.
-	Data AccountDisconnectedPayload   `json:"data"`
-	Id   *openapi_types.UUID          `json:"id,omitempty"`
-	Type AccountDisconnectedEventType `json:"type"`
+	Data AccountDisconnectedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AccountDisconnectedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// AccountDisconnectedEventType defines model for AccountDisconnectedEvent.Type.
-type AccountDisconnectedEventType string
+// AccountDisconnectedEventEvent The event name. This field is `event`, not `type`.
+type AccountDisconnectedEventEvent string
 
 // AccountDisconnectedPayload Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider.
 type AccountDisconnectedPayload struct {
@@ -3403,17 +3642,27 @@ type AccountDisconnectedPayloadReason string
 
 // AiOperationCompletedEvent defines model for AiOperationCompletedEvent.
 type AiOperationCompletedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `ai.operation.completed`. An async AI run (review response, message draft, pricing suggestion) finished.
-	Data AiOperationCompletedPayload   `json:"data"`
-	Id   *openapi_types.UUID           `json:"id,omitempty"`
-	Type AiOperationCompletedEventType `json:"type"`
+	Data AiOperationCompletedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AiOperationCompletedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// AiOperationCompletedEventType defines model for AiOperationCompletedEvent.Type.
-type AiOperationCompletedEventType string
+// AiOperationCompletedEventEvent The event name. This field is `event`, not `type`.
+type AiOperationCompletedEventEvent string
 
 // AiOperationCompletedPayload Payload for `ai.operation.completed`. An async AI run (review response, message draft, pricing suggestion) finished.
 type AiOperationCompletedPayload struct {
@@ -3442,17 +3691,27 @@ type AiOperationCompletedPayload struct {
 
 // AiOperationFailedEvent defines model for AiOperationFailedEvent.
 type AiOperationFailedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `ai.operation.failed`. An async AI run terminated with an error and will not be retried.
-	Data AiOperationFailedPayload   `json:"data"`
-	Id   *openapi_types.UUID        `json:"id,omitempty"`
-	Type AiOperationFailedEventType `json:"type"`
+	Data AiOperationFailedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AiOperationFailedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// AiOperationFailedEventType defines model for AiOperationFailedEvent.Type.
-type AiOperationFailedEventType string
+// AiOperationFailedEventEvent The event name. This field is `event`, not `type`.
+type AiOperationFailedEventEvent string
 
 // AiOperationFailedPayload Payload for `ai.operation.failed`. An async AI run terminated with an error and will not be retried.
 type AiOperationFailedPayload struct {
@@ -4478,22 +4737,31 @@ type BookingAvailabilityStateResponse struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
-// BookingAvailabilityUpdate One (room, rate-plan, date-range) availability update. Carries inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and the same length-of-stay / arrival restrictions as a rate update.
+// BookingAvailabilityUpdate One (room, rate-plan, date-range) availability update. Carries inventory (`availableRooms`), the dedicated stop-sell flag (`closed`), and length-of-stay / arrival restrictions. Omit `availableRooms` and `closed` for a restriction-only write — inventory is then left untouched.
 type BookingAvailabilityUpdate struct {
-	// AvailableRooms Rooms to sell (`roomstosell`). `0` blocks the room for the range.
-	AvailableRooms int `json:"availableRooms"`
+	// AvailableRooms Rooms to sell (`roomstosell`). `0` blocks the room for the range. Omit it to leave inventory alone — `0` is a stop-sell, not a no-op.
+	AvailableRooms *int `json:"availableRooms,omitempty"`
 
 	// Closed Dedicated stop-sell flag (`<closed>` in Booking's XML). `true` fully stops sale for the room/date-range regardless of `availableRooms`.
-	Closed    *bool `json:"closed,omitempty"`
+	Closed *bool `json:"closed,omitempty"`
+
+	// DateRange The nights this update applies to. **Both ends are inclusive** — `start` equal to `end` is one night.
 	DateRange struct {
-		End   openapi_types.Date `json:"end"`
+		// End Last night, YYYY-MM-DD, inclusive.
+		End openapi_types.Date `json:"end"`
+
+		// Start First night, YYYY-MM-DD.
 		Start openapi_types.Date `json:"start"`
 	} `json:"dateRange"`
 
 	// RateId Booking.com rate-plan id.
 	RateId string `json:"rateId"`
 
-	// Restrictions Optional length-of-stay / availability restrictions for one rate update. Every field here is forwarded verbatim into Booking.com's rates XML (`minimumstay`, `maximumstay`, `closedonarrival`, `closedondeparture`, …) — omit a field to leave that restriction untouched.
+	// Restrictions Length-of-stay and arrival restrictions for the nights in this update. Omit a field to leave that restriction untouched — nothing you do not state is changed.
+	//
+	// These are written on Booking.com's availability notification, which is the wire that carries a restriction when no inventory changes hands. Sending them alongside a price is supported: the prices and the restrictions are two writes, and the response reports each one separately (`price` and `restrictions`), so a half that lands is never reported as a failure and a half that is refused is never reported as applied.
+	//
+	// Three restrictions are refused with `422 restriction_not_supported` naming the field: Booking.com's notification has no element for them, and dropping a restriction you stated would be worse than refusing it. Set those on the rate plan in the Booking.com Extranet.
 	Restrictions *BookingPricingRateUpdateRestrictions `json:"restrictions,omitempty"`
 
 	// RoomId Booking.com room id.
@@ -4504,16 +4772,19 @@ type BookingAvailabilityUpdate struct {
 // BookingAvailabilityUpdateStatus defines model for BookingAvailabilityUpdate.Status.
 type BookingAvailabilityUpdateStatus string
 
-// BookingAvailabilityUpdateRequest Body for `PUT /v1/channels/booking/availability`. Selects one of Booking's three ARI write paths via `type` and forwards `updates` verbatim to the connector.
+// BookingAvailabilityUpdateRequest Body for `PUT /v1/channels/booking/availability`. `type` selects which of Booking.com's writes to perform. Date ranges are inclusive at both ends everywhere in this body.
 type BookingAvailabilityUpdateRequest struct {
 	// PropertyId Booking.com hotel/property id (numeric; accepted as int or numeric string).
 	PropertyId BookingAvailabilityUpdateRequest_PropertyId `json:"property_id"`
 
-	// Type `rates` → price + restrictions (`updateRates`); `availability` → inventory + stop-sell + restrictions (`updateAvailability`); `derived-pricing` → occupancy-derived pricing rules (`updateDerivedPricing`).
+	// Type `rates` → nightly prices (+ any restrictions sent with them), written at an explicit `occupancy`; `availability` → inventory, stop-sell and restrictions; `derived-pricing` → occupancy-derived pricing rules. A rates update may not carry `roomsToSell`: inventory is an `availability` write.
 	Type BookingAvailabilityUpdateRequestType `json:"type"`
 
 	// Updates For `type: "rates"` each item is a `BookingPricingRateUpdate`; for `type: "availability"` a `BookingAvailabilityUpdate`; for `type: "derived-pricing"` a derived-price rule set.
 	Updates []BookingAvailabilityUpdateRequest_Updates_Item `json:"updates"`
+
+	// Verify Only for `type: "rates"`. Default `true`: after the write the affected nights are read back off Booking.com so `applied` can say `verified` or `mismatch`. Send `false` to skip the read (one fewer Booking.com call); the response then reports `applied: "unverified"`.
+	Verify *bool `json:"verify,omitempty"`
 }
 
 // BookingAvailabilityUpdateRequestPropertyId0 defines model for BookingAvailabilityUpdateRequest.PropertyId.0.
@@ -4527,7 +4798,7 @@ type BookingAvailabilityUpdateRequest_PropertyId struct {
 	union json.RawMessage
 }
 
-// BookingAvailabilityUpdateRequestType `rates` → price + restrictions (`updateRates`); `availability` → inventory + stop-sell + restrictions (`updateAvailability`); `derived-pricing` → occupancy-derived pricing rules (`updateDerivedPricing`).
+// BookingAvailabilityUpdateRequestType `rates` → nightly prices (+ any restrictions sent with them), written at an explicit `occupancy`; `availability` → inventory, stop-sell and restrictions; `derived-pricing` → occupancy-derived pricing rules. A rates update may not carry `roomsToSell`: inventory is an `availability` write.
 type BookingAvailabilityUpdateRequestType string
 
 // BookingAvailabilityUpdateRequest_Updates_Item defines model for BookingAvailabilityUpdateRequest.updates.Item.
@@ -4592,65 +4863,93 @@ type BookingConversation struct {
 // BookingConversationListResponse defines model for BookingConversationListResponse.
 type BookingConversationListResponse = []BookingConversation
 
-// BookingPricingRateUpdate A single (room, rate-plan, date-range) update pushed to Booking.com via the rates API.
+// BookingPricingRateUpdate A single (room, rate-plan, date-range) price update. The amount is written against the party size in `occupancy`, for every night from `dateRange.start` to `dateRange.end` inclusive.
 type BookingPricingRateUpdate struct {
-	// Currency Example: USD
-	Currency  string `json:"currency"`
+	// Currency Currency the rate plan is sold in.
+	//
+	// Example: EUR
+	Currency string `json:"currency"`
+
+	// DateRange The nights this update applies to. **Both ends are inclusive**: `{ "start": "2026-11-04", "end": "2026-11-04" }` writes exactly one night.
 	DateRange struct {
-		End   openapi_types.Date `json:"end"`
+		// End Last night, YYYY-MM-DD, inclusive — the same date as `start` for a single night.
+		End openapi_types.Date `json:"end"`
+
+		// Start First night, YYYY-MM-DD.
 		Start openapi_types.Date `json:"start"`
 	} `json:"dateRange"`
-	Occupancy *int    `json:"occupancy,omitempty"`
-	Price     float32 `json:"price"`
 
-	// RateId Booking.com rate-plan ID.
+	// Occupancy The party size this rate plan prices — a key, not a preference. Booking.com stores the amount against this number: above the rate plan's own maximum it declines the price in silence and the night keeps its old value; below it, it answers 400 and the old price stays published. Omit it and Repull resolves it from Booking.com's own data for this (room, rate plan) and echoes the value and its source back in `occupancy[]`. When it cannot be resolved the write is refused with `422` naming `updates[N].occupancy` — a price is never sent at a guessed party size.
+	Occupancy *int `json:"occupancy,omitempty"`
+
+	// Price Nightly amount, in `currency`, for a party of `occupancy`.
+	Price float32 `json:"price"`
+
+	// RateId Booking.com rate-plan id.
 	RateId string `json:"rateId"`
 
-	// Restrictions Optional length-of-stay / availability restrictions for one rate update. Every field here is forwarded verbatim into Booking.com's rates XML (`minimumstay`, `maximumstay`, `closedonarrival`, `closedondeparture`, …) — omit a field to leave that restriction untouched.
+	// Restrictions Length-of-stay and arrival restrictions for the nights in this update. Omit a field to leave that restriction untouched — nothing you do not state is changed.
+	//
+	// These are written on Booking.com's availability notification, which is the wire that carries a restriction when no inventory changes hands. Sending them alongside a price is supported: the prices and the restrictions are two writes, and the response reports each one separately (`price` and `restrictions`), so a half that lands is never reported as a failure and a half that is refused is never reported as applied.
+	//
+	// Three restrictions are refused with `422 restriction_not_supported` naming the field: Booking.com's notification has no element for them, and dropping a restriction you stated would be worse than refusing it. Set those on the rate plan in the Booking.com Extranet.
 	Restrictions *BookingPricingRateUpdateRestrictions `json:"restrictions,omitempty"`
 
-	// RoomId Booking.com room ID for the rate plan. Comes from `listings_booking_rooms` mapping.
+	// RoomId Booking.com room id the rate plan sells. `GET /v1/channels/booking/properties/{id}/rooms` lists them.
 	RoomId string `json:"roomId"`
 
-	// RoomsToSell Rooms to sell for the date range. Set to `0` to stop-sell this room/rate on the rates endpoint (Booking's dedicated `<closed>` stop-sell flag lives on the availability endpoint — see `BookingAvailabilityUpdate.closed`).
-	RoomsToSell *int     `json:"roomsToSell,omitempty"`
+	// RoomsToSell Refused. A rate update carries prices only; sending this returns `422 inventory_not_in_rate_update` naming `updates[N].roomsToSell`. Write inventory with `type: "availability"` and `availableRooms` (plus `closed: true` for a stop-sell).
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	RoomsToSell *int `json:"roomsToSell,omitempty"`
+
+	// SinglePrice Optional single-occupancy amount, written alongside the main amount.
 	SinglePrice *float32 `json:"singlePrice,omitempty"`
 }
 
-// BookingPricingRateUpdateRestrictions Optional length-of-stay / availability restrictions for one rate update. Every field here is forwarded verbatim into Booking.com's rates XML (`minimumstay`, `maximumstay`, `closedonarrival`, `closedondeparture`, …) — omit a field to leave that restriction untouched.
+// BookingPricingRateUpdateRestrictions Length-of-stay and arrival restrictions for the nights in this update. Omit a field to leave that restriction untouched — nothing you do not state is changed.
+//
+// These are written on Booking.com's availability notification, which is the wire that carries a restriction when no inventory changes hands. Sending them alongside a price is supported: the prices and the restrictions are two writes, and the response reports each one separately (`price` and `restrictions`), so a half that lands is never reported as a failure and a half that is refused is never reported as applied.
+//
+// Three restrictions are refused with `422 restriction_not_supported` naming the field: Booking.com's notification has no element for them, and dropping a restriction you stated would be worse than refusing it. Set those on the rate plan in the Booking.com Extranet.
 type BookingPricingRateUpdateRestrictions struct {
-	// ClosedToArrival Closed-to-arrival — guests may not check in on the affected dates (`closedonarrival`).
+	// ClosedToArrival Closed-to-arrival — guests may not check in on these nights. `false` clears the flag; omit the field to leave it as it is.
 	ClosedToArrival *bool `json:"closedToArrival,omitempty"`
 
-	// ClosedToDeparture Closed-to-departure — guests may not check out on the affected dates (`closedondeparture`).
+	// ClosedToDeparture Closed-to-departure — guests may not check out on these nights. `false` clears the flag; omit the field to leave it as it is.
 	ClosedToDeparture *bool `json:"closedToDeparture,omitempty"`
 
-	// ExactStayArrival Arrival-based exact length of stay (`exactstay_arrival`).
+	// ExactStayArrival Refused. Booking.com's restriction notification has no element for an exact arrival-based stay length, so it cannot be written through the API; sending it returns `422 restriction_not_supported` naming `updates[N].restrictions.exactStayArrival`. Set it on the rate plan in the Booking.com Extranet.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	ExactStayArrival *int `json:"exactStayArrival,omitempty"`
 
-	// MaxAdvanceRes Maximum advance-reservation window, format `XDY` (X days Y hours) — `max_advance_res`.
+	// MaxAdvanceRes Refused, for the same reason as `exactStayArrival` — returns `422 restriction_not_supported`. Set the maximum advance-reservation window on the rate plan in the Booking.com Extranet.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	MaxAdvanceRes *string `json:"maxAdvanceRes,omitempty"`
 
-	// MaxStay Maximum length of stay (`maximumstay`).
+	// MaxStay Maximum length of stay.
 	MaxStay *int `json:"maxStay,omitempty"`
 
-	// MaxStayArrival Arrival-based maximum length of stay (`maximumstay_arrival`).
+	// MaxStayArrival Arrival-based maximum length of stay.
 	MaxStayArrival *int `json:"maxStayArrival,omitempty"`
 
-	// MinAdvanceRes Minimum advance-reservation window, format `XDY` (X days Y hours) — `min_advance_res`.
+	// MinAdvanceRes Refused, for the same reason as `exactStayArrival` — returns `422 restriction_not_supported`. Set the minimum advance-reservation window on the rate plan in the Booking.com Extranet.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	MinAdvanceRes *string `json:"minAdvanceRes,omitempty"`
 
-	// MinStay Minimum length of stay (`minimumstay`).
+	// MinStay Minimum length of stay. Booking.com stores a 1-night minimum as no minimum at all, so `minStay: 1` reads back as `0` and is reported as applied.
 	MinStay *int `json:"minStay,omitempty"`
 
-	// MinStayArrival Arrival-based minimum length of stay (`minimumstay_arrival`).
+	// MinStayArrival Arrival-based minimum length of stay — applies to stays that START on these nights, rather than any stay covering them.
 	MinStayArrival *int `json:"minStayArrival,omitempty"`
 }
 
 // BookingPricingResponse Returned by `GET /v1/channels/booking/listings/{id}/pricing`. Mirrors Booking's `getRoomRateAvailability` response with `hotelId` and `listingId` echoed back for SDK consumers.
 type BookingPricingResponse struct {
-	HotelId              *string                `json:"hotelId,omitempty"`
-	ListingId            *string                `json:"listingId,omitempty"`
+	HotelId   *string `json:"hotelId,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
+
+	// OtherHotelIds Other Booking.com properties this listing is also published under. Empty in the normal case. Pass one as `?hotel_id=` to read its pricing instead.
+	OtherHotelIds        *[]string              `json:"otherHotelIds,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -4659,34 +4958,181 @@ type BookingPricingUpdateRequest struct {
 	Updates []BookingPricingRateUpdate `json:"updates"`
 }
 
-// BookingPricingUpdateResponse defines model for BookingPricingUpdateResponse.
+// BookingPricingUpdateResponse What a Booking.com rate write actually did. Returned by `PUT /v1/channels/booking/listings/{id}/pricing` and by `PUT /v1/channels/booking/availability` with `type: "rates"`.
+//
+// Prices and restrictions are two writes on two of Booking.com's wires, and Booking.com can take one and refuse the other. The response says so: `price` and `restrictions` each carry their own state, their own read-back and — when refused — Booking.com's own reason. The top-level `applied` summarises them, and is `partial` when they disagree. A half that landed is never reported as a failure.
 type BookingPricingUpdateResponse struct {
-	// Errors Per-update failure rows from Booking — shape mirrors the Booking rates API response.
-	Errors    *[]map[string]interface{} `json:"errors,omitempty"`
-	HotelId   *string                   `json:"hotelId,omitempty"`
-	ListingId *string                   `json:"listingId,omitempty"`
+	// Applied What is known about the nights now. `verified` — read back, every night carries what was sent. `mismatch` — read back, some do not (`verification.rows` / `restrictions.verification.rows` name them). `rejected` — Booking.com refused everything that was sent. `partial` — one half landed and the other did not; read `price.applied` and `restrictions.applied` to see which, and `restrictions.rejection.message` for Booking.com's reason. `unverified` — Booking.com acknowledged the request and no read-back ran: an unknown, not a success. A bare acknowledgement is never reported as "all applied".
+	Applied *BookingPricingUpdateResponseApplied `json:"applied,omitempty"`
 
-	// Pushed Number of updates Booking.com accepted as `success`. Falls back to total update count when Booking omits per-update status on full success.
-	Pushed *int `json:"pushed,omitempty"`
+	// Booking Booking.com's own answers, verbatim: `rates` (the rate-amount notification) and `restrictions` (the availability notification, when the updates carried any restriction).
+	Booking *map[string]interface{} `json:"booking,omitempty"`
 
-	// Raw Verbatim Booking response envelope for debugging.
-	Raw       *map[string]interface{} `json:"raw,omitempty"`
-	Requested *int                    `json:"requested,omitempty"`
+	// Errors Failures Booking.com named, across both wires. Empty means Booking.com named none — not that the nights changed; that is what `applied` is for.
+	Errors    *[]map[string]interface{}    `json:"errors,omitempty"`
+	HotelId   *string                      `json:"hotelId,omitempty"`
+	ListingId *string                      `json:"listingId,omitempty"`
+	Occupancy *[]BookingRateWriteOccupancy `json:"occupancy,omitempty"`
+
+	// Price The prices: what was sent, what Booking.com said, and what is live now.
+	Price *BookingRateWritePriceHalf `json:"price,omitempty"`
+
+	// PropertyId Echoed back by `PUT /v1/channels/booking/availability`.
+	PropertyId *string `json:"propertyId,omitempty"`
+
+	// RatePlanReadError Present when Booking.com's rate-plan read did not complete, so an occupancy fell back to the room definition.
+	RatePlanReadError *string `json:"ratePlanReadError,omitempty"`
+
+	// Requested How many updates were sent.
+	Requested *int `json:"requested,omitempty"`
+
+	// Restrictions The restrictions: the same report as the price half, for the other write.
+	Restrictions *BookingRateWriteRestrictionHalf `json:"restrictions,omitempty"`
+
+	// Verification The read-back. Booking.com's answer to a rate write is an acknowledgement of the request with no per-date status, so the dates are read back to find out what is actually live.
+	Verification *BookingRateWriteVerification `json:"verification,omitempty"`
 }
 
-// BookingProperty A property registered in the Booking.com extranet for the connected hotel ID.
+// BookingPricingUpdateResponseApplied What is known about the nights now. `verified` — read back, every night carries what was sent. `mismatch` — read back, some do not (`verification.rows` / `restrictions.verification.rows` name them). `rejected` — Booking.com refused everything that was sent. `partial` — one half landed and the other did not; read `price.applied` and `restrictions.applied` to see which, and `restrictions.rejection.message` for Booking.com's reason. `unverified` — Booking.com acknowledged the request and no read-back ran: an unknown, not a success. A bare acknowledgement is never reported as "all applied".
+type BookingPricingUpdateResponseApplied string
+
+// BookingProperty A Booking.com property this workspace holds, with the Repull listings mapped under it. A property is a building; its rooms are what guests book, and each room maps to one Repull listing — so one property commonly carries many listings.
 type BookingProperty struct {
-	City    *string `json:"city,omitempty"`
-	Country *string `json:"country,omitempty"`
+	Active     *bool   `json:"active,omitempty"`
+	BookingUrl *string `json:"bookingUrl,omitempty"`
 
-	// Id Booking.com hotel/property ID
-	Id     *string `json:"id,omitempty"`
-	Name   *string `json:"name,omitempty"`
-	Status *string `json:"status,omitempty"`
+	// ConnectionId Repull-side id for this Booking.com connection.
+	ConnectionId *string    `json:"connectionId,omitempty"`
+	CreatedAt    *time.Time `json:"createdAt,omitempty"`
+
+	// HotelId Booking.com hotel/property id. This is what `/v1/channels/booking/availability` takes as `property_id`.
+	HotelId *string `json:"hotelId,omitempty"`
+
+	// Listings The Repull listings mapped under this property. Empty when `mappingStatus` is `unmapped`. Inactive listings are left out.
+	Listings *[]struct {
+		City *string `json:"city,omitempty"`
+
+		// ListingId Repull listing id — what `/v1/channels/booking/properties/{id}` and `/v1/channels/booking/listings/{id}/pricing` take.
+		ListingId *string `json:"listingId,omitempty"`
+
+		// MappedVia Which record carries the mapping: the room mapping written by Connect, or the legacy property-level link.
+		MappedVia *BookingPropertyListingsMappedVia `json:"mappedVia,omitempty"`
+		Name      *string                           `json:"name,omitempty"`
+
+		// RoomBookingId Booking.com's own room id — the `roomId` an ARI write takes.
+		RoomBookingId *string `json:"roomBookingId,omitempty"`
+
+		// RoomId Repull-side room row id, as used by `POST /v1/connect/booking/map-rooms`.
+		RoomId   *string `json:"roomId,omitempty"`
+		RoomName *string `json:"roomName,omitempty"`
+	} `json:"listings,omitempty"`
+
+	// MappingStatus `mapped` — at least one room points at a listing. `unmapped` — the property is claimed but its rooms are not mapped yet, so `listings` is empty; finish `POST /v1/connect/booking/map-rooms`. An unmapped property is listed rather than hidden, so a half-finished connection is visible instead of looking like no connection at all.
+	MappingStatus    *BookingPropertyMappingStatus `json:"mappingStatus,omitempty"`
+	Markup           *string                       `json:"markup,omitempty"`
+	SuspendedAt      *time.Time                    `json:"suspendedAt,omitempty"`
+	SuspensionReason *string                       `json:"suspensionReason,omitempty"`
+	SyncCategory     *string                       `json:"syncCategory,omitempty"`
+	SyncEnabled      *bool                         `json:"syncEnabled,omitempty"`
 }
+
+// BookingPropertyListingsMappedVia Which record carries the mapping: the room mapping written by Connect, or the legacy property-level link.
+type BookingPropertyListingsMappedVia string
+
+// BookingPropertyMappingStatus `mapped` — at least one room points at a listing. `unmapped` — the property is claimed but its rooms are not mapped yet, so `listings` is empty; finish `POST /v1/connect/booking/map-rooms`. An unmapped property is listed rather than hidden, so a half-finished connection is visible instead of looking like no connection at all.
+type BookingPropertyMappingStatus string
 
 // BookingPropertyListResponse defines model for BookingPropertyListResponse.
 type BookingPropertyListResponse = []BookingProperty
+
+// BookingRateWriteOccupancy The party size one update was written at, and where that number came from.
+type BookingRateWriteOccupancy struct {
+	// Index Position of the update in the request `updates[]`.
+	Index  *int    `json:"index,omitempty"`
+	RateId *string `json:"rateId,omitempty"`
+	RoomId *string `json:"roomId,omitempty"`
+
+	// Source `request` — you stated it. `rate_plan` — Booking.com's maximum occupancy for this rate plan. `room` — Booking.com's room definition, used when the rate plan did not state one.
+	Source *BookingRateWriteOccupancySource `json:"source,omitempty"`
+
+	// Value The party size the amount was written against.
+	Value *int `json:"value,omitempty"`
+}
+
+// BookingRateWriteOccupancySource `request` — you stated it. `rate_plan` — Booking.com's maximum occupancy for this rate plan. `room` — Booking.com's room definition, used when the rate plan did not state one.
+type BookingRateWriteOccupancySource string
+
+// BookingRateWritePriceHalf The prices: what was sent, what Booking.com said, and what is live now.
+type BookingRateWritePriceHalf struct {
+	// Applied What is known about the amounts. Same vocabulary as the top-level `applied`, for this half alone.
+	Applied *BookingRateWritePriceHalfApplied `json:"applied,omitempty"`
+	Errors  *[]map[string]interface{}         `json:"errors,omitempty"`
+
+	// Rejection Why Booking.com refused one half of a write, in their words. Present on the half that was refused.
+	Rejection *BookingUpstreamFailure `json:"rejection,omitempty"`
+
+	// Requested How many updates carried a price.
+	Requested *int `json:"requested,omitempty"`
+
+	// Verification The read-back. Booking.com's answer to a rate write is an acknowledgement of the request with no per-date status, so the dates are read back to find out what is actually live.
+	Verification *BookingRateWriteVerification `json:"verification,omitempty"`
+}
+
+// BookingRateWritePriceHalfApplied What is known about the amounts. Same vocabulary as the top-level `applied`, for this half alone.
+type BookingRateWritePriceHalfApplied string
+
+// BookingRateWriteRestrictionHalf The restrictions: the same report as the price half, for the other write.
+type BookingRateWriteRestrictionHalf struct {
+	// Applied `not_requested` means no update carried a restriction and nothing was sent.
+	Applied *BookingRateWriteRestrictionHalfApplied `json:"applied,omitempty"`
+
+	// Dates Per update, the nights and the restrictions asked for them — so a partial result names exactly what did and did not change.
+	Dates  *[]BookingRestrictionRequestRow `json:"dates,omitempty"`
+	Errors *[]map[string]interface{}       `json:"errors,omitempty"`
+
+	// Fields Every restriction asked for, across all updates.
+	Fields *[]string `json:"fields,omitempty"`
+
+	// Rejection Why Booking.com refused one half of a write, in their words. Present on the half that was refused.
+	Rejection *BookingUpstreamFailure `json:"rejection,omitempty"`
+
+	// Requested How many updates carried a restriction. `0` when none did.
+	Requested *int `json:"requested,omitempty"`
+
+	// Verification The restriction read-back. It runs out of the SAME call that reads the prices back, so proving a restriction costs no extra request.
+	Verification *BookingRestrictionVerification `json:"verification,omitempty"`
+}
+
+// BookingRateWriteRestrictionHalfApplied `not_requested` means no update carried a restriction and nothing was sent.
+type BookingRateWriteRestrictionHalfApplied string
+
+// BookingRateWriteVerification The read-back. Booking.com's answer to a rate write is an acknowledgement of the request with no per-date status, so the dates are read back to find out what is actually live.
+type BookingRateWriteVerification struct {
+	// Error Present when the read itself failed.
+	Error      *string `json:"error,omitempty"`
+	Matched    *int    `json:"matched,omitempty"`
+	Mismatched *int    `json:"mismatched,omitempty"`
+
+	// Ran Whether the read-back happened.
+	Ran  *bool                              `json:"ran,omitempty"`
+	Rows *[]BookingRateWriteVerificationRow `json:"rows,omitempty"`
+
+	// SkippedReason Why it did not: `not_requested` (you sent `verify: false`), `span_too_long`, `all_dates_beyond_booking_horizon`, `read_back_failed`, `nothing_to_verify`.
+	SkippedReason *string `json:"skippedReason,omitempty"`
+}
+
+// BookingRateWriteVerificationRow One night, read back off Booking.com after the write.
+type BookingRateWriteVerificationRow struct {
+	// BookingPrice The amount Booking.com holds for that night now; `null` when Booking.com reported nothing for it.
+	BookingPrice *float32            `json:"bookingPrice,omitempty"`
+	Date         *openapi_types.Date `json:"date,omitempty"`
+
+	// ExpectedPrice The amount that was sent.
+	ExpectedPrice *float32 `json:"expectedPrice,omitempty"`
+	Match         *bool    `json:"match,omitempty"`
+	RateId        *string  `json:"rateId,omitempty"`
+	RoomId        *string  `json:"roomId,omitempty"`
+}
 
 // BookingReservation A Booking.com reservation as returned by `GET /v1/channels/booking/reservations`.
 //
@@ -4753,6 +5199,77 @@ type BookingReservationRoom struct {
 // BookingReservationRoomStatus defines model for BookingReservationRoom.Status.
 type BookingReservationRoomStatus string
 
+// BookingRestrictionRequestRow One update's restriction request: which nights, and which restrictions were asked for them.
+type BookingRestrictionRequestRow struct {
+	// End Last night, inclusive.
+	End *openapi_types.Date `json:"end,omitempty"`
+
+	// Fields The restrictions stated for these nights.
+	Fields *[]string `json:"fields,omitempty"`
+
+	// Index Position of the update in the request `updates[]`.
+	Index  *int    `json:"index,omitempty"`
+	RateId *string `json:"rateId,omitempty"`
+	RoomId *string `json:"roomId,omitempty"`
+
+	// Start First night, inclusive.
+	Start *openapi_types.Date `json:"start,omitempty"`
+}
+
+// BookingRestrictionVerification The restriction read-back. It runs out of the SAME call that reads the prices back, so proving a restriction costs no extra request.
+type BookingRestrictionVerification struct {
+	Error      *string                              `json:"error,omitempty"`
+	Matched    *int                                 `json:"matched,omitempty"`
+	Mismatched *int                                 `json:"mismatched,omitempty"`
+	Ran        *bool                                `json:"ran,omitempty"`
+	Rows       *[]BookingRestrictionVerificationRow `json:"rows,omitempty"`
+
+	// SkippedReason `not_requested` (no restrictions were sent, `verify: false`, or Booking.com refused them), `span_too_long`, `all_dates_beyond_booking_horizon`, `read_back_failed`, `nothing_to_verify`.
+	SkippedReason *string `json:"skippedReason,omitempty"`
+
+	// Unreported Restrictions Booking.com's read-back did not mention either way. Counted apart from `mismatched`: an unknown is not a failure.
+	Unreported *int `json:"unreported,omitempty"`
+}
+
+// BookingRestrictionVerificationRow One restriction on one night, read back off Booking.com after the write.
+type BookingRestrictionVerificationRow struct {
+	// BookingValue What Booking.com holds for that night now; `null` when they reported nothing for the field either way.
+	BookingValue *BookingRestrictionVerificationRow_BookingValue `json:"bookingValue,omitempty"`
+	Date         *openapi_types.Date                             `json:"date,omitempty"`
+
+	// Expected The value that was sent.
+	Expected *BookingRestrictionVerificationRow_Expected `json:"expected,omitempty"`
+	Field    *BookingRestrictionVerificationRowField     `json:"field,omitempty"`
+	Match    *bool                                       `json:"match,omitempty"`
+	RateId   *string                                     `json:"rateId,omitempty"`
+	RoomId   *string                                     `json:"roomId,omitempty"`
+}
+
+// BookingRestrictionVerificationRowBookingValue0 defines model for BookingRestrictionVerificationRow.BookingValue.0.
+type BookingRestrictionVerificationRowBookingValue0 = int
+
+// BookingRestrictionVerificationRowBookingValue1 defines model for BookingRestrictionVerificationRow.BookingValue.1.
+type BookingRestrictionVerificationRowBookingValue1 = bool
+
+// BookingRestrictionVerificationRow_BookingValue What Booking.com holds for that night now; `null` when they reported nothing for the field either way.
+type BookingRestrictionVerificationRow_BookingValue struct {
+	union json.RawMessage
+}
+
+// BookingRestrictionVerificationRowExpected0 defines model for BookingRestrictionVerificationRow.Expected.0.
+type BookingRestrictionVerificationRowExpected0 = int
+
+// BookingRestrictionVerificationRowExpected1 defines model for BookingRestrictionVerificationRow.Expected.1.
+type BookingRestrictionVerificationRowExpected1 = bool
+
+// BookingRestrictionVerificationRow_Expected The value that was sent.
+type BookingRestrictionVerificationRow_Expected struct {
+	union json.RawMessage
+}
+
+// BookingRestrictionVerificationRowField defines model for BookingRestrictionVerificationRow.Field.
+type BookingRestrictionVerificationRowField string
+
 // BookingRoomMapping A single room→listing assignment. Pass `listingId: null` to explicitly UNMAP a room (e.g. "skip this room for now") — this also removes the corresponding `listing_platform_links` row. Pass `create: true` instead of a `listingId` to have a listing created for the room, which is what a customer onboarding from Booking.com first needs, since they have no listings to map to yet.
 type BookingRoomMapping struct {
 	// Create Create a new listing for this room and map it, instead of binding an existing one. Mutually exclusive with `listingId` — sending both is rejected with 400 rather than silently resolved. Idempotent: a room that is already mapped keeps its existing listing and no duplicate is created.
@@ -4765,18 +5282,30 @@ type BookingRoomMapping struct {
 	RoomId string `json:"roomId"`
 }
 
-// BookingRoomsRatesResponse Returned by `GET /v1/channels/booking/properties/{id}/rooms`. Exposes the Booking.com room + rate-plan mapping ids for a listing so a caller can assemble a `PUT /v1/channels/booking/availability` restriction write (which requires `roomId` + `rateId` on every update). Sourced from Booking's B.XML roomrates feed.
+// BookingRoomsRatesResponse Returned by `GET /v1/channels/booking/properties/{id}/rooms`. Exposes the Booking.com room + rate-plan mapping ids for a listing so a caller can assemble a `PUT /v1/channels/booking/availability` restriction write (which requires `roomId` + `rateId` on every update). Read live from Booking's B.XML roomrates feed; `source` says so, and says when the answer came from the last import instead.
 type BookingRoomsRatesResponse struct {
-	// HotelId Booking.com hotel/property id the rooms belong to.
-	HotelId *string `json:"hotel_id,omitempty"`
+	// HotelId Booking.com hotel/property id the rooms belong to — the one the mapping resolved to.
+	HotelId *string `json:"hotelId,omitempty"`
 
-	// ListingId Vanio listing id echoed back.
-	ListingId *int `json:"listing_id,omitempty"`
-	Rooms     *[]struct {
-		Rates *[]struct {
+	// ListingId Repull listing id echoed back.
+	ListingId *string `json:"listingId,omitempty"`
+
+	// MirrorReason Why the live read was not used. Null when `source` is `booking`.
+	MirrorReason *string `json:"mirrorReason,omitempty"`
+
+	// OtherHotelIds Other Booking.com properties this listing is also published under. Empty in the normal case. Pass one as `?hotel_id=` to read its rooms instead.
+	OtherHotelIds *[]string `json:"otherHotelIds,omitempty"`
+
+	// Rooms Empty only when Booking.com reports no rooms for this property AND nothing was recorded at the last import. A failed read is never an empty list — it is an error.
+	Rooms *[]struct {
+		// MaxAdults Booking.com's capacity for this room, as imported. The occupancy a rate write falls back to when the rate plan states no `maxPersons`. Null when Booking.com never stated one.
+		MaxAdults *int `json:"maxAdults,omitempty"`
+		Rates     *[]struct {
 			// IsChildRate Whether this rate plan is a derived child rate.
 			IsChildRate *bool `json:"isChildRate,omitempty"`
-			MaxPersons  *int  `json:"maxPersons,omitempty"`
+
+			// MaxPersons The party size this rate plan prices. A rate amount must be written at this number: above it Booking.com declines the price in silence, below it answers 400. Null when `source` is `mirror`.
+			MaxPersons *int `json:"maxPersons,omitempty"`
 
 			// Policy Cancellation policy name.
 			Policy   *string `json:"policy,omitempty"`
@@ -4794,6 +5323,33 @@ type BookingRoomsRatesResponse struct {
 		RoomId   *string `json:"roomId,omitempty"`
 		RoomName *string `json:"roomName,omitempty"`
 	} `json:"rooms,omitempty"`
+
+	// Source Where the rooms came from. `booking` — read live from Booking.com just now. `mirror` — Booking.com returned nothing usable, so these are the rooms and rate plans recorded at the last import; the ids are Booking.com's own and are safe to write against, but they can be stale and `maxPersons`, `policy`, `policyId`, `pricingType` and `isChildRate` come back `null` because only the live feed states them.
+	Source *BookingRoomsRatesResponseSource `json:"source,omitempty"`
+}
+
+// BookingRoomsRatesResponseSource Where the rooms came from. `booking` — read live from Booking.com just now. `mirror` — Booking.com returned nothing usable, so these are the rooms and rate plans recorded at the last import; the ids are Booking.com's own and are safe to write against, but they can be stale and `maxPersons`, `policy`, `policyId`, `pricingType` and `isChildRate` come back `null` because only the live feed states them.
+type BookingRoomsRatesResponseSource string
+
+// BookingUpstreamFailure Why Booking.com refused one half of a write, in their words. Present on the half that was refused.
+type BookingUpstreamFailure struct {
+	// Body The upstream body, trimmed and capped, for when the parsed reason is not enough.
+	Body *string `json:"body,omitempty"`
+
+	// BookingCode Booking.com's own error code, when their envelope named one.
+	BookingCode *string `json:"booking_code,omitempty"`
+
+	// BookingRuid Booking.com's request id. Quote it to their connectivity support to have them trace the call.
+	BookingRuid *string `json:"booking_ruid,omitempty"`
+
+	// Code How the failure was classified internally (e.g. `BAD_REQUEST`, `RATE_LIMITED`).
+	Code *string `json:"code,omitempty"`
+
+	// Message Booking.com's own reason, taken from the body they answered with — never a paraphrase of their status code.
+	Message *string `json:"message,omitempty"`
+
+	// UpstreamStatus The HTTP status Booking.com answered with.
+	UpstreamStatus *int `json:"upstream_status,omitempty"`
 }
 
 // BookingVerifyHotelRequest Body for `POST /v1/connect/booking/verify`. Manual-paste fallback that closes a Booking.com Connect session after the customer completes Stage 1 designation in the Extranet.
@@ -4897,17 +5453,27 @@ type CalendarResponse struct {
 
 // CalendarUpdatedEvent defines model for CalendarUpdatedEvent.
 type CalendarUpdatedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `calendar.updated`. Availability or pricing for a listing was updated.
-	Data CalendarUpdatedPayload   `json:"data"`
-	Id   *openapi_types.UUID      `json:"id,omitempty"`
-	Type CalendarUpdatedEventType `json:"type"`
+	Data CalendarUpdatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event CalendarUpdatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// CalendarUpdatedEventType defines model for CalendarUpdatedEvent.Type.
-type CalendarUpdatedEventType string
+// CalendarUpdatedEventEvent The event name. This field is `event`, not `type`.
+type CalendarUpdatedEventEvent string
 
 // CalendarUpdatedPayload Payload for `calendar.updated`. Availability or pricing for a listing was updated.
 type CalendarUpdatedPayload struct {
@@ -5971,17 +6537,27 @@ type ListingCreateResponse struct {
 
 // ListingCreatedEvent defines model for ListingCreatedEvent.
 type ListingCreatedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `listing.created`. A new property was synced into Repull from a connected PMS or channel.
-	Data ListingCreatedPayload   `json:"data"`
-	Id   *openapi_types.UUID     `json:"id,omitempty"`
-	Type ListingCreatedEventType `json:"type"`
+	Data ListingCreatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ListingCreatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ListingCreatedEventType defines model for ListingCreatedEvent.Type.
-type ListingCreatedEventType string
+// ListingCreatedEventEvent The event name. This field is `event`, not `type`.
+type ListingCreatedEventEvent string
 
 // ListingCreatedPayload Payload for `listing.created`. A new property was synced into Repull from a connected PMS or channel.
 type ListingCreatedPayload struct {
@@ -6017,17 +6593,27 @@ type ListingCreatedPayload struct {
 
 // ListingDeletedEvent defines model for ListingDeletedEvent.
 type ListingDeletedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `listing.deleted`. A property was removed from Repull or the upstream PMS.
-	Data ListingDeletedPayload   `json:"data"`
-	Id   *openapi_types.UUID     `json:"id,omitempty"`
-	Type ListingDeletedEventType `json:"type"`
+	Data ListingDeletedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ListingDeletedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ListingDeletedEventType defines model for ListingDeletedEvent.Type.
-type ListingDeletedEventType string
+// ListingDeletedEventEvent The event name. This field is `event`, not `type`.
+type ListingDeletedEventEvent string
 
 // ListingDeletedPayload Payload for `listing.deleted`. A property was removed from Repull or the upstream PMS.
 type ListingDeletedPayload struct {
@@ -6585,17 +7171,27 @@ type ListingStatusBatchResponse struct {
 
 // ListingUpdatedEvent defines model for ListingUpdatedEvent.
 type ListingUpdatedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `listing.updated`. Listing content, amenities, photos, or status changed.
-	Data ListingUpdatedPayload   `json:"data"`
-	Id   *openapi_types.UUID     `json:"id,omitempty"`
-	Type ListingUpdatedEventType `json:"type"`
+	Data ListingUpdatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ListingUpdatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ListingUpdatedEventType defines model for ListingUpdatedEvent.Type.
-type ListingUpdatedEventType string
+// ListingUpdatedEventEvent The event name. This field is `event`, not `type`.
+type ListingUpdatedEventEvent string
 
 // ListingUpdatedPayload Payload for `listing.updated`. Listing content, amenities, photos, or status changed.
 type ListingUpdatedPayload struct {
@@ -6964,17 +7560,27 @@ type Pagination struct {
 
 // PaymentCompletedEvent defines model for PaymentCompletedEvent.
 type PaymentCompletedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `payment.completed`. A guest payment was successfully captured.
-	Data PaymentCompletedPayload   `json:"data"`
-	Id   *openapi_types.UUID       `json:"id,omitempty"`
-	Type PaymentCompletedEventType `json:"type"`
+	Data PaymentCompletedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event PaymentCompletedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// PaymentCompletedEventType defines model for PaymentCompletedEvent.Type.
-type PaymentCompletedEventType string
+// PaymentCompletedEventEvent The event name. This field is `event`, not `type`.
+type PaymentCompletedEventEvent string
 
 // PaymentCompletedPayload Payload for `payment.completed`. A guest payment was successfully captured.
 type PaymentCompletedPayload struct {
@@ -6999,17 +7605,27 @@ type PaymentCompletedPayload struct {
 
 // PaymentRefundedEvent defines model for PaymentRefundedEvent.
 type PaymentRefundedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `payment.refunded`. A previous payment was refunded in part or in full.
-	Data PaymentRefundedPayload   `json:"data"`
-	Id   *openapi_types.UUID      `json:"id,omitempty"`
-	Type PaymentRefundedEventType `json:"type"`
+	Data PaymentRefundedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event PaymentRefundedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// PaymentRefundedEventType defines model for PaymentRefundedEvent.Type.
-type PaymentRefundedEventType string
+// PaymentRefundedEventEvent The event name. This field is `event`, not `type`.
+type PaymentRefundedEventEvent string
 
 // PaymentRefundedPayload Payload for `payment.refunded`. A previous payment was refunded in part or in full.
 type PaymentRefundedPayload struct {
@@ -7224,17 +7840,27 @@ type Quote struct {
 
 // RepullPingEvent defines model for RepullPingEvent.
 type RepullPingEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `repull.ping`. A diagnostic delivery used by the dashboard to verify endpoint reachability.
-	Data RepullPingPayload   `json:"data"`
-	Id   *openapi_types.UUID `json:"id,omitempty"`
-	Type RepullPingEventType `json:"type"`
+	Data RepullPingPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event RepullPingEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// RepullPingEventType defines model for RepullPingEvent.Type.
-type RepullPingEventType string
+// RepullPingEventEvent The event name. This field is `event`, not `type`.
+type RepullPingEventEvent string
 
 // RepullPingPayload Payload for `repull.ping`. A diagnostic delivery used by the dashboard to verify endpoint reachability.
 type RepullPingPayload struct {
@@ -7350,17 +7976,27 @@ type ReservationStatus string
 
 // ReservationAlterationCreatedEvent defines model for ReservationAlterationCreatedEvent.
 type ReservationAlterationCreatedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `reservation.alteration.created`. A new reservation alteration was requested (Airbnb). `data.object` carries the snapshot; `data.changes` lists the requested field deltas.
-	Data ReservationAlterationCreatedPayload   `json:"data"`
-	Id   *openapi_types.UUID                   `json:"id,omitempty"`
-	Type ReservationAlterationCreatedEventType `json:"type"`
+	Data ReservationAlterationCreatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationAlterationCreatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ReservationAlterationCreatedEventType defines model for ReservationAlterationCreatedEvent.Type.
-type ReservationAlterationCreatedEventType string
+// ReservationAlterationCreatedEventEvent The event name. This field is `event`, not `type`.
+type ReservationAlterationCreatedEventEvent string
 
 // ReservationAlterationCreatedPayload Payload for `reservation.alteration.created`. A new reservation alteration was requested (Airbnb). `data.object` carries the snapshot; `data.changes` lists the requested field deltas.
 type ReservationAlterationCreatedPayload struct {
@@ -7375,17 +8011,27 @@ type ReservationAlterationCreatedPayload struct {
 
 // ReservationAlterationRespondedEvent defines model for ReservationAlterationRespondedEvent.
 type ReservationAlterationRespondedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `reservation.alteration.responded`. A pending alteration was accepted, declined, or cancelled. `data.object.status` reflects the new state.
-	Data ReservationAlterationRespondedPayload   `json:"data"`
-	Id   *openapi_types.UUID                     `json:"id,omitempty"`
-	Type ReservationAlterationRespondedEventType `json:"type"`
+	Data ReservationAlterationRespondedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationAlterationRespondedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ReservationAlterationRespondedEventType defines model for ReservationAlterationRespondedEvent.Type.
-type ReservationAlterationRespondedEventType string
+// ReservationAlterationRespondedEventEvent The event name. This field is `event`, not `type`.
+type ReservationAlterationRespondedEventEvent string
 
 // ReservationAlterationRespondedPayload Payload for `reservation.alteration.responded`. A pending alteration was accepted, declined, or cancelled. `data.object.status` reflects the new state.
 type ReservationAlterationRespondedPayload struct {
@@ -7400,17 +8046,27 @@ type ReservationAlterationRespondedPayload struct {
 
 // ReservationCancelledEvent defines model for ReservationCancelledEvent.
 type ReservationCancelledEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `reservation.cancelled`. A reservation was cancelled by the guest, host, or platform. `data.object` reflects the post-cancel snapshot (status will be `cancelled`); top-level fields capture cancellation metadata.
-	Data ReservationCancelledPayload   `json:"data"`
-	Id   *openapi_types.UUID           `json:"id,omitempty"`
-	Type ReservationCancelledEventType `json:"type"`
+	Data ReservationCancelledPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationCancelledEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ReservationCancelledEventType defines model for ReservationCancelledEvent.Type.
-type ReservationCancelledEventType string
+// ReservationCancelledEventEvent The event name. This field is `event`, not `type`.
+type ReservationCancelledEventEvent string
 
 // ReservationCancelledPayload Payload for `reservation.cancelled`. A reservation was cancelled by the guest, host, or platform. `data.object` reflects the post-cancel snapshot (status will be `cancelled`); top-level fields capture cancellation metadata.
 type ReservationCancelledPayload struct {
@@ -7517,20 +8173,27 @@ type ReservationCreateResponse struct {
 
 // ReservationCreatedEvent defines model for ReservationCreatedEvent.
 type ReservationCreatedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
 	// ApiVersion Example: 2026-04
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking. Stripe-pattern envelope: `data.object` carries the reservation snapshot.
 	Data ReservationCreatedPayload `json:"data"`
 
-	// Id Stable event id — same across delivery retries of the same logical event.
-	Id   *openapi_types.UUID         `json:"id,omitempty"`
-	Type ReservationCreatedEventType `json:"type"`
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationCreatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ReservationCreatedEventType defines model for ReservationCreatedEvent.Type.
-type ReservationCreatedEventType string
+// ReservationCreatedEventEvent The event name. This field is `event`, not `type`.
+type ReservationCreatedEventEvent string
 
 // ReservationCreatedPayload Payload for `reservation.created`. A new reservation arrived from any connected channel or direct booking. Stripe-pattern envelope: `data.object` carries the reservation snapshot.
 type ReservationCreatedPayload struct {
@@ -7643,17 +8306,27 @@ type ReservationListResponse struct {
 
 // ReservationMessageReceivedEvent defines model for ReservationMessageReceivedEvent.
 type ReservationMessageReceivedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread.
-	Data ReservationMessageReceivedPayload   `json:"data"`
-	Id   *openapi_types.UUID                 `json:"id,omitempty"`
-	Type ReservationMessageReceivedEventType `json:"type"`
+	Data ReservationMessageReceivedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationMessageReceivedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ReservationMessageReceivedEventType defines model for ReservationMessageReceivedEvent.Type.
-type ReservationMessageReceivedEventType string
+// ReservationMessageReceivedEventEvent The event name. This field is `event`, not `type`.
+type ReservationMessageReceivedEventEvent string
 
 // ReservationMessageReceivedPayload Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread.
 type ReservationMessageReceivedPayload struct {
@@ -7784,17 +8457,27 @@ type ReservationUpdateResponse struct {
 
 // ReservationUpdatedEvent defines model for ReservationUpdatedEvent.
 type ReservationUpdatedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `reservation.updated`. Dates, status, or any tracked field changed on an existing reservation. `data.object` is the post-change snapshot; `data.previousAttributes` lists ONLY the fields that actually moved, with their prior values. Fields not in `previousAttributes` did not change.
-	Data ReservationUpdatedPayload   `json:"data"`
-	Id   *openapi_types.UUID         `json:"id,omitempty"`
-	Type ReservationUpdatedEventType `json:"type"`
+	Data ReservationUpdatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationUpdatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ReservationUpdatedEventType defines model for ReservationUpdatedEvent.Type.
-type ReservationUpdatedEventType string
+// ReservationUpdatedEventEvent The event name. This field is `event`, not `type`.
+type ReservationUpdatedEventEvent string
 
 // ReservationUpdatedPayload Payload for `reservation.updated`. Dates, status, or any tracked field changed on an existing reservation. `data.object` is the post-change snapshot; `data.previousAttributes` lists ONLY the fields that actually moved, with their prior values. Fields not in `previousAttributes` did not change.
 type ReservationUpdatedPayload struct {
@@ -7946,17 +8629,27 @@ type ReviewCategory struct {
 
 // ReviewCreatedEvent defines model for ReviewCreatedEvent.
 type ReviewCreatedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `review.created`. A new review was received on a reservation. `data.object.reviewerRole` disambiguates guest vs host authorship.
-	Data ReviewCreatedPayload   `json:"data"`
-	Id   *openapi_types.UUID    `json:"id,omitempty"`
-	Type ReviewCreatedEventType `json:"type"`
+	Data ReviewCreatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReviewCreatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ReviewCreatedEventType defines model for ReviewCreatedEvent.Type.
-type ReviewCreatedEventType string
+// ReviewCreatedEventEvent The event name. This field is `event`, not `type`.
+type ReviewCreatedEventEvent string
 
 // ReviewCreatedPayload Payload for `review.created`. A new review was received on a reservation. `data.object.reviewerRole` disambiguates guest vs host authorship.
 type ReviewCreatedPayload struct {
@@ -7974,17 +8667,27 @@ type ReviewListResponse struct {
 
 // ReviewRespondedEvent defines model for ReviewRespondedEvent.
 type ReviewRespondedEvent struct {
-	ApiVersion *string    `json:"apiVersion,omitempty"`
-	CreatedAt  *time.Time `json:"createdAt,omitempty"`
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
 
 	// Data Payload for `review.responded`. A public host response to a review was recorded. Fetch the response body via `GET /v1/reviews/{id}`.
-	Data ReviewRespondedPayload   `json:"data"`
-	Id   *openapi_types.UUID      `json:"id,omitempty"`
-	Type ReviewRespondedEventType `json:"type"`
+	Data ReviewRespondedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReviewRespondedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// ReviewRespondedEventType defines model for ReviewRespondedEvent.Type.
-type ReviewRespondedEventType string
+// ReviewRespondedEventEvent The event name. This field is `event`, not `type`.
+type ReviewRespondedEventEvent string
 
 // ReviewRespondedPayload Payload for `review.responded`. A public host response to a review was recorded. Fetch the response body via `GET /v1/reviews/{id}`.
 type ReviewRespondedPayload struct {
@@ -8111,6 +8814,82 @@ type SendMessageResponse struct {
 // SendMessageResponseDirection defines model for SendMessageResponse.Direction.
 type SendMessageResponseDirection string
 
+// UsageQuotaWarningEvent defines model for UsageQuotaWarningEvent.
+type UsageQuotaWarningEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `usage.quota.warning`. Sent once per account per window when usage crosses 80% of a request quota — a heads-up, not a refusal. `topOperation` names the operation driving the traffic so a runaway loop can be found before the cap stops it.
+	Data UsageQuotaWarningPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event UsageQuotaWarningEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// UsageQuotaWarningEventEvent The event name. This field is `event`, not `type`.
+type UsageQuotaWarningEventEvent string
+
+// UsageQuotaWarningPayload Payload for `usage.quota.warning`. Sent once per account per window when usage crosses 80% of a request quota — a heads-up, not a refusal. `topOperation` names the operation driving the traffic so a runaway loop can be found before the cap stops it.
+type UsageQuotaWarningPayload struct {
+	// Limit Example: 25000
+	Limit *int `json:"limit,omitempty"`
+
+	// PercentUsed Example: 80
+	PercentUsed *int `json:"percentUsed,omitempty"`
+
+	// Remaining Example: 5000
+	Remaining *int `json:"remaining,omitempty"`
+
+	// ResetsAt When the window resets and the counter returns to zero.
+	//
+	// Example: 2026-05-02T00:00:00.000Z
+	ResetsAt *time.Time `json:"resetsAt,omitempty"`
+
+	// Scope Which quota this warning is about.
+	//
+	// Example: daily_requests
+	Scope *UsageQuotaWarningPayloadScope `json:"scope,omitempty"`
+
+	// Tier Example: starter
+	Tier *string `json:"tier,omitempty"`
+
+	// TopOperation The operation responsible for the largest share of the window so far. Absent when it could not be determined.
+	TopOperation *struct {
+		// OperationId Example: replay_webhook_delivery
+		OperationId *string `json:"operationId,omitempty"`
+
+		// RequestCount Example: 17000
+		RequestCount *int `json:"requestCount,omitempty"`
+
+		// SharePercent Share of the window's requests, 0-100.
+		//
+		// Example: 85
+		SharePercent *float32 `json:"sharePercent,omitempty"`
+	} `json:"topOperation,omitempty"`
+
+	// Used Example: 20000
+	Used *int `json:"used,omitempty"`
+
+	// WindowKey The window the warning covers — the UTC date when scope is "daily_requests". Stable dedupe key.
+	//
+	// Example: 2026-05-01
+	WindowKey *string `json:"windowKey,omitempty"`
+}
+
+// UsageQuotaWarningPayloadScope Which quota this warning is about.
+//
+// Example: daily_requests
+type UsageQuotaWarningPayloadScope string
+
 // VrboListing A VRBO listing.
 type VrboListing struct {
 	Id     *string `json:"id,omitempty"`
@@ -8189,6 +8968,20 @@ type WebhookDeliveryListResponse struct {
 // WebhookEvent The full event envelope POSTed to your webhook URL. Discriminated on `type` — narrow `event.data` by switching on `event.type`. Use the matching `*Event` variant directly if your SDK lacks discriminator support. Events about an inactive listing (reservations, messages, alterations, reviews, payments, calendar and listing events) are not delivered. The data keeps syncing while the listing is inactive, but its events are never sent — including after you reactivate it; webhooks resume for events that happen from reactivation on. Account-level events are always delivered.
 type WebhookEvent struct {
 	union json.RawMessage
+}
+
+// WebhookEventAccount Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+type WebhookEventAccount struct {
+	// ExternalAccountId The provider's own account id.
+	//
+	// Example: 79730216
+	ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+	// Id Repull connection id.
+	Id *int `json:"id,omitempty"`
+
+	// Provider Example: airbnb
+	Provider *string `json:"provider,omitempty"`
 }
 
 // WebhookEventCatalog Canonical catalog of every event the API can deliver, grouped by domain. Each entry includes a realistic `samplePayload` matching the discriminated `WebhookEvent` union — so SDKs can render docs and dashboards from this single source of truth.
@@ -8304,6 +9097,15 @@ type AirbnbWriteRejected = Error
 
 // BadRequest Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type BadRequest = Error
+
+// BookingRateLimited Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type BookingRateLimited = Error
+
+// BookingUpstreamError Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type BookingUpstreamError = Error
+
+// BookingWriteRejected Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type BookingWriteRejected = Error
 
 // Conflict Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type Conflict = Error
@@ -9045,6 +9847,15 @@ type GetBookingListingPricingParams struct {
 
 	// RoomLevel When true, returns room-level (vs rate-plan-level) availability.
 	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
+
+	// HotelId Booking.com hotel id, when this listing is published under more than one property. Omit it and a read uses the oldest mapping (reporting the rest in `otherHotelIds`), while a write is refused with `409 ambiguous_booking_mapping` rather than guess. `GET /v1/channels/booking/properties` lists the valid ids.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
+}
+
+// UpdateBookingListingPricingParams defines parameters for UpdateBookingListingPricing.
+type UpdateBookingListingPricingParams struct {
+	// HotelId Booking.com hotel id, when this listing is published under more than one property. Omit it and a read uses the oldest mapping (reporting the rest in `otherHotelIds`), while a write is refused with `409 ambiguous_booking_mapping` rather than guess. `GET /v1/channels/booking/properties` lists the valid ids.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
 }
 
 // SendBookingMessageJSONBody defines parameters for SendBookingMessage.
@@ -9057,6 +9868,12 @@ type SendBookingMessageJSONBody struct {
 
 	// PropertyId Booking.com property (hotel) id the conversation belongs to.
 	PropertyId int `json:"property_id"`
+}
+
+// ListBookingPropertyRoomsParams defines parameters for ListBookingPropertyRooms.
+type ListBookingPropertyRoomsParams struct {
+	// HotelId Booking.com hotel id, when this listing is published under more than one property. Omit it and a read uses the oldest mapping (reporting the rest in `otherHotelIds`), while a write is refused with `409 ambiguous_booking_mapping` rather than guess. `GET /v1/channels/booking/properties` lists the valid ids.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
 }
 
 // ListBookingReservationsParams defines parameters for ListBookingReservations.
@@ -9934,6 +10751,12 @@ type ListWebhookDeliveriesParams struct {
 // ListWebhookDeliveriesParamsStatus defines parameters for ListWebhookDeliveries.
 type ListWebhookDeliveriesParamsStatus string
 
+// ReplayWebhookDeliveryJSONBody defines parameters for ReplayWebhookDelivery.
+type ReplayWebhookDeliveryJSONBody struct {
+	// Force Replay even though this delivery already succeeded. Still counts against the 3-per-hour limit.
+	Force *bool `json:"force,omitempty"`
+}
+
 // BatchUpdateAvailabilityJSONRequestBody defines body for BatchUpdateAvailability for application/json ContentType.
 type BatchUpdateAvailabilityJSONRequestBody = AvailabilityBatchWriteRequest
 
@@ -10166,6 +10989,9 @@ type TestWebhookJSONRequestBody TestWebhookJSONBody
 
 // UpdateWebhookJSONRequestBody defines body for UpdateWebhook for application/json ContentType.
 type UpdateWebhookJSONRequestBody UpdateWebhookJSONBody
+
+// ReplayWebhookDeliveryJSONRequestBody defines body for ReplayWebhookDelivery for application/json ContentType.
+type ReplayWebhookDeliveryJSONRequestBody ReplayWebhookDeliveryJSONBody
 
 // Getter for additional properties for AirbnbAlteration. Returns the specified
 // element and whether it was found
@@ -10753,6 +11579,14 @@ func (a *BookingPricingResponse) UnmarshalJSON(b []byte) error {
 		delete(object, "listingId")
 	}
 
+	if raw, found := object["otherHotelIds"]; found {
+		err = json.Unmarshal(raw, &a.OtherHotelIds)
+		if err != nil {
+			return fmt.Errorf("error reading 'otherHotelIds': %w", err)
+		}
+		delete(object, "otherHotelIds")
+	}
+
 	if len(object) != 0 {
 		a.AdditionalProperties = make(map[string]interface{})
 		for fieldName, fieldBuf := range object {
@@ -10783,6 +11617,13 @@ func (a BookingPricingResponse) MarshalJSON() ([]byte, error) {
 		object["listingId"], err = json.Marshal(a.ListingId)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'listingId': %w", err)
+		}
+	}
+
+	if a.OtherHotelIds != nil {
+		object["otherHotelIds"], err = json.Marshal(a.OtherHotelIds)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'otherHotelIds': %w", err)
 		}
 	}
 
@@ -11622,6 +12463,130 @@ func (t *BookingAvailabilityUpdateRequest_Updates_Item) UnmarshalJSON(b []byte) 
 	return err
 }
 
+// AsBookingRestrictionVerificationRowBookingValue0 returns the union data inside the BookingRestrictionVerificationRow_BookingValue as a BookingRestrictionVerificationRowBookingValue0
+func (t BookingRestrictionVerificationRow_BookingValue) AsBookingRestrictionVerificationRowBookingValue0() (BookingRestrictionVerificationRowBookingValue0, error) {
+	var body BookingRestrictionVerificationRowBookingValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingRestrictionVerificationRowBookingValue0 overwrites any union data inside the BookingRestrictionVerificationRow_BookingValue as the provided BookingRestrictionVerificationRowBookingValue0
+func (t *BookingRestrictionVerificationRow_BookingValue) FromBookingRestrictionVerificationRowBookingValue0(v BookingRestrictionVerificationRowBookingValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingRestrictionVerificationRowBookingValue0 performs a merge with any union data inside the BookingRestrictionVerificationRow_BookingValue, using the provided BookingRestrictionVerificationRowBookingValue0
+func (t *BookingRestrictionVerificationRow_BookingValue) MergeBookingRestrictionVerificationRowBookingValue0(v BookingRestrictionVerificationRowBookingValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBookingRestrictionVerificationRowBookingValue1 returns the union data inside the BookingRestrictionVerificationRow_BookingValue as a BookingRestrictionVerificationRowBookingValue1
+func (t BookingRestrictionVerificationRow_BookingValue) AsBookingRestrictionVerificationRowBookingValue1() (BookingRestrictionVerificationRowBookingValue1, error) {
+	var body BookingRestrictionVerificationRowBookingValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingRestrictionVerificationRowBookingValue1 overwrites any union data inside the BookingRestrictionVerificationRow_BookingValue as the provided BookingRestrictionVerificationRowBookingValue1
+func (t *BookingRestrictionVerificationRow_BookingValue) FromBookingRestrictionVerificationRowBookingValue1(v BookingRestrictionVerificationRowBookingValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingRestrictionVerificationRowBookingValue1 performs a merge with any union data inside the BookingRestrictionVerificationRow_BookingValue, using the provided BookingRestrictionVerificationRowBookingValue1
+func (t *BookingRestrictionVerificationRow_BookingValue) MergeBookingRestrictionVerificationRowBookingValue1(v BookingRestrictionVerificationRowBookingValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t BookingRestrictionVerificationRow_BookingValue) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BookingRestrictionVerificationRow_BookingValue) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsBookingRestrictionVerificationRowExpected0 returns the union data inside the BookingRestrictionVerificationRow_Expected as a BookingRestrictionVerificationRowExpected0
+func (t BookingRestrictionVerificationRow_Expected) AsBookingRestrictionVerificationRowExpected0() (BookingRestrictionVerificationRowExpected0, error) {
+	var body BookingRestrictionVerificationRowExpected0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingRestrictionVerificationRowExpected0 overwrites any union data inside the BookingRestrictionVerificationRow_Expected as the provided BookingRestrictionVerificationRowExpected0
+func (t *BookingRestrictionVerificationRow_Expected) FromBookingRestrictionVerificationRowExpected0(v BookingRestrictionVerificationRowExpected0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingRestrictionVerificationRowExpected0 performs a merge with any union data inside the BookingRestrictionVerificationRow_Expected, using the provided BookingRestrictionVerificationRowExpected0
+func (t *BookingRestrictionVerificationRow_Expected) MergeBookingRestrictionVerificationRowExpected0(v BookingRestrictionVerificationRowExpected0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBookingRestrictionVerificationRowExpected1 returns the union data inside the BookingRestrictionVerificationRow_Expected as a BookingRestrictionVerificationRowExpected1
+func (t BookingRestrictionVerificationRow_Expected) AsBookingRestrictionVerificationRowExpected1() (BookingRestrictionVerificationRowExpected1, error) {
+	var body BookingRestrictionVerificationRowExpected1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingRestrictionVerificationRowExpected1 overwrites any union data inside the BookingRestrictionVerificationRow_Expected as the provided BookingRestrictionVerificationRowExpected1
+func (t *BookingRestrictionVerificationRow_Expected) FromBookingRestrictionVerificationRowExpected1(v BookingRestrictionVerificationRowExpected1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingRestrictionVerificationRowExpected1 performs a merge with any union data inside the BookingRestrictionVerificationRow_Expected, using the provided BookingRestrictionVerificationRowExpected1
+func (t *BookingRestrictionVerificationRow_Expected) MergeBookingRestrictionVerificationRowExpected1(v BookingRestrictionVerificationRowExpected1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t BookingRestrictionVerificationRow_Expected) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BookingRestrictionVerificationRow_Expected) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsListingContentUpdateRequestAmenities0 returns the union data inside the ListingContentUpdateRequest_Amenities as a ListingContentUpdateRequestAmenities0
 func (t ListingContentUpdateRequest_Amenities) AsListingContentUpdateRequestAmenities0() (ListingContentUpdateRequestAmenities0, error) {
 	var body ListingContentUpdateRequestAmenities0
@@ -11759,7 +12724,7 @@ func (t *WebhookEvent) FromReservationCreatedEvent(v ReservationCreatedEvent) er
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.created"}`))
 	t.union = b
 	return err
 }
@@ -11770,7 +12735,7 @@ func (t *WebhookEvent) MergeReservationCreatedEvent(v ReservationCreatedEvent) e
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.created"}`))
 	if err != nil {
 		return err
 	}
@@ -11793,7 +12758,7 @@ func (t *WebhookEvent) FromReservationUpdatedEvent(v ReservationUpdatedEvent) er
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.updated"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.updated"}`))
 	t.union = b
 	return err
 }
@@ -11804,7 +12769,7 @@ func (t *WebhookEvent) MergeReservationUpdatedEvent(v ReservationUpdatedEvent) e
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.updated"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.updated"}`))
 	if err != nil {
 		return err
 	}
@@ -11827,7 +12792,7 @@ func (t *WebhookEvent) FromReservationCancelledEvent(v ReservationCancelledEvent
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.cancelled"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.cancelled"}`))
 	t.union = b
 	return err
 }
@@ -11838,7 +12803,7 @@ func (t *WebhookEvent) MergeReservationCancelledEvent(v ReservationCancelledEven
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.cancelled"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.cancelled"}`))
 	if err != nil {
 		return err
 	}
@@ -11861,7 +12826,7 @@ func (t *WebhookEvent) FromReservationMessageReceivedEvent(v ReservationMessageR
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.message.received"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.received"}`))
 	t.union = b
 	return err
 }
@@ -11872,7 +12837,7 @@ func (t *WebhookEvent) MergeReservationMessageReceivedEvent(v ReservationMessage
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.message.received"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.received"}`))
 	if err != nil {
 		return err
 	}
@@ -11895,7 +12860,7 @@ func (t *WebhookEvent) FromReservationAlterationCreatedEvent(v ReservationAltera
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.alteration.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.alteration.created"}`))
 	t.union = b
 	return err
 }
@@ -11906,7 +12871,7 @@ func (t *WebhookEvent) MergeReservationAlterationCreatedEvent(v ReservationAlter
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.alteration.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.alteration.created"}`))
 	if err != nil {
 		return err
 	}
@@ -11929,7 +12894,7 @@ func (t *WebhookEvent) FromReservationAlterationRespondedEvent(v ReservationAlte
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.alteration.responded"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.alteration.responded"}`))
 	t.union = b
 	return err
 }
@@ -11940,7 +12905,7 @@ func (t *WebhookEvent) MergeReservationAlterationRespondedEvent(v ReservationAlt
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"reservation.alteration.responded"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.alteration.responded"}`))
 	if err != nil {
 		return err
 	}
@@ -11963,7 +12928,7 @@ func (t *WebhookEvent) FromListingCreatedEvent(v ListingCreatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"listing.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.created"}`))
 	t.union = b
 	return err
 }
@@ -11974,7 +12939,7 @@ func (t *WebhookEvent) MergeListingCreatedEvent(v ListingCreatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"listing.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.created"}`))
 	if err != nil {
 		return err
 	}
@@ -11997,7 +12962,7 @@ func (t *WebhookEvent) FromListingUpdatedEvent(v ListingUpdatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"listing.updated"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.updated"}`))
 	t.union = b
 	return err
 }
@@ -12008,7 +12973,7 @@ func (t *WebhookEvent) MergeListingUpdatedEvent(v ListingUpdatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"listing.updated"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.updated"}`))
 	if err != nil {
 		return err
 	}
@@ -12031,7 +12996,7 @@ func (t *WebhookEvent) FromListingDeletedEvent(v ListingDeletedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"listing.deleted"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.deleted"}`))
 	t.union = b
 	return err
 }
@@ -12042,7 +13007,7 @@ func (t *WebhookEvent) MergeListingDeletedEvent(v ListingDeletedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"listing.deleted"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.deleted"}`))
 	if err != nil {
 		return err
 	}
@@ -12065,7 +13030,7 @@ func (t *WebhookEvent) FromCalendarUpdatedEvent(v CalendarUpdatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"calendar.updated"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"calendar.updated"}`))
 	t.union = b
 	return err
 }
@@ -12076,7 +13041,7 @@ func (t *WebhookEvent) MergeCalendarUpdatedEvent(v CalendarUpdatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"calendar.updated"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"calendar.updated"}`))
 	if err != nil {
 		return err
 	}
@@ -12099,7 +13064,7 @@ func (t *WebhookEvent) FromAccountCreatedEvent(v AccountCreatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"account.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.created"}`))
 	t.union = b
 	return err
 }
@@ -12110,7 +13075,7 @@ func (t *WebhookEvent) MergeAccountCreatedEvent(v AccountCreatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"account.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.created"}`))
 	if err != nil {
 		return err
 	}
@@ -12133,7 +13098,7 @@ func (t *WebhookEvent) FromAccountDisconnectedEvent(v AccountDisconnectedEvent) 
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"account.disconnected"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.disconnected"}`))
 	t.union = b
 	return err
 }
@@ -12144,7 +13109,7 @@ func (t *WebhookEvent) MergeAccountDisconnectedEvent(v AccountDisconnectedEvent)
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"account.disconnected"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.disconnected"}`))
 	if err != nil {
 		return err
 	}
@@ -12167,7 +13132,7 @@ func (t *WebhookEvent) FromReviewCreatedEvent(v ReviewCreatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"review.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"review.created"}`))
 	t.union = b
 	return err
 }
@@ -12178,7 +13143,7 @@ func (t *WebhookEvent) MergeReviewCreatedEvent(v ReviewCreatedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"review.created"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"review.created"}`))
 	if err != nil {
 		return err
 	}
@@ -12201,7 +13166,7 @@ func (t *WebhookEvent) FromReviewRespondedEvent(v ReviewRespondedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"review.responded"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"review.responded"}`))
 	t.union = b
 	return err
 }
@@ -12212,7 +13177,7 @@ func (t *WebhookEvent) MergeReviewRespondedEvent(v ReviewRespondedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"review.responded"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"review.responded"}`))
 	if err != nil {
 		return err
 	}
@@ -12235,7 +13200,7 @@ func (t *WebhookEvent) FromAiOperationCompletedEvent(v AiOperationCompletedEvent
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"ai.operation.completed"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"ai.operation.completed"}`))
 	t.union = b
 	return err
 }
@@ -12246,7 +13211,7 @@ func (t *WebhookEvent) MergeAiOperationCompletedEvent(v AiOperationCompletedEven
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"ai.operation.completed"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"ai.operation.completed"}`))
 	if err != nil {
 		return err
 	}
@@ -12269,7 +13234,7 @@ func (t *WebhookEvent) FromAiOperationFailedEvent(v AiOperationFailedEvent) erro
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"ai.operation.failed"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"ai.operation.failed"}`))
 	t.union = b
 	return err
 }
@@ -12280,7 +13245,7 @@ func (t *WebhookEvent) MergeAiOperationFailedEvent(v AiOperationFailedEvent) err
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"ai.operation.failed"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"ai.operation.failed"}`))
 	if err != nil {
 		return err
 	}
@@ -12303,7 +13268,7 @@ func (t *WebhookEvent) FromPaymentCompletedEvent(v PaymentCompletedEvent) error 
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"payment.completed"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"payment.completed"}`))
 	t.union = b
 	return err
 }
@@ -12314,7 +13279,7 @@ func (t *WebhookEvent) MergePaymentCompletedEvent(v PaymentCompletedEvent) error
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"payment.completed"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"payment.completed"}`))
 	if err != nil {
 		return err
 	}
@@ -12337,7 +13302,7 @@ func (t *WebhookEvent) FromPaymentRefundedEvent(v PaymentRefundedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"payment.refunded"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"payment.refunded"}`))
 	t.union = b
 	return err
 }
@@ -12348,7 +13313,7 @@ func (t *WebhookEvent) MergePaymentRefundedEvent(v PaymentRefundedEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"payment.refunded"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"payment.refunded"}`))
 	if err != nil {
 		return err
 	}
@@ -12371,7 +13336,7 @@ func (t *WebhookEvent) FromRepullPingEvent(v RepullPingEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"repull.ping"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"repull.ping"}`))
 	t.union = b
 	return err
 }
@@ -12382,7 +13347,41 @@ func (t *WebhookEvent) MergeRepullPingEvent(v RepullPingEvent) error {
 	if err != nil {
 		return err
 	}
-	b, err = runtime.JSONMerge(b, []byte(`{"type":"repull.ping"}`))
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"repull.ping"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUsageQuotaWarningEvent returns the union data inside the WebhookEvent as a UsageQuotaWarningEvent
+func (t WebhookEvent) AsUsageQuotaWarningEvent() (UsageQuotaWarningEvent, error) {
+	var body UsageQuotaWarningEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUsageQuotaWarningEvent overwrites any union data inside the WebhookEvent as the provided UsageQuotaWarningEvent
+func (t *WebhookEvent) FromUsageQuotaWarningEvent(v UsageQuotaWarningEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"usage.quota.warning"}`))
+	t.union = b
+	return err
+}
+
+// MergeUsageQuotaWarningEvent performs a merge with any union data inside the WebhookEvent, using the provided UsageQuotaWarningEvent
+func (t *WebhookEvent) MergeUsageQuotaWarningEvent(v UsageQuotaWarningEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"usage.quota.warning"}`))
 	if err != nil {
 		return err
 	}
@@ -12394,7 +13393,7 @@ func (t *WebhookEvent) MergeRepullPingEvent(v RepullPingEvent) error {
 
 func (t WebhookEvent) Discriminator() (string, error) {
 	var discriminator struct {
-		Discriminator string `json:"type"`
+		Discriminator string `json:"event"`
 	}
 	err := json.Unmarshal(t.union, &discriminator)
 	return discriminator.Discriminator, err
@@ -12444,6 +13443,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsReviewCreatedEvent()
 	case "review.responded":
 		return t.AsReviewRespondedEvent()
+	case "usage.quota.warning":
+		return t.AsUsageQuotaWarningEvent()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}
