@@ -10,6 +10,8 @@ func TestRenamedEnumAliasesKeepValues(t *testing.T) {
 		string(Availability):   "availability",
 		string(DerivedPricing): "derived-pricing",
 		string(Rates):          "rates",
+		string(Offer):          "offer",
+		string(Preapproval):    "preapproval",
 	}
 	for got, want := range cases {
 		if got != want {
@@ -18,6 +20,7 @@ func TestRenamedEnumAliasesKeepValues(t *testing.T) {
 	}
 	var _ CreateConnectionJSONBodyAccessType = FullAccess
 	var _ BookingAvailabilityUpdateRequestType = Rates
+	var _ CreateAirbnbOfferJSONBodyType = Preapproval
 }
 
 func TestRenamedAlterationRequestAliasStillCompiles(t *testing.T) {

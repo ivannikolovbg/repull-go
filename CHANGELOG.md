@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.2.14 — 2026-09-22
+
+### Additive
+
+- **Regenerated against the live spec (191 → 199 operations, nothing removed).**
+  - `ListInquiries` — `GET /v1/inquiries` (`Status` defaults to `open`; `all` for every state; `ListingId`, `ConversationId`, cursor pagination).
+  - `PreapproveConversation` — `POST /v1/conversations/{id}/pre-approval` (optional `BlockInstantBooking`).
+  - `CreateConversationSpecialOffer` / `GetConversationSpecialOffer` / `WithdrawConversationSpecialOffer` — `POST`/`GET`/`DELETE /v1/conversations/{id}/special-offers[/{offerId}]`.
+  - `GetAirbnbOffer` — `GET /v1/channels/airbnb/offers?offerId=` (live Airbnb read by Airbnb id).
+  - `AcceptReservationRequest` / `DeclineReservationRequest` — `POST /v1/reservations/{id}/accept|decline` for a pending Airbnb booking request.
+- **Message attachments.** `SendMessageRequest.Attachments` (`[]SendMessageAttachment`, 1–5 files by public `https://` URL) on `SendConversationMessage`; the response echoes `SentAttachment`s.
+- **Webhooks.** `WebhookEventTypeReservationRequestCreated`, `WebhookEventTypeReservationRequestUpdated`, `WebhookEventTypeInquiryCreated`, `WebhookEventTypeInquiryUpdated`, with `ReservationRequestCreatedEvent`, `ReservationRequestUpdatedEvent`, `InquiryCreatedEvent`, `InquiryUpdatedEvent` and `InquiryWebhookObject`.
+- `Reservation` gains `StatusDetail` (`request_expired`) and `RespondBy`.
+
+### Compatibility
+
+- `CreateAirbnbOfferJSONBody` now declares the full offer shape (`ListingId`, `StartDate`, `Nights`, `TotalPrice`, `GuestDetails`) and uses the snake_case wire names the endpoint documents; it no longer carries `AdditionalProperties`.
+- The short enum constants `Offer` / `Preapproval` were renamed by the generator to `CreateAirbnbOfferJSONBodyTypeOffer` / `...Preapproval`; deprecated aliases in `compat.go` keep the old names compiling.
+
 ## v0.2.13 — 2026-09-18
 
 ### Additive

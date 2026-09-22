@@ -1099,16 +1099,24 @@ type ClientInterface interface {
 
 	// ListAirbnbThreadMessages Get Airbnb messages
 	//
-	// Fetch the full message log for an Airbnb thread, ordered oldest-to-newest. Walk pages with `?cursor=` until `pagination.hasMore` is `false`.
+	// Messages stored for an Airbnb thread, as recorded rows (not the unified `Message` shape — use `GET /v1/conversations/{id}/messages` for that). By default returns 50 per page, newest first; walk older pages with `?cursor=` (the `pagination.nextCursor` of the previous page) until `pagination.hasMore` is `false`. `?all=true` returns up to 1000 rows oldest-first in one response, with no `pagination`.
+	//
+	// Each row carries `attachments` — photos and other files on that message, inbound or outbound — in the same shape as the unified endpoint.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/airbnb/messaging/{threadId}/messages (the `ListAirbnbThreadMessages` operationId).
-	ListAirbnbThreadMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListAirbnbThreadMessages(ctx context.Context, threadId string, params *ListAirbnbThreadMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SendAirbnbMessageWithBody Send Airbnb message
 	//
 	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+	//
+	// ### Sending a photo or video (`mediaUrl`)
+	//
+	// Airbnb only accepts media uploaded to a signed URL it issues, one file per message and no text on the same message. With `mediaUrl`, Repull downloads the file (public `https://` only, 10 MB max), reads its real type from the bytes (JPEG, PNG, GIF, WebP — converted to JPEG — or MP4/QuickTime), uploads it to Airbnb and sends it; `message`, if given, follows as a separate message. This is the same flow as `POST /v1/conversations/{id}/messages` with `attachments` — prefer that endpoint, which also takes several files per request. The response is a `SendMessageResponse`, the send is recorded in the conversation, and failures are the 422 codes documented there (`attachment_type_not_supported`, `attachment_too_large`, `message_not_sent` for a pre-booking thread, …). The thread must already be synced to Repull (`GET /v1/conversations` lists them), otherwise `404`.
+	//
+	// Text-only sends (no `mediaUrl`) go straight to Airbnb and return Airbnb's message object.
 	//
 	// The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 	//
@@ -1122,6 +1130,12 @@ type ClientInterface interface {
 	// SendAirbnbMessage Send Airbnb message
 	//
 	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+	//
+	// ### Sending a photo or video (`mediaUrl`)
+	//
+	// Airbnb only accepts media uploaded to a signed URL it issues, one file per message and no text on the same message. With `mediaUrl`, Repull downloads the file (public `https://` only, 10 MB max), reads its real type from the bytes (JPEG, PNG, GIF, WebP — converted to JPEG — or MP4/QuickTime), uploads it to Airbnb and sends it; `message`, if given, follows as a separate message. This is the same flow as `POST /v1/conversations/{id}/messages` with `attachments` — prefer that endpoint, which also takes several files per request. The response is a `SendMessageResponse`, the send is recorded in the conversation, and failures are the 422 codes documented there (`attachment_type_not_supported`, `attachment_too_large`, `message_not_sent` for a pre-booking thread, …). The thread must already be synced to Repull (`GET /v1/conversations` lists them), otherwise `404`.
+	//
+	// Text-only sends (no `mediaUrl`) go straight to Airbnb and return Airbnb's message object.
 	//
 	// The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 	//
@@ -1170,42 +1184,57 @@ type ClientInterface interface {
 
 	// WithdrawAirbnbOffer Withdraw Airbnb special offer
 	//
-	// Withdraw a previously-created Airbnb special offer. **Write-side** — calls Airbnb upstream. Pass the offer id as `?offerId=`. Requires a connected Airbnb host, else `404 no_connection`.
+	// Withdraw a special offer the guest has not booked. **Write-side** — calls Airbnb upstream. Pass the Airbnb offer id as `?offerId=`. The Repull-id equivalent is `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
 	//
 	// Corresponds with DELETE /v1/channels/airbnb/offers (the `WithdrawAirbnbOffer` operationId).
 	WithdrawAirbnbOffer(ctx context.Context, params *WithdrawAirbnbOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetAirbnbOffer Get Airbnb special offer
+	//
+	// Read a pre-approval or special offer from Airbnb by its Airbnb id. **Live read** — calls Airbnb upstream. Pass the id as `?offerId=`. The Repull-id equivalent is `GET /v1/conversations/{id}/special-offers/{offerId}`, which also confirms the offer belongs to that conversation.
+	//
+	// Corresponds with GET /v1/channels/airbnb/offers (the `GetAirbnbOffer` operationId).
+	GetAirbnbOffer(ctx context.Context, params *GetAirbnbOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateAirbnbOfferWithBody Create Airbnb special offer or pre-approval
 	//
-	// Create a special offer or a pre-approval on Airbnb. **Write-side** — calls Airbnb upstream. The `type` discriminator selects the flavour:
+	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 	//
-	// - `offer` — a special offer with custom terms (the remaining body fields are the offer params).
-	// - `preapproval` — pre-approve an inquiry thread (requires `threadId`; optional `blockInstantBooking`).
+	// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
+	// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
 	//
-	// Requires a connected Airbnb host, else `404 no_connection`.
+	// The body is validated before anything reaches Airbnb (a `422 invalid_params` names the field), and unknown fields are refused. The legacy spellings `threadId` and `blockInstantBooking` still work. The request is sent as the Airbnb account that owns the thread or listing.
+	//
+	// Airbnb refusals are mapped rather than returned as a 500: `409 inquiry_no_longer_open` / `inquiry_expired` when the inquiry moved on, `422 airbnb_rejected` with Airbnb’s reason otherwise, `403 connection_reauth_required` when the grant does not allow it.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
-	CreateAirbnbOfferWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateAirbnbOfferWithBody(ctx context.Context, params *CreateAirbnbOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateAirbnbOffer Create Airbnb special offer or pre-approval
 	//
-	// Create a special offer or a pre-approval on Airbnb. **Write-side** — calls Airbnb upstream. The `type` discriminator selects the flavour:
+	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 	//
-	// - `offer` — a special offer with custom terms (the remaining body fields are the offer params).
-	// - `preapproval` — pre-approve an inquiry thread (requires `threadId`; optional `blockInstantBooking`).
+	// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
+	// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
 	//
-	// Requires a connected Airbnb host, else `404 no_connection`.
+	// The body is validated before anything reaches Airbnb (a `422 invalid_params` names the field), and unknown fields are refused. The legacy spellings `threadId` and `blockInstantBooking` still work. The request is sent as the Airbnb account that owns the thread or listing.
+	//
+	// Airbnb refusals are mapped rather than returned as a 500: `409 inquiry_no_longer_open` / `inquiry_expired` when the inquiry moved on, `422 airbnb_rejected` with Airbnb’s reason otherwise, `403 connection_reauth_required` when the grant does not allow it.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
-	CreateAirbnbOffer(ctx context.Context, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateAirbnbOffer(ctx context.Context, params *CreateAirbnbOfferParams, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbReservations List Airbnb reservations
 	//
@@ -1233,14 +1262,47 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/channels/airbnb/reservations/{code} (the `GetAirbnbReservation` operationId).
 	GetAirbnbReservation(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AirbnbReservationAction Accept/decline/cancel Airbnb reservation
+	// AirbnbReservationActionWithBody Accept, decline or cancel an Airbnb reservation
 	//
-	// Apply a state action to an Airbnb reservation — `accept` / `decline` (for inquiries and reservation requests), `cancel` (host cancellation, carries penalties), `pre-approve` (for inquiries).
+	// Act on an Airbnb reservation by its Airbnb confirmation code. **Write-side** — calls Airbnb upstream, as the Airbnb account that owns the booking.
+	//
+	// - `accept` — accept a pending booking request.
+	// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
+	// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
+	//
+	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+	//
+	// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes any type of body and a specified content type.
+	//
 	// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
-	AirbnbReservationAction(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AirbnbReservationActionWithBody(ctx context.Context, code string, params *AirbnbReservationActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AirbnbReservationAction Accept, decline or cancel an Airbnb reservation
+	//
+	// Act on an Airbnb reservation by its Airbnb confirmation code. **Write-side** — calls Airbnb upstream, as the Airbnb account that owns the booking.
+	//
+	// - `accept` — accept a pending booking request.
+	// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
+	// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
+	//
+	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+	//
+	// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
+	AirbnbReservationAction(ctx context.Context, code string, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbReviews List Airbnb reviews
 	//
@@ -1539,7 +1601,9 @@ type ClientInterface interface {
 
 	// SendBookingMessageWithBody Send Booking.com message
 	//
-	// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	// Send a text message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	//
+	// **Text only.** To send photos, use `POST /v1/conversations/{id}/messages` with `attachments` (JPEG or PNG, up to 10 MB each, with message text) — it uploads the files to Booking.com and records them in the conversation. Passing `attachments`, `attachment_ids` or `mediaUrl` here returns `422 attachments_not_supported` and sends nothing.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -1552,7 +1616,9 @@ type ClientInterface interface {
 
 	// SendBookingMessage Send Booking.com message
 	//
-	// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	// Send a text message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	//
+	// **Text only.** To send photos, use `POST /v1/conversations/{id}/messages` with `attachments` (JPEG or PNG, up to 10 MB each, with message text) — it uploads the files to Booking.com and records them in the conversation. Passing `attachments`, `attachment_ids` or `mediaUrl` here returns `422 attachments_not_supported` and sends nothing.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -2362,6 +2428,20 @@ type ClientInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// ### Attachments
+	//
+	// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
+	//
+	// | Channel | Accepted types | Text | How it arrives |
+	// |---|---|---|---|
+	// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
+	// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
+	// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+	//
+	// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
+	//
+	// The response's `attachments` lists each file's durable `url`, and `parts` lists every channel message the send produced. Read-back (`GET /v1/conversations/{id}/messages`) shows the same files in each message's `attachments`.
+	//
 	// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 	//
 	// Takes any type of body and a specified content type.
@@ -2385,12 +2465,120 @@ type ClientInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// ### Attachments
+	//
+	// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
+	//
+	// | Channel | Accepted types | Text | How it arrives |
+	// |---|---|---|---|
+	// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
+	// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
+	// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+	//
+	// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
+	//
+	// The response's `attachments` lists each file's durable `url`, and `parts` lists every channel message the send produced. Read-back (`GET /v1/conversations/{id}/messages`) shows the same files in each message's `attachments`.
+	//
 	// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
 	SendConversationMessage(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PreapproveConversationWithBody Pre-approve an inquiry
+	//
+	// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+	//
+	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+	//
+	// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+	//
+	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
+	PreapproveConversationWithBody(ctx context.Context, id int, params *PreapproveConversationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PreapproveConversation Pre-approve an inquiry
+	//
+	// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+	//
+	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+	//
+	// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+	//
+	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
+	PreapproveConversation(ctx context.Context, id int, params *PreapproveConversationParams, body PreapproveConversationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateConversationSpecialOfferWithBody Send a special offer
+	//
+	// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+	//
+	// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+	//
+	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+	//
+	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
+	//
+	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
+	CreateConversationSpecialOfferWithBody(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateConversationSpecialOffer Send a special offer
+	//
+	// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+	//
+	// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+	//
+	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+	//
+	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
+	//
+	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
+	CreateConversationSpecialOffer(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, body CreateConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// WithdrawConversationSpecialOffer Withdraw a special offer
+	//
+	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. Runs the same action as the Vanio dashboard’s Withdraw offer. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+	//
+	// Corresponds with DELETE /v1/conversations/{id}/special-offers/{offerId} (the `WithdrawConversationSpecialOffer` operationId).
+	WithdrawConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetConversationSpecialOffer Get a special offer
+	//
+	// Read a special offer on this conversation back from Airbnb — typically to check its `status` (`active` until the guest books it, it expires, or you withdraw it). Read live from Airbnb with the conversation’s own Airbnb account.
+	//
+	// Corresponds with GET /v1/conversations/{id}/special-offers/{offerId} (the `GetConversationSpecialOffer` operationId).
+	GetConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListGuests List guests
 	//
@@ -2485,6 +2673,19 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/health/webhooks (the `GetWebhooksHealth` operationId).
 	GetWebhooksHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListInquiries List inquiries
+	//
+	// Airbnb inquiries — guests asking about dates before booking — newest first. By default only `open` ones: nobody has answered and the stay is still ahead. Answer one with `POST /v1/conversations/{conversationId}/pre-approval` (accept their dates and price) or `POST /v1/conversations/{conversationId}/special-offers` (your own terms).
+	//
+	// Booking **requests** are not inquiries: they are reservations with status `pending` — list them with `GET /v1/reservations?status=pending` and answer with `POST /v1/reservations/{id}/accept` or `/decline`.
+	//
+	// **Pagination:** pass `pagination.nextCursor` back as `?cursor=` until `pagination.hasMore` is `false`. `?offset=` also works (0..10000). `limit` defaults to 50, max 100.
+	//
+	// Inquiries on inactive listings are left out; `?listing_id=` naming an inactive listing returns `403 listing_inactive`. `X-Account-Id` narrows to one connected account.
+	//
+	// Corresponds with GET /v1/inquiries (the `ListInquiries` operationId).
+	ListInquiries(ctx context.Context, params *ListInquiriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ClearKv Clear KV entries by prefix
 	//
@@ -3210,6 +3411,51 @@ type ClientInterface interface {
 	//
 	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
 	UpdateReservation(ctx context.Context, id int, params *UpdateReservationParams, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AcceptReservationRequest Accept a booking request
+	//
+	// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
+	//
+	// Runs the same action as the Vanio dashboard’s Accept button. Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+	//
+	// Takes no body.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Corresponds with POST /v1/reservations/{id}/accept (the `AcceptReservationRequest` operationId).
+	AcceptReservationRequest(ctx context.Context, id int, params *AcceptReservationRequestParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeclineReservationRequestWithBody Decline a booking request
+	//
+	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+	//
+	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+	//
+	// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/reservations/{id}/decline (the `DeclineReservationRequest` operationId).
+	DeclineReservationRequestWithBody(ctx context.Context, id int, params *DeclineReservationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeclineReservationRequest Decline a booking request
+	//
+	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+	//
+	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+	//
+	// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/reservations/{id}/decline (the `DeclineReservationRequest` operationId).
+	DeclineReservationRequest(ctx context.Context, id int, params *DeclineReservationRequestParams, body DeclineReservationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListReviews List reviews
 	//
@@ -5210,13 +5456,15 @@ func (c *Client) GetAirbnbThread(ctx context.Context, threadId string, reqEditor
 
 // ListAirbnbThreadMessages Get Airbnb messages
 //
-// Fetch the full message log for an Airbnb thread, ordered oldest-to-newest. Walk pages with `?cursor=` until `pagination.hasMore` is `false`.
+// Messages stored for an Airbnb thread, as recorded rows (not the unified `Message` shape — use `GET /v1/conversations/{id}/messages` for that). By default returns 50 per page, newest first; walk older pages with `?cursor=` (the `pagination.nextCursor` of the previous page) until `pagination.hasMore` is `false`. `?all=true` returns up to 1000 rows oldest-first in one response, with no `pagination`.
+//
+// Each row carries `attachments` — photos and other files on that message, inbound or outbound — in the same shape as the unified endpoint.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/airbnb/messaging/{threadId}/messages (the `ListAirbnbThreadMessages` operationId).
-func (c *Client) ListAirbnbThreadMessages(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListAirbnbThreadMessagesRequest(c.Server, threadId)
+func (c *Client) ListAirbnbThreadMessages(ctx context.Context, threadId string, params *ListAirbnbThreadMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbThreadMessagesRequest(c.Server, threadId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -5230,6 +5478,12 @@ func (c *Client) ListAirbnbThreadMessages(ctx context.Context, threadId string, 
 // SendAirbnbMessageWithBody Send Airbnb message
 //
 // Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+//
+// ### Sending a photo or video (`mediaUrl`)
+//
+// Airbnb only accepts media uploaded to a signed URL it issues, one file per message and no text on the same message. With `mediaUrl`, Repull downloads the file (public `https://` only, 10 MB max), reads its real type from the bytes (JPEG, PNG, GIF, WebP — converted to JPEG — or MP4/QuickTime), uploads it to Airbnb and sends it; `message`, if given, follows as a separate message. This is the same flow as `POST /v1/conversations/{id}/messages` with `attachments` — prefer that endpoint, which also takes several files per request. The response is a `SendMessageResponse`, the send is recorded in the conversation, and failures are the 422 codes documented there (`attachment_type_not_supported`, `attachment_too_large`, `message_not_sent` for a pre-booking thread, …). The thread must already be synced to Repull (`GET /v1/conversations` lists them), otherwise `404`.
+//
+// Text-only sends (no `mediaUrl`) go straight to Airbnb and return Airbnb's message object.
 //
 // The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 //
@@ -5253,6 +5507,12 @@ func (c *Client) SendAirbnbMessageWithBody(ctx context.Context, threadId string,
 // SendAirbnbMessage Send Airbnb message
 //
 // Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+//
+// ### Sending a photo or video (`mediaUrl`)
+//
+// Airbnb only accepts media uploaded to a signed URL it issues, one file per message and no text on the same message. With `mediaUrl`, Repull downloads the file (public `https://` only, 10 MB max), reads its real type from the bytes (JPEG, PNG, GIF, WebP — converted to JPEG — or MP4/QuickTime), uploads it to Airbnb and sends it; `message`, if given, follows as a separate message. This is the same flow as `POST /v1/conversations/{id}/messages` with `attachments` — prefer that endpoint, which also takes several files per request. The response is a `SendMessageResponse`, the send is recorded in the conversation, and failures are the 422 codes documented there (`attachment_type_not_supported`, `attachment_too_large`, `message_not_sent` for a pre-booking thread, …). The thread must already be synced to Repull (`GET /v1/conversations` lists them), otherwise `404`.
+//
+// Text-only sends (no `mediaUrl`) go straight to Airbnb and return Airbnb's message object.
 //
 // The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 //
@@ -5331,7 +5591,7 @@ func (c *Client) UpdateAirbnbMessage(ctx context.Context, threadId string, messa
 
 // WithdrawAirbnbOffer Withdraw Airbnb special offer
 //
-// Withdraw a previously-created Airbnb special offer. **Write-side** — calls Airbnb upstream. Pass the offer id as `?offerId=`. Requires a connected Airbnb host, else `404 no_connection`.
+// Withdraw a special offer the guest has not booked. **Write-side** — calls Airbnb upstream. Pass the Airbnb offer id as `?offerId=`. The Repull-id equivalent is `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
 //
 // Corresponds with DELETE /v1/channels/airbnb/offers (the `WithdrawAirbnbOffer` operationId).
 func (c *Client) WithdrawAirbnbOffer(ctx context.Context, params *WithdrawAirbnbOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -5346,22 +5606,43 @@ func (c *Client) WithdrawAirbnbOffer(ctx context.Context, params *WithdrawAirbnb
 	return c.Client.Do(req)
 }
 
+// GetAirbnbOffer Get Airbnb special offer
+//
+// Read a pre-approval or special offer from Airbnb by its Airbnb id. **Live read** — calls Airbnb upstream. Pass the id as `?offerId=`. The Repull-id equivalent is `GET /v1/conversations/{id}/special-offers/{offerId}`, which also confirms the offer belongs to that conversation.
+//
+// Corresponds with GET /v1/channels/airbnb/offers (the `GetAirbnbOffer` operationId).
+func (c *Client) GetAirbnbOffer(ctx context.Context, params *GetAirbnbOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbOfferRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // CreateAirbnbOfferWithBody Create Airbnb special offer or pre-approval
 //
-// Create a special offer or a pre-approval on Airbnb. **Write-side** — calls Airbnb upstream. The `type` discriminator selects the flavour:
+// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 //
-// - `offer` — a special offer with custom terms (the remaining body fields are the offer params).
-// - `preapproval` — pre-approve an inquiry thread (requires `threadId`; optional `blockInstantBooking`).
+// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
+// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
 //
-// Requires a connected Airbnb host, else `404 no_connection`.
+// The body is validated before anything reaches Airbnb (a `422 invalid_params` names the field), and unknown fields are refused. The legacy spellings `threadId` and `blockInstantBooking` still work. The request is sent as the Airbnb account that owns the thread or listing.
+//
+// Airbnb refusals are mapped rather than returned as a 500: `409 inquiry_no_longer_open` / `inquiry_expired` when the inquiry moved on, `422 airbnb_rejected` with Airbnb’s reason otherwise, `403 connection_reauth_required` when the grant does not allow it.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
-func (c *Client) CreateAirbnbOfferWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateAirbnbOfferRequestWithBody(c.Server, contentType, body)
+func (c *Client) CreateAirbnbOfferWithBody(ctx context.Context, params *CreateAirbnbOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbOfferRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5374,20 +5655,24 @@ func (c *Client) CreateAirbnbOfferWithBody(ctx context.Context, contentType stri
 
 // CreateAirbnbOffer Create Airbnb special offer or pre-approval
 //
-// Create a special offer or a pre-approval on Airbnb. **Write-side** — calls Airbnb upstream. The `type` discriminator selects the flavour:
+// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 //
-// - `offer` — a special offer with custom terms (the remaining body fields are the offer params).
-// - `preapproval` — pre-approve an inquiry thread (requires `threadId`; optional `blockInstantBooking`).
+// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
+// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
 //
-// Requires a connected Airbnb host, else `404 no_connection`.
+// The body is validated before anything reaches Airbnb (a `422 invalid_params` names the field), and unknown fields are refused. The legacy spellings `threadId` and `blockInstantBooking` still work. The request is sent as the Airbnb account that owns the thread or listing.
+//
+// Airbnb refusals are mapped rather than returned as a 500: `409 inquiry_no_longer_open` / `inquiry_expired` when the inquiry moved on, `422 airbnb_rejected` with Airbnb’s reason otherwise, `403 connection_reauth_required` when the grant does not allow it.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
-func (c *Client) CreateAirbnbOffer(ctx context.Context, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateAirbnbOfferRequest(c.Server, body)
+func (c *Client) CreateAirbnbOffer(ctx context.Context, params *CreateAirbnbOfferParams, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAirbnbOfferRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5444,15 +5729,58 @@ func (c *Client) GetAirbnbReservation(ctx context.Context, code string, reqEdito
 	return c.Client.Do(req)
 }
 
-// AirbnbReservationAction Accept/decline/cancel Airbnb reservation
+// AirbnbReservationActionWithBody Accept, decline or cancel an Airbnb reservation
 //
-// Apply a state action to an Airbnb reservation — `accept` / `decline` (for inquiries and reservation requests), `cancel` (host cancellation, carries penalties), `pre-approve` (for inquiries).
+// Act on an Airbnb reservation by its Airbnb confirmation code. **Write-side** — calls Airbnb upstream, as the Airbnb account that owns the booking.
+//
+// - `accept` — accept a pending booking request.
+// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
+// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
+//
+// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+//
+// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes any type of body and a specified content type.
+//
 // Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
-func (c *Client) AirbnbReservationAction(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAirbnbReservationActionRequest(c.Server, code)
+func (c *Client) AirbnbReservationActionWithBody(ctx context.Context, code string, params *AirbnbReservationActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAirbnbReservationActionRequestWithBody(c.Server, code, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// AirbnbReservationAction Accept, decline or cancel an Airbnb reservation
+//
+// Act on an Airbnb reservation by its Airbnb confirmation code. **Write-side** — calls Airbnb upstream, as the Airbnb account that owns the booking.
+//
+// - `accept` — accept a pending booking request.
+// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
+// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
+//
+// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+//
+// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
+func (c *Client) AirbnbReservationAction(ctx context.Context, code string, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAirbnbReservationActionRequest(c.Server, code, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5969,7 +6297,9 @@ func (c *Client) ListBookingConversations(ctx context.Context, reqEditors ...Req
 
 // SendBookingMessageWithBody Send Booking.com message
 //
-// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+// Send a text message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+//
+// **Text only.** To send photos, use `POST /v1/conversations/{id}/messages` with `attachments` (JPEG or PNG, up to 10 MB each, with message text) — it uploads the files to Booking.com and records them in the conversation. Passing `attachments`, `attachment_ids` or `mediaUrl` here returns `422 attachments_not_supported` and sends nothing.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -5992,7 +6322,9 @@ func (c *Client) SendBookingMessageWithBody(ctx context.Context, contentType str
 
 // SendBookingMessage Send Booking.com message
 //
-// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+// Send a text message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+//
+// **Text only.** To send photos, use `POST /v1/conversations/{id}/messages` with `attachments` (JPEG or PNG, up to 10 MB each, with message text) — it uploads the files to Booking.com and records them in the conversation. Passing `attachments`, `attachment_ids` or `mediaUrl` here returns `422 attachments_not_supported` and sends nothing.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -7478,6 +7810,20 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// ### Attachments
+//
+// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
+//
+// | Channel | Accepted types | Text | How it arrives |
+// |---|---|---|---|
+// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
+// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
+// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+//
+// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
+//
+// The response's `attachments` lists each file's durable `url`, and `parts` lists every channel message the send produced. Read-back (`GET /v1/conversations/{id}/messages`) shows the same files in each message's `attachments`.
+//
 // **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 //
 // Takes any type of body and a specified content type.
@@ -7511,6 +7857,20 @@ func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, pa
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// ### Attachments
+//
+// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
+//
+// | Channel | Accepted types | Text | How it arrives |
+// |---|---|---|---|
+// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
+// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
+// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+//
+// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
+//
+// The response's `attachments` lists each file's durable `url`, and `parts` lists every channel message the send produced. Read-back (`GET /v1/conversations/{id}/messages`) shows the same files in each message's `attachments`.
+//
 // **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 //
 // Takes a body of the `application/json` content type.
@@ -7518,6 +7878,160 @@ func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, pa
 // Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
 func (c *Client) SendConversationMessage(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSendConversationMessageRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PreapproveConversationWithBody Pre-approve an inquiry
+//
+// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+//
+// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+//
+// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+//
+// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
+func (c *Client) PreapproveConversationWithBody(ctx context.Context, id int, params *PreapproveConversationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreapproveConversationRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PreapproveConversation Pre-approve an inquiry
+//
+// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+//
+// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+//
+// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+//
+// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
+func (c *Client) PreapproveConversation(ctx context.Context, id int, params *PreapproveConversationParams, body PreapproveConversationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreapproveConversationRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateConversationSpecialOfferWithBody Send a special offer
+//
+// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+//
+// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+//
+// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+//
+// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
+//
+// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
+func (c *Client) CreateConversationSpecialOfferWithBody(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateConversationSpecialOfferRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateConversationSpecialOffer Send a special offer
+//
+// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+//
+// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+//
+// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+//
+// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
+//
+// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
+func (c *Client) CreateConversationSpecialOffer(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, body CreateConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateConversationSpecialOfferRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// WithdrawConversationSpecialOffer Withdraw a special offer
+//
+// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. Runs the same action as the Vanio dashboard’s Withdraw offer. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+//
+// Corresponds with DELETE /v1/conversations/{id}/special-offers/{offerId} (the `WithdrawConversationSpecialOffer` operationId).
+func (c *Client) WithdrawConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewWithdrawConversationSpecialOfferRequest(c.Server, id, offerId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetConversationSpecialOffer Get a special offer
+//
+// Read a special offer on this conversation back from Airbnb — typically to check its `status` (`active` until the guest books it, it expires, or you withdraw it). Read live from Airbnb with the conversation’s own Airbnb account.
+//
+// Corresponds with GET /v1/conversations/{id}/special-offers/{offerId} (the `GetConversationSpecialOffer` operationId).
+func (c *Client) GetConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConversationSpecialOfferRequest(c.Server, id, offerId)
 	if err != nil {
 		return nil, err
 	}
@@ -7712,6 +8226,29 @@ func (c *Client) GetMcpHealth(ctx context.Context, reqEditors ...RequestEditorFn
 // Corresponds with GET /v1/health/webhooks (the `GetWebhooksHealth` operationId).
 func (c *Client) GetWebhooksHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetWebhooksHealthRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListInquiries List inquiries
+//
+// Airbnb inquiries — guests asking about dates before booking — newest first. By default only `open` ones: nobody has answered and the stay is still ahead. Answer one with `POST /v1/conversations/{conversationId}/pre-approval` (accept their dates and price) or `POST /v1/conversations/{conversationId}/special-offers` (your own terms).
+//
+// Booking **requests** are not inquiries: they are reservations with status `pending` — list them with `GET /v1/reservations?status=pending` and answer with `POST /v1/reservations/{id}/accept` or `/decline`.
+//
+// **Pagination:** pass `pagination.nextCursor` back as `?cursor=` until `pagination.hasMore` is `false`. `?offset=` also works (0..10000). `limit` defaults to 50, max 100.
+//
+// Inquiries on inactive listings are left out; `?listing_id=` naming an inactive listing returns `403 listing_inactive`. `X-Account-Id` narrows to one connected account.
+//
+// Corresponds with GET /v1/inquiries (the `ListInquiries` operationId).
+func (c *Client) ListInquiries(ctx context.Context, params *ListInquiriesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListInquiriesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -8977,6 +9514,81 @@ func (c *Client) UpdateReservationWithBody(ctx context.Context, id int, params *
 // Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
 func (c *Client) UpdateReservation(ctx context.Context, id int, params *UpdateReservationParams, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateReservationRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// AcceptReservationRequest Accept a booking request
+//
+// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
+//
+// Runs the same action as the Vanio dashboard’s Accept button. Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+//
+// Takes no body.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Corresponds with POST /v1/reservations/{id}/accept (the `AcceptReservationRequest` operationId).
+func (c *Client) AcceptReservationRequest(ctx context.Context, id int, params *AcceptReservationRequestParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptReservationRequestRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeclineReservationRequestWithBody Decline a booking request
+//
+// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+//
+// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+//
+// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/reservations/{id}/decline (the `DeclineReservationRequest` operationId).
+func (c *Client) DeclineReservationRequestWithBody(ctx context.Context, id int, params *DeclineReservationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeclineReservationRequestRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeclineReservationRequest Decline a booking request
+//
+// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+//
+// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+//
+// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/reservations/{id}/decline (the `DeclineReservationRequest` operationId).
+func (c *Client) DeclineReservationRequest(ctx context.Context, id int, params *DeclineReservationRequestParams, body DeclineReservationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeclineReservationRequestRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -11947,7 +12559,7 @@ func NewGetAirbnbThreadRequest(server string, threadId string) (*http.Request, e
 }
 
 // NewListAirbnbThreadMessagesRequest constructs an http.Request for the ListAirbnbThreadMessages method
-func NewListAirbnbThreadMessagesRequest(server string, threadId string) (*http.Request, error) {
+func NewListAirbnbThreadMessagesRequest(server string, threadId string, params *ListAirbnbThreadMessagesParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -11970,6 +12582,45 @@ func NewListAirbnbThreadMessagesRequest(server string, threadId string) (*http.R
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.All != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "all", *params.All, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -12131,19 +12782,69 @@ func NewWithdrawAirbnbOfferRequest(server string, params *WithdrawAirbnbOfferPar
 	return req, nil
 }
 
+// NewGetAirbnbOfferRequest constructs an http.Request for the GetAirbnbOffer method
+func NewGetAirbnbOfferRequest(server string, params *GetAirbnbOfferParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/offers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offerId", params.OfferId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateAirbnbOfferRequest calls the generic CreateAirbnbOffer builder with application/json body
-func NewCreateAirbnbOfferRequest(server string, body CreateAirbnbOfferJSONRequestBody) (*http.Request, error) {
+func NewCreateAirbnbOfferRequest(server string, params *CreateAirbnbOfferParams, body CreateAirbnbOfferJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateAirbnbOfferRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateAirbnbOfferRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewCreateAirbnbOfferRequestWithBody constructs an http.Request for the CreateAirbnbOffer method, with any body, and a specified content type
-func NewCreateAirbnbOfferRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewCreateAirbnbOfferRequestWithBody(server string, params *CreateAirbnbOfferParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -12167,6 +12868,21 @@ func NewCreateAirbnbOfferRequestWithBody(server string, contentType string, body
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
 
 	return req, nil
 }
@@ -12355,8 +13071,19 @@ func NewGetAirbnbReservationRequest(server string, code string) (*http.Request, 
 	return req, nil
 }
 
-// NewAirbnbReservationActionRequest constructs an http.Request for the AirbnbReservationAction method
-func NewAirbnbReservationActionRequest(server string, code string) (*http.Request, error) {
+// NewAirbnbReservationActionRequest calls the generic AirbnbReservationAction builder with application/json body
+func NewAirbnbReservationActionRequest(server string, code string, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAirbnbReservationActionRequestWithBody(server, code, params, "application/json", bodyReader)
+}
+
+// NewAirbnbReservationActionRequestWithBody constructs an http.Request for the AirbnbReservationAction method, with any body, and a specified content type
+func NewAirbnbReservationActionRequestWithBody(server string, code string, params *AirbnbReservationActionParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -12381,9 +13108,26 @@ func NewAirbnbReservationActionRequest(server string, code string) (*http.Reques
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
 	if err != nil {
 		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
 	}
 
 	return req, nil
@@ -15282,6 +16026,212 @@ func NewSendConversationMessageRequestWithBody(server string, id int, params *Se
 	return req, nil
 }
 
+// NewPreapproveConversationRequest calls the generic PreapproveConversation builder with application/json body
+func NewPreapproveConversationRequest(server string, id int, params *PreapproveConversationParams, body PreapproveConversationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPreapproveConversationRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewPreapproveConversationRequestWithBody constructs an http.Request for the PreapproveConversation method, with any body, and a specified content type
+func NewPreapproveConversationRequestWithBody(server string, id int, params *PreapproveConversationParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s/pre-approval", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewCreateConversationSpecialOfferRequest calls the generic CreateConversationSpecialOffer builder with application/json body
+func NewCreateConversationSpecialOfferRequest(server string, id int, params *CreateConversationSpecialOfferParams, body CreateConversationSpecialOfferJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateConversationSpecialOfferRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewCreateConversationSpecialOfferRequestWithBody constructs an http.Request for the CreateConversationSpecialOffer method, with any body, and a specified content type
+func NewCreateConversationSpecialOfferRequestWithBody(server string, id int, params *CreateConversationSpecialOfferParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s/special-offers", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewWithdrawConversationSpecialOfferRequest constructs an http.Request for the WithdrawConversationSpecialOffer method
+func NewWithdrawConversationSpecialOfferRequest(server string, id int, offerId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "offerId", offerId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s/special-offers/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetConversationSpecialOfferRequest constructs an http.Request for the GetConversationSpecialOffer method
+func NewGetConversationSpecialOfferRequest(server string, id int, offerId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "offerId", offerId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s/special-offers/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListGuestsRequest constructs an http.Request for the ListGuests method
 func NewListGuestsRequest(server string, params *ListGuestsParams) (*http.Request, error) {
 	var err error
@@ -15674,6 +16624,132 @@ func NewGetWebhooksHealthRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListInquiriesRequest constructs an http.Request for the ListInquiries method
+func NewListInquiriesRequest(server string, params *ListInquiriesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/inquiries")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ConversationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "conversation_id", *params.ConversationId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.IncludeTotal != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "include_total", *params.IncludeTotal, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -18371,6 +19447,117 @@ func NewUpdateReservationRequestWithBody(server string, id int, params *UpdateRe
 	return req, nil
 }
 
+// NewAcceptReservationRequestRequest constructs an http.Request for the AcceptReservationRequest method
+func NewAcceptReservationRequestRequest(server string, id int, params *AcceptReservationRequestParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reservations/%s/accept", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewDeclineReservationRequestRequest calls the generic DeclineReservationRequest builder with application/json body
+func NewDeclineReservationRequestRequest(server string, id int, params *DeclineReservationRequestParams, body DeclineReservationRequestJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeclineReservationRequestRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewDeclineReservationRequestRequestWithBody constructs an http.Request for the DeclineReservationRequest method, with any body, and a specified content type
+func NewDeclineReservationRequestRequestWithBody(server string, id int, params *DeclineReservationRequestParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reservations/%s/decline", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewListReviewsRequest constructs an http.Request for the ListReviews method
 func NewListReviewsRequest(server string, params *ListReviewsParams) (*http.Request, error) {
 	var err error
@@ -20684,18 +21871,26 @@ type ClientWithResponsesInterface interface {
 
 	// ListAirbnbThreadMessagesWithResponse Get Airbnb messages
 	//
-	// Fetch the full message log for an Airbnb thread, ordered oldest-to-newest. Walk pages with `?cursor=` until `pagination.hasMore` is `false`.
+	// Messages stored for an Airbnb thread, as recorded rows (not the unified `Message` shape — use `GET /v1/conversations/{id}/messages` for that). By default returns 50 per page, newest first; walk older pages with `?cursor=` (the `pagination.nextCursor` of the previous page) until `pagination.hasMore` is `false`. `?all=true` returns up to 1000 rows oldest-first in one response, with no `pagination`.
+	//
+	// Each row carries `attachments` — photos and other files on that message, inbound or outbound — in the same shape as the unified endpoint.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/messaging/{threadId}/messages (the `ListAirbnbThreadMessages` operationId).
-	ListAirbnbThreadMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*ListAirbnbThreadMessagesClientResponse, error)
+	ListAirbnbThreadMessagesWithResponse(ctx context.Context, threadId string, params *ListAirbnbThreadMessagesParams, reqEditors ...RequestEditorFn) (*ListAirbnbThreadMessagesClientResponse, error)
 
 	// SendAirbnbMessageWithBodyWithResponse Send Airbnb message
 	//
 	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+	//
+	// ### Sending a photo or video (`mediaUrl`)
+	//
+	// Airbnb only accepts media uploaded to a signed URL it issues, one file per message and no text on the same message. With `mediaUrl`, Repull downloads the file (public `https://` only, 10 MB max), reads its real type from the bytes (JPEG, PNG, GIF, WebP — converted to JPEG — or MP4/QuickTime), uploads it to Airbnb and sends it; `message`, if given, follows as a separate message. This is the same flow as `POST /v1/conversations/{id}/messages` with `attachments` — prefer that endpoint, which also takes several files per request. The response is a `SendMessageResponse`, the send is recorded in the conversation, and failures are the 422 codes documented there (`attachment_type_not_supported`, `attachment_too_large`, `message_not_sent` for a pre-booking thread, …). The thread must already be synced to Repull (`GET /v1/conversations` lists them), otherwise `404`.
+	//
+	// Text-only sends (no `mediaUrl`) go straight to Airbnb and return Airbnb's message object.
 	//
 	// The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 	//
@@ -20709,6 +21904,12 @@ type ClientWithResponsesInterface interface {
 	// SendAirbnbMessageWithResponse Send Airbnb message
 	//
 	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+	//
+	// ### Sending a photo or video (`mediaUrl`)
+	//
+	// Airbnb only accepts media uploaded to a signed URL it issues, one file per message and no text on the same message. With `mediaUrl`, Repull downloads the file (public `https://` only, 10 MB max), reads its real type from the bytes (JPEG, PNG, GIF, WebP — converted to JPEG — or MP4/QuickTime), uploads it to Airbnb and sends it; `message`, if given, follows as a separate message. This is the same flow as `POST /v1/conversations/{id}/messages` with `attachments` — prefer that endpoint, which also takes several files per request. The response is a `SendMessageResponse`, the send is recorded in the conversation, and failures are the 422 codes documented there (`attachment_type_not_supported`, `attachment_too_large`, `message_not_sent` for a pre-booking thread, …). The thread must already be synced to Repull (`GET /v1/conversations` lists them), otherwise `404`.
+	//
+	// Text-only sends (no `mediaUrl`) go straight to Airbnb and return Airbnb's message object.
 	//
 	// The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 	//
@@ -20757,44 +21958,61 @@ type ClientWithResponsesInterface interface {
 
 	// WithdrawAirbnbOfferWithResponse Withdraw Airbnb special offer
 	//
-	// Withdraw a previously-created Airbnb special offer. **Write-side** — calls Airbnb upstream. Pass the offer id as `?offerId=`. Requires a connected Airbnb host, else `404 no_connection`.
+	// Withdraw a special offer the guest has not booked. **Write-side** — calls Airbnb upstream. Pass the Airbnb offer id as `?offerId=`. The Repull-id equivalent is `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with DELETE /v1/channels/airbnb/offers (the `WithdrawAirbnbOffer` operationId).
 	WithdrawAirbnbOfferWithResponse(ctx context.Context, params *WithdrawAirbnbOfferParams, reqEditors ...RequestEditorFn) (*WithdrawAirbnbOfferClientResponse, error)
 
+	// GetAirbnbOfferWithResponse Get Airbnb special offer
+	//
+	// Read a pre-approval or special offer from Airbnb by its Airbnb id. **Live read** — calls Airbnb upstream. Pass the id as `?offerId=`. The Repull-id equivalent is `GET /v1/conversations/{id}/special-offers/{offerId}`, which also confirms the offer belongs to that conversation.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/airbnb/offers (the `GetAirbnbOffer` operationId).
+	GetAirbnbOfferWithResponse(ctx context.Context, params *GetAirbnbOfferParams, reqEditors ...RequestEditorFn) (*GetAirbnbOfferClientResponse, error)
+
 	// CreateAirbnbOfferWithBodyWithResponse Create Airbnb special offer or pre-approval
 	//
-	// Create a special offer or a pre-approval on Airbnb. **Write-side** — calls Airbnb upstream. The `type` discriminator selects the flavour:
+	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 	//
-	// - `offer` — a special offer with custom terms (the remaining body fields are the offer params).
-	// - `preapproval` — pre-approve an inquiry thread (requires `threadId`; optional `blockInstantBooking`).
+	// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
+	// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
 	//
-	// Requires a connected Airbnb host, else `404 no_connection`.
+	// The body is validated before anything reaches Airbnb (a `422 invalid_params` names the field), and unknown fields are refused. The legacy spellings `threadId` and `blockInstantBooking` still work. The request is sent as the Airbnb account that owns the thread or listing.
+	//
+	// Airbnb refusals are mapped rather than returned as a 500: `409 inquiry_no_longer_open` / `inquiry_expired` when the inquiry moved on, `422 airbnb_rejected` with Airbnb’s reason otherwise, `403 connection_reauth_required` when the grant does not allow it.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
-	CreateAirbnbOfferWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error)
+	CreateAirbnbOfferWithBodyWithResponse(ctx context.Context, params *CreateAirbnbOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error)
 
 	// CreateAirbnbOfferWithResponse Create Airbnb special offer or pre-approval
 	//
-	// Create a special offer or a pre-approval on Airbnb. **Write-side** — calls Airbnb upstream. The `type` discriminator selects the flavour:
+	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 	//
-	// - `offer` — a special offer with custom terms (the remaining body fields are the offer params).
-	// - `preapproval` — pre-approve an inquiry thread (requires `threadId`; optional `blockInstantBooking`).
+	// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
+	// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
 	//
-	// Requires a connected Airbnb host, else `404 no_connection`.
+	// The body is validated before anything reaches Airbnb (a `422 invalid_params` names the field), and unknown fields are refused. The legacy spellings `threadId` and `blockInstantBooking` still work. The request is sent as the Airbnb account that owns the thread or listing.
+	//
+	// Airbnb refusals are mapped rather than returned as a 500: `409 inquiry_no_longer_open` / `inquiry_expired` when the inquiry moved on, `422 airbnb_rejected` with Airbnb’s reason otherwise, `403 connection_reauth_required` when the grant does not allow it.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
-	CreateAirbnbOfferWithResponse(ctx context.Context, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error)
+	CreateAirbnbOfferWithResponse(ctx context.Context, params *CreateAirbnbOfferParams, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error)
 
 	// ListAirbnbReservationsWithResponse List Airbnb reservations
 	//
@@ -20826,16 +22044,47 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/channels/airbnb/reservations/{code} (the `GetAirbnbReservation` operationId).
 	GetAirbnbReservationWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*GetAirbnbReservationClientResponse, error)
 
-	// AirbnbReservationActionWithResponse Accept/decline/cancel Airbnb reservation
+	// AirbnbReservationActionWithBodyWithResponse Accept, decline or cancel an Airbnb reservation
 	//
-	// Apply a state action to an Airbnb reservation — `accept` / `decline` (for inquiries and reservation requests), `cancel` (host cancellation, carries penalties), `pre-approve` (for inquiries).
+	// Act on an Airbnb reservation by its Airbnb confirmation code. **Write-side** — calls Airbnb upstream, as the Airbnb account that owns the booking.
+	//
+	// - `accept` — accept a pending booking request.
+	// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
+	// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
+	//
+	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+	//
+	// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
-	// Returns a wrapper object for the known response body format(s).
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
-	AirbnbReservationActionWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error)
+	AirbnbReservationActionWithBodyWithResponse(ctx context.Context, code string, params *AirbnbReservationActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error)
+
+	// AirbnbReservationActionWithResponse Accept, decline or cancel an Airbnb reservation
+	//
+	// Act on an Airbnb reservation by its Airbnb confirmation code. **Write-side** — calls Airbnb upstream, as the Airbnb account that owns the booking.
+	//
+	// - `accept` — accept a pending booking request.
+	// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
+	// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
+	//
+	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+	//
+	// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
+	//
+	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
+	AirbnbReservationActionWithResponse(ctx context.Context, code string, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error)
 
 	// ListAirbnbReviewsWithResponse List Airbnb reviews
 	//
@@ -21152,7 +22401,9 @@ type ClientWithResponsesInterface interface {
 
 	// SendBookingMessageWithBodyWithResponse Send Booking.com message
 	//
-	// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	// Send a text message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	//
+	// **Text only.** To send photos, use `POST /v1/conversations/{id}/messages` with `attachments` (JPEG or PNG, up to 10 MB each, with message text) — it uploads the files to Booking.com and records them in the conversation. Passing `attachments`, `attachment_ids` or `mediaUrl` here returns `422 attachments_not_supported` and sends nothing.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -21165,7 +22416,9 @@ type ClientWithResponsesInterface interface {
 
 	// SendBookingMessageWithResponse Send Booking.com message
 	//
-	// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	// Send a text message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+	//
+	// **Text only.** To send photos, use `POST /v1/conversations/{id}/messages` with `attachments` (JPEG or PNG, up to 10 MB each, with message text) — it uploads the files to Booking.com and records them in the conversation. Passing `attachments`, `attachment_ids` or `mediaUrl` here returns `422 attachments_not_supported` and sends nothing.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -22025,6 +23278,20 @@ type ClientWithResponsesInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// ### Attachments
+	//
+	// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
+	//
+	// | Channel | Accepted types | Text | How it arrives |
+	// |---|---|---|---|
+	// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
+	// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
+	// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+	//
+	// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
+	//
+	// The response's `attachments` lists each file's durable `url`, and `parts` lists every channel message the send produced. Read-back (`GET /v1/conversations/{id}/messages`) shows the same files in each message's `attachments`.
+	//
 	// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -22048,12 +23315,124 @@ type ClientWithResponsesInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// ### Attachments
+	//
+	// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
+	//
+	// | Channel | Accepted types | Text | How it arrives |
+	// |---|---|---|---|
+	// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
+	// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
+	// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+	//
+	// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
+	//
+	// The response's `attachments` lists each file's durable `url`, and `parts` lists every channel message the send produced. Read-back (`GET /v1/conversations/{id}/messages`) shows the same files in each message's `attachments`.
+	//
 	// **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
 	SendConversationMessageWithResponse(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*SendConversationMessageClientResponse, error)
+
+	// PreapproveConversationWithBodyWithResponse Pre-approve an inquiry
+	//
+	// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+	//
+	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+	//
+	// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+	//
+	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
+	PreapproveConversationWithBodyWithResponse(ctx context.Context, id int, params *PreapproveConversationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreapproveConversationClientResponse, error)
+
+	// PreapproveConversationWithResponse Pre-approve an inquiry
+	//
+	// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+	//
+	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+	//
+	// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+	//
+	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
+	PreapproveConversationWithResponse(ctx context.Context, id int, params *PreapproveConversationParams, body PreapproveConversationJSONRequestBody, reqEditors ...RequestEditorFn) (*PreapproveConversationClientResponse, error)
+
+	// CreateConversationSpecialOfferWithBodyWithResponse Send a special offer
+	//
+	// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+	//
+	// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+	//
+	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+	//
+	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
+	//
+	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
+	CreateConversationSpecialOfferWithBodyWithResponse(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConversationSpecialOfferClientResponse, error)
+
+	// CreateConversationSpecialOfferWithResponse Send a special offer
+	//
+	// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+	//
+	// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+	//
+	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+	//
+	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
+	//
+	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
+	CreateConversationSpecialOfferWithResponse(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, body CreateConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConversationSpecialOfferClientResponse, error)
+
+	// WithdrawConversationSpecialOfferWithResponse Withdraw a special offer
+	//
+	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. Runs the same action as the Vanio dashboard’s Withdraw offer. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/conversations/{id}/special-offers/{offerId} (the `WithdrawConversationSpecialOffer` operationId).
+	WithdrawConversationSpecialOfferWithResponse(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*WithdrawConversationSpecialOfferClientResponse, error)
+
+	// GetConversationSpecialOfferWithResponse Get a special offer
+	//
+	// Read a special offer on this conversation back from Airbnb — typically to check its `status` (`active` until the guest books it, it expires, or you withdraw it). Read live from Airbnb with the conversation’s own Airbnb account.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/conversations/{id}/special-offers/{offerId} (the `GetConversationSpecialOffer` operationId).
+	GetConversationSpecialOfferWithResponse(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*GetConversationSpecialOfferClientResponse, error)
 
 	// ListGuestsWithResponse List guests
 	//
@@ -22164,6 +23543,21 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/health/webhooks (the `GetWebhooksHealth` operationId).
 	GetWebhooksHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetWebhooksHealthClientResponse, error)
+
+	// ListInquiriesWithResponse List inquiries
+	//
+	// Airbnb inquiries — guests asking about dates before booking — newest first. By default only `open` ones: nobody has answered and the stay is still ahead. Answer one with `POST /v1/conversations/{conversationId}/pre-approval` (accept their dates and price) or `POST /v1/conversations/{conversationId}/special-offers` (your own terms).
+	//
+	// Booking **requests** are not inquiries: they are reservations with status `pending` — list them with `GET /v1/reservations?status=pending` and answer with `POST /v1/reservations/{id}/accept` or `/decline`.
+	//
+	// **Pagination:** pass `pagination.nextCursor` back as `?cursor=` until `pagination.hasMore` is `false`. `?offset=` also works (0..10000). `limit` defaults to 50, max 100.
+	//
+	// Inquiries on inactive listings are left out; `?listing_id=` naming an inactive listing returns `403 listing_inactive`. `X-Account-Id` narrows to one connected account.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/inquiries (the `ListInquiries` operationId).
+	ListInquiriesWithResponse(ctx context.Context, params *ListInquiriesParams, reqEditors ...RequestEditorFn) (*ListInquiriesClientResponse, error)
 
 	// ClearKvWithResponse Clear KV entries by prefix
 	//
@@ -22937,6 +24331,53 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PATCH /v1/reservations/{id} (the `UpdateReservation` operationId).
 	UpdateReservationWithResponse(ctx context.Context, id int, params *UpdateReservationParams, body UpdateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReservationClientResponse, error)
+
+	// AcceptReservationRequestWithResponse Accept a booking request
+	//
+	// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
+	//
+	// Runs the same action as the Vanio dashboard’s Accept button. Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
+	//
+	// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+	//
+	// Takes no body.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations/{id}/accept (the `AcceptReservationRequest` operationId).
+	AcceptReservationRequestWithResponse(ctx context.Context, id int, params *AcceptReservationRequestParams, reqEditors ...RequestEditorFn) (*AcceptReservationRequestClientResponse, error)
+
+	// DeclineReservationRequestWithBodyWithResponse Decline a booking request
+	//
+	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+	//
+	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+	//
+	// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations/{id}/decline (the `DeclineReservationRequest` operationId).
+	DeclineReservationRequestWithBodyWithResponse(ctx context.Context, id int, params *DeclineReservationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeclineReservationRequestClientResponse, error)
+
+	// DeclineReservationRequestWithResponse Decline a booking request
+	//
+	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+	//
+	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+	//
+	// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+	//
+	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations/{id}/decline (the `DeclineReservationRequest` operationId).
+	DeclineReservationRequestWithResponse(ctx context.Context, id int, params *DeclineReservationRequestParams, body DeclineReservationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*DeclineReservationRequestClientResponse, error)
 
 	// ListReviewsWithResponse List reviews
 	//
@@ -27252,13 +28693,95 @@ type ListAirbnbThreadMessagesClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *MessageListResponse
+	JSON200 *struct {
+		Data *[]struct {
+			Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
+
+			// Channel Example: airbnb
+			Channel   *string    `json:"channel,omitempty"`
+			CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+			// ExternalCreatedAt When Airbnb recorded the message.
+			ExternalCreatedAt *time.Time `json:"externalCreatedAt,omitempty"`
+
+			// ExternalMessageId Airbnb's message id.
+			ExternalMessageId *string `json:"externalMessageId,omitempty"`
+
+			// Id Repull message id.
+			Id *string `json:"id,omitempty"`
+
+			// Message Message text. Empty for a file-only message.
+			Message       *string `json:"message,omitempty"`
+			ReservationId *string `json:"reservationId,omitempty"`
+
+			// SenderType `guest`, `host`, `user`, `system`, …
+			SenderType *string `json:"senderType,omitempty"`
+
+			// ThreadId The Airbnb thread id.
+			ThreadId          *string    `json:"threadId,omitempty"`
+			TranslatedMessage *string    `json:"translatedMessage,omitempty"`
+			UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
+
+			// UserId Airbnb user id of the sender.
+			UserId *string `json:"userId,omitempty"`
+		} `json:"data,omitempty"`
+
+		// DataFreshness When this workspace's Airbnb data was last synced.
+		DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+
+		// Pagination Absent when `?all=true`.
+		Pagination *struct {
+			HasMore    *bool   `json:"hasMore,omitempty"`
+			NextCursor *string `json:"nextCursor,omitempty"`
+		} `json:"pagination,omitempty"`
+	}
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ListAirbnbThreadMessagesClientResponse) GetJSON200() *MessageListResponse {
+func (r ListAirbnbThreadMessagesClientResponse) GetJSON200() *struct {
+	Data *[]struct {
+		Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
+
+		// Channel Example: airbnb
+		Channel   *string    `json:"channel,omitempty"`
+		CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+		// ExternalCreatedAt When Airbnb recorded the message.
+		ExternalCreatedAt *time.Time `json:"externalCreatedAt,omitempty"`
+
+		// ExternalMessageId Airbnb's message id.
+		ExternalMessageId *string `json:"externalMessageId,omitempty"`
+
+		// Id Repull message id.
+		Id *string `json:"id,omitempty"`
+
+		// Message Message text. Empty for a file-only message.
+		Message       *string `json:"message,omitempty"`
+		ReservationId *string `json:"reservationId,omitempty"`
+
+		// SenderType `guest`, `host`, `user`, `system`, …
+		SenderType *string `json:"senderType,omitempty"`
+
+		// ThreadId The Airbnb thread id.
+		ThreadId          *string    `json:"threadId,omitempty"`
+		TranslatedMessage *string    `json:"translatedMessage,omitempty"`
+		UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
+
+		// UserId Airbnb user id of the sender.
+		UserId *string `json:"userId,omitempty"`
+	} `json:"data,omitempty"`
+
+	// DataFreshness When this workspace's Airbnb data was last synced.
+	DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+
+	// Pagination Absent when `?all=true`.
+	Pagination *struct {
+		HasMore    *bool   `json:"hasMore,omitempty"`
+		NextCursor *string `json:"nextCursor,omitempty"`
+	} `json:"pagination,omitempty"`
+} {
 	return r.JSON200
 }
 
@@ -27299,14 +28822,23 @@ func (r ListAirbnbThreadMessagesClientResponse) ContentType() string {
 type SendAirbnbMessageClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *SendAirbnbMessage201JSONResponseBody
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r SendAirbnbMessageClientResponse) GetJSON201() *SendAirbnbMessage201JSONResponseBody {
+	return r.JSON201
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -27322,6 +28854,11 @@ func (r SendAirbnbMessageClientResponse) GetJSON403() *ListingInactive {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r SendAirbnbMessageClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SendAirbnbMessageClientResponse) GetJSON422() *Error {
+	return r.JSON422
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
@@ -27430,14 +28967,63 @@ func (r UpdateAirbnbMessageClientResponse) ContentType() string {
 type WithdrawAirbnbOfferClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+		ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+		GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+		// Id Airbnb special-offer id.
+		Id *string `json:"id,omitempty"`
+
+		// ListingId Airbnb listing id (special offers only).
+		ListingId *string                                          `json:"listingId,omitempty"`
+		Nights    *int                                             `json:"nights,omitempty"`
+		OfferType *WithdrawAirbnbOffer200JSONResponseBodyOfferType `json:"offerType,omitempty"`
+		StartDate *openapi_types.Date                              `json:"startDate,omitempty"`
+		Status    *WithdrawAirbnbOffer200JSONResponseBodyStatus    `json:"status,omitempty"`
+
+		// ThreadId Airbnb thread id the offer was sent on.
+		ThreadId   *string  `json:"threadId,omitempty"`
+		TotalPrice *float32 `json:"totalPrice,omitempty"`
+	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r WithdrawAirbnbOfferClientResponse) GetJSON200() *struct {
+	CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+	ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+	GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+	// Id Airbnb special-offer id.
+	Id *string `json:"id,omitempty"`
+
+	// ListingId Airbnb listing id (special offers only).
+	ListingId *string                                          `json:"listingId,omitempty"`
+	Nights    *int                                             `json:"nights,omitempty"`
+	OfferType *WithdrawAirbnbOffer200JSONResponseBodyOfferType `json:"offerType,omitempty"`
+	StartDate *openapi_types.Date                              `json:"startDate,omitempty"`
+	Status    *WithdrawAirbnbOffer200JSONResponseBodyStatus    `json:"status,omitempty"`
+
+	// ThreadId Airbnb thread id the offer was sent on.
+	ThreadId   *string  `json:"threadId,omitempty"`
+	TotalPrice *float32 `json:"totalPrice,omitempty"`
+} {
+	return r.JSON200
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -27445,19 +29031,34 @@ func (r WithdrawAirbnbOfferClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
 }
 
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r WithdrawAirbnbOfferClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r WithdrawAirbnbOfferClientResponse) GetJSON404() *NotFound {
+func (r WithdrawAirbnbOfferClientResponse) GetJSON404() *Error {
 	return r.JSON404
 }
 
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r WithdrawAirbnbOfferClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r WithdrawAirbnbOfferClientResponse) GetJSON422() *UnprocessableEntity {
+func (r WithdrawAirbnbOfferClientResponse) GetJSON422() *Error {
 	return r.JSON422
 }
 
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r WithdrawAirbnbOfferClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r WithdrawAirbnbOfferClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r WithdrawAirbnbOfferClientResponse) GetJSON502() *Error {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -27489,19 +29090,185 @@ func (r WithdrawAirbnbOfferClientResponse) ContentType() string {
 	return ""
 }
 
-type CreateAirbnbOfferClientResponse struct {
+type GetAirbnbOfferClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+		ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+		GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+		// Id Airbnb special-offer id.
+		Id *string `json:"id,omitempty"`
+
+		// ListingId Airbnb listing id (special offers only).
+		ListingId *string                                     `json:"listingId,omitempty"`
+		Nights    *int                                        `json:"nights,omitempty"`
+		OfferType *GetAirbnbOffer200JSONResponseBodyOfferType `json:"offerType,omitempty"`
+		StartDate *openapi_types.Date                         `json:"startDate,omitempty"`
+		Status    *GetAirbnbOffer200JSONResponseBodyStatus    `json:"status,omitempty"`
+
+		// ThreadId Airbnb thread id the offer was sent on.
+		ThreadId   *string  `json:"threadId,omitempty"`
+		TotalPrice *float32 `json:"totalPrice,omitempty"`
+	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
+	JSON404 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetAirbnbOfferClientResponse) GetJSON200() *struct {
+	CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+	ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+	GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+	// Id Airbnb special-offer id.
+	Id *string `json:"id,omitempty"`
+
+	// ListingId Airbnb listing id (special offers only).
+	ListingId *string                                     `json:"listingId,omitempty"`
+	Nights    *int                                        `json:"nights,omitempty"`
+	OfferType *GetAirbnbOffer200JSONResponseBodyOfferType `json:"offerType,omitempty"`
+	StartDate *openapi_types.Date                         `json:"startDate,omitempty"`
+	Status    *GetAirbnbOffer200JSONResponseBodyStatus    `json:"status,omitempty"`
+
+	// ThreadId Airbnb thread id the offer was sent on.
+	ThreadId   *string  `json:"threadId,omitempty"`
+	TotalPrice *float32 `json:"totalPrice,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetAirbnbOfferClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbOfferClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetAirbnbOfferClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetAirbnbOfferClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r GetAirbnbOfferClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetAirbnbOfferClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r GetAirbnbOfferClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetAirbnbOfferClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateAirbnbOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *struct {
+		CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+		ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+		GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+		// Id Airbnb special-offer id.
+		Id *string `json:"id,omitempty"`
+
+		// ListingId Airbnb listing id (special offers only).
+		ListingId *string                                        `json:"listingId,omitempty"`
+		Nights    *int                                           `json:"nights,omitempty"`
+		OfferType *CreateAirbnbOffer201JSONResponseBodyOfferType `json:"offerType,omitempty"`
+		StartDate *openapi_types.Date                            `json:"startDate,omitempty"`
+		Status    *CreateAirbnbOffer201JSONResponseBodyStatus    `json:"status,omitempty"`
+
+		// ThreadId Airbnb thread id the offer was sent on.
+		ThreadId   *string  `json:"threadId,omitempty"`
+		TotalPrice *float32 `json:"totalPrice,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateAirbnbOfferClientResponse) GetJSON201() *struct {
+	CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+	ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+	GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+	// Id Airbnb special-offer id.
+	Id *string `json:"id,omitempty"`
+
+	// ListingId Airbnb listing id (special offers only).
+	ListingId *string                                        `json:"listingId,omitempty"`
+	Nights    *int                                           `json:"nights,omitempty"`
+	OfferType *CreateAirbnbOffer201JSONResponseBodyOfferType `json:"offerType,omitempty"`
+	StartDate *openapi_types.Date                            `json:"startDate,omitempty"`
+	Status    *CreateAirbnbOffer201JSONResponseBodyStatus    `json:"status,omitempty"`
+
+	// ThreadId Airbnb thread id the offer was sent on.
+	ThreadId   *string  `json:"threadId,omitempty"`
+	TotalPrice *float32 `json:"totalPrice,omitempty"`
+} {
+	return r.JSON201
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -27510,23 +29277,33 @@ func (r CreateAirbnbOfferClientResponse) GetJSON401() *Unauthorized {
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r CreateAirbnbOfferClientResponse) GetJSON403() *ListingInactive {
+func (r CreateAirbnbOfferClientResponse) GetJSON403() *Error {
 	return r.JSON403
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r CreateAirbnbOfferClientResponse) GetJSON404() *NotFound {
+func (r CreateAirbnbOfferClientResponse) GetJSON404() *Error {
 	return r.JSON404
 }
 
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateAirbnbOfferClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r CreateAirbnbOfferClientResponse) GetJSON422() *UnprocessableEntity {
+func (r CreateAirbnbOfferClientResponse) GetJSON422() *Error {
 	return r.JSON422
 }
 
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r CreateAirbnbOfferClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CreateAirbnbOfferClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateAirbnbOfferClientResponse) GetJSON502() *Error {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -27664,13 +29441,68 @@ func (r GetAirbnbReservationClientResponse) ContentType() string {
 type AirbnbReservationActionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		ConfirmationCode *string `json:"confirmationCode,omitempty"`
+		StatusType       *string `json:"statusType,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r AirbnbReservationActionClientResponse) GetJSON200() *struct {
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+	StatusType       *string `json:"statusType,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r AirbnbReservationActionClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r AirbnbReservationActionClientResponse) GetJSON403() *ListingInactive {
+func (r AirbnbReservationActionClientResponse) GetJSON403() *Error {
 	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r AirbnbReservationActionClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r AirbnbReservationActionClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r AirbnbReservationActionClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r AirbnbReservationActionClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r AirbnbReservationActionClientResponse) GetJSON502() *Error {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -28763,6 +30595,8 @@ type SendBookingMessageClientResponse struct {
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
 }
@@ -28785,6 +30619,11 @@ func (r SendBookingMessageClientResponse) GetJSON403() *ListingInactive {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r SendBookingMessageClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SendBookingMessageClientResponse) GetJSON422() *Error {
+	return r.JSON422
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
@@ -31642,7 +33481,9 @@ type SendConversationMessageClientResponse struct {
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *Error
 	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
+	JSON500 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -31671,8 +33512,13 @@ func (r SendConversationMessageClientResponse) GetJSON422() *Error {
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r SendConversationMessageClientResponse) GetJSON500() *InternalError {
+func (r SendConversationMessageClientResponse) GetJSON500() *Error {
 	return r.JSON500
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r SendConversationMessageClientResponse) GetJSON503() *Error {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -31698,6 +33544,665 @@ func (r SendConversationMessageClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r SendConversationMessageClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type PreapproveConversationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *struct {
+		// BlockInstantBooking Example: false
+		BlockInstantBooking bool `json:"blockInstantBooking"`
+
+		// ConversationId Example: 164743
+		ConversationId string `json:"conversationId"`
+
+		// ExpiresAt When the guest can no longer book on the pre-approval, if Airbnb reported it.
+		ExpiresAt *time.Time                                      `json:"expiresAt"`
+		Status    PreapproveConversation201JSONResponseBodyStatus `json:"status"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON201() *struct {
+	// BlockInstantBooking Example: false
+	BlockInstantBooking bool `json:"blockInstantBooking"`
+
+	// ConversationId Example: 164743
+	ConversationId string `json:"conversationId"`
+
+	// ExpiresAt When the guest can no longer book on the pre-approval, if Airbnb reported it.
+	ExpiresAt *time.Time                                      `json:"expiresAt"`
+	Status    PreapproveConversation201JSONResponseBodyStatus `json:"status"`
+} {
+	return r.JSON201
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON500() *Error {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r PreapproveConversationClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r PreapproveConversationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r PreapproveConversationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PreapproveConversationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PreapproveConversationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateConversationSpecialOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *struct {
+		// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+		//
+		// Example: 955656266214757921
+		AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+		// CheckIn Example: 2026-10-01
+		CheckIn *openapi_types.Date `json:"checkIn"`
+
+		// CheckOut Example: 2026-10-05
+		CheckOut *openapi_types.Date `json:"checkOut"`
+
+		// ConversationId Repull conversation id the offer was sent on.
+		//
+		// Example: 164743
+		ConversationId string     `json:"conversationId"`
+		CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+		// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+		ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+		// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+		Guests *struct {
+			// Adults Example: 2
+			Adults *int `json:"adults,omitempty"`
+
+			// Children Example: 1
+			Children *int `json:"children,omitempty"`
+
+			// Infants Example: 0
+			Infants *int `json:"infants,omitempty"`
+
+			// Pets Example: 0
+			Pets *int `json:"pets,omitempty"`
+
+			// Total Example: 3
+			Total *int `json:"total,omitempty"`
+		} `json:"guests,omitempty"`
+
+		// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+		//
+		// Example: 1459920384
+		Id *string `json:"id"`
+
+		// ListingId Repull listing id, when known.
+		//
+		// Example: 23892
+		ListingId *string `json:"listingId,omitempty"`
+
+		// Nights Example: 4
+		Nights *int `json:"nights"`
+
+		// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+		//
+		// Example: active
+		Status *string `json:"status"`
+
+		// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+		//
+		// Example: 880
+		TotalPrice *float32 `json:"totalPrice"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON201() *struct {
+	// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+	//
+	// Example: 955656266214757921
+	AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+	// CheckIn Example: 2026-10-01
+	CheckIn *openapi_types.Date `json:"checkIn"`
+
+	// CheckOut Example: 2026-10-05
+	CheckOut *openapi_types.Date `json:"checkOut"`
+
+	// ConversationId Repull conversation id the offer was sent on.
+	//
+	// Example: 164743
+	ConversationId string     `json:"conversationId"`
+	CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+	// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+	// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+	Guests *struct {
+		// Adults Example: 2
+		Adults *int `json:"adults,omitempty"`
+
+		// Children Example: 1
+		Children *int `json:"children,omitempty"`
+
+		// Infants Example: 0
+		Infants *int `json:"infants,omitempty"`
+
+		// Pets Example: 0
+		Pets *int `json:"pets,omitempty"`
+
+		// Total Example: 3
+		Total *int `json:"total,omitempty"`
+	} `json:"guests,omitempty"`
+
+	// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+	//
+	// Example: 1459920384
+	Id *string `json:"id"`
+
+	// ListingId Repull listing id, when known.
+	//
+	// Example: 23892
+	ListingId *string `json:"listingId,omitempty"`
+
+	// Nights Example: 4
+	Nights *int `json:"nights"`
+
+	// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+	//
+	// Example: active
+	Status *string `json:"status"`
+
+	// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+	//
+	// Example: 880
+	TotalPrice *float32 `json:"totalPrice"`
+} {
+	return r.JSON201
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON500() *Error {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateConversationSpecialOfferClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateConversationSpecialOfferClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateConversationSpecialOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateConversationSpecialOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateConversationSpecialOfferClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type WithdrawConversationSpecialOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// ConversationId Example: 164743
+		ConversationId string `json:"conversationId"`
+
+		// Id Example: 1459920384
+		Id     string                                                    `json:"id"`
+		Status WithdrawConversationSpecialOffer200JSONResponseBodyStatus `json:"status"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON200() *struct {
+	// ConversationId Example: 164743
+	ConversationId string `json:"conversationId"`
+
+	// Id Example: 1459920384
+	Id     string                                                    `json:"id"`
+	Status WithdrawConversationSpecialOffer200JSONResponseBodyStatus `json:"status"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON500() *Error {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r WithdrawConversationSpecialOfferClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r WithdrawConversationSpecialOfferClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r WithdrawConversationSpecialOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r WithdrawConversationSpecialOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r WithdrawConversationSpecialOfferClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetConversationSpecialOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+		//
+		// Example: 955656266214757921
+		AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+		// CheckIn Example: 2026-10-01
+		CheckIn *openapi_types.Date `json:"checkIn"`
+
+		// CheckOut Example: 2026-10-05
+		CheckOut *openapi_types.Date `json:"checkOut"`
+
+		// ConversationId Repull conversation id the offer was sent on.
+		//
+		// Example: 164743
+		ConversationId string     `json:"conversationId"`
+		CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+		// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+		ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+		// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+		Guests *struct {
+			// Adults Example: 2
+			Adults *int `json:"adults,omitempty"`
+
+			// Children Example: 1
+			Children *int `json:"children,omitempty"`
+
+			// Infants Example: 0
+			Infants *int `json:"infants,omitempty"`
+
+			// Pets Example: 0
+			Pets *int `json:"pets,omitempty"`
+
+			// Total Example: 3
+			Total *int `json:"total,omitempty"`
+		} `json:"guests,omitempty"`
+
+		// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+		//
+		// Example: 1459920384
+		Id *string `json:"id"`
+
+		// ListingId Repull listing id, when known.
+		//
+		// Example: 23892
+		ListingId *string `json:"listingId,omitempty"`
+
+		// Nights Example: 4
+		Nights *int `json:"nights"`
+
+		// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+		//
+		// Example: active
+		Status *string `json:"status"`
+
+		// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+		//
+		// Example: 880
+		TotalPrice *float32 `json:"totalPrice"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetConversationSpecialOfferClientResponse) GetJSON200() *struct {
+	// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+	//
+	// Example: 955656266214757921
+	AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+	// CheckIn Example: 2026-10-01
+	CheckIn *openapi_types.Date `json:"checkIn"`
+
+	// CheckOut Example: 2026-10-05
+	CheckOut *openapi_types.Date `json:"checkOut"`
+
+	// ConversationId Repull conversation id the offer was sent on.
+	//
+	// Example: 164743
+	ConversationId string     `json:"conversationId"`
+	CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+	// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+	// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+	Guests *struct {
+		// Adults Example: 2
+		Adults *int `json:"adults,omitempty"`
+
+		// Children Example: 1
+		Children *int `json:"children,omitempty"`
+
+		// Infants Example: 0
+		Infants *int `json:"infants,omitempty"`
+
+		// Pets Example: 0
+		Pets *int `json:"pets,omitempty"`
+
+		// Total Example: 3
+		Total *int `json:"total,omitempty"`
+	} `json:"guests,omitempty"`
+
+	// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+	//
+	// Example: 1459920384
+	Id *string `json:"id"`
+
+	// ListingId Repull listing id, when known.
+	//
+	// Example: 23892
+	ListingId *string `json:"listingId,omitempty"`
+
+	// Nights Example: 4
+	Nights *int `json:"nights"`
+
+	// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+	//
+	// Example: active
+	Status *string `json:"status"`
+
+	// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+	//
+	// Example: 880
+	TotalPrice *float32 `json:"totalPrice"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetConversationSpecialOfferClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetConversationSpecialOfferClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetConversationSpecialOfferClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetConversationSpecialOfferClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r GetConversationSpecialOfferClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetConversationSpecialOfferClientResponse) GetJSON500() *Error {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetConversationSpecialOfferClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r GetConversationSpecialOfferClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConversationSpecialOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConversationSpecialOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetConversationSpecialOfferClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -32177,6 +34682,202 @@ func (r GetWebhooksHealthClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetWebhooksHealthClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListInquiriesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data []struct {
+			// Channel Example: airbnb
+			Channel string `json:"channel"`
+
+			// CheckIn Example: 2026-09-23
+			CheckIn *openapi_types.Date `json:"checkIn"`
+
+			// CheckOut Example: 2026-10-11
+			CheckOut *openapi_types.Date `json:"checkOut"`
+
+			// ConversationId Repull conversation id — pass it to `POST /v1/conversations/{id}/pre-approval` or `/special-offers`.
+			//
+			// Example: 164743
+			ConversationId *string    `json:"conversationId"`
+			CreatedAt      *time.Time `json:"createdAt"`
+
+			// ExpectedPayout What Airbnb quoted the host for the stay the guest asked about.
+			ExpectedPayout struct {
+				// Amount Example: 2152.6
+				Amount *float32 `json:"amount,omitempty"`
+
+				// Currency Example: USD
+				Currency *string `json:"currency,omitempty"`
+			} `json:"expectedPayout"`
+			Guests struct {
+				// Adults Example: 2
+				Adults *int `json:"adults,omitempty"`
+
+				// Children Example: 0
+				Children *int `json:"children,omitempty"`
+
+				// Infants Example: 0
+				Infants *int `json:"infants,omitempty"`
+
+				// Pets Example: 0
+				Pets *int `json:"pets,omitempty"`
+
+				// Total Example: 2
+				Total *int `json:"total,omitempty"`
+			} `json:"guests"`
+
+			// Id Repull inquiry id.
+			//
+			// Example: 25173
+			Id string `json:"id"`
+
+			// ListingId Example: 23892
+			ListingId *string `json:"listingId"`
+
+			// RelayedBy A PMS (e.g. `hostaway`, `guesty`) this inquiry arrives through. When set, it cannot be pre-approved or offered from Repull — act on it in that PMS.
+			RelayedBy *string `json:"relayedBy"`
+
+			// ReservationId The reservation the inquiry became, once booked.
+			ReservationId *string `json:"reservationId"`
+
+			// RespondBy Airbnb’s response deadline for the host (it counts toward response rate).
+			RespondBy   *time.Time `json:"respondBy"`
+			RespondedAt *time.Time `json:"respondedAt"`
+
+			// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, Vanio, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
+			Status    ListInquiries200JSONResponseBodyDataStatus `json:"status"`
+			UpdatedAt *time.Time                                 `json:"updatedAt"`
+		} `json:"data"`
+
+		// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+		Pagination Pagination `json:"pagination"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListInquiriesClientResponse) GetJSON200() *struct {
+	Data []struct {
+		// Channel Example: airbnb
+		Channel string `json:"channel"`
+
+		// CheckIn Example: 2026-09-23
+		CheckIn *openapi_types.Date `json:"checkIn"`
+
+		// CheckOut Example: 2026-10-11
+		CheckOut *openapi_types.Date `json:"checkOut"`
+
+		// ConversationId Repull conversation id — pass it to `POST /v1/conversations/{id}/pre-approval` or `/special-offers`.
+		//
+		// Example: 164743
+		ConversationId *string    `json:"conversationId"`
+		CreatedAt      *time.Time `json:"createdAt"`
+
+		// ExpectedPayout What Airbnb quoted the host for the stay the guest asked about.
+		ExpectedPayout struct {
+			// Amount Example: 2152.6
+			Amount *float32 `json:"amount,omitempty"`
+
+			// Currency Example: USD
+			Currency *string `json:"currency,omitempty"`
+		} `json:"expectedPayout"`
+		Guests struct {
+			// Adults Example: 2
+			Adults *int `json:"adults,omitempty"`
+
+			// Children Example: 0
+			Children *int `json:"children,omitempty"`
+
+			// Infants Example: 0
+			Infants *int `json:"infants,omitempty"`
+
+			// Pets Example: 0
+			Pets *int `json:"pets,omitempty"`
+
+			// Total Example: 2
+			Total *int `json:"total,omitempty"`
+		} `json:"guests"`
+
+		// Id Repull inquiry id.
+		//
+		// Example: 25173
+		Id string `json:"id"`
+
+		// ListingId Example: 23892
+		ListingId *string `json:"listingId"`
+
+		// RelayedBy A PMS (e.g. `hostaway`, `guesty`) this inquiry arrives through. When set, it cannot be pre-approved or offered from Repull — act on it in that PMS.
+		RelayedBy *string `json:"relayedBy"`
+
+		// ReservationId The reservation the inquiry became, once booked.
+		ReservationId *string `json:"reservationId"`
+
+		// RespondBy Airbnb’s response deadline for the host (it counts toward response rate).
+		RespondBy   *time.Time `json:"respondBy"`
+		RespondedAt *time.Time `json:"respondedAt"`
+
+		// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, Vanio, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
+		Status    ListInquiries200JSONResponseBodyDataStatus `json:"status"`
+		UpdatedAt *time.Time                                 `json:"updatedAt"`
+	} `json:"data"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination Pagination `json:"pagination"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListInquiriesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListInquiriesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListInquiriesClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r ListInquiriesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListInquiriesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListInquiriesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListInquiriesClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -34690,6 +37391,252 @@ func (r UpdateReservationClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateReservationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type AcceptReservationRequestClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Action  AcceptReservationRequest200JSONResponseBodyAction  `json:"action"`
+		Channel AcceptReservationRequest200JSONResponseBodyChannel `json:"channel"`
+
+		// ConfirmationCode Example: HM9J2MFR3W
+		ConfirmationCode string                                                    `json:"confirmationCode"`
+		DeclineReason    *AcceptReservationRequest200JSONResponseBodyDeclineReason `json:"declineReason"`
+
+		// ReservationId Example: 236354
+		ReservationId string `json:"reservationId"`
+
+		// Status What Airbnb was asked to do and did not refuse. The reservation itself moves when Airbnb’s own notification lands, usually within seconds — that is when `reservation.request.updated` fires (`requestStatus` `accepted` or `declined`), plus `reservation.created` for an accepted request.
+		Status AcceptReservationRequest200JSONResponseBodyStatus `json:"status"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON200() *struct {
+	Action  AcceptReservationRequest200JSONResponseBodyAction  `json:"action"`
+	Channel AcceptReservationRequest200JSONResponseBodyChannel `json:"channel"`
+
+	// ConfirmationCode Example: HM9J2MFR3W
+	ConfirmationCode string                                                    `json:"confirmationCode"`
+	DeclineReason    *AcceptReservationRequest200JSONResponseBodyDeclineReason `json:"declineReason"`
+
+	// ReservationId Example: 236354
+	ReservationId string `json:"reservationId"`
+
+	// Status What Airbnb was asked to do and did not refuse. The reservation itself moves when Airbnb’s own notification lands, usually within seconds — that is when `reservation.request.updated` fires (`requestStatus` `accepted` or `declined`), plus `reservation.created` for an accepted request.
+	Status AcceptReservationRequest200JSONResponseBodyStatus `json:"status"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON500() *Error {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r AcceptReservationRequestClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r AcceptReservationRequestClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r AcceptReservationRequestClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AcceptReservationRequestClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r AcceptReservationRequestClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeclineReservationRequestClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Action  DeclineReservationRequest200JSONResponseBodyAction  `json:"action"`
+		Channel DeclineReservationRequest200JSONResponseBodyChannel `json:"channel"`
+
+		// ConfirmationCode Example: HM9J2MFR3W
+		ConfirmationCode string                                                     `json:"confirmationCode"`
+		DeclineReason    *DeclineReservationRequest200JSONResponseBodyDeclineReason `json:"declineReason"`
+
+		// ReservationId Example: 236354
+		ReservationId string `json:"reservationId"`
+
+		// Status What Airbnb was asked to do and did not refuse. The reservation itself moves when Airbnb’s own notification lands, usually within seconds — that is when `reservation.request.updated` fires (`requestStatus` `accepted` or `declined`), plus `reservation.created` for an accepted request.
+		Status DeclineReservationRequest200JSONResponseBodyStatus `json:"status"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON200() *struct {
+	Action  DeclineReservationRequest200JSONResponseBodyAction  `json:"action"`
+	Channel DeclineReservationRequest200JSONResponseBodyChannel `json:"channel"`
+
+	// ConfirmationCode Example: HM9J2MFR3W
+	ConfirmationCode string                                                     `json:"confirmationCode"`
+	DeclineReason    *DeclineReservationRequest200JSONResponseBodyDeclineReason `json:"declineReason"`
+
+	// ReservationId Example: 236354
+	ReservationId string `json:"reservationId"`
+
+	// Status What Airbnb was asked to do and did not refuse. The reservation itself moves when Airbnb’s own notification lands, usually within seconds — that is when `reservation.request.updated` fires (`requestStatus` `accepted` or `declined`), plus `reservation.created` for an accepted request.
+	Status DeclineReservationRequest200JSONResponseBodyStatus `json:"status"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON500() *Error {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeclineReservationRequestClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r DeclineReservationRequestClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeclineReservationRequestClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeclineReservationRequestClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeclineReservationRequestClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -37605,15 +40552,17 @@ func (c *ClientWithResponses) GetAirbnbThreadWithResponse(ctx context.Context, t
 
 // ListAirbnbThreadMessagesWithResponse Get Airbnb messages
 //
-// Fetch the full message log for an Airbnb thread, ordered oldest-to-newest. Walk pages with `?cursor=` until `pagination.hasMore` is `false`.
+// Messages stored for an Airbnb thread, as recorded rows (not the unified `Message` shape — use `GET /v1/conversations/{id}/messages` for that). By default returns 50 per page, newest first; walk older pages with `?cursor=` (the `pagination.nextCursor` of the previous page) until `pagination.hasMore` is `false`. `?all=true` returns up to 1000 rows oldest-first in one response, with no `pagination`.
+//
+// Each row carries `attachments` — photos and other files on that message, inbound or outbound — in the same shape as the unified endpoint.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/airbnb/messaging/{threadId}/messages (the `ListAirbnbThreadMessages` operationId).
-func (c *ClientWithResponses) ListAirbnbThreadMessagesWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*ListAirbnbThreadMessagesClientResponse, error) {
-	rsp, err := c.ListAirbnbThreadMessages(ctx, threadId, reqEditors...)
+func (c *ClientWithResponses) ListAirbnbThreadMessagesWithResponse(ctx context.Context, threadId string, params *ListAirbnbThreadMessagesParams, reqEditors ...RequestEditorFn) (*ListAirbnbThreadMessagesClientResponse, error) {
+	rsp, err := c.ListAirbnbThreadMessages(ctx, threadId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -37623,6 +40572,12 @@ func (c *ClientWithResponses) ListAirbnbThreadMessagesWithResponse(ctx context.C
 // SendAirbnbMessageWithBodyWithResponse Send Airbnb message
 //
 // Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+//
+// ### Sending a photo or video (`mediaUrl`)
+//
+// Airbnb only accepts media uploaded to a signed URL it issues, one file per message and no text on the same message. With `mediaUrl`, Repull downloads the file (public `https://` only, 10 MB max), reads its real type from the bytes (JPEG, PNG, GIF, WebP — converted to JPEG — or MP4/QuickTime), uploads it to Airbnb and sends it; `message`, if given, follows as a separate message. This is the same flow as `POST /v1/conversations/{id}/messages` with `attachments` — prefer that endpoint, which also takes several files per request. The response is a `SendMessageResponse`, the send is recorded in the conversation, and failures are the 422 codes documented there (`attachment_type_not_supported`, `attachment_too_large`, `message_not_sent` for a pre-booking thread, …). The thread must already be synced to Repull (`GET /v1/conversations` lists them), otherwise `404`.
+//
+// Text-only sends (no `mediaUrl`) go straight to Airbnb and return Airbnb's message object.
 //
 // The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 //
@@ -37642,6 +40597,12 @@ func (c *ClientWithResponses) SendAirbnbMessageWithBodyWithResponse(ctx context.
 // SendAirbnbMessageWithResponse Send Airbnb message
 //
 // Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+//
+// ### Sending a photo or video (`mediaUrl`)
+//
+// Airbnb only accepts media uploaded to a signed URL it issues, one file per message and no text on the same message. With `mediaUrl`, Repull downloads the file (public `https://` only, 10 MB max), reads its real type from the bytes (JPEG, PNG, GIF, WebP — converted to JPEG — or MP4/QuickTime), uploads it to Airbnb and sends it; `message`, if given, follows as a separate message. This is the same flow as `POST /v1/conversations/{id}/messages` with `attachments` — prefer that endpoint, which also takes several files per request. The response is a `SendMessageResponse`, the send is recorded in the conversation, and failures are the 422 codes documented there (`attachment_type_not_supported`, `attachment_too_large`, `message_not_sent` for a pre-booking thread, …). The thread must already be synced to Repull (`GET /v1/conversations` lists them), otherwise `404`.
+//
+// Text-only sends (no `mediaUrl`) go straight to Airbnb and return Airbnb's message object.
 //
 // The `{threadId}` is the Airbnb thread id — the `externalThreadId` field on a unified `Conversation` (`GET /v1/conversations`).
 //
@@ -37708,7 +40669,7 @@ func (c *ClientWithResponses) UpdateAirbnbMessageWithResponse(ctx context.Contex
 
 // WithdrawAirbnbOfferWithResponse Withdraw Airbnb special offer
 //
-// Withdraw a previously-created Airbnb special offer. **Write-side** — calls Airbnb upstream. Pass the offer id as `?offerId=`. Requires a connected Airbnb host, else `404 no_connection`.
+// Withdraw a special offer the guest has not booked. **Write-side** — calls Airbnb upstream. Pass the Airbnb offer id as `?offerId=`. The Repull-id equivalent is `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -37721,22 +40682,41 @@ func (c *ClientWithResponses) WithdrawAirbnbOfferWithResponse(ctx context.Contex
 	return ParseWithdrawAirbnbOfferClientResponse(rsp)
 }
 
+// GetAirbnbOfferWithResponse Get Airbnb special offer
+//
+// Read a pre-approval or special offer from Airbnb by its Airbnb id. **Live read** — calls Airbnb upstream. Pass the id as `?offerId=`. The Repull-id equivalent is `GET /v1/conversations/{id}/special-offers/{offerId}`, which also confirms the offer belongs to that conversation.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/airbnb/offers (the `GetAirbnbOffer` operationId).
+func (c *ClientWithResponses) GetAirbnbOfferWithResponse(ctx context.Context, params *GetAirbnbOfferParams, reqEditors ...RequestEditorFn) (*GetAirbnbOfferClientResponse, error) {
+	rsp, err := c.GetAirbnbOffer(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbOfferClientResponse(rsp)
+}
+
 // CreateAirbnbOfferWithBodyWithResponse Create Airbnb special offer or pre-approval
 //
-// Create a special offer or a pre-approval on Airbnb. **Write-side** — calls Airbnb upstream. The `type` discriminator selects the flavour:
+// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 //
-// - `offer` — a special offer with custom terms (the remaining body fields are the offer params).
-// - `preapproval` — pre-approve an inquiry thread (requires `threadId`; optional `blockInstantBooking`).
+// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
+// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
 //
-// Requires a connected Airbnb host, else `404 no_connection`.
+// The body is validated before anything reaches Airbnb (a `422 invalid_params` names the field), and unknown fields are refused. The legacy spellings `threadId` and `blockInstantBooking` still work. The request is sent as the Airbnb account that owns the thread or listing.
+//
+// Airbnb refusals are mapped rather than returned as a 500: `409 inquiry_no_longer_open` / `inquiry_expired` when the inquiry moved on, `422 airbnb_rejected` with Airbnb’s reason otherwise, `403 connection_reauth_required` when the grant does not allow it.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
-func (c *ClientWithResponses) CreateAirbnbOfferWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error) {
-	rsp, err := c.CreateAirbnbOfferWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CreateAirbnbOfferWithBodyWithResponse(ctx context.Context, params *CreateAirbnbOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error) {
+	rsp, err := c.CreateAirbnbOfferWithBody(ctx, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -37745,20 +40725,24 @@ func (c *ClientWithResponses) CreateAirbnbOfferWithBodyWithResponse(ctx context.
 
 // CreateAirbnbOfferWithResponse Create Airbnb special offer or pre-approval
 //
-// Create a special offer or a pre-approval on Airbnb. **Write-side** — calls Airbnb upstream. The `type` discriminator selects the flavour:
+// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 //
-// - `offer` — a special offer with custom terms (the remaining body fields are the offer params).
-// - `preapproval` — pre-approve an inquiry thread (requires `threadId`; optional `blockInstantBooking`).
+// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
+// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
 //
-// Requires a connected Airbnb host, else `404 no_connection`.
+// The body is validated before anything reaches Airbnb (a `422 invalid_params` names the field), and unknown fields are refused. The legacy spellings `threadId` and `blockInstantBooking` still work. The request is sent as the Airbnb account that owns the thread or listing.
+//
+// Airbnb refusals are mapped rather than returned as a 500: `409 inquiry_no_longer_open` / `inquiry_expired` when the inquiry moved on, `422 airbnb_rejected` with Airbnb’s reason otherwise, `403 connection_reauth_required` when the grant does not allow it.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/offers (the `CreateAirbnbOffer` operationId).
-func (c *ClientWithResponses) CreateAirbnbOfferWithResponse(ctx context.Context, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error) {
-	rsp, err := c.CreateAirbnbOffer(ctx, body, reqEditors...)
+func (c *ClientWithResponses) CreateAirbnbOfferWithResponse(ctx context.Context, params *CreateAirbnbOfferParams, body CreateAirbnbOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAirbnbOfferClientResponse, error) {
+	rsp, err := c.CreateAirbnbOffer(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -37807,17 +40791,54 @@ func (c *ClientWithResponses) GetAirbnbReservationWithResponse(ctx context.Conte
 	return ParseGetAirbnbReservationClientResponse(rsp)
 }
 
-// AirbnbReservationActionWithResponse Accept/decline/cancel Airbnb reservation
+// AirbnbReservationActionWithBodyWithResponse Accept, decline or cancel an Airbnb reservation
 //
-// Apply a state action to an Airbnb reservation — `accept` / `decline` (for inquiries and reservation requests), `cancel` (host cancellation, carries penalties), `pre-approve` (for inquiries).
+// Act on an Airbnb reservation by its Airbnb confirmation code. **Write-side** — calls Airbnb upstream, as the Airbnb account that owns the booking.
+//
+// - `accept` — accept a pending booking request.
+// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
+// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
+//
+// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+//
+// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
-// Returns a wrapper object for the known response body format(s).
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
-func (c *ClientWithResponses) AirbnbReservationActionWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error) {
-	rsp, err := c.AirbnbReservationAction(ctx, code, reqEditors...)
+func (c *ClientWithResponses) AirbnbReservationActionWithBodyWithResponse(ctx context.Context, code string, params *AirbnbReservationActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error) {
+	rsp, err := c.AirbnbReservationActionWithBody(ctx, code, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAirbnbReservationActionClientResponse(rsp)
+}
+
+// AirbnbReservationActionWithResponse Accept, decline or cancel an Airbnb reservation
+//
+// Act on an Airbnb reservation by its Airbnb confirmation code. **Write-side** — calls Airbnb upstream, as the Airbnb account that owns the booking.
+//
+// - `accept` — accept a pending booking request.
+// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
+// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
+//
+// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+//
+// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
+//
+// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
+func (c *ClientWithResponses) AirbnbReservationActionWithResponse(ctx context.Context, code string, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error) {
+	rsp, err := c.AirbnbReservationAction(ctx, code, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -38265,7 +41286,9 @@ func (c *ClientWithResponses) ListBookingConversationsWithResponse(ctx context.C
 
 // SendBookingMessageWithBodyWithResponse Send Booking.com message
 //
-// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+// Send a text message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+//
+// **Text only.** To send photos, use `POST /v1/conversations/{id}/messages` with `attachments` (JPEG or PNG, up to 10 MB each, with message text) — it uploads the files to Booking.com and records them in the conversation. Passing `attachments`, `attachment_ids` or `mediaUrl` here returns `422 attachments_not_supported` and sends nothing.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -38284,7 +41307,9 @@ func (c *ClientWithResponses) SendBookingMessageWithBodyWithResponse(ctx context
 
 // SendBookingMessageWithResponse Send Booking.com message
 //
-// Send a message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+// Send a text message in a Booking.com conversation as the host. Booking enforces content rules similar to Airbnb.
+//
+// **Text only.** To send photos, use `POST /v1/conversations/{id}/messages` with `attachments` (JPEG or PNG, up to 10 MB each, with message text) — it uploads the files to Booking.com and records them in the conversation. Passing `attachments`, `attachment_ids` or `mediaUrl` here returns `422 attachments_not_supported` and sends nothing.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -39551,6 +42576,20 @@ func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.C
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// ### Attachments
+//
+// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
+//
+// | Channel | Accepted types | Text | How it arrives |
+// |---|---|---|---|
+// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
+// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
+// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+//
+// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
+//
+// The response's `attachments` lists each file's durable `url`, and `parts` lists every channel message the send produced. Read-back (`GET /v1/conversations/{id}/messages`) shows the same files in each message's `attachments`.
+//
 // **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -39580,6 +42619,20 @@ func (c *ClientWithResponses) SendConversationMessageWithBodyWithResponse(ctx co
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// ### Attachments
+//
+// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
+//
+// | Channel | Accepted types | Text | How it arrives |
+// |---|---|---|---|
+// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
+// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
+// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+//
+// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
+//
+// The response's `attachments` lists each file's durable `url`, and `parts` lists every channel message the send produced. Read-back (`GET /v1/conversations/{id}/messages`) shows the same files in each message's `attachments`.
+//
 // **Inactive listings:** a conversation that belongs to an inactive listing returns `403 listing_inactive` and no message is sent. Activate the listing first.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
@@ -39591,6 +42644,140 @@ func (c *ClientWithResponses) SendConversationMessageWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParseSendConversationMessageClientResponse(rsp)
+}
+
+// PreapproveConversationWithBodyWithResponse Pre-approve an inquiry
+//
+// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+//
+// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+//
+// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+//
+// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
+func (c *ClientWithResponses) PreapproveConversationWithBodyWithResponse(ctx context.Context, id int, params *PreapproveConversationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreapproveConversationClientResponse, error) {
+	rsp, err := c.PreapproveConversationWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreapproveConversationClientResponse(rsp)
+}
+
+// PreapproveConversationWithResponse Pre-approve an inquiry
+//
+// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+//
+// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+//
+// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+//
+// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
+func (c *ClientWithResponses) PreapproveConversationWithResponse(ctx context.Context, id int, params *PreapproveConversationParams, body PreapproveConversationJSONRequestBody, reqEditors ...RequestEditorFn) (*PreapproveConversationClientResponse, error) {
+	rsp, err := c.PreapproveConversation(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreapproveConversationClientResponse(rsp)
+}
+
+// CreateConversationSpecialOfferWithBodyWithResponse Send a special offer
+//
+// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+//
+// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+//
+// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+//
+// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
+//
+// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
+func (c *ClientWithResponses) CreateConversationSpecialOfferWithBodyWithResponse(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConversationSpecialOfferClientResponse, error) {
+	rsp, err := c.CreateConversationSpecialOfferWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateConversationSpecialOfferClientResponse(rsp)
+}
+
+// CreateConversationSpecialOfferWithResponse Send a special offer
+//
+// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+//
+// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+//
+// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+//
+// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
+//
+// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
+func (c *ClientWithResponses) CreateConversationSpecialOfferWithResponse(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, body CreateConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConversationSpecialOfferClientResponse, error) {
+	rsp, err := c.CreateConversationSpecialOffer(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateConversationSpecialOfferClientResponse(rsp)
+}
+
+// WithdrawConversationSpecialOfferWithResponse Withdraw a special offer
+//
+// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. Runs the same action as the Vanio dashboard’s Withdraw offer. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/conversations/{id}/special-offers/{offerId} (the `WithdrawConversationSpecialOffer` operationId).
+func (c *ClientWithResponses) WithdrawConversationSpecialOfferWithResponse(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*WithdrawConversationSpecialOfferClientResponse, error) {
+	rsp, err := c.WithdrawConversationSpecialOffer(ctx, id, offerId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseWithdrawConversationSpecialOfferClientResponse(rsp)
+}
+
+// GetConversationSpecialOfferWithResponse Get a special offer
+//
+// Read a special offer on this conversation back from Airbnb — typically to check its `status` (`active` until the guest books it, it expires, or you withdraw it). Read live from Airbnb with the conversation’s own Airbnb account.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/conversations/{id}/special-offers/{offerId} (the `GetConversationSpecialOffer` operationId).
+func (c *ClientWithResponses) GetConversationSpecialOfferWithResponse(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*GetConversationSpecialOfferClientResponse, error) {
+	rsp, err := c.GetConversationSpecialOffer(ctx, id, offerId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConversationSpecialOfferClientResponse(rsp)
 }
 
 // ListGuestsWithResponse List guests
@@ -39761,6 +42948,27 @@ func (c *ClientWithResponses) GetWebhooksHealthWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseGetWebhooksHealthClientResponse(rsp)
+}
+
+// ListInquiriesWithResponse List inquiries
+//
+// Airbnb inquiries — guests asking about dates before booking — newest first. By default only `open` ones: nobody has answered and the stay is still ahead. Answer one with `POST /v1/conversations/{conversationId}/pre-approval` (accept their dates and price) or `POST /v1/conversations/{conversationId}/special-offers` (your own terms).
+//
+// Booking **requests** are not inquiries: they are reservations with status `pending` — list them with `GET /v1/reservations?status=pending` and answer with `POST /v1/reservations/{id}/accept` or `/decline`.
+//
+// **Pagination:** pass `pagination.nextCursor` back as `?cursor=` until `pagination.hasMore` is `false`. `?offset=` also works (0..10000). `limit` defaults to 50, max 100.
+//
+// Inquiries on inactive listings are left out; `?listing_id=` naming an inactive listing returns `403 listing_inactive`. `X-Account-Id` narrows to one connected account.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/inquiries (the `ListInquiries` operationId).
+func (c *ClientWithResponses) ListInquiriesWithResponse(ctx context.Context, params *ListInquiriesParams, reqEditors ...RequestEditorFn) (*ListInquiriesClientResponse, error) {
+	rsp, err := c.ListInquiries(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListInquiriesClientResponse(rsp)
 }
 
 // ClearKvWithResponse Clear KV entries by prefix
@@ -40858,6 +44066,71 @@ func (c *ClientWithResponses) UpdateReservationWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseUpdateReservationClientResponse(rsp)
+}
+
+// AcceptReservationRequestWithResponse Accept a booking request
+//
+// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
+//
+// Runs the same action as the Vanio dashboard’s Accept button. Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
+//
+// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+//
+// Takes no body.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations/{id}/accept (the `AcceptReservationRequest` operationId).
+func (c *ClientWithResponses) AcceptReservationRequestWithResponse(ctx context.Context, id int, params *AcceptReservationRequestParams, reqEditors ...RequestEditorFn) (*AcceptReservationRequestClientResponse, error) {
+	rsp, err := c.AcceptReservationRequest(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcceptReservationRequestClientResponse(rsp)
+}
+
+// DeclineReservationRequestWithBodyWithResponse Decline a booking request
+//
+// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+//
+// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+//
+// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations/{id}/decline (the `DeclineReservationRequest` operationId).
+func (c *ClientWithResponses) DeclineReservationRequestWithBodyWithResponse(ctx context.Context, id int, params *DeclineReservationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeclineReservationRequestClientResponse, error) {
+	rsp, err := c.DeclineReservationRequestWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeclineReservationRequestClientResponse(rsp)
+}
+
+// DeclineReservationRequestWithResponse Decline a booking request
+//
+// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+//
+// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+//
+// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+//
+// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations/{id}/decline (the `DeclineReservationRequest` operationId).
+func (c *ClientWithResponses) DeclineReservationRequestWithResponse(ctx context.Context, id int, params *DeclineReservationRequestParams, body DeclineReservationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*DeclineReservationRequestClientResponse, error) {
+	rsp, err := c.DeclineReservationRequest(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeclineReservationRequestClientResponse(rsp)
 }
 
 // ListReviewsWithResponse List reviews
@@ -44367,7 +47640,48 @@ func ParseListAirbnbThreadMessagesClientResponse(rsp *http.Response) (*ListAirbn
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest MessageListResponse
+		var dest struct {
+			Data *[]struct {
+				Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
+
+				// Channel Example: airbnb
+				Channel   *string    `json:"channel,omitempty"`
+				CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+				// ExternalCreatedAt When Airbnb recorded the message.
+				ExternalCreatedAt *time.Time `json:"externalCreatedAt,omitempty"`
+
+				// ExternalMessageId Airbnb's message id.
+				ExternalMessageId *string `json:"externalMessageId,omitempty"`
+
+				// Id Repull message id.
+				Id *string `json:"id,omitempty"`
+
+				// Message Message text. Empty for a file-only message.
+				Message       *string `json:"message,omitempty"`
+				ReservationId *string `json:"reservationId,omitempty"`
+
+				// SenderType `guest`, `host`, `user`, `system`, …
+				SenderType *string `json:"senderType,omitempty"`
+
+				// ThreadId The Airbnb thread id.
+				ThreadId          *string    `json:"threadId,omitempty"`
+				TranslatedMessage *string    `json:"translatedMessage,omitempty"`
+				UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
+
+				// UserId Airbnb user id of the sender.
+				UserId *string `json:"userId,omitempty"`
+			} `json:"data,omitempty"`
+
+			// DataFreshness When this workspace's Airbnb data was last synced.
+			DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+
+			// Pagination Absent when `?all=true`.
+			Pagination *struct {
+				HasMore    *bool   `json:"hasMore,omitempty"`
+				NextCursor *string `json:"nextCursor,omitempty"`
+			} `json:"pagination,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -44399,8 +47713,12 @@ func ParseSendAirbnbMessageClientResponse(rsp *http.Response) (*SendAirbnbMessag
 	}
 
 	switch {
-	case rsp.StatusCode == 201:
-		break // No content-type
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest SendAirbnbMessage201JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
@@ -44422,6 +47740,13 @@ func ParseSendAirbnbMessageClientResponse(rsp *http.Response) (*SendAirbnbMessag
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
@@ -44506,8 +47831,30 @@ func ParseWithdrawAirbnbOfferClientResponse(rsp *http.Response) (*WithdrawAirbnb
 	}
 
 	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+			ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+			GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+			// Id Airbnb special-offer id.
+			Id *string `json:"id,omitempty"`
+
+			// ListingId Airbnb listing id (special offers only).
+			ListingId *string                                          `json:"listingId,omitempty"`
+			Nights    *int                                             `json:"nights,omitempty"`
+			OfferType *WithdrawAirbnbOffer200JSONResponseBodyOfferType `json:"offerType,omitempty"`
+			StartDate *openapi_types.Date                              `json:"startDate,omitempty"`
+			Status    *WithdrawAirbnbOffer200JSONResponseBodyStatus    `json:"status,omitempty"`
+
+			// ThreadId Airbnb thread id the offer was sent on.
+			ThreadId   *string  `json:"threadId,omitempty"`
+			TotalPrice *float32 `json:"totalPrice,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
@@ -44516,26 +47863,133 @@ func ParseWithdrawAirbnbOfferClientResponse(rsp *http.Response) (*WithdrawAirbnb
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbOfferClientResponse parses an HTTP response from a GetAirbnbOfferWithResponse call
+func ParseGetAirbnbOfferClientResponse(rsp *http.Response) (*GetAirbnbOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+			ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+			GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+			// Id Airbnb special-offer id.
+			Id *string `json:"id,omitempty"`
+
+			// ListingId Airbnb listing id (special offers only).
+			ListingId *string                                     `json:"listingId,omitempty"`
+			Nights    *int                                        `json:"nights,omitempty"`
+			OfferType *GetAirbnbOffer200JSONResponseBodyOfferType `json:"offerType,omitempty"`
+			StartDate *openapi_types.Date                         `json:"startDate,omitempty"`
+			Status    *GetAirbnbOffer200JSONResponseBodyStatus    `json:"status,omitempty"`
+
+			// ThreadId Airbnb thread id the offer was sent on.
+			ThreadId   *string  `json:"threadId,omitempty"`
+			TotalPrice *float32 `json:"totalPrice,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -44556,8 +48010,30 @@ func ParseCreateAirbnbOfferClientResponse(rsp *http.Response) (*CreateAirbnbOffe
 	}
 
 	switch {
-	case rsp.StatusCode == 201:
-		break // No content-type
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			CreatedAt    *time.Time              `json:"createdAt,omitempty"`
+			ExpiresAt    *time.Time              `json:"expiresAt,omitempty"`
+			GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+
+			// Id Airbnb special-offer id.
+			Id *string `json:"id,omitempty"`
+
+			// ListingId Airbnb listing id (special offers only).
+			ListingId *string                                        `json:"listingId,omitempty"`
+			Nights    *int                                           `json:"nights,omitempty"`
+			OfferType *CreateAirbnbOffer201JSONResponseBodyOfferType `json:"offerType,omitempty"`
+			StartDate *openapi_types.Date                            `json:"startDate,omitempty"`
+			Status    *CreateAirbnbOffer201JSONResponseBodyStatus    `json:"status,omitempty"`
+
+			// ThreadId Airbnb thread id the offer was sent on.
+			ThreadId   *string  `json:"threadId,omitempty"`
+			TotalPrice *float32 `json:"totalPrice,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
@@ -44567,32 +48043,46 @@ func ParseCreateAirbnbOfferClientResponse(rsp *http.Response) (*CreateAirbnbOffe
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -44686,15 +48176,64 @@ func ParseAirbnbReservationActionClientResponse(rsp *http.Response) (*AirbnbRese
 	}
 
 	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			ConfirmationCode *string `json:"confirmationCode,omitempty"`
+			StatusType       *string `json:"statusType,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -45577,6 +49116,13 @@ func ParseSendBookingMessageClientResponse(rsp *http.Response) (*SendBookingMess
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
@@ -47755,11 +51301,478 @@ func ParseSendConversationMessageClientResponse(rsp *http.Response) (*SendConver
 		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePreapproveConversationClientResponse parses an HTTP response from a PreapproveConversationWithResponse call
+func ParsePreapproveConversationClientResponse(rsp *http.Response) (*PreapproveConversationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PreapproveConversationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			// BlockInstantBooking Example: false
+			BlockInstantBooking bool `json:"blockInstantBooking"`
+
+			// ConversationId Example: 164743
+			ConversationId string `json:"conversationId"`
+
+			// ExpiresAt When the guest can no longer book on the pre-approval, if Airbnb reported it.
+			ExpiresAt *time.Time                                      `json:"expiresAt"`
+			Status    PreapproveConversation201JSONResponseBodyStatus `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateConversationSpecialOfferClientResponse parses an HTTP response from a CreateConversationSpecialOfferWithResponse call
+func ParseCreateConversationSpecialOfferClientResponse(rsp *http.Response) (*CreateConversationSpecialOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateConversationSpecialOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+			//
+			// Example: 955656266214757921
+			AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+			// CheckIn Example: 2026-10-01
+			CheckIn *openapi_types.Date `json:"checkIn"`
+
+			// CheckOut Example: 2026-10-05
+			CheckOut *openapi_types.Date `json:"checkOut"`
+
+			// ConversationId Repull conversation id the offer was sent on.
+			//
+			// Example: 164743
+			ConversationId string     `json:"conversationId"`
+			CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+			// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+			ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+			// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+			Guests *struct {
+				// Adults Example: 2
+				Adults *int `json:"adults,omitempty"`
+
+				// Children Example: 1
+				Children *int `json:"children,omitempty"`
+
+				// Infants Example: 0
+				Infants *int `json:"infants,omitempty"`
+
+				// Pets Example: 0
+				Pets *int `json:"pets,omitempty"`
+
+				// Total Example: 3
+				Total *int `json:"total,omitempty"`
+			} `json:"guests,omitempty"`
+
+			// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+			//
+			// Example: 1459920384
+			Id *string `json:"id"`
+
+			// ListingId Repull listing id, when known.
+			//
+			// Example: 23892
+			ListingId *string `json:"listingId,omitempty"`
+
+			// Nights Example: 4
+			Nights *int `json:"nights"`
+
+			// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+			//
+			// Example: active
+			Status *string `json:"status"`
+
+			// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+			//
+			// Example: 880
+			TotalPrice *float32 `json:"totalPrice"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseWithdrawConversationSpecialOfferClientResponse parses an HTTP response from a WithdrawConversationSpecialOfferWithResponse call
+func ParseWithdrawConversationSpecialOfferClientResponse(rsp *http.Response) (*WithdrawConversationSpecialOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &WithdrawConversationSpecialOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// ConversationId Example: 164743
+			ConversationId string `json:"conversationId"`
+
+			// Id Example: 1459920384
+			Id     string                                                    `json:"id"`
+			Status WithdrawConversationSpecialOffer200JSONResponseBodyStatus `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConversationSpecialOfferClientResponse parses an HTTP response from a GetConversationSpecialOfferWithResponse call
+func ParseGetConversationSpecialOfferClientResponse(rsp *http.Response) (*GetConversationSpecialOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConversationSpecialOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+			//
+			// Example: 955656266214757921
+			AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+			// CheckIn Example: 2026-10-01
+			CheckIn *openapi_types.Date `json:"checkIn"`
+
+			// CheckOut Example: 2026-10-05
+			CheckOut *openapi_types.Date `json:"checkOut"`
+
+			// ConversationId Repull conversation id the offer was sent on.
+			//
+			// Example: 164743
+			ConversationId string     `json:"conversationId"`
+			CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+			// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+			ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+			// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+			Guests *struct {
+				// Adults Example: 2
+				Adults *int `json:"adults,omitempty"`
+
+				// Children Example: 1
+				Children *int `json:"children,omitempty"`
+
+				// Infants Example: 0
+				Infants *int `json:"infants,omitempty"`
+
+				// Pets Example: 0
+				Pets *int `json:"pets,omitempty"`
+
+				// Total Example: 3
+				Total *int `json:"total,omitempty"`
+			} `json:"guests,omitempty"`
+
+			// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+			//
+			// Example: 1459920384
+			Id *string `json:"id"`
+
+			// ListingId Repull listing id, when known.
+			//
+			// Example: 23892
+			ListingId *string `json:"listingId,omitempty"`
+
+			// Nights Example: 4
+			Nights *int `json:"nights"`
+
+			// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+			//
+			// Example: active
+			Status *string `json:"status"`
+
+			// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+			//
+			// Example: 880
+			TotalPrice *float32 `json:"totalPrice"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -48098,6 +52111,120 @@ func ParseGetWebhooksHealthClientResponse(rsp *http.Response) (*GetWebhooksHealt
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListInquiriesClientResponse parses an HTTP response from a ListInquiriesWithResponse call
+func ParseListInquiriesClientResponse(rsp *http.Response) (*ListInquiriesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListInquiriesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []struct {
+				// Channel Example: airbnb
+				Channel string `json:"channel"`
+
+				// CheckIn Example: 2026-09-23
+				CheckIn *openapi_types.Date `json:"checkIn"`
+
+				// CheckOut Example: 2026-10-11
+				CheckOut *openapi_types.Date `json:"checkOut"`
+
+				// ConversationId Repull conversation id — pass it to `POST /v1/conversations/{id}/pre-approval` or `/special-offers`.
+				//
+				// Example: 164743
+				ConversationId *string    `json:"conversationId"`
+				CreatedAt      *time.Time `json:"createdAt"`
+
+				// ExpectedPayout What Airbnb quoted the host for the stay the guest asked about.
+				ExpectedPayout struct {
+					// Amount Example: 2152.6
+					Amount *float32 `json:"amount,omitempty"`
+
+					// Currency Example: USD
+					Currency *string `json:"currency,omitempty"`
+				} `json:"expectedPayout"`
+				Guests struct {
+					// Adults Example: 2
+					Adults *int `json:"adults,omitempty"`
+
+					// Children Example: 0
+					Children *int `json:"children,omitempty"`
+
+					// Infants Example: 0
+					Infants *int `json:"infants,omitempty"`
+
+					// Pets Example: 0
+					Pets *int `json:"pets,omitempty"`
+
+					// Total Example: 2
+					Total *int `json:"total,omitempty"`
+				} `json:"guests"`
+
+				// Id Repull inquiry id.
+				//
+				// Example: 25173
+				Id string `json:"id"`
+
+				// ListingId Example: 23892
+				ListingId *string `json:"listingId"`
+
+				// RelayedBy A PMS (e.g. `hostaway`, `guesty`) this inquiry arrives through. When set, it cannot be pre-approved or offered from Repull — act on it in that PMS.
+				RelayedBy *string `json:"relayedBy"`
+
+				// ReservationId The reservation the inquiry became, once booked.
+				ReservationId *string `json:"reservationId"`
+
+				// RespondBy Airbnb’s response deadline for the host (it counts toward response rate).
+				RespondBy   *time.Time `json:"respondBy"`
+				RespondedAt *time.Time `json:"respondedAt"`
+
+				// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, Vanio, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
+				Status    ListInquiries200JSONResponseBodyDataStatus `json:"status"`
+				UpdatedAt *time.Time                                 `json:"updatedAt"`
+			} `json:"data"`
+
+			// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+			Pagination Pagination `json:"pagination"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -50062,6 +54189,196 @@ func ParseUpdateReservationClientResponse(rsp *http.Response) (*UpdateReservatio
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAcceptReservationRequestClientResponse parses an HTTP response from a AcceptReservationRequestWithResponse call
+func ParseAcceptReservationRequestClientResponse(rsp *http.Response) (*AcceptReservationRequestClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AcceptReservationRequestClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Action  AcceptReservationRequest200JSONResponseBodyAction  `json:"action"`
+			Channel AcceptReservationRequest200JSONResponseBodyChannel `json:"channel"`
+
+			// ConfirmationCode Example: HM9J2MFR3W
+			ConfirmationCode string                                                    `json:"confirmationCode"`
+			DeclineReason    *AcceptReservationRequest200JSONResponseBodyDeclineReason `json:"declineReason"`
+
+			// ReservationId Example: 236354
+			ReservationId string `json:"reservationId"`
+
+			// Status What Airbnb was asked to do and did not refuse. The reservation itself moves when Airbnb’s own notification lands, usually within seconds — that is when `reservation.request.updated` fires (`requestStatus` `accepted` or `declined`), plus `reservation.created` for an accepted request.
+			Status AcceptReservationRequest200JSONResponseBodyStatus `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeclineReservationRequestClientResponse parses an HTTP response from a DeclineReservationRequestWithResponse call
+func ParseDeclineReservationRequestClientResponse(rsp *http.Response) (*DeclineReservationRequestClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeclineReservationRequestClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Action  DeclineReservationRequest200JSONResponseBodyAction  `json:"action"`
+			Channel DeclineReservationRequest200JSONResponseBodyChannel `json:"channel"`
+
+			// ConfirmationCode Example: HM9J2MFR3W
+			ConfirmationCode string                                                     `json:"confirmationCode"`
+			DeclineReason    *DeclineReservationRequest200JSONResponseBodyDeclineReason `json:"declineReason"`
+
+			// ReservationId Example: 236354
+			ReservationId string `json:"reservationId"`
+
+			// Status What Airbnb was asked to do and did not refuse. The reservation itself moves when Airbnb’s own notification lands, usually within seconds — that is when `reservation.request.updated` fires (`requestStatus` `accepted` or `declined`), plus `reservation.created` for an accepted request.
+			Status DeclineReservationRequest200JSONResponseBodyStatus `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 

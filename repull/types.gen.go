@@ -1204,6 +1204,30 @@ func (e ConversationDetailStatus) Valid() bool {
 	}
 }
 
+// Defines values for ConversationMessageAttachmentType.
+const (
+	ConversationMessageAttachmentTypeAudio ConversationMessageAttachmentType = "audio"
+	ConversationMessageAttachmentTypeFile  ConversationMessageAttachmentType = "file"
+	ConversationMessageAttachmentTypeImage ConversationMessageAttachmentType = "image"
+	ConversationMessageAttachmentTypeVideo ConversationMessageAttachmentType = "video"
+)
+
+// Valid indicates whether the value is a known member of the ConversationMessageAttachmentType enum.
+func (e ConversationMessageAttachmentType) Valid() bool {
+	switch e {
+	case ConversationMessageAttachmentTypeAudio:
+		return true
+	case ConversationMessageAttachmentTypeFile:
+		return true
+	case ConversationMessageAttachmentTypeImage:
+		return true
+	case ConversationMessageAttachmentTypeVideo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GuestCreateResponseContactsType.
 const (
 	GuestCreateResponseContactsTypeEmail GuestCreateResponseContactsType = "email"
@@ -1216,6 +1240,69 @@ func (e GuestCreateResponseContactsType) Valid() bool {
 	case GuestCreateResponseContactsTypeEmail:
 		return true
 	case GuestCreateResponseContactsTypePhone:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InquiryCreatedEventEvent.
+const (
+	InquiryCreatedEventEventInquiryCreated InquiryCreatedEventEvent = "inquiry.created"
+)
+
+// Valid indicates whether the value is a known member of the InquiryCreatedEventEvent enum.
+func (e InquiryCreatedEventEvent) Valid() bool {
+	switch e {
+	case InquiryCreatedEventEventInquiryCreated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InquiryUpdatedEventEvent.
+const (
+	InquiryUpdatedEventEventInquiryUpdated InquiryUpdatedEventEvent = "inquiry.updated"
+)
+
+// Valid indicates whether the value is a known member of the InquiryUpdatedEventEvent enum.
+func (e InquiryUpdatedEventEvent) Valid() bool {
+	switch e {
+	case InquiryUpdatedEventEventInquiryUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for InquiryWebhookObjectStatus.
+const (
+	InquiryWebhookObjectStatusBooked           InquiryWebhookObjectStatus = "booked"
+	InquiryWebhookObjectStatusDeclined         InquiryWebhookObjectStatus = "declined"
+	InquiryWebhookObjectStatusExpired          InquiryWebhookObjectStatus = "expired"
+	InquiryWebhookObjectStatusNotPossible      InquiryWebhookObjectStatus = "not_possible"
+	InquiryWebhookObjectStatusOpen             InquiryWebhookObjectStatus = "open"
+	InquiryWebhookObjectStatusPreApproved      InquiryWebhookObjectStatus = "pre_approved"
+	InquiryWebhookObjectStatusSpecialOfferSent InquiryWebhookObjectStatus = "special_offer_sent"
+)
+
+// Valid indicates whether the value is a known member of the InquiryWebhookObjectStatus enum.
+func (e InquiryWebhookObjectStatus) Valid() bool {
+	switch e {
+	case InquiryWebhookObjectStatusBooked:
+		return true
+	case InquiryWebhookObjectStatusDeclined:
+		return true
+	case InquiryWebhookObjectStatusExpired:
+		return true
+	case InquiryWebhookObjectStatusNotPossible:
+		return true
+	case InquiryWebhookObjectStatusOpen:
+		return true
+	case InquiryWebhookObjectStatusPreApproved:
+		return true
+	case InquiryWebhookObjectStatusSpecialOfferSent:
 		return true
 	default:
 		return false
@@ -2092,6 +2179,21 @@ func (e ReservationStatus) Valid() bool {
 	}
 }
 
+// Defines values for ReservationStatusDetail.
+const (
+	RequestExpired ReservationStatusDetail = "request_expired"
+)
+
+// Valid indicates whether the value is a known member of the ReservationStatusDetail enum.
+func (e ReservationStatusDetail) Valid() bool {
+	switch e {
+	case RequestExpired:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationAlterationCreatedEventEvent.
 const (
 	ReservationAlterationCreatedEventEventReservationAlterationCreated ReservationAlterationCreatedEventEvent = "reservation.alteration.created"
@@ -2203,6 +2305,75 @@ const (
 func (e ReservationMessageReceivedEventEvent) Valid() bool {
 	switch e {
 	case ReservationMessageReceivedEventEventReservationMessageReceived:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationRequestCreatedEventEvent.
+const (
+	ReservationRequestCreatedEventEventReservationRequestCreated ReservationRequestCreatedEventEvent = "reservation.request.created"
+)
+
+// Valid indicates whether the value is a known member of the ReservationRequestCreatedEventEvent enum.
+func (e ReservationRequestCreatedEventEvent) Valid() bool {
+	switch e {
+	case ReservationRequestCreatedEventEventReservationRequestCreated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationRequestCreatedPayloadRequestStatus.
+const (
+	ReservationRequestCreatedPayloadRequestStatusPending ReservationRequestCreatedPayloadRequestStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the ReservationRequestCreatedPayloadRequestStatus enum.
+func (e ReservationRequestCreatedPayloadRequestStatus) Valid() bool {
+	switch e {
+	case ReservationRequestCreatedPayloadRequestStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationRequestUpdatedEventEvent.
+const (
+	ReservationRequestUpdatedEventEventReservationRequestUpdated ReservationRequestUpdatedEventEvent = "reservation.request.updated"
+)
+
+// Valid indicates whether the value is a known member of the ReservationRequestUpdatedEventEvent enum.
+func (e ReservationRequestUpdatedEventEvent) Valid() bool {
+	switch e {
+	case ReservationRequestUpdatedEventEventReservationRequestUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationRequestUpdatedPayloadRequestStatus.
+const (
+	ReservationRequestUpdatedPayloadRequestStatusAccepted ReservationRequestUpdatedPayloadRequestStatus = "accepted"
+	ReservationRequestUpdatedPayloadRequestStatusDeclined ReservationRequestUpdatedPayloadRequestStatus = "declined"
+	ReservationRequestUpdatedPayloadRequestStatusExpired  ReservationRequestUpdatedPayloadRequestStatus = "expired"
+	ReservationRequestUpdatedPayloadRequestStatusVoided   ReservationRequestUpdatedPayloadRequestStatus = "voided"
+)
+
+// Valid indicates whether the value is a known member of the ReservationRequestUpdatedPayloadRequestStatus enum.
+func (e ReservationRequestUpdatedPayloadRequestStatus) Valid() bool {
+	switch e {
+	case ReservationRequestUpdatedPayloadRequestStatusAccepted:
+		return true
+	case ReservationRequestUpdatedPayloadRequestStatusDeclined:
+		return true
+	case ReservationRequestUpdatedPayloadRequestStatusExpired:
+		return true
+	case ReservationRequestUpdatedPayloadRequestStatusVoided:
 		return true
 	default:
 		return false
@@ -2377,6 +2548,24 @@ func (e SendMessageResponseDirection) Valid() bool {
 	}
 }
 
+// Defines values for SentAttachmentType.
+const (
+	SentAttachmentTypeImage SentAttachmentType = "image"
+	SentAttachmentTypeVideo SentAttachmentType = "video"
+)
+
+// Valid indicates whether the value is a known member of the SentAttachmentType enum.
+func (e SentAttachmentType) Valid() bool {
+	switch e {
+	case SentAttachmentTypeImage:
+		return true
+	case SentAttachmentTypeVideo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for UsageQuotaWarningEventEvent.
 const (
 	UsageQuotaWarningEventEventUsageQuotaWarning UsageQuotaWarningEventEvent = "usage.quota.warning"
@@ -2450,6 +2639,8 @@ const (
 	WebhookEventTypeAiOperationCompleted           WebhookEventType = "ai.operation.completed"
 	WebhookEventTypeAiOperationFailed              WebhookEventType = "ai.operation.failed"
 	WebhookEventTypeCalendarUpdated                WebhookEventType = "calendar.updated"
+	WebhookEventTypeInquiryCreated                 WebhookEventType = "inquiry.created"
+	WebhookEventTypeInquiryUpdated                 WebhookEventType = "inquiry.updated"
 	WebhookEventTypeListingCreated                 WebhookEventType = "listing.created"
 	WebhookEventTypeListingDeleted                 WebhookEventType = "listing.deleted"
 	WebhookEventTypeListingReactivated             WebhookEventType = "listing.reactivated"
@@ -2463,6 +2654,8 @@ const (
 	WebhookEventTypeReservationCancelled           WebhookEventType = "reservation.cancelled"
 	WebhookEventTypeReservationCreated             WebhookEventType = "reservation.created"
 	WebhookEventTypeReservationMessageReceived     WebhookEventType = "reservation.message.received"
+	WebhookEventTypeReservationRequestCreated      WebhookEventType = "reservation.request.created"
+	WebhookEventTypeReservationRequestUpdated      WebhookEventType = "reservation.request.updated"
 	WebhookEventTypeReservationUpdated             WebhookEventType = "reservation.updated"
 	WebhookEventTypeReviewCreated                  WebhookEventType = "review.created"
 	WebhookEventTypeReviewResponded                WebhookEventType = "review.responded"
@@ -2481,6 +2674,10 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeAiOperationFailed:
 		return true
 	case WebhookEventTypeCalendarUpdated:
+		return true
+	case WebhookEventTypeInquiryCreated:
+		return true
+	case WebhookEventTypeInquiryUpdated:
 		return true
 	case WebhookEventTypeListingCreated:
 		return true
@@ -2507,6 +2704,10 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeReservationCreated:
 		return true
 	case WebhookEventTypeReservationMessageReceived:
+		return true
+	case WebhookEventTypeReservationRequestCreated:
+		return true
+	case WebhookEventTypeReservationRequestUpdated:
 		return true
 	case WebhookEventTypeReservationUpdated:
 		return true
@@ -3094,18 +3295,162 @@ func (e UpdateAirbnbMessageJSONBodyAction) Valid() bool {
 	}
 }
 
+// Defines values for WithdrawAirbnbOffer200JSONResponseBodyOfferType.
+const (
+	WithdrawAirbnbOffer200JSONResponseBodyOfferTypePreapproval  WithdrawAirbnbOffer200JSONResponseBodyOfferType = "preapproval"
+	WithdrawAirbnbOffer200JSONResponseBodyOfferTypeSpecialOffer WithdrawAirbnbOffer200JSONResponseBodyOfferType = "special_offer"
+)
+
+// Valid indicates whether the value is a known member of the WithdrawAirbnbOffer200JSONResponseBodyOfferType enum.
+func (e WithdrawAirbnbOffer200JSONResponseBodyOfferType) Valid() bool {
+	switch e {
+	case WithdrawAirbnbOffer200JSONResponseBodyOfferTypePreapproval:
+		return true
+	case WithdrawAirbnbOffer200JSONResponseBodyOfferTypeSpecialOffer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WithdrawAirbnbOffer200JSONResponseBodyStatus.
+const (
+	WithdrawAirbnbOffer200JSONResponseBodyStatusAccepted WithdrawAirbnbOffer200JSONResponseBodyStatus = "accepted"
+	WithdrawAirbnbOffer200JSONResponseBodyStatusActive   WithdrawAirbnbOffer200JSONResponseBodyStatus = "active"
+	WithdrawAirbnbOffer200JSONResponseBodyStatusDeclined WithdrawAirbnbOffer200JSONResponseBodyStatus = "declined"
+	WithdrawAirbnbOffer200JSONResponseBodyStatusExpired  WithdrawAirbnbOffer200JSONResponseBodyStatus = "expired"
+	WithdrawAirbnbOffer200JSONResponseBodyStatusPending  WithdrawAirbnbOffer200JSONResponseBodyStatus = "pending"
+	WithdrawAirbnbOffer200JSONResponseBodyStatusVoided   WithdrawAirbnbOffer200JSONResponseBodyStatus = "voided"
+)
+
+// Valid indicates whether the value is a known member of the WithdrawAirbnbOffer200JSONResponseBodyStatus enum.
+func (e WithdrawAirbnbOffer200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case WithdrawAirbnbOffer200JSONResponseBodyStatusAccepted:
+		return true
+	case WithdrawAirbnbOffer200JSONResponseBodyStatusActive:
+		return true
+	case WithdrawAirbnbOffer200JSONResponseBodyStatusDeclined:
+		return true
+	case WithdrawAirbnbOffer200JSONResponseBodyStatusExpired:
+		return true
+	case WithdrawAirbnbOffer200JSONResponseBodyStatusPending:
+		return true
+	case WithdrawAirbnbOffer200JSONResponseBodyStatusVoided:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAirbnbOffer200JSONResponseBodyOfferType.
+const (
+	GetAirbnbOffer200JSONResponseBodyOfferTypePreapproval  GetAirbnbOffer200JSONResponseBodyOfferType = "preapproval"
+	GetAirbnbOffer200JSONResponseBodyOfferTypeSpecialOffer GetAirbnbOffer200JSONResponseBodyOfferType = "special_offer"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbOffer200JSONResponseBodyOfferType enum.
+func (e GetAirbnbOffer200JSONResponseBodyOfferType) Valid() bool {
+	switch e {
+	case GetAirbnbOffer200JSONResponseBodyOfferTypePreapproval:
+		return true
+	case GetAirbnbOffer200JSONResponseBodyOfferTypeSpecialOffer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAirbnbOffer200JSONResponseBodyStatus.
+const (
+	GetAirbnbOffer200JSONResponseBodyStatusAccepted GetAirbnbOffer200JSONResponseBodyStatus = "accepted"
+	GetAirbnbOffer200JSONResponseBodyStatusActive   GetAirbnbOffer200JSONResponseBodyStatus = "active"
+	GetAirbnbOffer200JSONResponseBodyStatusDeclined GetAirbnbOffer200JSONResponseBodyStatus = "declined"
+	GetAirbnbOffer200JSONResponseBodyStatusExpired  GetAirbnbOffer200JSONResponseBodyStatus = "expired"
+	GetAirbnbOffer200JSONResponseBodyStatusPending  GetAirbnbOffer200JSONResponseBodyStatus = "pending"
+	GetAirbnbOffer200JSONResponseBodyStatusVoided   GetAirbnbOffer200JSONResponseBodyStatus = "voided"
+)
+
+// Valid indicates whether the value is a known member of the GetAirbnbOffer200JSONResponseBodyStatus enum.
+func (e GetAirbnbOffer200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case GetAirbnbOffer200JSONResponseBodyStatusAccepted:
+		return true
+	case GetAirbnbOffer200JSONResponseBodyStatusActive:
+		return true
+	case GetAirbnbOffer200JSONResponseBodyStatusDeclined:
+		return true
+	case GetAirbnbOffer200JSONResponseBodyStatusExpired:
+		return true
+	case GetAirbnbOffer200JSONResponseBodyStatusPending:
+		return true
+	case GetAirbnbOffer200JSONResponseBodyStatusVoided:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateAirbnbOfferJSONBodyType.
 const (
-	Offer       CreateAirbnbOfferJSONBodyType = "offer"
-	Preapproval CreateAirbnbOfferJSONBodyType = "preapproval"
+	CreateAirbnbOfferJSONBodyTypeOffer       CreateAirbnbOfferJSONBodyType = "offer"
+	CreateAirbnbOfferJSONBodyTypePreapproval CreateAirbnbOfferJSONBodyType = "preapproval"
 )
 
 // Valid indicates whether the value is a known member of the CreateAirbnbOfferJSONBodyType enum.
 func (e CreateAirbnbOfferJSONBodyType) Valid() bool {
 	switch e {
-	case Offer:
+	case CreateAirbnbOfferJSONBodyTypeOffer:
 		return true
-	case Preapproval:
+	case CreateAirbnbOfferJSONBodyTypePreapproval:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateAirbnbOffer201JSONResponseBodyOfferType.
+const (
+	CreateAirbnbOffer201JSONResponseBodyOfferTypePreapproval  CreateAirbnbOffer201JSONResponseBodyOfferType = "preapproval"
+	CreateAirbnbOffer201JSONResponseBodyOfferTypeSpecialOffer CreateAirbnbOffer201JSONResponseBodyOfferType = "special_offer"
+)
+
+// Valid indicates whether the value is a known member of the CreateAirbnbOffer201JSONResponseBodyOfferType enum.
+func (e CreateAirbnbOffer201JSONResponseBodyOfferType) Valid() bool {
+	switch e {
+	case CreateAirbnbOffer201JSONResponseBodyOfferTypePreapproval:
+		return true
+	case CreateAirbnbOffer201JSONResponseBodyOfferTypeSpecialOffer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateAirbnbOffer201JSONResponseBodyStatus.
+const (
+	CreateAirbnbOffer201JSONResponseBodyStatusAccepted CreateAirbnbOffer201JSONResponseBodyStatus = "accepted"
+	CreateAirbnbOffer201JSONResponseBodyStatusActive   CreateAirbnbOffer201JSONResponseBodyStatus = "active"
+	CreateAirbnbOffer201JSONResponseBodyStatusDeclined CreateAirbnbOffer201JSONResponseBodyStatus = "declined"
+	CreateAirbnbOffer201JSONResponseBodyStatusExpired  CreateAirbnbOffer201JSONResponseBodyStatus = "expired"
+	CreateAirbnbOffer201JSONResponseBodyStatusPending  CreateAirbnbOffer201JSONResponseBodyStatus = "pending"
+	CreateAirbnbOffer201JSONResponseBodyStatusVoided   CreateAirbnbOffer201JSONResponseBodyStatus = "voided"
+)
+
+// Valid indicates whether the value is a known member of the CreateAirbnbOffer201JSONResponseBodyStatus enum.
+func (e CreateAirbnbOffer201JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case CreateAirbnbOffer201JSONResponseBodyStatusAccepted:
+		return true
+	case CreateAirbnbOffer201JSONResponseBodyStatusActive:
+		return true
+	case CreateAirbnbOffer201JSONResponseBodyStatusDeclined:
+		return true
+	case CreateAirbnbOffer201JSONResponseBodyStatusExpired:
+		return true
+	case CreateAirbnbOffer201JSONResponseBodyStatusPending:
+		return true
+	case CreateAirbnbOffer201JSONResponseBodyStatusVoided:
 		return true
 	default:
 		return false
@@ -3139,6 +3484,66 @@ func (e ListAirbnbReservationsParamsStatus) Valid() bool {
 	case ListAirbnbReservationsParamsStatusPending:
 		return true
 	case ListAirbnbReservationsParamsStatusRequestVoided:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbReservationActionJSONBodyAction.
+const (
+	AirbnbReservationActionJSONBodyActionAccept  AirbnbReservationActionJSONBodyAction = "accept"
+	AirbnbReservationActionJSONBodyActionCancel  AirbnbReservationActionJSONBodyAction = "cancel"
+	AirbnbReservationActionJSONBodyActionDecline AirbnbReservationActionJSONBodyAction = "decline"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbReservationActionJSONBodyAction enum.
+func (e AirbnbReservationActionJSONBodyAction) Valid() bool {
+	switch e {
+	case AirbnbReservationActionJSONBodyActionAccept:
+		return true
+	case AirbnbReservationActionJSONBodyActionCancel:
+		return true
+	case AirbnbReservationActionJSONBodyActionDecline:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbReservationActionJSONBodyReason.
+const (
+	AirbnbReservationActionJSONBodyReasonCalendarConflict     AirbnbReservationActionJSONBodyReason = "calendar_conflict"
+	AirbnbReservationActionJSONBodyReasonDatesNotAvailable    AirbnbReservationActionJSONBodyReason = "dates_not_available"
+	AirbnbReservationActionJSONBodyReasonDifferentDatesNeeded AirbnbReservationActionJSONBodyReason = "different_dates_needed"
+	AirbnbReservationActionJSONBodyReasonListingNotReady      AirbnbReservationActionJSONBodyReason = "listing_not_ready"
+	AirbnbReservationActionJSONBodyReasonMaintenanceIssue     AirbnbReservationActionJSONBodyReason = "maintenance_issue"
+	AirbnbReservationActionJSONBodyReasonNotComfortable       AirbnbReservationActionJSONBodyReason = "not_comfortable"
+	AirbnbReservationActionJSONBodyReasonOther                AirbnbReservationActionJSONBodyReason = "other"
+	AirbnbReservationActionJSONBodyReasonSpam                 AirbnbReservationActionJSONBodyReason = "spam"
+	AirbnbReservationActionJSONBodyReasonUnableToHost         AirbnbReservationActionJSONBodyReason = "unable_to_host"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbReservationActionJSONBodyReason enum.
+func (e AirbnbReservationActionJSONBodyReason) Valid() bool {
+	switch e {
+	case AirbnbReservationActionJSONBodyReasonCalendarConflict:
+		return true
+	case AirbnbReservationActionJSONBodyReasonDatesNotAvailable:
+		return true
+	case AirbnbReservationActionJSONBodyReasonDifferentDatesNeeded:
+		return true
+	case AirbnbReservationActionJSONBodyReasonListingNotReady:
+		return true
+	case AirbnbReservationActionJSONBodyReasonMaintenanceIssue:
+		return true
+	case AirbnbReservationActionJSONBodyReasonNotComfortable:
+		return true
+	case AirbnbReservationActionJSONBodyReasonOther:
+		return true
+	case AirbnbReservationActionJSONBodyReasonSpam:
+		return true
+	case AirbnbReservationActionJSONBodyReasonUnableToHost:
 		return true
 	default:
 		return false
@@ -3298,6 +3703,36 @@ func (e ListConversationMessagesParamsOrder) Valid() bool {
 	}
 }
 
+// Defines values for PreapproveConversation201JSONResponseBodyStatus.
+const (
+	PreapproveConversation201JSONResponseBodyStatusPreApproved PreapproveConversation201JSONResponseBodyStatus = "pre_approved"
+)
+
+// Valid indicates whether the value is a known member of the PreapproveConversation201JSONResponseBodyStatus enum.
+func (e PreapproveConversation201JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case PreapproveConversation201JSONResponseBodyStatusPreApproved:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WithdrawConversationSpecialOffer200JSONResponseBodyStatus.
+const (
+	Withdrawn WithdrawConversationSpecialOffer200JSONResponseBodyStatus = "withdrawn"
+)
+
+// Valid indicates whether the value is a known member of the WithdrawConversationSpecialOffer200JSONResponseBodyStatus enum.
+func (e WithdrawConversationSpecialOffer200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case Withdrawn:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetChannelHealthParamsChannel.
 const (
 	GetChannelHealthParamsChannelAirbnb    GetChannelHealthParamsChannel = "airbnb"
@@ -3316,6 +3751,75 @@ func (e GetChannelHealthParamsChannel) Valid() bool {
 	case GetChannelHealthParamsChannelPlumguide:
 		return true
 	case GetChannelHealthParamsChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListInquiriesParamsStatus.
+const (
+	ListInquiriesParamsStatusAll              ListInquiriesParamsStatus = "all"
+	ListInquiriesParamsStatusBooked           ListInquiriesParamsStatus = "booked"
+	ListInquiriesParamsStatusDeclined         ListInquiriesParamsStatus = "declined"
+	ListInquiriesParamsStatusExpired          ListInquiriesParamsStatus = "expired"
+	ListInquiriesParamsStatusNotPossible      ListInquiriesParamsStatus = "not_possible"
+	ListInquiriesParamsStatusOpen             ListInquiriesParamsStatus = "open"
+	ListInquiriesParamsStatusPreApproved      ListInquiriesParamsStatus = "pre_approved"
+	ListInquiriesParamsStatusSpecialOfferSent ListInquiriesParamsStatus = "special_offer_sent"
+)
+
+// Valid indicates whether the value is a known member of the ListInquiriesParamsStatus enum.
+func (e ListInquiriesParamsStatus) Valid() bool {
+	switch e {
+	case ListInquiriesParamsStatusAll:
+		return true
+	case ListInquiriesParamsStatusBooked:
+		return true
+	case ListInquiriesParamsStatusDeclined:
+		return true
+	case ListInquiriesParamsStatusExpired:
+		return true
+	case ListInquiriesParamsStatusNotPossible:
+		return true
+	case ListInquiriesParamsStatusOpen:
+		return true
+	case ListInquiriesParamsStatusPreApproved:
+		return true
+	case ListInquiriesParamsStatusSpecialOfferSent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListInquiries200JSONResponseBodyDataStatus.
+const (
+	ListInquiries200JSONResponseBodyDataStatusBooked           ListInquiries200JSONResponseBodyDataStatus = "booked"
+	ListInquiries200JSONResponseBodyDataStatusDeclined         ListInquiries200JSONResponseBodyDataStatus = "declined"
+	ListInquiries200JSONResponseBodyDataStatusExpired          ListInquiries200JSONResponseBodyDataStatus = "expired"
+	ListInquiries200JSONResponseBodyDataStatusNotPossible      ListInquiries200JSONResponseBodyDataStatus = "not_possible"
+	ListInquiries200JSONResponseBodyDataStatusOpen             ListInquiries200JSONResponseBodyDataStatus = "open"
+	ListInquiries200JSONResponseBodyDataStatusPreApproved      ListInquiries200JSONResponseBodyDataStatus = "pre_approved"
+	ListInquiries200JSONResponseBodyDataStatusSpecialOfferSent ListInquiries200JSONResponseBodyDataStatus = "special_offer_sent"
+)
+
+// Valid indicates whether the value is a known member of the ListInquiries200JSONResponseBodyDataStatus enum.
+func (e ListInquiries200JSONResponseBodyDataStatus) Valid() bool {
+	switch e {
+	case ListInquiries200JSONResponseBodyDataStatusBooked:
+		return true
+	case ListInquiries200JSONResponseBodyDataStatusDeclined:
+		return true
+	case ListInquiries200JSONResponseBodyDataStatusExpired:
+		return true
+	case ListInquiries200JSONResponseBodyDataStatusNotPossible:
+		return true
+	case ListInquiries200JSONResponseBodyDataStatusOpen:
+		return true
+	case ListInquiries200JSONResponseBodyDataStatusPreApproved:
+		return true
+	case ListInquiries200JSONResponseBodyDataStatusSpecialOfferSent:
 		return true
 	default:
 		return false
@@ -3457,6 +3961,204 @@ func (e ListReservationsParamsStatus) Valid() bool {
 	case ListReservationsParamsStatusConfirmed:
 		return true
 	case ListReservationsParamsStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AcceptReservationRequest200JSONResponseBodyAction.
+const (
+	AcceptReservationRequest200JSONResponseBodyActionAccept  AcceptReservationRequest200JSONResponseBodyAction = "accept"
+	AcceptReservationRequest200JSONResponseBodyActionDecline AcceptReservationRequest200JSONResponseBodyAction = "decline"
+)
+
+// Valid indicates whether the value is a known member of the AcceptReservationRequest200JSONResponseBodyAction enum.
+func (e AcceptReservationRequest200JSONResponseBodyAction) Valid() bool {
+	switch e {
+	case AcceptReservationRequest200JSONResponseBodyActionAccept:
+		return true
+	case AcceptReservationRequest200JSONResponseBodyActionDecline:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AcceptReservationRequest200JSONResponseBodyChannel.
+const (
+	AcceptReservationRequest200JSONResponseBodyChannelAirbnb AcceptReservationRequest200JSONResponseBodyChannel = "airbnb"
+)
+
+// Valid indicates whether the value is a known member of the AcceptReservationRequest200JSONResponseBodyChannel enum.
+func (e AcceptReservationRequest200JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case AcceptReservationRequest200JSONResponseBodyChannelAirbnb:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AcceptReservationRequest200JSONResponseBodyDeclineReason.
+const (
+	AcceptReservationRequest200JSONResponseBodyDeclineReasonDatesNotAvailable    AcceptReservationRequest200JSONResponseBodyDeclineReason = "dates_not_available"
+	AcceptReservationRequest200JSONResponseBodyDeclineReasonDifferentDatesNeeded AcceptReservationRequest200JSONResponseBodyDeclineReason = "different_dates_needed"
+	AcceptReservationRequest200JSONResponseBodyDeclineReasonLessThannil          AcceptReservationRequest200JSONResponseBodyDeclineReason = "<nil>"
+	AcceptReservationRequest200JSONResponseBodyDeclineReasonListingNotReady      AcceptReservationRequest200JSONResponseBodyDeclineReason = "listing_not_ready"
+	AcceptReservationRequest200JSONResponseBodyDeclineReasonNotComfortable       AcceptReservationRequest200JSONResponseBodyDeclineReason = "not_comfortable"
+	AcceptReservationRequest200JSONResponseBodyDeclineReasonOther                AcceptReservationRequest200JSONResponseBodyDeclineReason = "other"
+	AcceptReservationRequest200JSONResponseBodyDeclineReasonSpam                 AcceptReservationRequest200JSONResponseBodyDeclineReason = "spam"
+)
+
+// Valid indicates whether the value is a known member of the AcceptReservationRequest200JSONResponseBodyDeclineReason enum.
+func (e AcceptReservationRequest200JSONResponseBodyDeclineReason) Valid() bool {
+	switch e {
+	case AcceptReservationRequest200JSONResponseBodyDeclineReasonDatesNotAvailable:
+		return true
+	case AcceptReservationRequest200JSONResponseBodyDeclineReasonDifferentDatesNeeded:
+		return true
+	case AcceptReservationRequest200JSONResponseBodyDeclineReasonLessThannil:
+		return true
+	case AcceptReservationRequest200JSONResponseBodyDeclineReasonListingNotReady:
+		return true
+	case AcceptReservationRequest200JSONResponseBodyDeclineReasonNotComfortable:
+		return true
+	case AcceptReservationRequest200JSONResponseBodyDeclineReasonOther:
+		return true
+	case AcceptReservationRequest200JSONResponseBodyDeclineReasonSpam:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AcceptReservationRequest200JSONResponseBodyStatus.
+const (
+	AcceptReservationRequest200JSONResponseBodyStatusAccepted AcceptReservationRequest200JSONResponseBodyStatus = "accepted"
+	AcceptReservationRequest200JSONResponseBodyStatusDeclined AcceptReservationRequest200JSONResponseBodyStatus = "declined"
+)
+
+// Valid indicates whether the value is a known member of the AcceptReservationRequest200JSONResponseBodyStatus enum.
+func (e AcceptReservationRequest200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case AcceptReservationRequest200JSONResponseBodyStatusAccepted:
+		return true
+	case AcceptReservationRequest200JSONResponseBodyStatusDeclined:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeclineReservationRequestJSONBodyReason.
+const (
+	DeclineReservationRequestJSONBodyReasonDatesNotAvailable    DeclineReservationRequestJSONBodyReason = "dates_not_available"
+	DeclineReservationRequestJSONBodyReasonDifferentDatesNeeded DeclineReservationRequestJSONBodyReason = "different_dates_needed"
+	DeclineReservationRequestJSONBodyReasonListingNotReady      DeclineReservationRequestJSONBodyReason = "listing_not_ready"
+	DeclineReservationRequestJSONBodyReasonNotComfortable       DeclineReservationRequestJSONBodyReason = "not_comfortable"
+	DeclineReservationRequestJSONBodyReasonOther                DeclineReservationRequestJSONBodyReason = "other"
+	DeclineReservationRequestJSONBodyReasonSpam                 DeclineReservationRequestJSONBodyReason = "spam"
+)
+
+// Valid indicates whether the value is a known member of the DeclineReservationRequestJSONBodyReason enum.
+func (e DeclineReservationRequestJSONBodyReason) Valid() bool {
+	switch e {
+	case DeclineReservationRequestJSONBodyReasonDatesNotAvailable:
+		return true
+	case DeclineReservationRequestJSONBodyReasonDifferentDatesNeeded:
+		return true
+	case DeclineReservationRequestJSONBodyReasonListingNotReady:
+		return true
+	case DeclineReservationRequestJSONBodyReasonNotComfortable:
+		return true
+	case DeclineReservationRequestJSONBodyReasonOther:
+		return true
+	case DeclineReservationRequestJSONBodyReasonSpam:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeclineReservationRequest200JSONResponseBodyAction.
+const (
+	DeclineReservationRequest200JSONResponseBodyActionAccept  DeclineReservationRequest200JSONResponseBodyAction = "accept"
+	DeclineReservationRequest200JSONResponseBodyActionDecline DeclineReservationRequest200JSONResponseBodyAction = "decline"
+)
+
+// Valid indicates whether the value is a known member of the DeclineReservationRequest200JSONResponseBodyAction enum.
+func (e DeclineReservationRequest200JSONResponseBodyAction) Valid() bool {
+	switch e {
+	case DeclineReservationRequest200JSONResponseBodyActionAccept:
+		return true
+	case DeclineReservationRequest200JSONResponseBodyActionDecline:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeclineReservationRequest200JSONResponseBodyChannel.
+const (
+	DeclineReservationRequest200JSONResponseBodyChannelAirbnb DeclineReservationRequest200JSONResponseBodyChannel = "airbnb"
+)
+
+// Valid indicates whether the value is a known member of the DeclineReservationRequest200JSONResponseBodyChannel enum.
+func (e DeclineReservationRequest200JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case DeclineReservationRequest200JSONResponseBodyChannelAirbnb:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeclineReservationRequest200JSONResponseBodyDeclineReason.
+const (
+	DeclineReservationRequest200JSONResponseBodyDeclineReasonDatesNotAvailable    DeclineReservationRequest200JSONResponseBodyDeclineReason = "dates_not_available"
+	DeclineReservationRequest200JSONResponseBodyDeclineReasonDifferentDatesNeeded DeclineReservationRequest200JSONResponseBodyDeclineReason = "different_dates_needed"
+	DeclineReservationRequest200JSONResponseBodyDeclineReasonLessThannil          DeclineReservationRequest200JSONResponseBodyDeclineReason = "<nil>"
+	DeclineReservationRequest200JSONResponseBodyDeclineReasonListingNotReady      DeclineReservationRequest200JSONResponseBodyDeclineReason = "listing_not_ready"
+	DeclineReservationRequest200JSONResponseBodyDeclineReasonNotComfortable       DeclineReservationRequest200JSONResponseBodyDeclineReason = "not_comfortable"
+	DeclineReservationRequest200JSONResponseBodyDeclineReasonOther                DeclineReservationRequest200JSONResponseBodyDeclineReason = "other"
+	DeclineReservationRequest200JSONResponseBodyDeclineReasonSpam                 DeclineReservationRequest200JSONResponseBodyDeclineReason = "spam"
+)
+
+// Valid indicates whether the value is a known member of the DeclineReservationRequest200JSONResponseBodyDeclineReason enum.
+func (e DeclineReservationRequest200JSONResponseBodyDeclineReason) Valid() bool {
+	switch e {
+	case DeclineReservationRequest200JSONResponseBodyDeclineReasonDatesNotAvailable:
+		return true
+	case DeclineReservationRequest200JSONResponseBodyDeclineReasonDifferentDatesNeeded:
+		return true
+	case DeclineReservationRequest200JSONResponseBodyDeclineReasonLessThannil:
+		return true
+	case DeclineReservationRequest200JSONResponseBodyDeclineReasonListingNotReady:
+		return true
+	case DeclineReservationRequest200JSONResponseBodyDeclineReasonNotComfortable:
+		return true
+	case DeclineReservationRequest200JSONResponseBodyDeclineReasonOther:
+		return true
+	case DeclineReservationRequest200JSONResponseBodyDeclineReasonSpam:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeclineReservationRequest200JSONResponseBodyStatus.
+const (
+	DeclineReservationRequest200JSONResponseBodyStatusAccepted DeclineReservationRequest200JSONResponseBodyStatus = "accepted"
+	DeclineReservationRequest200JSONResponseBodyStatusDeclined DeclineReservationRequest200JSONResponseBodyStatus = "declined"
+)
+
+// Valid indicates whether the value is a known member of the DeclineReservationRequest200JSONResponseBodyStatus enum.
+func (e DeclineReservationRequest200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case DeclineReservationRequest200JSONResponseBodyStatusAccepted:
+		return true
+	case DeclineReservationRequest200JSONResponseBodyStatusDeclined:
 		return true
 	default:
 		return false
@@ -5865,14 +6567,26 @@ type ConversationListResponse struct {
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
 
-// ConversationMessageAttachment defines model for ConversationMessageAttachment.
+// ConversationMessageAttachment A file on a message — a photo the guest sent, or a file sent to the guest. Files are copied to durable storage, so `url` keeps working after the channel's own link expires. Treat `url` as opaque.
 type ConversationMessageAttachment struct {
 	// ContentType Example: image/jpeg
 	ContentType *string    `json:"contentType,omitempty"`
 	CreatedAt   *time.Time `json:"createdAt,omitempty"`
 	Id          *string    `json:"id,omitempty"`
-	ImageUrl    *string    `json:"imageUrl,omitempty"`
+
+	// ImageUrl Same value as `url` (kept for older clients; it is not image-only). Use `url`.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	ImageUrl *string `json:"imageUrl,omitempty"`
+
+	// Type Coarse kind, derived from `contentType`.
+	Type *ConversationMessageAttachmentType `json:"type,omitempty"`
+
+	// Url Where to download the file.
+	Url *string `json:"url,omitempty"`
 }
+
+// ConversationMessageAttachmentType Coarse kind, derived from `contentType`.
+type ConversationMessageAttachmentType string
 
 // CursorPagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 type CursorPagination = Pagination
@@ -6242,6 +6956,133 @@ type GuestReservationsSummary struct {
 	Past      *int `json:"past,omitempty"`
 	Total     *int `json:"total,omitempty"`
 }
+
+// InquiryCreatedEvent defines model for InquiryCreatedEvent.
+type InquiryCreatedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `inquiry.created`. A guest asked about dates.
+	Data InquiryCreatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event InquiryCreatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// InquiryCreatedEventEvent The event name. This field is `event`, not `type`.
+type InquiryCreatedEventEvent string
+
+// InquiryCreatedPayload Payload for `inquiry.created`. A guest asked about dates.
+type InquiryCreatedPayload struct {
+	// Object An inquiry — a guest asking about dates before booking — exactly as `GET /v1/inquiries` returns it. Delivered as `data.object` on `inquiry.*` events.
+	Object     InquiryWebhookObject `json:"object"`
+	OccurredAt *time.Time           `json:"occurredAt,omitempty"`
+
+	// Revision The inquiry's `updatedAt`.
+	Revision *time.Time `json:"revision,omitempty"`
+}
+
+// InquiryUpdatedEvent defines model for InquiryUpdatedEvent.
+type InquiryUpdatedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `inquiry.updated`. The inquiry's status, dates, guest count or the reservation it became changed. `previousAttributes` holds only what moved, with prior values. Fires whether the host acted through the API, the Vanio dashboard or the Airbnb app. An inquiry whose dates simply pass is `expired` in `GET /v1/inquiries` but fires no event unless the channel reports it.
+	Data InquiryUpdatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event InquiryUpdatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// InquiryUpdatedEventEvent The event name. This field is `event`, not `type`.
+type InquiryUpdatedEventEvent string
+
+// InquiryUpdatedPayload Payload for `inquiry.updated`. The inquiry's status, dates, guest count or the reservation it became changed. `previousAttributes` holds only what moved, with prior values. Fires whether the host acted through the API, the Vanio dashboard or the Airbnb app. An inquiry whose dates simply pass is `expired` in `GET /v1/inquiries` but fires no event unless the channel reports it.
+type InquiryUpdatedPayload struct {
+	// Object An inquiry — a guest asking about dates before booking — exactly as `GET /v1/inquiries` returns it. Delivered as `data.object` on `inquiry.*` events.
+	Object     InquiryWebhookObject `json:"object"`
+	OccurredAt *time.Time           `json:"occurredAt,omitempty"`
+
+	// PreviousAttributes Keys of `object` that moved (`status`, `checkIn`, `checkOut`, `guests`, `reservationId`), mapped to their prior values.
+	//
+	// Example: {"status":"open"}
+	PreviousAttributes map[string]interface{} `json:"previousAttributes"`
+	Revision           *time.Time             `json:"revision,omitempty"`
+}
+
+// InquiryWebhookObject An inquiry — a guest asking about dates before booking — exactly as `GET /v1/inquiries` returns it. Delivered as `data.object` on `inquiry.*` events.
+type InquiryWebhookObject struct {
+	// Channel Example: airbnb
+	Channel *string `json:"channel,omitempty"`
+
+	// CheckIn Example: 2026-10-23
+	CheckIn *openapi_types.Date `json:"checkIn,omitempty"`
+
+	// CheckOut Example: 2026-11-11
+	CheckOut *openapi_types.Date `json:"checkOut,omitempty"`
+
+	// ConversationId Pass to `POST /v1/conversations/{id}/pre-approval` or `/special-offers`.
+	//
+	// Example: 164743
+	ConversationId *string    `json:"conversationId,omitempty"`
+	CreatedAt      *time.Time `json:"createdAt,omitempty"`
+	ExpectedPayout *struct {
+		Amount   *float32 `json:"amount,omitempty"`
+		Currency *string  `json:"currency,omitempty"`
+	} `json:"expectedPayout,omitempty"`
+	Guests *struct {
+		Adults   *int `json:"adults,omitempty"`
+		Children *int `json:"children,omitempty"`
+		Infants  *int `json:"infants,omitempty"`
+		Pets     *int `json:"pets,omitempty"`
+		Total    *int `json:"total,omitempty"`
+	} `json:"guests,omitempty"`
+
+	// Id Repull inquiry id.
+	//
+	// Example: 25173
+	Id string `json:"id"`
+
+	// ListingId Example: 23892
+	ListingId *string `json:"listingId,omitempty"`
+
+	// RelayedBy A PMS that relays this inquiry; when set, answer it in that PMS.
+	RelayedBy *string `json:"relayedBy,omitempty"`
+
+	// ReservationId The reservation the inquiry became, once booked.
+	ReservationId *string    `json:"reservationId,omitempty"`
+	RespondBy     *time.Time `json:"respondBy,omitempty"`
+	RespondedAt   *time.Time `json:"respondedAt,omitempty"`
+
+	// Status Same vocabulary as `GET /v1/inquiries`: `open` needs an answer; `booked` means the guest booked (`reservationId`).
+	//
+	// Example: open
+	Status    InquiryWebhookObjectStatus `json:"status"`
+	UpdatedAt *time.Time                 `json:"updatedAt,omitempty"`
+}
+
+// InquiryWebhookObjectStatus Same vocabulary as `GET /v1/inquiries`: `open` needs an answer; `booked` means the guest booked (`reservationId`).
+//
+// Example: open
+type InquiryWebhookObjectStatus string
 
 // Listing A vacation rental listing in your Repull workspace.
 //
@@ -7723,7 +8564,9 @@ type MarketsOverviewResponse struct {
 // Message A single message inside a conversation thread. Returned by `GET /v1/conversations/{id}/messages`. `direction` is normalized to `inbound` (from the guest) / `outbound` (from the host or an automation).
 type Message struct {
 	// AiGenerated `true` when the body was authored by Vanio AI (autopilot, draft).
-	AiGenerated *bool                            `json:"aiGenerated,omitempty"`
+	AiGenerated *bool `json:"aiGenerated,omitempty"`
+
+	// Attachments Files on this message, inbound or outbound. Empty array when there are none. A file-only message has an empty `body`.
 	Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
 
 	// Body Message body in the original language.
@@ -8188,15 +9031,25 @@ type Reservation struct {
 	// PrimaryGuest Inline guest summary. May be undefined for owner-blocks / pre-arrival rows.
 	PrimaryGuest *ReservationPrimaryGuest `json:"primaryGuest,omitempty"`
 
+	// RespondBy On a `pending` Airbnb booking request that can still be answered: when it lapses (24 hours after the guest asked). Accept or decline before then with `POST /v1/reservations/{id}/accept` / `/decline`. Absent on every other reservation.
+	//
+	// Example: 2026-09-23T09:00:00.000Z
+	RespondBy *time.Time `json:"respondBy,omitempty"`
+
 	// Source Booking source / channel. Lowercase. May be null on legacy rows. Canonical name as of 2026-05; `platform` is kept as an alias.
 	//
 	// Example: airbnb
 	Source *ReservationSource `json:"source,omitempty"`
 
-	// Status Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`.
+	// Status Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`. A `pending` booking request the channel already let lapse — Airbnb expires an unanswered request 24 hours after the guest asks, and no request can be answered once its check-in has passed — is reported as `cancelled` with `statusDetail: "request_expired"`, even when the channel never told us.
 	//
 	// Example: confirmed
 	Status ReservationStatus `json:"status"`
+
+	// StatusDetail Present only when `status` was derived rather than reported by the channel. `request_expired` — a booking request nobody answered in time (Airbnb's 24-hour window passed, or the check-in did). Absent otherwise.
+	//
+	// Example: request_expired
+	StatusDetail *ReservationStatusDetail `json:"statusDetail,omitempty"`
 
 	// TotalPrice DEPRECATED — use `financials.totalPrice` (a number). Decimal-as-string (precision 10, scale 2) kept for back-compat.
 	//
@@ -8220,10 +9073,15 @@ type ReservationPlatform string
 // Example: airbnb
 type ReservationSource string
 
-// ReservationStatus Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`.
+// ReservationStatus Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`. A `pending` booking request the channel already let lapse — Airbnb expires an unanswered request 24 hours after the guest asks, and no request can be answered once its check-in has passed — is reported as `cancelled` with `statusDetail: "request_expired"`, even when the channel never told us.
 //
 // Example: confirmed
 type ReservationStatus string
+
+// ReservationStatusDetail Present only when `status` was derived rather than reported by the channel. `request_expired` — a booking request nobody answered in time (Airbnb's 24-hour window passed, or the check-in did). Absent otherwise.
+//
+// Example: request_expired
+type ReservationStatusDetail string
 
 // ReservationAlterationCreatedEvent defines model for ReservationAlterationCreatedEvent.
 type ReservationAlterationCreatedEvent struct {
@@ -8581,7 +9439,12 @@ type ReservationMessageReceivedEventEvent string
 
 // ReservationMessageReceivedPayload Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread.
 type ReservationMessageReceivedPayload struct {
-	// Body Example: Hi! What time can we check in?
+	// Attachments Files the guest sent (photos, videos, documents), same shape as `GET /v1/conversations/{id}/messages`. Empty array when there are none.
+	Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
+
+	// Body Empty when the guest sent only a file.
+	//
+	// Example: Hi! What time can we check in?
 	Body *string `json:"body,omitempty"`
 	From *struct {
 		// Name Example: Alex Morgan
@@ -8663,6 +9526,117 @@ type ReservationPrimaryGuest struct {
 	// Phone Primary phone contact (or first non-primary if no primary set).
 	Phone *string `json:"phone,omitempty"`
 }
+
+// ReservationRequestCreatedEvent defines model for ReservationRequestCreatedEvent.
+type ReservationRequestCreatedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `reservation.request.created`. A guest asked to book and the reservation is waiting on the host. `data.object` is the reservation, filled out to the shape `GET /v1/reservations/{id}` returns (its `status` is `pending`). Answer with `POST /v1/reservations/{id}/accept` or `/decline` before `respondBy`.
+	Data ReservationRequestCreatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationRequestCreatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ReservationRequestCreatedEventEvent The event name. This field is `event`, not `type`.
+type ReservationRequestCreatedEventEvent string
+
+// ReservationRequestCreatedPayload Payload for `reservation.request.created`. A guest asked to book and the reservation is waiting on the host. `data.object` is the reservation, filled out to the shape `GET /v1/reservations/{id}` returns (its `status` is `pending`). Answer with `POST /v1/reservations/{id}/accept` or `/decline` before `respondBy`.
+type ReservationRequestCreatedPayload struct {
+	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	//
+	// **Stay terms are the one exception to that rule.** `cancellationPolicy`, `checkInTime` and `checkOutTime` ride on every delivery, because the decisions they drive — is a refund owed, when can housekeeping turn the unit over — are made at the moment the webhook lands, not on a follow-up fetch. They are operational parameters of the booking, not contact or payment data. Guest email, payment method and payment reference stay off the snapshot; see `GET /v1/reservations/{id}`.
+	//
+	// All three are `null` when the source channel did not supply them. They are never defaulted: a fabricated policy is worse than a missing one.
+	Object ReservationWebhookObject `json:"object"`
+
+	// OccurredAt When the request was recorded.
+	//
+	// Example: 2026-09-22T09:00:05.000Z
+	OccurredAt *time.Time `json:"occurredAt,omitempty"`
+
+	// RequestStatus Always `pending` on this event.
+	RequestStatus ReservationRequestCreatedPayloadRequestStatus `json:"requestStatus"`
+
+	// RespondBy When the request lapses if nobody answers — Airbnb gives the host 24 hours from the request. `null` on channels without a request clock.
+	//
+	// Example: 2026-09-23T09:00:00.000Z
+	RespondBy *time.Time `json:"respondBy,omitempty"`
+
+	// Revision The reservation's `updatedAt` — order two deliveries about it without parsing the body.
+	Revision *time.Time `json:"revision,omitempty"`
+}
+
+// ReservationRequestCreatedPayloadRequestStatus Always `pending` on this event.
+type ReservationRequestCreatedPayloadRequestStatus string
+
+// ReservationRequestUpdatedEvent defines model for ReservationRequestUpdatedEvent.
+type ReservationRequestUpdatedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `reservation.request.updated`. A booking request stopped waiting on the host. `requestStatus` says how; `data.object` is the reservation after the change (`status` `confirmed` once accepted, `cancelled` otherwise). An accepted request also fires `reservation.created`. Fires when the channel reports the outcome, whoever acted — the API, the Vanio dashboard or the channel's own app.
+	Data ReservationRequestUpdatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationRequestUpdatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ReservationRequestUpdatedEventEvent The event name. This field is `event`, not `type`.
+type ReservationRequestUpdatedEventEvent string
+
+// ReservationRequestUpdatedPayload Payload for `reservation.request.updated`. A booking request stopped waiting on the host. `requestStatus` says how; `data.object` is the reservation after the change (`status` `confirmed` once accepted, `cancelled` otherwise). An accepted request also fires `reservation.created`. Fires when the channel reports the outcome, whoever acted — the API, the Vanio dashboard or the channel's own app.
+type ReservationRequestUpdatedPayload struct {
+	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	//
+	// **Stay terms are the one exception to that rule.** `cancellationPolicy`, `checkInTime` and `checkOutTime` ride on every delivery, because the decisions they drive — is a refund owed, when can housekeeping turn the unit over — are made at the moment the webhook lands, not on a follow-up fetch. They are operational parameters of the booking, not contact or payment data. Guest email, payment method and payment reference stay off the snapshot; see `GET /v1/reservations/{id}`.
+	//
+	// All three are `null` when the source channel did not supply them. They are never defaulted: a fabricated policy is worse than a missing one.
+	Object ReservationWebhookObject `json:"object"`
+
+	// OccurredAt Example: 2026-09-22T11:42:10.000Z
+	OccurredAt *time.Time `json:"occurredAt,omitempty"`
+
+	// PreviousAttributes Fields of `object` that moved, with their prior values — always `{ "status": "pending" }` here.
+	//
+	// Example: {"status":"pending"}
+	PreviousAttributes map[string]interface{} `json:"previousAttributes"`
+
+	// RequestStatus `accepted` — it is a booking now; `declined` — by the host; `expired` — nobody answered in time; `voided` — withdrawn by the guest, or voided by the channel (for example the guest failed verification).
+	//
+	// Example: accepted
+	RequestStatus ReservationRequestUpdatedPayloadRequestStatus `json:"requestStatus"`
+	Revision      *time.Time                                    `json:"revision,omitempty"`
+
+	// SourceStatus The channel's own status value, unmapped (Airbnb: `accept`, `deny`, `timeout`, `pending_voided`, …) — for reconciling against the channel.
+	//
+	// Example: accept
+	SourceStatus *string `json:"sourceStatus,omitempty"`
+}
+
+// ReservationRequestUpdatedPayloadRequestStatus `accepted` — it is a booking now; `declined` — by the host; `expired` — nobody answered in time; `voided` — withdrawn by the guest, or voided by the channel (for example the guest failed verification).
+//
+// Example: accepted
+type ReservationRequestUpdatedPayloadRequestStatus string
 
 // ReservationUpdateRequest At least one field is required. Guest identity, pricing, `status`, `platform` and notes are rejected by name — see the operation description for why each is excluded.
 type ReservationUpdateRequest struct {
@@ -9019,15 +9993,57 @@ type SelectProviderResponse struct {
 // SelectProviderResponsePattern defines model for SelectProviderResponse.Pattern.
 type SelectProviderResponsePattern string
 
-// SendMessageRequest defines model for SendMessageRequest.
+// SendMessageAttachment A file to send, by URL. Repull downloads it (public `https://` only — no credentials in the URL, no private or internal addresses; redirects are followed and re-checked; 20 s timeout), reads its real type from the file's bytes, and keeps a durable copy. Nothing is sent to the guest until every file in the request has passed.
+type SendMessageAttachment struct {
+	// ContentType Optional hint, e.g. `image/jpeg`. The type is read from the file itself; this never overrides it.
+	//
+	// Example: image/jpeg
+	ContentType *string `json:"contentType,omitempty"`
+
+	// Filename Optional display name. Defaults to the last segment of the URL.
+	//
+	// Example: parking-map.jpg
+	Filename *string `json:"filename,omitempty"`
+
+	// Url Public https URL of the file. A signed URL valid for a few minutes is fine.
+	//
+	// Example: https://cdn.example.com/parking-map.jpg
+	Url string `json:"url"`
+}
+
+// SendMessagePart One channel message produced by the send. Airbnb carries one file per message and no text beside it, so text + 2 photos is 3 parts (files first, then the text). Booking.com carries every file on the one text message, so it is always 1 part.
+type SendMessagePart struct {
+	// AttachmentIndexes Indexes into the request's `attachments` that this message carried.
+	AttachmentIndexes *[]int `json:"attachmentIndexes,omitempty"`
+
+	// Error Why this part was not delivered.
+	Error             *string `json:"error,omitempty"`
+	ExternalMessageId *string `json:"externalMessageId,omitempty"`
+
+	// HasText Whether this message carried the text.
+	HasText   *bool   `json:"hasText,omitempty"`
+	MessageId *string `json:"messageId,omitempty"`
+	Sent      *bool   `json:"sent,omitempty"`
+}
+
+// SendMessageRequest `message`, `attachments`, or both. Per-channel limits for `attachments`:
+//
+// | Channel | Accepted types | Per file | Per request | Text |
+// |---|---|---|---|---|
+// | Airbnb | JPEG, PNG, GIF, WebP (sent as JPEG), MP4, QuickTime | 10 MB | 5 | optional — each file is sent as its own message, then the text |
+// | Booking.com | JPEG, PNG | 10 MB | 5 | **required** — all files ride on the one text message |
+// | SMS, email, direct-booking site chat | — | — | — | `422 attachments_not_supported`; nothing is sent |
 type SendMessageRequest struct {
+	// Attachments Files to send. See the per-channel table above.
+	Attachments *[]SendMessageAttachment `json:"attachments,omitempty"`
+
 	// Channel Force a channel. Omit to send on whichever channel the conversation already uses, which is the right default.
 	Channel *SendMessageRequestChannel `json:"channel,omitempty"`
 
-	// Message The text to send the guest.
+	// Message The text to send the guest. Required unless `attachments` is present.
 	//
-	// Example: Your check-in details are ready — the door code is active from 16:00.
-	Message string `json:"message"`
+	// Example: Here is the parking map — the gate code is 4821.
+	Message *string `json:"message,omitempty"`
 }
 
 // SendMessageRequestChannel Force a channel. Omit to send on whichever channel the conversation already uses, which is the right default.
@@ -9035,6 +10051,9 @@ type SendMessageRequestChannel string
 
 // SendMessageResponse defines model for SendMessageResponse.
 type SendMessageResponse struct {
+	// Attachments The files delivered, in request order. Empty array for a text-only send.
+	Attachments *[]SentAttachment `json:"attachments,omitempty"`
+
 	// Channel The channel the message actually went out on.
 	Channel *string `json:"channel,omitempty"`
 
@@ -9052,6 +10071,9 @@ type SendMessageResponse struct {
 	// Id Repull message id for the row that was recorded.
 	Id *string `json:"id,omitempty"`
 
+	// Parts Present only when `attachments` were sent: one entry per channel message, in delivery order. `id` is the text message (or the last file message when there is no text).
+	Parts *[]SendMessagePart `json:"parts,omitempty"`
+
 	// Status Example: sent
 	Status *string `json:"status,omitempty"`
 
@@ -9064,6 +10086,30 @@ type SendMessageResponse struct {
 
 // SendMessageResponseDirection defines model for SendMessageResponse.Direction.
 type SendMessageResponseDirection string
+
+// SentAttachment A file as delivered.
+type SentAttachment struct {
+	// ContentType Type read from the file's bytes.
+	//
+	// Example: image/jpeg
+	ContentType *string `json:"contentType,omitempty"`
+
+	// Filename Example: parking-map.jpg
+	Filename *string `json:"filename,omitempty"`
+
+	// SizeBytes Example: 184233
+	SizeBytes *int `json:"sizeBytes,omitempty"`
+
+	// SourceUrl The URL you sent.
+	SourceUrl *string             `json:"sourceUrl,omitempty"`
+	Type      *SentAttachmentType `json:"type,omitempty"`
+
+	// Url Durable stored copy — the same `url` the message's `attachments` will show when read back.
+	Url *string `json:"url,omitempty"`
+}
+
+// SentAttachmentType defines model for SentAttachment.Type.
+type SentAttachmentType string
 
 // UsageQuotaWarningEvent defines model for UsageQuotaWarningEvent.
 type UsageQuotaWarningEvent struct {
@@ -9459,7 +10505,7 @@ type AirbnbListingActionParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -9670,7 +10716,7 @@ type UpdateAirbnbListingDescriptionParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -9680,7 +10726,7 @@ type UpdateAirbnbListingDetailsParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -9699,7 +10745,7 @@ type UpdateAirbnbListingPermitsParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -9901,7 +10947,7 @@ type UpdateAirbnbListingSafetyDisclosuresParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -9926,16 +10972,33 @@ type ListAirbnbThreadsParams struct {
 	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
 }
 
+// ListAirbnbThreadMessagesParams defines parameters for ListAirbnbThreadMessages.
+type ListAirbnbThreadMessagesParams struct {
+	// Cursor `pagination.nextCursor` from the previous page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// All `true` returns up to 1000 messages oldest-first in one response, without `pagination`.
+	All *bool `form:"all,omitempty" json:"all,omitempty"`
+}
+
 // SendAirbnbMessageJSONBody defines parameters for SendAirbnbMessage.
 type SendAirbnbMessageJSONBody struct {
-	// MediaType Optional MIME/media type hint for `mediaUrl` (e.g. `image/jpeg`).
+	// MediaType Optional MIME type hint for `mediaUrl` (e.g. `image/jpeg`). The type is read from the file itself; this never overrides it.
 	MediaType *string `json:"mediaType,omitempty"`
 
-	// MediaUrl Optional URL of an image/media attachment to send with the message.
+	// MediaUrl Public https URL of one image or video to send (JPEG/PNG/GIF/WebP/MP4/QuickTime, up to 10 MB). Repull uploads it to Airbnb for you.
 	MediaUrl *string `json:"mediaUrl,omitempty"`
 
-	// Message Message body to send to the guest.
-	Message string `json:"message"`
+	// Message Message body to send to the guest. Optional when `mediaUrl` is set (it is then sent as a separate message after the file).
+	Message *string `json:"message,omitempty"`
+}
+
+// SendAirbnbMessage201JSONResponseBody1 defines parameters for SendAirbnbMessage.
+type SendAirbnbMessage201JSONResponseBody1 map[string]interface{}
+
+// SendAirbnbMessage201JSONResponseBody defines parameters for SendAirbnbMessage.
+type SendAirbnbMessage201JSONResponseBody struct {
+	union json.RawMessage
 }
 
 // UpdateAirbnbMessageJSONBody defines parameters for UpdateAirbnbMessage.
@@ -9955,25 +11018,98 @@ type UpdateAirbnbMessageJSONBodyAction string
 
 // WithdrawAirbnbOfferParams defines parameters for WithdrawAirbnbOffer.
 type WithdrawAirbnbOfferParams struct {
-	// OfferId Airbnb special-offer id to withdraw.
+	// OfferId Airbnb special-offer id (the `id` Airbnb returned when the offer was created).
 	OfferId string `form:"offerId" json:"offerId"`
 }
 
+// WithdrawAirbnbOffer200JSONResponseBodyOfferType defines parameters for WithdrawAirbnbOffer.
+type WithdrawAirbnbOffer200JSONResponseBodyOfferType string
+
+// WithdrawAirbnbOffer200JSONResponseBodyStatus defines parameters for WithdrawAirbnbOffer.
+type WithdrawAirbnbOffer200JSONResponseBodyStatus string
+
+// GetAirbnbOfferParams defines parameters for GetAirbnbOffer.
+type GetAirbnbOfferParams struct {
+	// OfferId Airbnb special-offer id (the `id` Airbnb returned when the offer was created).
+	OfferId string `form:"offerId" json:"offerId"`
+}
+
+// GetAirbnbOffer200JSONResponseBodyOfferType defines parameters for GetAirbnbOffer.
+type GetAirbnbOffer200JSONResponseBodyOfferType string
+
+// GetAirbnbOffer200JSONResponseBodyStatus defines parameters for GetAirbnbOffer.
+type GetAirbnbOffer200JSONResponseBodyStatus string
+
 // CreateAirbnbOfferJSONBody defines parameters for CreateAirbnbOffer.
 type CreateAirbnbOfferJSONBody struct {
-	// BlockInstantBooking For `preapproval` — whether to block instant booking.
-	BlockInstantBooking *bool `json:"blockInstantBooking,omitempty"`
+	// BlockInstantBooking Pre-approval only: require the guest to book through the pre-approval rather than Instant Book. (`blockInstantBooking` is accepted too.)
+	BlockInstantBooking *bool `json:"block_instant_booking,omitempty"`
 
-	// ThreadId Airbnb thread id. Required when `type` is `preapproval`.
-	ThreadId *string `json:"threadId,omitempty"`
+	// GuestDetails Offer only (required). `number_of_guests` is adults + children; if omitted it is computed from them.
+	GuestDetails *struct {
+		// NumberOfAdults Example: 2
+		NumberOfAdults *int `json:"number_of_adults,omitempty"`
 
-	// Type Which kind of offer to create.
-	Type                 CreateAirbnbOfferJSONBodyType `json:"type"`
-	AdditionalProperties map[string]interface{}        `json:"-"`
+		// NumberOfChildren Example: 1
+		NumberOfChildren *int `json:"number_of_children,omitempty"`
+
+		// NumberOfGuests Example: 3
+		NumberOfGuests *int `json:"number_of_guests,omitempty"`
+
+		// NumberOfInfants Example: 0
+		NumberOfInfants *int `json:"number_of_infants,omitempty"`
+
+		// NumberOfPets Example: 0
+		NumberOfPets *int `json:"number_of_pets,omitempty"`
+	} `json:"guest_details,omitempty"`
+
+	// ListingId Offer only (required): the AIRBNB listing id, as a string.
+	//
+	// Example: 955656266214757921
+	ListingId *string `json:"listing_id,omitempty"`
+
+	// Nights Offer only (required).
+	//
+	// Example: 4
+	Nights *int `json:"nights,omitempty"`
+
+	// StartDate Offer only (required): first night.
+	//
+	// Example: 2026-10-01
+	StartDate *openapi_types.Date `json:"start_date,omitempty"`
+
+	// ThreadId Airbnb message-thread id the offer answers. (`threadId` is accepted too.)
+	//
+	// Example: 2675957479
+	ThreadId string `json:"thread_id"`
+
+	// TotalPrice Offer only (required): total for the stay, in the listing’s Airbnb currency.
+	//
+	// Example: 880
+	TotalPrice *float32 `json:"total_price,omitempty"`
+
+	// Type What to create.
+	Type CreateAirbnbOfferJSONBodyType `json:"type"`
+}
+
+// CreateAirbnbOfferParams defines parameters for CreateAirbnbOffer.
+type CreateAirbnbOfferParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
 // CreateAirbnbOfferJSONBodyType defines parameters for CreateAirbnbOffer.
 type CreateAirbnbOfferJSONBodyType string
+
+// CreateAirbnbOffer201JSONResponseBodyOfferType defines parameters for CreateAirbnbOffer.
+type CreateAirbnbOffer201JSONResponseBodyOfferType string
+
+// CreateAirbnbOffer201JSONResponseBodyStatus defines parameters for CreateAirbnbOffer.
+type CreateAirbnbOffer201JSONResponseBodyStatus string
 
 // ListAirbnbReservationsParams defines parameters for ListAirbnbReservations.
 type ListAirbnbReservationsParams struct {
@@ -10013,6 +11149,33 @@ type ListAirbnbReservationsParams struct {
 
 // ListAirbnbReservationsParamsStatus defines parameters for ListAirbnbReservations.
 type ListAirbnbReservationsParamsStatus string
+
+// AirbnbReservationActionJSONBody defines parameters for AirbnbReservationAction.
+type AirbnbReservationActionJSONBody struct {
+	Action AirbnbReservationActionJSONBodyAction `json:"action"`
+
+	// Message Required for `decline` only: sent to the guest by Airbnb.
+	Message *string `json:"message,omitempty"`
+
+	// Reason Required for `decline` and `cancel`; not accepted for `accept`. `decline` takes `dates_not_available`, `not_comfortable`, `listing_not_ready`, `different_dates_needed`, `spam` or `other`. `cancel` takes `calendar_conflict`, `maintenance_issue`, `unable_to_host` or `other`.
+	Reason *AirbnbReservationActionJSONBodyReason `json:"reason,omitempty"`
+}
+
+// AirbnbReservationActionParams defines parameters for AirbnbReservationAction.
+type AirbnbReservationActionParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// AirbnbReservationActionJSONBodyAction defines parameters for AirbnbReservationAction.
+type AirbnbReservationActionJSONBodyAction string
+
+// AirbnbReservationActionJSONBodyReason defines parameters for AirbnbReservationAction.
+type AirbnbReservationActionJSONBodyReason string
 
 // ListAirbnbReviewsParams defines parameters for ListAirbnbReviews.
 type ListAirbnbReviewsParams struct {
@@ -10446,9 +11609,69 @@ type SendConversationMessageParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
+
+// PreapproveConversationJSONBody defines parameters for PreapproveConversation.
+type PreapproveConversationJSONBody struct {
+	// BlockInstantBooking When `true`, the guest cannot Instant Book the listing and must book through this pre-approval. Leave `false` unless you need that.
+	BlockInstantBooking *bool `json:"blockInstantBooking,omitempty"`
+}
+
+// PreapproveConversationParams defines parameters for PreapproveConversation.
+type PreapproveConversationParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// PreapproveConversation201JSONResponseBodyStatus defines parameters for PreapproveConversation.
+type PreapproveConversation201JSONResponseBodyStatus string
+
+// CreateConversationSpecialOfferJSONBody defines parameters for CreateConversationSpecialOffer.
+type CreateConversationSpecialOfferJSONBody struct {
+	// CheckIn Example: 2026-10-01
+	CheckIn openapi_types.Date `json:"checkIn"`
+
+	// CheckOut Must be after `checkIn`.
+	//
+	// Example: 2026-10-05
+	CheckOut openapi_types.Date `json:"checkOut"`
+	Guests   struct {
+		// Adults Example: 2
+		Adults   int  `json:"adults"`
+		Children *int `json:"children,omitempty"`
+		Infants  *int `json:"infants,omitempty"`
+		Pets     *int `json:"pets,omitempty"`
+	} `json:"guests"`
+
+	// ListingId Repull listing id to offer. Defaults to the listing the conversation is about.
+	//
+	// Example: 23892
+	ListingId *int `json:"listingId,omitempty"`
+
+	// TotalPrice Total the guest pays for the whole stay, in the listing’s Airbnb currency.
+	//
+	// Example: 880
+	TotalPrice float32 `json:"totalPrice"`
+}
+
+// CreateConversationSpecialOfferParams defines parameters for CreateConversationSpecialOffer.
+type CreateConversationSpecialOfferParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// WithdrawConversationSpecialOffer200JSONResponseBodyStatus defines parameters for WithdrawConversationSpecialOffer.
+type WithdrawConversationSpecialOffer200JSONResponseBodyStatus string
 
 // ListGuestsParams defines parameters for ListGuests.
 type ListGuestsParams struct {
@@ -10480,7 +11703,7 @@ type CreateGuestParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -10492,6 +11715,36 @@ type GetGuestParams struct {
 
 // GetChannelHealthParamsChannel defines parameters for GetChannelHealth.
 type GetChannelHealthParamsChannel string
+
+// ListInquiriesParams defines parameters for ListInquiries.
+type ListInquiriesParams struct {
+	// Status Which inquiries to return. `all` returns every one.
+	Status *ListInquiriesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// ListingId Only inquiries about this Repull listing.
+	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+
+	// ConversationId The inquiry on one conversation — combine with `status=all` to see it whatever its state.
+	ConversationId *int `form:"conversation_id,omitempty" json:"conversation_id,omitempty"`
+
+	// Limit Max inquiries per page (default 50, cap 100; over the cap returns 422).
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque base64 cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
+	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
+}
+
+// ListInquiriesParamsStatus defines parameters for ListInquiries.
+type ListInquiriesParamsStatus string
+
+// ListInquiries200JSONResponseBodyDataStatus defines parameters for ListInquiries.
+type ListInquiries200JSONResponseBodyDataStatus string
 
 // ClearKvParams defines parameters for ClearKv.
 type ClearKvParams struct {
@@ -10594,7 +11847,7 @@ type UpdateListingContentParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -10629,7 +11882,7 @@ type PublishListingToAirbnbParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -10775,7 +12028,7 @@ type ListReservationsParams struct {
 	// Platform Filter by booking platform
 	Platform *string `form:"platform,omitempty" json:"platform,omitempty"`
 
-	// Status Filter by lifecycle status. **Case-insensitive** — `confirmed`, `Confirmed`, and `CONFIRMED` all match. Each public value expands to the full set of internal sub-states server-side: `confirmed` matches `accept`/`confirmed`/`modified`, `cancelled` matches every cancellation sub-state (`cancelled_by_host`, `declined`, `expired`, etc.), `pending` includes `inquiry`/`awaiting_payment`. `completed` is a derived state — combine `status=confirmed` with `check_out_before=<today>` to filter for past stays.
+	// Status Filter by lifecycle status. **Case-insensitive** — `confirmed`, `Confirmed`, and `CONFIRMED` all match. Each public value expands to the full set of internal sub-states server-side: `confirmed` matches `accept`/`confirmed`/`modified`, `cancelled` matches every cancellation sub-state (`cancelled_by_host`, `declined`, `expired`, etc.), `pending` includes `inquiry`/`awaiting_payment`. `completed` is a derived state — combine `status=confirmed` with `check_out_before=<today>` to filter for past stays. `pending` is how an Airbnb booking **request** awaiting the host appears — answer it with `POST /v1/reservations/{id}/accept` or `/decline` before its `respondBy`. `pending` lists only requests that can still be answered: one the channel already let lapse (Airbnb expires a request 24 hours after the guest asks; no request survives its check-in date) is left out and appears under `cancelled` with `statusDetail: "request_expired"` instead. The stored record is not changed — this is derived when you read it. Airbnb **inquiries** (questions before booking) are not reservations: list them with `GET /v1/inquiries`.
 	Status *ListReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ListingId Filter to a single listing
@@ -10853,7 +12106,7 @@ type CreateReservationParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
@@ -10869,9 +12122,67 @@ type UpdateReservationParams struct {
 	//
 	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
-	// - Responses with status >= 500 are deliberately not stored, so a server error stays retryable.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
+
+// AcceptReservationRequestParams defines parameters for AcceptReservationRequest.
+type AcceptReservationRequestParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// AcceptReservationRequest200JSONResponseBodyAction defines parameters for AcceptReservationRequest.
+type AcceptReservationRequest200JSONResponseBodyAction string
+
+// AcceptReservationRequest200JSONResponseBodyChannel defines parameters for AcceptReservationRequest.
+type AcceptReservationRequest200JSONResponseBodyChannel string
+
+// AcceptReservationRequest200JSONResponseBodyDeclineReason defines parameters for AcceptReservationRequest.
+type AcceptReservationRequest200JSONResponseBodyDeclineReason string
+
+// AcceptReservationRequest200JSONResponseBodyStatus defines parameters for AcceptReservationRequest.
+type AcceptReservationRequest200JSONResponseBodyStatus string
+
+// DeclineReservationRequestJSONBody defines parameters for DeclineReservationRequest.
+type DeclineReservationRequestJSONBody struct {
+	// Message Sent to the guest by Airbnb with the decline.
+	//
+	// Example: Sorry, those dates are no longer available.
+	Message string `json:"message"`
+
+	// Reason Airbnb’s decline reason, verbatim. `dates_not_available` — the dates are taken; `not_comfortable` — you are not comfortable with the booking; `listing_not_ready` — the listing cannot be booked right now; `different_dates_needed` — you want different dates; `spam` — the request is spam; `other` — anything else (explain in `message`).
+	Reason DeclineReservationRequestJSONBodyReason `json:"reason"`
+}
+
+// DeclineReservationRequestParams defines parameters for DeclineReservationRequest.
+type DeclineReservationRequestParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// DeclineReservationRequestJSONBodyReason defines parameters for DeclineReservationRequest.
+type DeclineReservationRequestJSONBodyReason string
+
+// DeclineReservationRequest200JSONResponseBodyAction defines parameters for DeclineReservationRequest.
+type DeclineReservationRequest200JSONResponseBodyAction string
+
+// DeclineReservationRequest200JSONResponseBodyChannel defines parameters for DeclineReservationRequest.
+type DeclineReservationRequest200JSONResponseBodyChannel string
+
+// DeclineReservationRequest200JSONResponseBodyDeclineReason defines parameters for DeclineReservationRequest.
+type DeclineReservationRequest200JSONResponseBodyDeclineReason string
+
+// DeclineReservationRequest200JSONResponseBodyStatus defines parameters for DeclineReservationRequest.
+type DeclineReservationRequest200JSONResponseBodyStatus string
 
 // ListReviewsParams defines parameters for ListReviews.
 type ListReviewsParams struct {
@@ -11086,6 +12397,9 @@ type UpdateAirbnbMessageJSONRequestBody UpdateAirbnbMessageJSONBody
 // CreateAirbnbOfferJSONRequestBody defines body for CreateAirbnbOffer for application/json ContentType.
 type CreateAirbnbOfferJSONRequestBody CreateAirbnbOfferJSONBody
 
+// AirbnbReservationActionJSONRequestBody defines body for AirbnbReservationAction for application/json ContentType.
+type AirbnbReservationActionJSONRequestBody AirbnbReservationActionJSONBody
+
 // EditAirbnbReviewJSONRequestBody defines body for EditAirbnbReview for application/json ContentType.
 type EditAirbnbReviewJSONRequestBody = AirbnbReview
 
@@ -11175,6 +12489,12 @@ type CreateConnectionJSONRequestBody CreateConnectionJSONBody
 // SendConversationMessageJSONRequestBody defines body for SendConversationMessage for application/json ContentType.
 type SendConversationMessageJSONRequestBody = SendMessageRequest
 
+// PreapproveConversationJSONRequestBody defines body for PreapproveConversation for application/json ContentType.
+type PreapproveConversationJSONRequestBody PreapproveConversationJSONBody
+
+// CreateConversationSpecialOfferJSONRequestBody defines body for CreateConversationSpecialOffer for application/json ContentType.
+type CreateConversationSpecialOfferJSONRequestBody CreateConversationSpecialOfferJSONBody
+
 // CreateGuestJSONRequestBody defines body for CreateGuest for application/json ContentType.
 type CreateGuestJSONRequestBody = GuestCreateRequest
 
@@ -11222,6 +12542,9 @@ type CreateReservationJSONRequestBody = ReservationCreateRequest
 
 // UpdateReservationJSONRequestBody defines body for UpdateReservation for application/json ContentType.
 type UpdateReservationJSONRequestBody = ReservationUpdateRequest
+
+// DeclineReservationRequestJSONRequestBody defines body for DeclineReservationRequest for application/json ContentType.
+type DeclineReservationRequestJSONRequestBody DeclineReservationRequestJSONBody
 
 // ReplyToReviewJSONRequestBody defines body for ReplyToReview for application/json ContentType.
 type ReplyToReviewJSONRequestBody ReplyToReviewJSONBody
@@ -12383,102 +13706,6 @@ func (a BookingReservationRoom) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
-// Getter for additional properties for CreateAirbnbOfferJSONBody. Returns the specified
-// element and whether it was found
-func (a CreateAirbnbOfferJSONBody) Get(fieldName string) (value interface{}, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
-
-// Setter for additional properties for CreateAirbnbOfferJSONBody
-func (a *CreateAirbnbOfferJSONBody) Set(fieldName string, value interface{}) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string]interface{})
-	}
-	a.AdditionalProperties[fieldName] = value
-}
-
-// Override default JSON handling for CreateAirbnbOfferJSONBody to handle AdditionalProperties
-func (a *CreateAirbnbOfferJSONBody) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if raw, found := object["blockInstantBooking"]; found {
-		err = json.Unmarshal(raw, &a.BlockInstantBooking)
-		if err != nil {
-			return fmt.Errorf("error reading 'blockInstantBooking': %w", err)
-		}
-		delete(object, "blockInstantBooking")
-	}
-
-	if raw, found := object["threadId"]; found {
-		err = json.Unmarshal(raw, &a.ThreadId)
-		if err != nil {
-			return fmt.Errorf("error reading 'threadId': %w", err)
-		}
-		delete(object, "threadId")
-	}
-
-	if raw, found := object["type"]; found {
-		err = json.Unmarshal(raw, &a.Type)
-		if err != nil {
-			return fmt.Errorf("error reading 'type': %w", err)
-		}
-		delete(object, "type")
-	}
-
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string]interface{})
-		for fieldName, fieldBuf := range object {
-			var fieldVal interface{}
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
-
-// Override default JSON handling for CreateAirbnbOfferJSONBody to handle AdditionalProperties
-func (a CreateAirbnbOfferJSONBody) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
-
-	if a.BlockInstantBooking != nil {
-		object["blockInstantBooking"], err = json.Marshal(a.BlockInstantBooking)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'blockInstantBooking': %w", err)
-		}
-	}
-
-	if a.ThreadId != nil {
-		object["threadId"], err = json.Marshal(a.ThreadId)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'threadId': %w", err)
-		}
-	}
-
-	object["type"], err = json.Marshal(a.Type)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling 'type': %w", err)
-	}
-
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
-		}
-	}
-	return json.Marshal(object)
-}
-
 // Getter for additional properties for BookingSetupJSONBody. Returns the specified
 // element and whether it was found
 func (a BookingSetupJSONBody) Get(fieldName string) (value interface{}, found bool) {
@@ -13166,6 +14393,142 @@ func (t *WebhookEvent) MergeReservationAlterationRespondedEvent(v ReservationAlt
 	return err
 }
 
+// AsReservationRequestCreatedEvent returns the union data inside the WebhookEvent as a ReservationRequestCreatedEvent
+func (t WebhookEvent) AsReservationRequestCreatedEvent() (ReservationRequestCreatedEvent, error) {
+	var body ReservationRequestCreatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationRequestCreatedEvent overwrites any union data inside the WebhookEvent as the provided ReservationRequestCreatedEvent
+func (t *WebhookEvent) FromReservationRequestCreatedEvent(v ReservationRequestCreatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.request.created"}`))
+	t.union = b
+	return err
+}
+
+// MergeReservationRequestCreatedEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationRequestCreatedEvent
+func (t *WebhookEvent) MergeReservationRequestCreatedEvent(v ReservationRequestCreatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.request.created"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReservationRequestUpdatedEvent returns the union data inside the WebhookEvent as a ReservationRequestUpdatedEvent
+func (t WebhookEvent) AsReservationRequestUpdatedEvent() (ReservationRequestUpdatedEvent, error) {
+	var body ReservationRequestUpdatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationRequestUpdatedEvent overwrites any union data inside the WebhookEvent as the provided ReservationRequestUpdatedEvent
+func (t *WebhookEvent) FromReservationRequestUpdatedEvent(v ReservationRequestUpdatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.request.updated"}`))
+	t.union = b
+	return err
+}
+
+// MergeReservationRequestUpdatedEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationRequestUpdatedEvent
+func (t *WebhookEvent) MergeReservationRequestUpdatedEvent(v ReservationRequestUpdatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.request.updated"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsInquiryCreatedEvent returns the union data inside the WebhookEvent as a InquiryCreatedEvent
+func (t WebhookEvent) AsInquiryCreatedEvent() (InquiryCreatedEvent, error) {
+	var body InquiryCreatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromInquiryCreatedEvent overwrites any union data inside the WebhookEvent as the provided InquiryCreatedEvent
+func (t *WebhookEvent) FromInquiryCreatedEvent(v InquiryCreatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"inquiry.created"}`))
+	t.union = b
+	return err
+}
+
+// MergeInquiryCreatedEvent performs a merge with any union data inside the WebhookEvent, using the provided InquiryCreatedEvent
+func (t *WebhookEvent) MergeInquiryCreatedEvent(v InquiryCreatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"inquiry.created"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsInquiryUpdatedEvent returns the union data inside the WebhookEvent as a InquiryUpdatedEvent
+func (t WebhookEvent) AsInquiryUpdatedEvent() (InquiryUpdatedEvent, error) {
+	var body InquiryUpdatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromInquiryUpdatedEvent overwrites any union data inside the WebhookEvent as the provided InquiryUpdatedEvent
+func (t *WebhookEvent) FromInquiryUpdatedEvent(v InquiryUpdatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"inquiry.updated"}`))
+	t.union = b
+	return err
+}
+
+// MergeInquiryUpdatedEvent performs a merge with any union data inside the WebhookEvent, using the provided InquiryUpdatedEvent
+func (t *WebhookEvent) MergeInquiryUpdatedEvent(v InquiryUpdatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"inquiry.updated"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsListingCreatedEvent returns the union data inside the WebhookEvent as a ListingCreatedEvent
 func (t WebhookEvent) AsListingCreatedEvent() (ListingCreatedEvent, error) {
 	var body ListingCreatedEvent
@@ -13734,6 +15097,10 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsAiOperationFailedEvent()
 	case "calendar.updated":
 		return t.AsCalendarUpdatedEvent()
+	case "inquiry.created":
+		return t.AsInquiryCreatedEvent()
+	case "inquiry.updated":
+		return t.AsInquiryUpdatedEvent()
 	case "listing.created":
 		return t.AsListingCreatedEvent()
 	case "listing.deleted":
@@ -13760,6 +15127,10 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsReservationCreatedEvent()
 	case "reservation.message.received":
 		return t.AsReservationMessageReceivedEvent()
+	case "reservation.request.created":
+		return t.AsReservationRequestCreatedEvent()
+	case "reservation.request.updated":
+		return t.AsReservationRequestUpdatedEvent()
 	case "reservation.updated":
 		return t.AsReservationUpdatedEvent()
 	case "review.created":
@@ -14539,6 +15910,68 @@ func (t UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) MarshalJSON() ([]by
 }
 
 func (t *UpdateAirbnbListingRoomJSONBody_RoomAmenities_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsSendMessageResponse returns the union data inside the SendAirbnbMessage201JSONResponseBody as a SendMessageResponse
+func (t SendAirbnbMessage201JSONResponseBody) AsSendMessageResponse() (SendMessageResponse, error) {
+	var body SendMessageResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSendMessageResponse overwrites any union data inside the SendAirbnbMessage201JSONResponseBody as the provided SendMessageResponse
+func (t *SendAirbnbMessage201JSONResponseBody) FromSendMessageResponse(v SendMessageResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSendMessageResponse performs a merge with any union data inside the SendAirbnbMessage201JSONResponseBody, using the provided SendMessageResponse
+func (t *SendAirbnbMessage201JSONResponseBody) MergeSendMessageResponse(v SendMessageResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSendAirbnbMessage201JSONResponseBody1 returns the union data inside the SendAirbnbMessage201JSONResponseBody as a SendAirbnbMessage201JSONResponseBody1
+func (t SendAirbnbMessage201JSONResponseBody) AsSendAirbnbMessage201JSONResponseBody1() (SendAirbnbMessage201JSONResponseBody1, error) {
+	var body SendAirbnbMessage201JSONResponseBody1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSendAirbnbMessage201JSONResponseBody1 overwrites any union data inside the SendAirbnbMessage201JSONResponseBody as the provided SendAirbnbMessage201JSONResponseBody1
+func (t *SendAirbnbMessage201JSONResponseBody) FromSendAirbnbMessage201JSONResponseBody1(v SendAirbnbMessage201JSONResponseBody1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSendAirbnbMessage201JSONResponseBody1 performs a merge with any union data inside the SendAirbnbMessage201JSONResponseBody, using the provided SendAirbnbMessage201JSONResponseBody1
+func (t *SendAirbnbMessage201JSONResponseBody) MergeSendAirbnbMessage201JSONResponseBody1(v SendAirbnbMessage201JSONResponseBody1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t SendAirbnbMessage201JSONResponseBody) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *SendAirbnbMessage201JSONResponseBody) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

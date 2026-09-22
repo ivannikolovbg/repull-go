@@ -35,3 +35,13 @@ const Rates = BookingAvailabilityUpdateRequestTypeRates
 //
 // Deprecated: use AirbnbAlterationCreateRequest.
 type CreateAirbnbAlterationJSONBody = AirbnbAlterationCreateRequest
+
+// Backward-compatible aliases for the POST /v1/channels/airbnb/offers `type`
+// enum. The 2026-09-22 regen (191 -> 199 operations) added response enums with
+// the same values, so oapi-codegen switched these to the type-prefixed form.
+
+// Deprecated: use CreateAirbnbOfferJSONBodyTypeOffer.
+const Offer = CreateAirbnbOfferJSONBodyTypeOffer
+
+// Deprecated: use CreateAirbnbOfferJSONBodyTypePreapproval.
+const Preapproval = CreateAirbnbOfferJSONBodyTypePreapproval
