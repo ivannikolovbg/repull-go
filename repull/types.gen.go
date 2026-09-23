@@ -742,6 +742,75 @@ func (e BookingPropertyMappingStatus) Valid() bool {
 	}
 }
 
+// Defines values for BookingPropertyActionRequestAction.
+const (
+	BookingPropertyActionRequestActionRelist BookingPropertyActionRequestAction = "relist"
+	BookingPropertyActionRequestActionUnlist BookingPropertyActionRequestAction = "unlist"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyActionRequestAction enum.
+func (e BookingPropertyActionRequestAction) Valid() bool {
+	switch e {
+	case BookingPropertyActionRequestActionRelist:
+		return true
+	case BookingPropertyActionRequestActionUnlist:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingPropertyActionResponseAction.
+const (
+	BookingPropertyActionResponseActionRelist BookingPropertyActionResponseAction = "relist"
+	BookingPropertyActionResponseActionUnlist BookingPropertyActionResponseAction = "unlist"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyActionResponseAction enum.
+func (e BookingPropertyActionResponseAction) Valid() bool {
+	switch e {
+	case BookingPropertyActionResponseActionRelist:
+		return true
+	case BookingPropertyActionResponseActionUnlist:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingPropertyActionResponseChannel.
+const (
+	BookingPropertyActionResponseChannelBooking BookingPropertyActionResponseChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyActionResponseChannel enum.
+func (e BookingPropertyActionResponseChannel) Valid() bool {
+	switch e {
+	case BookingPropertyActionResponseChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingPublishSectionErrorCode.
+const (
+	BookingPublishSectionErrorCodeNoContent BookingPublishSectionErrorCode = "no_content"
+	BookingPublishSectionErrorCodeRejected  BookingPublishSectionErrorCode = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the BookingPublishSectionErrorCode enum.
+func (e BookingPublishSectionErrorCode) Valid() bool {
+	switch e {
+	case BookingPublishSectionErrorCodeNoContent:
+		return true
+	case BookingPublishSectionErrorCodeRejected:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BookingRateWriteOccupancySource.
 const (
 	BookingRateWriteOccupancySourceRatePlan BookingRateWriteOccupancySource = "rate_plan"
@@ -1003,6 +1072,45 @@ const (
 func (e CalendarUpdatedEventEvent) Valid() bool {
 	switch e {
 	case CalendarUpdatedEventEventCalendarUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ChannelMarketStateItemChannel.
+const (
+	ChannelMarketStateItemChannelAirbnb  ChannelMarketStateItemChannel = "airbnb"
+	ChannelMarketStateItemChannelBooking ChannelMarketStateItemChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the ChannelMarketStateItemChannel enum.
+func (e ChannelMarketStateItemChannel) Valid() bool {
+	switch e {
+	case ChannelMarketStateItemChannelAirbnb:
+		return true
+	case ChannelMarketStateItemChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ChannelMarketStateItemState.
+const (
+	ChannelMarketStateItemStateOffline   ChannelMarketStateItemState = "offline"
+	ChannelMarketStateItemStateOnline    ChannelMarketStateItemState = "online"
+	ChannelMarketStateItemStateUnchanged ChannelMarketStateItemState = "unchanged"
+)
+
+// Valid indicates whether the value is a known member of the ChannelMarketStateItemState enum.
+func (e ChannelMarketStateItemState) Valid() bool {
+	switch e {
+	case ChannelMarketStateItemStateOffline:
+		return true
+	case ChannelMarketStateItemStateOnline:
+		return true
+	case ChannelMarketStateItemStateUnchanged:
 		return true
 	default:
 		return false
@@ -1426,6 +1534,30 @@ func (e ListingCreateRequestCancellationPolicy) Valid() bool {
 	}
 }
 
+// Defines values for ListingCreateRequestRoomTypeCategory.
+const (
+	ListingCreateRequestRoomTypeCategoryEntireHome  ListingCreateRequestRoomTypeCategory = "entire_home"
+	ListingCreateRequestRoomTypeCategoryHotelRoom   ListingCreateRequestRoomTypeCategory = "hotel_room"
+	ListingCreateRequestRoomTypeCategoryPrivateRoom ListingCreateRequestRoomTypeCategory = "private_room"
+	ListingCreateRequestRoomTypeCategorySharedRoom  ListingCreateRequestRoomTypeCategory = "shared_room"
+)
+
+// Valid indicates whether the value is a known member of the ListingCreateRequestRoomTypeCategory enum.
+func (e ListingCreateRequestRoomTypeCategory) Valid() bool {
+	switch e {
+	case ListingCreateRequestRoomTypeCategoryEntireHome:
+		return true
+	case ListingCreateRequestRoomTypeCategoryHotelRoom:
+		return true
+	case ListingCreateRequestRoomTypeCategoryPrivateRoom:
+		return true
+	case ListingCreateRequestRoomTypeCategorySharedRoom:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingCreatedEventEvent.
 const (
 	ListingCreatedEventEventListingCreated ListingCreatedEventEvent = "listing.created"
@@ -1471,6 +1603,24 @@ func (e ListingGenerateContentRequestStyle) Valid() bool {
 	case Professional:
 		return true
 	case Warm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingMarketStateResponseState.
+const (
+	ListingMarketStateResponseStateOffline ListingMarketStateResponseState = "offline"
+	ListingMarketStateResponseStateOnline  ListingMarketStateResponseState = "online"
+)
+
+// Valid indicates whether the value is a known member of the ListingMarketStateResponseState enum.
+func (e ListingMarketStateResponseState) Valid() bool {
+	switch e {
+	case ListingMarketStateResponseStateOffline:
+		return true
+	case ListingMarketStateResponseStateOnline:
 		return true
 	default:
 		return false
@@ -1633,18 +1783,15 @@ func (e ListingPublishAirbnbResponseChannel) Valid() bool {
 	}
 }
 
-// Defines values for ListingPublishResponseChannel.
+// Defines values for ListingPublishBookingResponseChannel.
 const (
-	ListingPublishResponseChannelAirbnb  ListingPublishResponseChannel = "airbnb"
-	ListingPublishResponseChannelBooking ListingPublishResponseChannel = "booking"
+	ListingPublishBookingResponseChannelBooking ListingPublishBookingResponseChannel = "booking"
 )
 
-// Valid indicates whether the value is a known member of the ListingPublishResponseChannel enum.
-func (e ListingPublishResponseChannel) Valid() bool {
+// Valid indicates whether the value is a known member of the ListingPublishBookingResponseChannel enum.
+func (e ListingPublishBookingResponseChannel) Valid() bool {
 	switch e {
-	case ListingPublishResponseChannelAirbnb:
-		return true
-	case ListingPublishResponseChannelBooking:
+	case ListingPublishBookingResponseChannelBooking:
 		return true
 	default:
 		return false
@@ -3591,9 +3738,13 @@ func (e ListBookingReservationsParamsType) Valid() bool {
 
 // Defines values for BookingSetupJSONBodyAction.
 const (
+	AddRoom           BookingSetupJSONBodyAction = "add-room"
+	AddUnit           BookingSetupJSONBodyAction = "add-unit"
+	Advance           BookingSetupJSONBodyAction = "advance"
 	CheckLegalStatus  BookingSetupJSONBodyAction = "check-legal-status"
 	CheckReadiness    BookingSetupJSONBodyAction = "check-readiness"
 	CreateLegalEntity BookingSetupJSONBodyAction = "create-legal-entity"
+	CreateProperty    BookingSetupJSONBodyAction = "create-property"
 	OpenProperty      BookingSetupJSONBodyAction = "open-property"
 	SetContacts       BookingSetupJSONBodyAction = "set-contacts"
 	SetPolicies       BookingSetupJSONBodyAction = "set-policies"
@@ -3602,11 +3753,19 @@ const (
 // Valid indicates whether the value is a known member of the BookingSetupJSONBodyAction enum.
 func (e BookingSetupJSONBodyAction) Valid() bool {
 	switch e {
+	case AddRoom:
+		return true
+	case AddUnit:
+		return true
+	case Advance:
+		return true
 	case CheckLegalStatus:
 		return true
 	case CheckReadiness:
 		return true
 	case CreateLegalEntity:
+		return true
+	case CreateProperty:
 		return true
 	case OpenProperty:
 		return true
@@ -5162,9 +5321,18 @@ type AirbnbPricingWriteRequest_Records_Item struct {
 type AirbnbPricingWriteRequestType string
 
 // AirbnbPublishResult A publish is not one call to Airbnb: it is up to eight independent ones (details, description, amenities, rooms, policies, photos, pricing, checkout_tasks), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback.
+//
+// **Content landing and the listing being live are two different answers.** `published` is about content; `live` is about whether the listing takes bookings. Read both.
 type AirbnbPublishResult struct {
 	// Errors Per-section failures. Empty when `published` is true.
 	Errors []PublishSectionError `json:"errors"`
+
+	// Live Whether the listing is active and bookable on Airbnb — that is, whether activation was actually performed and succeeded.
+	//
+	// `published: true` with `live: false` is a real and common outcome: every content section landed, but the listing was never activated, because activation is skipped when instant-booking cannot be confirmed to be off. `warnings` says why.
+	//
+	// **Absent is not `false`.** The field is omitted entirely when activation was never part of the operation — publishing to an already-mapped Airbnb listing updates content and activates nothing, so there is nothing to report. Only treat the listing as not-live when `live` is present and false.
+	Live *bool `json:"live,omitempty"`
 
 	// LockedFields Fields Airbnb will not let this listing change — collected from the failures above and from the `locked_attributes` Airbnb recorded for the listing. Sending them again returns success and changes nothing.
 	LockedFields []string `json:"lockedFields"`
@@ -5179,6 +5347,11 @@ type AirbnbPublishResult struct {
 	//
 	// Example: ["details","pricing","photos"]
 	Sections []string `json:"sections"`
+
+	// Warnings Steps that failed WITHOUT failing the publish — optional work the push carried on past, each in the push's own words. These used to be swallowed silently, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
+	//
+	// Example: ["instant booking could not be confirmed off — listing left inactive"]
+	Warnings []string `json:"warnings"`
 }
 
 // AirbnbReservation An Airbnb reservation as returned by the channel API. Use `confirmationCode` to address it in Airbnb operations.
@@ -5846,8 +6019,85 @@ type BookingPropertyListingsMappedVia string
 // BookingPropertyMappingStatus `mapped` — at least one room points at a listing. `unmapped` — the property is claimed but its rooms are not mapped yet, so `listings` is empty; finish `POST /v1/connect/booking/map-rooms`. An unmapped property is listed rather than hidden, so a half-finished connection is visible instead of looking like no connection at all.
 type BookingPropertyMappingStatus string
 
+// BookingPropertyActionRequest Take this listing's Booking.com property off sale, or put it back.
+type BookingPropertyActionRequest struct {
+	// Action `unlist` closes the room's availability across the whole forward window, so the property stops selling. `relist` re-syncs the real calendar: dates that are genuinely blocked (a reservation, an owner stay) stay blocked, and only the closure `unlist` wrote lifts. They are not mirror images, and that is deliberate.
+	Action BookingPropertyActionRequestAction `json:"action"`
+
+	// HotelId Booking.com property to act on, for a listing mapped to more than one. Without it the request is refused with `409 ambiguous_booking_mapping` and nothing is written. `?hotel_id=` means the same thing; the body wins if you send both.
+	HotelId *string `json:"hotelId,omitempty"`
+}
+
+// BookingPropertyActionRequestAction `unlist` closes the room's availability across the whole forward window, so the property stops selling. `relist` re-syncs the real calendar: dates that are genuinely blocked (a reservation, an owner stay) stay blocked, and only the closure `unlist` wrote lifts. They are not mirror images, and that is deliberate.
+type BookingPropertyActionRequestAction string
+
+// BookingPropertyActionResponse defines model for BookingPropertyActionResponse.
+type BookingPropertyActionResponse struct {
+	Action  BookingPropertyActionResponseAction  `json:"action"`
+	Channel BookingPropertyActionResponseChannel `json:"channel"`
+
+	// HotelId The Booking.com property that was acted on. Always read it back — a listing can be mapped to several, and this states which one changed.
+	HotelId   string `json:"hotelId"`
+	ListingId string `json:"listingId"`
+
+	// RoomBookingId Booking.com's own room id the availability write addressed.
+	RoomBookingId *string `json:"roomBookingId,omitempty"`
+
+	// Selling Whether the property is now on sale. **This is the state of the property on Booking.com, not of the listing in Repull** — `active` (what Repull bills and serves) is untouched by both actions and is deliberately not echoed here so the two can never be read as one field.
+	Selling bool `json:"selling"`
+}
+
+// BookingPropertyActionResponseAction defines model for BookingPropertyActionResponse.Action.
+type BookingPropertyActionResponseAction string
+
+// BookingPropertyActionResponseChannel defines model for BookingPropertyActionResponse.Channel.
+type BookingPropertyActionResponseChannel string
+
 // BookingPropertyListResponse defines model for BookingPropertyListResponse.
 type BookingPropertyListResponse = []BookingProperty
+
+// BookingPublishResult A publish is not one call to Booking.com: it is several independent Content API calls (details, description, amenities, rooms, photos, pricing), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback. Fix the failing sections and publish again; re-publishing an unchanged section is harmless.
+//
+// A property whose Content API credentials do not cover a section answers 403 for that section alone — the rest still land, and the failure is reported here rather than swallowed.
+type BookingPublishResult struct {
+	// Errors Per-section failures. Empty when `published` is true.
+	Errors []BookingPublishSectionError `json:"errors"`
+
+	// HotelId The Booking.com property this publish wrote into — resolved from the listing's mapping, or the one you named. Always read it back: a listing can be mapped to several properties, and this states which one actually received the content. Null when the listing is mapped to no property, in which case nothing was pushed.
+	HotelId *string `json:"hotelId,omitempty"`
+
+	// Published True only when EVERY attempted section reached Booking.com.
+	Published bool `json:"published"`
+
+	// Reason Set when the publish never started at all — most often because the listing is not mapped to any Booking.com property yet. Finish the Connect flow (`POST /v1/connect/booking/map-rooms`) and publish again.
+	Reason *string `json:"reason,omitempty"`
+
+	// Sections Sections that landed on Booking.com.
+	//
+	// Example: ["details","description","photos"]
+	Sections []string `json:"sections"`
+}
+
+// BookingPublishSectionError One section of a publish that did not reach Booking.com.
+type BookingPublishSectionError struct {
+	// Code `no_content` — there was nothing canonical to send for this section; write the content, then publish again. `rejected` — Booking.com refused the section as sent; fix the content, or the property's Content API permissions, and publish again.
+	//
+	// Airbnb's third code, `locked`, has no Booking.com counterpart and never appears here.
+	Code BookingPublishSectionErrorCode `json:"code"`
+
+	// Message Booking.com's own reason, verbatim, or ours when we refused to send an empty section.
+	Message string `json:"message"`
+
+	// Section Which part of the listing this failure is about — e.g. `details`, `description`, `amenities`, `rooms`, `photos`, `pricing`.
+	//
+	// Example: description
+	Section string `json:"section"`
+}
+
+// BookingPublishSectionErrorCode `no_content` — there was nothing canonical to send for this section; write the content, then publish again. `rejected` — Booking.com refused the section as sent; fix the content, or the property's Content API permissions, and publish again.
+//
+// Airbnb's third code, `locked`, has no Booking.com counterpart and never appears here.
+type BookingPublishSectionErrorCode string
 
 // BookingRateWriteOccupancy The party size one update was written at, and where that number came from.
 type BookingRateWriteOccupancy struct {
@@ -6301,6 +6551,64 @@ type CalendarUpdatedPayload struct {
 	} `json:"range,omitempty"`
 }
 
+// ChannelMarketStateItem What happened on ONE channel item — one Airbnb connection, or one Booking.com property. A listing can carry several Airbnb connections (a re-list, or a move between host accounts) and each gets its own entry.
+type ChannelMarketStateItem struct {
+	Channel ChannelMarketStateItemChannel `json:"channel"`
+
+	// Code Error code when `ok` is false — the SAME code the channel-specific endpoint returns for this failure, so one vocabulary covers both surfaces. Absent when `ok` is true.
+	//
+	// The channel codes come in pairs, and the pair is the retryable split — the most useful bit in the whole item:
+	//
+	// - `airbnb_rejected` / `booking_rejected` — the channel refused the request AS SENT. `message` carries its own reason. Correct it and send again; resending the same thing is refused again.
+	// - `airbnb_error` / `booking_error` — the channel did not complete the request (outage, timeout, server error). Nothing about the request needs to change: retry with backoff.
+	//
+	// Plus `ambiguous_booking_mapping` (name the property with `hotelId`) and `payment_required` (a billing refusal, which keeps its own code rather than being buried under a channel one).
+	Code *string `json:"code,omitempty"`
+
+	// ConnectionId Airbnb connection row id — the `id` from `GET /v1/channels/airbnb/listings/{id}`. Present on Airbnb items.
+	ConnectionId *string `json:"connectionId,omitempty"`
+
+	// Fix What to do about it, phrased for the direction you asked for — "still live and taking bookings" and "still down" call for different reactions. Absent when `ok` is true.
+	Fix *string `json:"fix,omitempty"`
+
+	// HotelId The Booking.com property acted on. Present on Booking.com items; null when the property could not be resolved.
+	HotelId *string `json:"hotelId,omitempty"`
+
+	// Message The channel's own reason, verbatim. Absent when `ok` is true.
+	Message *string `json:"message,omitempty"`
+
+	// Ok True only when the channel confirmed the change.
+	Ok bool `json:"ok"`
+
+	// PreviousCode The `code` this item used to carry, for callers still branching on the old string. A migration aid with a deprecation window — **`code` is canonical.**
+	//
+	// This fan-out reaches Airbnb through an internal hop that flattens a refusal into its own 500, so an unambiguous Airbnb 400 ("Please specify a valid room type") was reported as `airbnb_error` — whose published advice is to retry with backoff, forever, for something Airbnb will never accept. It now reads Airbnb's real status and answers `airbnb_rejected`, and the classification covers the whole 4xx range rather than only `400`. Items whose code changed carry `previousCode`. **Removed in v2.**
+	//
+	// Example: airbnb_error
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	PreviousCode *string `json:"previousCode,omitempty"`
+
+	// State **What is now true of this item**, not what you asked for.
+	//
+	// `offline` — it is off the market. `online` — it is back on. `unchanged` — nothing was sent, or what was sent did not take; `code` and `message` say why.
+	//
+	// `unchanged` never means "it was already like that": it means we did not put it there, and it is still in whatever state it was in before the call.
+	State ChannelMarketStateItemState `json:"state"`
+
+	// Verified Airbnb only, and only when going offline: the listing was READ BACK after the deactivation and confirmed down. Airbnb accepts a deactivation and leaves some listings live, so "we sent the request" is a weaker claim than this one and is never reported as success.
+	Verified *bool `json:"verified,omitempty"`
+}
+
+// ChannelMarketStateItemChannel defines model for ChannelMarketStateItem.Channel.
+type ChannelMarketStateItemChannel string
+
+// ChannelMarketStateItemState **What is now true of this item**, not what you asked for.
+//
+// `offline` — it is off the market. `online` — it is back on. `unchanged` — nothing was sent, or what was sent did not take; `code` and `message` say why.
+//
+// `unchanged` never means "it was already like that": it means we did not put it there, and it is still in whatever state it was in before the call.
+type ChannelMarketStateItemState string
+
 // ConnectHost Public-facing metadata about the host whose account is linked. Lets clients render an account-level card (avatar + name) instead of just an opaque ID. Email is intentionally NOT exposed for Airbnb — the partner API doesn't return host email.
 type ConnectHost struct {
 	// ActivationStatus Per-provider activation/onboarding status.
@@ -6742,6 +7050,16 @@ type Error struct {
 		// Example: The check_in_after parameter must be an ISO 8601 date (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ). You sent: 'garbage'.
 		Message string `json:"message"`
 
+		// PreviousCode The `code` THIS response used to carry, for callers whose branch still matches the old string. A migration aid with a deprecation window — **`code` is canonical, always match on that.**
+		//
+		// Present only where an endpoint's classification actually changed, never as a permanent synonym, and it disappears from a response as soon as the canonical code and the old one agree.
+		//
+		// The live case: the reviews, messaging, check-in-guide, alteration-answer and Airbnb-pull endpoints used to report EVERY Airbnb failure as `500 airbnb_error`, including refusals Airbnb will repeat forever. They now classify the same way every other Airbnb write does — an Airbnb 4xx is `422 airbnb_rejected` (fix the request), 5xx and timeouts stay `502 airbnb_error` (retry with backoff), and a dead grant is `403 connection_reauth_required`. Those responses carry `previous_code: "airbnb_error"`. **Removed in v2** — migrate your branches to `code` before then.
+		//
+		// Example: airbnb_error
+		// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+		PreviousCode *string `json:"previous_code,omitempty"`
+
 		// RequestId Opaque per-request id. Mirrors the `x-request-id` response header. Capture it before retrying so logs can be correlated.
 		//
 		// Example: req_01J5X7Y8Z9ABCDEF12345678
@@ -6999,7 +7317,7 @@ type InquiryUpdatedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `inquiry.updated`. The inquiry's status, dates, guest count or the reservation it became changed. `previousAttributes` holds only what moved, with prior values. Fires whether the host acted through the API, the Vanio dashboard or the Airbnb app. An inquiry whose dates simply pass is `expired` in `GET /v1/inquiries` but fires no event unless the channel reports it.
+	// Data Payload for `inquiry.updated`. The inquiry's status, dates, guest count or the reservation it became changed. `previousAttributes` holds only what moved, with prior values. Fires whether the host acted through the API, a connected app or the Airbnb app. An inquiry whose dates simply pass is `expired` in `GET /v1/inquiries` but fires no event unless the channel reports it.
 	Data InquiryUpdatedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -7015,7 +7333,7 @@ type InquiryUpdatedEvent struct {
 // InquiryUpdatedEventEvent The event name. This field is `event`, not `type`.
 type InquiryUpdatedEventEvent string
 
-// InquiryUpdatedPayload Payload for `inquiry.updated`. The inquiry's status, dates, guest count or the reservation it became changed. `previousAttributes` holds only what moved, with prior values. Fires whether the host acted through the API, the Vanio dashboard or the Airbnb app. An inquiry whose dates simply pass is `expired` in `GET /v1/inquiries` but fires no event unless the channel reports it.
+// InquiryUpdatedPayload Payload for `inquiry.updated`. The inquiry's status, dates, guest count or the reservation it became changed. `previousAttributes` holds only what moved, with prior values. Fires whether the host acted through the API, a connected app or the Airbnb app. An inquiry whose dates simply pass is `expired` in `GET /v1/inquiries` but fires no event unless the channel reports it.
 type InquiryUpdatedPayload struct {
 	// Object An inquiry — a guest asking about dates before booking — exactly as `GET /v1/inquiries` returns it. Delivered as `data.object` on `inquiry.*` events.
 	Object     InquiryWebhookObject `json:"object"`
@@ -7136,6 +7454,22 @@ type ListingActiveResponse struct {
 	Id *string `json:"id,omitempty"`
 }
 
+// ListingAddressReadiness Whether one channel would accept this listing's postal address, answered WITHOUT attempting a publish.
+type ListingAddressReadiness struct {
+	// Have The address as currently resolved, for debugging.
+	//
+	// Example: street=123 Main St, city=Miami Beach, state=∅, postalCode=∅, country=US
+	Have *string `json:"have,omitempty"`
+
+	// Missing The address parts still needed, named as the REQUEST fields you send — `street`, `city`, `state`, `postalCode` — so the value can be acted on directly. Empty when `ready` is true.
+	//
+	// Example: ["state","postalCode"]
+	Missing *[]string `json:"missing,omitempty"`
+
+	// Ready True when the address satisfies this channel's create preflight. False means a publish would be refused for the address alone.
+	Ready *bool `json:"ready,omitempty"`
+}
+
 // ListingAmenity A single amenity row from the unified `listings_amenities` table. Surfaced on `GET /v1/listings/{id}` and `GET /v1/properties/{id}` only when the caller passes `?include=amenities`.
 type ListingAmenity struct {
 	// AmenityKey Canonical amenity key (e.g. `wifi`, `pool`, `parking`).
@@ -7248,15 +7582,41 @@ type ListingContent struct {
 
 // ListingContentUpdateRequest Canonical PMS-owned listing content. Every field is optional — this is a partial update, only the fields you send are written; absent fields are left untouched. This is a LOCAL write only: it does NOT push to Airbnb/Booking.com. Distribution is a separate explicit publish step. `photos` are ingested by URL and attached to the listing in order (full-replace by default, or append via `photosMode`).
 type ListingContentUpdateRequest struct {
-	// Address Partial address. Only provided sub-fields are written.
+	// Address Partial address. Only provided sub-fields are written; the ones you omit keep their current value, and an explicit `null` clears one.
+	//
+	// This is also the repair path for a listing that cannot be published: Airbnb requires `street` and `city` for every country and additionally `state` and `postalCode` for a **US** property — and a listing with no `countryCode` behaves as US. Send just the missing part, e.g. `{ "address": { "state": "FL" } }`. `GET /v1/listings/{id}/publish-status` names what is missing.
 	Address *struct {
+		// City City / town. Required by Airbnb for every country.
 		City *string `json:"city,omitempty"`
 
-		// CountryCode ISO-3166 alpha-2 country code.
-		CountryCode *string  `json:"countryCode,omitempty"`
-		Lat         *float32 `json:"lat,omitempty"`
-		Lng         *float32 `json:"lng,omitempty"`
-		Street      *string  `json:"street,omitempty"`
+		// CountryCode ISO-3166 alpha-2 country code. **Send this for any non-US property.** Leaving it unset does not mean "unknown" — the publish path treats a listing with no country as US and then demands `state` and `postalCode`.
+		//
+		// Example: US
+		CountryCode *string `json:"countryCode,omitempty"`
+
+		// Lat Latitude. Never a substitute for the postal address — Airbnb rejects coordinates it cannot reconcile with a full address.
+		Lat *float32 `json:"lat,omitempty"`
+
+		// Lng Longitude. See `lat`.
+		Lng *float32 `json:"lng,omitempty"`
+
+		// PostalCode Postal code — ZIP in the US, postcode in the UK, and so on. **Required for a US property**, and a listing with no `countryCode` counts as US. Send the complete code; a partial postcode is rejected downstream. Alias: `zipcode`.
+		//
+		// Example: 33139
+		PostalCode *string `json:"postalCode,omitempty"`
+
+		// State State, province or region. **Required for a US property**, and a listing with no `countryCode` counts as US.
+		//
+		// Example: FL
+		State *string `json:"state,omitempty"`
+
+		// Street Street address including the number. Required by Airbnb for every country.
+		Street *string `json:"street,omitempty"`
+
+		// Zipcode Alias for `postalCode`, accepted because it is the field name on the Airbnb mirror. `postalCode` wins if you send both.
+		//
+		// Example: 33139
+		Zipcode *string `json:"zipcode,omitempty"`
 	} `json:"address,omitempty"`
 
 	// Amenities FULL replacement of the amenity set. Accepts canonical keys as a string[] or structured rows. Omit to leave amenities untouched; send `[]` to clear them.
@@ -7412,7 +7772,9 @@ type ListingContentUpdateResponse struct {
 	Id *string `json:"id,omitempty"`
 }
 
-// ListingCreateRequest Inputs for `POST /v1/listings`. Provide enough address detail (street + city + lat/lng) for downstream Airbnb publish to work.
+// ListingCreateRequest Inputs for `POST /v1/listings`.
+//
+// **Address requirements — read this before you build the payload.** Publishing to Airbnb runs a create preflight that refuses the listing outright if the address is incomplete, and the refusal only surfaces later, at publish time. Airbnb requires `street` and `city` for every country. For a **US** property it additionally requires `state` and `postalCode`. Crucially, **omitting `countryCode` makes the listing behave as US**, so a listing created without a country needs `state` and `postalCode` too. Send `countryCode` explicitly for a non-US property. `lat`/`lng` alone are not enough — Airbnb rejects coordinates that are not backed by a full postal address. Use `GET /v1/listings/{id}/publish-status` to see which parts are still missing before you attempt a publish.
 type ListingCreateRequest struct {
 	AllowsChildren *bool `json:"allowsChildren,omitempty"`
 	AllowsEvents   *bool `json:"allowsEvents,omitempty"`
@@ -7435,19 +7797,27 @@ type ListingCreateRequest struct {
 	// CheckOutTime Example: 11:00
 	CheckOutTime *string `json:"checkOutTime,omitempty"`
 
-	// City Example: Miami Beach
+	// City City / town. Required by Airbnb for every country — a publish is refused without it.
+	//
+	// Example: Miami Beach
 	City        *string  `json:"city,omitempty"`
 	CleaningFee *float32 `json:"cleaningFee,omitempty"`
 
-	// CountryCode Example: US
+	// CountryCode ISO-3166 alpha-2 country code. **Send this for any non-US property.** Omitting it does not mean "unknown" — the publish path treats a listing with no country as US, which then requires `state` and `postalCode` and will refuse the listing when they are absent.
+	//
+	// Example: US
 	CountryCode       *string  `json:"countryCode,omitempty"`
 	DefaultDailyPrice *float32 `json:"defaultDailyPrice,omitempty"`
 	Description       *string  `json:"description,omitempty"`
 
-	// Lat Example: 25.7617
+	// Lat Latitude. Useful for map search, but never a substitute for the postal address — Airbnb rejects coordinates it cannot reconcile with a full address.
+	//
+	// Example: 25.7617
 	Lat *float32 `json:"lat,omitempty"`
 
-	// Lng Example: -80.1918
+	// Lng Longitude. See `lat`.
+	//
+	// Example: -80.1918
 	Lng *float32 `json:"lng,omitempty"`
 
 	// Name Public guest-facing title
@@ -7458,19 +7828,46 @@ type ListingCreateRequest struct {
 	// PersonCapacity Example: 4
 	PersonCapacity *int `json:"personCapacity,omitempty"`
 
+	// PostalCode Postal code — ZIP in the US, postcode in the UK, and so on. **Required for a US property**, and a listing with no `countryCode` counts as US. Send the complete code: Booking.com rejects a partial postcode such as `SW6` where the full value is `SW6 1EP`. Alias: `zipcode`.
+	//
+	// Example: 33139
+	PostalCode *string `json:"postalCode,omitempty"`
+
 	// PropertyType Example: apartment
 	PropertyType *string `json:"propertyType,omitempty"`
 
-	// State Example: FL
+	// PropertyTypeCategory Airbnb's finer property-type category, when you know it. Optional.
+	PropertyTypeCategory *string `json:"propertyTypeCategory,omitempty"`
+
+	// RoomTypeCategory What the guest actually gets. Airbnb refuses to activate a listing that has not stated one, answering "Please specify a valid room type" — which reads like a beds problem and is not. It is never defaulted: most listings are an entire home, but hundreds are a private or hotel room, and publishing one of those as an entire home is a false claim about someone's property. Settable later with `PUT /v1/listings/{id}/content` under `details`.
+	//
+	// Example: entire_home
+	RoomTypeCategory *ListingCreateRequestRoomTypeCategory `json:"roomTypeCategory,omitempty"`
+
+	// State State, province or region. **Required for a US property**, and a listing with no `countryCode` counts as US. Optional elsewhere, but stored and used wherever the channel carries it.
+	//
+	// Example: FL
 	State *string `json:"state,omitempty"`
 
-	// Street Example: 123 Main St
+	// Street Street address including the number. Required by Airbnb for every country — a publish is refused without it.
+	//
+	// Example: 123 Main St
 	Street  *string `json:"street,omitempty"`
 	Summary *string `json:"summary,omitempty"`
+
+	// Zipcode Alias for `postalCode`, accepted because it is the field name on the Airbnb mirror. `postalCode` wins if you send both. Prefer `postalCode` — the field holds non-US postcodes too.
+	//
+	// Example: 33139
+	Zipcode *string `json:"zipcode,omitempty"`
 }
 
 // ListingCreateRequestCancellationPolicy defines model for ListingCreateRequest.CancellationPolicy.
 type ListingCreateRequestCancellationPolicy string
+
+// ListingCreateRequestRoomTypeCategory What the guest actually gets. Airbnb refuses to activate a listing that has not stated one, answering "Please specify a valid room type" — which reads like a beds problem and is not. It is never defaulted: most listings are an entire home, but hundreds are a private or hotel room, and publishing one of those as an entire home is a false claim about someone's property. Settable later with `PUT /v1/listings/{id}/content` under `details`.
+//
+// Example: entire_home
+type ListingCreateRequestRoomTypeCategory string
 
 // ListingCreateResponse defines model for ListingCreateResponse.
 type ListingCreateResponse struct {
@@ -7652,6 +8049,27 @@ type ListingListResponse struct {
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
 }
+
+// ListingMarketStateRequest Optional. Send no body at all unless this listing is mapped to more than one Booking.com property.
+type ListingMarketStateRequest struct {
+	// HotelId Booking.com property to act on, for a listing mapped to more than one. Without it the Booking.com item comes back refused with `ambiguous_booking_mapping` — closing the wrong property's availability takes real inventory off sale, so it is never guessed. The Airbnb items are unaffected and still run. `GET /v1/channels/booking/properties` lists every property in the workspace with the listings mapped under it. `?hotel_id=` in the query string means the same thing; the body wins if you send both.
+	HotelId *string `json:"hotelId,omitempty"`
+}
+
+// ListingMarketStateResponse The per-item result of a fan-out. **There is deliberately no top-level success flag**: a listing can sit on two Airbnb connections and a Booking.com property, they fail independently, and partial success is the ordinary outcome — any single boolean would be wrong for exactly the calls that need reading. Walk `channels` and check each `ok`.
+//
+// Nothing here is rolled back. What landed stays landed; re-send the same request to retry the items that did not, which is safe.
+type ListingMarketStateResponse struct {
+	// Channels One entry per channel item acted on — Airbnb connections first, then the Booking.com property. Never empty: a listing connected to nothing is refused with `422 no_connected_channels` rather than answered with an empty array.
+	Channels  []ChannelMarketStateItem `json:"channels"`
+	ListingId string                   `json:"listingId"`
+
+	// State The state you asked for. Compare each item's own `state` against it.
+	State ListingMarketStateResponseState `json:"state"`
+}
+
+// ListingMarketStateResponseState The state you asked for. Compare each item's own `state` against it.
+type ListingMarketStateResponseState string
 
 // ListingPhoto defines model for ListingPhoto.
 type ListingPhoto struct {
@@ -7913,34 +8331,55 @@ type ListingPublishAirbnbResponse struct {
 	ListingId *string                              `json:"listingId,omitempty"`
 
 	// Result A publish is not one call to Airbnb: it is up to eight independent ones (details, description, amenities, rooms, policies, photos, pricing, checkout_tasks), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback.
+	//
+	// **Content landing and the listing being live are two different answers.** `published` is about content; `live` is about whether the listing takes bookings. Read both.
 	Result *AirbnbPublishResult `json:"result,omitempty"`
 }
 
 // ListingPublishAirbnbResponseChannel defines model for ListingPublishAirbnbResponse.Channel.
 type ListingPublishAirbnbResponseChannel string
 
-// ListingPublishResponse defines model for ListingPublishResponse.
-type ListingPublishResponse struct {
-	Channel   *ListingPublishResponseChannel `json:"channel,omitempty"`
-	ListingId *string                        `json:"listingId,omitempty"`
-
-	// Result Channel-specific push result (sections pushed, errors, etc.)
-	Result *map[string]interface{} `json:"result,omitempty"`
+// ListingPublishBookingRequest Optional. Omit the body entirely when the listing is mapped to exactly one Booking.com property.
+type ListingPublishBookingRequest struct {
+	// HotelId Booking.com property to publish into. Required when this listing is mapped to more than one — without it the push is refused with `409 ambiguous_booking_mapping` rather than written into a property chosen for you. `GET /v1/channels/booking/properties` lists every property in the workspace with the listings mapped under it. `?hotel_id=` in the query string is accepted as well and means the same thing; the body wins if you send both.
+	HotelId *string `json:"hotelId,omitempty"`
 }
 
-// ListingPublishResponseChannel defines model for ListingPublishResponse.Channel.
-type ListingPublishResponseChannel string
+// ListingPublishBookingResponse defines model for ListingPublishBookingResponse.
+type ListingPublishBookingResponse struct {
+	Channel   *ListingPublishBookingResponseChannel `json:"channel,omitempty"`
+	ListingId *string                               `json:"listingId,omitempty"`
 
-// ListingPublishStatusChannel defines model for ListingPublishStatusChannel.
+	// Result A publish is not one call to Booking.com: it is several independent Content API calls (details, description, amenities, rooms, photos, pricing), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback. Fix the failing sections and publish again; re-publishing an unchanged section is harmless.
+	//
+	// A property whose Content API credentials do not cover a section answers 403 for that section alone — the rest still land, and the failure is reported here rather than swallowed.
+	Result *BookingPublishResult `json:"result,omitempty"`
+}
+
+// ListingPublishBookingResponseChannel defines model for ListingPublishBookingResponse.Channel.
+type ListingPublishBookingResponseChannel string
+
+// ListingPublishStatusChannel Sync activity for one channel. `pushStatus` says whether the last push landed; `pushError` says why it did not.
 type ListingPublishStatusChannel struct {
 	DirtyFields  *[]string  `json:"dirtyFields,omitempty"`
 	LastPulledAt *time.Time `json:"lastPulledAt,omitempty"`
 	LastPushedAt *time.Time `json:"lastPushedAt,omitempty"`
 
 	// Platform Example: airbnb
-	Platform           *string                                `json:"platform,omitempty"`
-	PlatformHasChanges *bool                                  `json:"platformHasChanges,omitempty"`
-	PushStatus         *ListingPublishStatusChannelPushStatus `json:"pushStatus,omitempty"`
+	Platform           string `json:"platform"`
+	PlatformHasChanges *bool  `json:"platformHasChanges,omitempty"`
+
+	// PushError Why the last push failed — the channel's own reason, verbatim, sanitised for display.
+	//
+	// This is the field to render when `pushStatus` is `error`. It carries what Airbnb or Booking.com actually objected to, which is almost always something the operator can fix in the listing content: `"Airbnb error (400): We can't save your info yet. Links and contact info can't be shared."`, `"Check-in start time must be before end time"`, `"property_type_group must be one of [apartments, houses, …]"`, `"Rate limited by provider"`.
+	//
+	// **Free text, not an enum.** It is written by the channel and changes without notice: show it to a human, log it, put it next to the retry button — but never parse it or branch on its contents. When a push fails for several reasons at once the reasons are joined with `; `.
+	//
+	// `null` when the last push succeeded, and when no push has run yet — the two are told apart by `pushStatus` and `lastPushedAt`, not by this field.
+	//
+	// Example: Airbnb error (400): property_type_group must be one of [apartments, houses, secondary_units, unique_homes, bnb]
+	PushError  *string                                `json:"pushError"`
+	PushStatus *ListingPublishStatusChannelPushStatus `json:"pushStatus,omitempty"`
 }
 
 // ListingPublishStatusChannelPushStatus defines model for ListingPublishStatusChannel.PushStatus.
@@ -7956,6 +8395,15 @@ type ListingPublishStatusConnection struct {
 	// Connected True when the link is active (not disconnected/suspended).
 	Connected *bool `json:"connected,omitempty"`
 
+	// LockedFields Fields the channel will not let this listing change. **Airbnb only** — present on the `airbnb` entry and absent on every other channel, because no other channel has the concept.
+	//
+	// Airbnb does not refuse a write to a locked field: the request returns 200, reports the field as locked, and applies nothing. So a write to one of these looks exactly like a write that worked. Read this before you let a user edit — it is here, rather than only on `GET /v1/channels/airbnb/listings/{id}`, because this is the endpoint a listing editor already calls.
+	//
+	// Empty for a listing with nothing locked, and for one that has not synced since we began recording them — the two are not distinguished, because a caller acts the same way on both. This is what Airbnb last told us, not a promise: a lock can appear between syncs, which is why a publish result also reports `lockedFields`.
+	//
+	// Example: ["name","property_type_category"]
+	LockedFields *[]string `json:"lockedFields,omitempty"`
+
 	// Since ISO timestamp the connection was first established.
 	Since *time.Time `json:"since,omitempty"`
 
@@ -7965,6 +8413,13 @@ type ListingPublishStatusConnection struct {
 
 // ListingPublishStatusResponse defines model for ListingPublishStatusResponse.
 type ListingPublishStatusResponse struct {
+	// AddressReadiness Address readiness per channel, keyed by channel name (`airbnb` today). Airbnb requires `street` and `city` for every country and additionally `state` and `postalCode` for a **US** property — and a listing with no `countryCode` behaves as US. Check this BEFORE calling a publish endpoint: an incomplete address is refused at the create preflight and never reaches the channel.
+	//
+	// It sits here rather than inside `channels[]` because `channels` reports sync activity and is empty for a listing that has never been pushed — exactly the listing whose address blocker you need to see. Repair a gap with `PUT /v1/listings/{id}/content`, sending only the missing parts under `address`. An empty object means readiness was not reported; it never means ready.
+	//
+	// Example: {"airbnb":{"missing":["state","postalCode"],"ready":false}}
+	AddressReadiness *map[string]ListingAddressReadiness `json:"addressReadiness,omitempty"`
+
 	// Channels Sync activity per channel — empty if the listing has never been pushed/pulled. Empty does NOT mean "not connected"; check `connections` for that.
 	Channels *[]ListingPublishStatusChannel `json:"channels,omitempty"`
 
@@ -9588,7 +10043,7 @@ type ReservationRequestUpdatedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `reservation.request.updated`. A booking request stopped waiting on the host. `requestStatus` says how; `data.object` is the reservation after the change (`status` `confirmed` once accepted, `cancelled` otherwise). An accepted request also fires `reservation.created`. Fires when the channel reports the outcome, whoever acted — the API, the Vanio dashboard or the channel's own app.
+	// Data Payload for `reservation.request.updated`. A booking request stopped waiting on the host. `requestStatus` says how; `data.object` is the reservation after the change (`status` `confirmed` once accepted, `cancelled` otherwise). An accepted request also fires `reservation.created`. Fires when the channel reports the outcome, whoever acted — the API, a connected app or the channel's own app.
 	Data ReservationRequestUpdatedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -9604,7 +10059,7 @@ type ReservationRequestUpdatedEvent struct {
 // ReservationRequestUpdatedEventEvent The event name. This field is `event`, not `type`.
 type ReservationRequestUpdatedEventEvent string
 
-// ReservationRequestUpdatedPayload Payload for `reservation.request.updated`. A booking request stopped waiting on the host. `requestStatus` says how; `data.object` is the reservation after the change (`status` `confirmed` once accepted, `cancelled` otherwise). An accepted request also fires `reservation.created`. Fires when the channel reports the outcome, whoever acted — the API, the Vanio dashboard or the channel's own app.
+// ReservationRequestUpdatedPayload Payload for `reservation.request.updated`. A booking request stopped waiting on the host. `requestStatus` says how; `data.object` is the reservation after the change (`status` `confirmed` once accepted, `cancelled` otherwise). An accepted request also fires `reservation.created`. Fires when the channel reports the outcome, whoever acted — the API, a connected app or the channel's own app.
 type ReservationRequestUpdatedPayload struct {
 	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
 	//
@@ -10404,6 +10859,9 @@ type BookingUpstreamError = Error
 // BookingWriteRejected Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type BookingWriteRejected = Error
 
+// ChannelActionUnavailable Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type ChannelActionUnavailable = Error
+
 // Conflict Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type Conflict = Error
 
@@ -10421,6 +10879,9 @@ type NotFound = Error
 
 // PaymentRequired Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type PaymentRequired = Error
+
+// PublishBillingRefused Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
+type PublishBillingRefused = Error
 
 // TooManyRequests Standardized error envelope. Returned by EVERY 4xx/5xx response on this API. Required fields (`code`, `message`, `fix`, `docs_url`, `request_id`) are designed for LLM-driven self-recovery — an AI agent should be able to fix the underlying problem and retry without escalating to a human. Lead with `fix` and `docs_url` in your tooling; demote `support` (rare) to a last resort.
 type TooManyRequests = Error
@@ -10522,6 +10983,8 @@ type AirbnbListingAction200JSONResponseBody1 struct {
 	Id      *string `json:"id,omitempty"`
 
 	// Result A publish is not one call to Airbnb: it is up to eight independent ones (details, description, amenities, rooms, policies, photos, pricing, checkout_tasks), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback.
+	//
+	// **Content landing and the listing being live are two different answers.** `published` is about content; `live` is about whether the listing takes bookings. Read both.
 	Result *AirbnbPublishResult `json:"result,omitempty"`
 }
 
@@ -11284,6 +11747,19 @@ type SendBookingMessageJSONBody struct {
 	PropertyId int `json:"property_id"`
 }
 
+// BookingPropertyActionParams defines parameters for BookingPropertyAction.
+type BookingPropertyActionParams struct {
+	// HotelId Booking.com property to act on, for a listing mapped to more than one. The query-string spelling of the body's `hotelId`; the body wins when both are sent.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
+
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // ListBookingPropertyRoomsParams defines parameters for ListBookingPropertyRooms.
 type ListBookingPropertyRoomsParams struct {
 	// HotelId Booking.com hotel id, when this listing is published under more than one property. Omit it and a read uses the oldest mapping (reporting the rest in `otherHotelIds`), while a write is refused with `409 ambiguous_booking_mapping` rather than guess. `GET /v1/channels/booking/properties` lists the valid ids.
@@ -11344,16 +11820,38 @@ type BookingSetupJSONBody struct {
 	// Contacts Contacts payload for `set-contacts`.
 	Contacts *[]map[string]interface{} `json:"contacts,omitempty"`
 
-	// Leid Legal entity id — required for `check-legal-status`.
+	// LegalEntity Used by `create-property` ONLY when this workspace has no legal entity yet — one is registered with Booking.com from these details and used for the property. Ignored when the workspace already has one, so a second is never registered.
+	LegalEntity *BookingSetupJSONBody_LegalEntity `json:"legal_entity,omitempty"`
+
+	// LegalEntityId Optional override for `create-property`. Omit it: the legal entity this workspace already uses is resolved automatically. An id that carries another workspace's properties is refused with `403 legal_entity_not_yours`. `legalEntityId` is accepted as an alias.
+	LegalEntityId *int `json:"legal_entity_id,omitempty"`
+
+	// Leid Legal entity id — required for `check-legal-status`, which always answers 404.
 	Leid *int `json:"leid,omitempty"`
 
-	// PropertyId Booking.com property id — required for readiness/open/contacts/policies actions.
-	PropertyId           *string                `json:"property_id,omitempty"`
+	// ListingId Repull listing id — required for `create-property`, `add-room` and `add-unit`. NOT a Booking.com Hotel ID. `listingId` is accepted as an alias.
+	ListingId *int `json:"listing_id,omitempty"`
+
+	// PropertyId Booking.com Hotel ID — required for `add-room`, `add-unit`, `advance`, and the readiness/open/contacts/policies actions.
+	PropertyId *string `json:"property_id,omitempty"`
+
+	// RoomId Booking.com room id — required for `add-unit`. `GET /v1/channels/booking/properties/{listingId}/rooms` lists them. `roomId` is accepted as an alias.
+	RoomId               *int                   `json:"room_id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // BookingSetupJSONBodyAction defines parameters for BookingSetup.
 type BookingSetupJSONBodyAction string
+
+// BookingSetupJSONBody_LegalEntity defines parameters for BookingSetup.
+type BookingSetupJSONBody_LegalEntity struct {
+	City                 *string                `json:"city,omitempty"`
+	CompanyName          string                 `json:"company_name"`
+	Country              *string                `json:"country,omitempty"`
+	LegalContactEmail    openapi_types.Email    `json:"legal_contact_email"`
+	LegalContactName     string                 `json:"legal_contact_name"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
 
 // DeleteBookingWebhookParams defines parameters for DeleteBookingWebhook.
 type DeleteBookingWebhookParams struct {
@@ -11851,6 +12349,32 @@ type UpdateListingContentParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// TakeListingOfflineParams defines parameters for TakeListingOffline.
+type TakeListingOfflineParams struct {
+	// HotelId Booking.com property to act on, for a listing mapped to more than one. The query-string spelling of the body's `hotelId`; the body wins when both are sent.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
+
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// TakeListingOnlineParams defines parameters for TakeListingOnline.
+type TakeListingOnlineParams struct {
+	// HotelId Booking.com property to act on, for a listing mapped to more than one. The query-string spelling of the body's `hotelId`; the body wins when both are sent.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
+
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // GetListingPricingParams defines parameters for GetListingPricing.
 type GetListingPricingParams struct {
 	// StartDate Inclusive start of the calendar window. Defaults to today.
@@ -11884,6 +12408,12 @@ type PublishListingToAirbnbParams struct {
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
 	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
+// PublishListingToBookingParams defines parameters for PublishListingToBooking.
+type PublishListingToBookingParams struct {
+	// HotelId Booking.com property to publish into, for a listing mapped to more than one. The query-string spelling of the body's `hotelId`, accepted so this route reads the same as every other Booking listing-addressed route. The body wins when both are sent.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
 }
 
 // GetListingSegmentsParams defines parameters for GetListingSegments.
@@ -12421,6 +12951,9 @@ type UpdateBookingListingPricingJSONRequestBody = BookingPricingUpdateRequest
 // SendBookingMessageJSONRequestBody defines body for SendBookingMessage for application/json ContentType.
 type SendBookingMessageJSONRequestBody SendBookingMessageJSONBody
 
+// BookingPropertyActionJSONRequestBody defines body for BookingPropertyAction for application/json ContentType.
+type BookingPropertyActionJSONRequestBody = BookingPropertyActionRequest
+
 // AcknowledgeBookingReservationsJSONRequestBody defines body for AcknowledgeBookingReservations for application/json ContentType.
 type AcknowledgeBookingReservationsJSONRequestBody AcknowledgeBookingReservationsJSONBody
 
@@ -12519,6 +13052,12 @@ type UpdateListingContentJSONRequestBody = ListingContentUpdateRequest
 // GenerateListingContentJSONRequestBody defines body for GenerateListingContent for application/json ContentType.
 type GenerateListingContentJSONRequestBody = ListingGenerateContentRequest
 
+// TakeListingOfflineJSONRequestBody defines body for TakeListingOffline for application/json ContentType.
+type TakeListingOfflineJSONRequestBody = ListingMarketStateRequest
+
+// TakeListingOnlineJSONRequestBody defines body for TakeListingOnline for application/json ContentType.
+type TakeListingOnlineJSONRequestBody = ListingMarketStateRequest
+
 // DeleteListingPhotoJSONRequestBody defines body for DeleteListingPhoto for application/json ContentType.
 type DeleteListingPhotoJSONRequestBody = ListingPhotoDeleteRequest
 
@@ -12533,6 +13072,9 @@ type UpdateListingPricingStrategyJSONRequestBody = ListingPricingStrategyInput
 
 // PublishListingToAirbnbJSONRequestBody defines body for PublishListingToAirbnb for application/json ContentType.
 type PublishListingToAirbnbJSONRequestBody = ListingPublishAirbnbRequest
+
+// PublishListingToBookingJSONRequestBody defines body for PublishListingToBooking for application/json ContentType.
+type PublishListingToBookingJSONRequestBody = ListingPublishBookingRequest
 
 // PullListingFromAirbnbJSONRequestBody defines body for PullListingFromAirbnb for application/json ContentType.
 type PullListingFromAirbnbJSONRequestBody = ListingPullAirbnbRequest
@@ -13747,6 +14289,22 @@ func (a *BookingSetupJSONBody) UnmarshalJSON(b []byte) error {
 		delete(object, "contacts")
 	}
 
+	if raw, found := object["legal_entity"]; found {
+		err = json.Unmarshal(raw, &a.LegalEntity)
+		if err != nil {
+			return fmt.Errorf("error reading 'legal_entity': %w", err)
+		}
+		delete(object, "legal_entity")
+	}
+
+	if raw, found := object["legal_entity_id"]; found {
+		err = json.Unmarshal(raw, &a.LegalEntityId)
+		if err != nil {
+			return fmt.Errorf("error reading 'legal_entity_id': %w", err)
+		}
+		delete(object, "legal_entity_id")
+	}
+
 	if raw, found := object["leid"]; found {
 		err = json.Unmarshal(raw, &a.Leid)
 		if err != nil {
@@ -13755,12 +14313,28 @@ func (a *BookingSetupJSONBody) UnmarshalJSON(b []byte) error {
 		delete(object, "leid")
 	}
 
+	if raw, found := object["listing_id"]; found {
+		err = json.Unmarshal(raw, &a.ListingId)
+		if err != nil {
+			return fmt.Errorf("error reading 'listing_id': %w", err)
+		}
+		delete(object, "listing_id")
+	}
+
 	if raw, found := object["property_id"]; found {
 		err = json.Unmarshal(raw, &a.PropertyId)
 		if err != nil {
 			return fmt.Errorf("error reading 'property_id': %w", err)
 		}
 		delete(object, "property_id")
+	}
+
+	if raw, found := object["room_id"]; found {
+		err = json.Unmarshal(raw, &a.RoomId)
+		if err != nil {
+			return fmt.Errorf("error reading 'room_id': %w", err)
+		}
+		delete(object, "room_id")
 	}
 
 	if len(object) != 0 {
@@ -13794,10 +14368,31 @@ func (a BookingSetupJSONBody) MarshalJSON() ([]byte, error) {
 		}
 	}
 
+	if a.LegalEntity != nil {
+		object["legal_entity"], err = json.Marshal(a.LegalEntity)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'legal_entity': %w", err)
+		}
+	}
+
+	if a.LegalEntityId != nil {
+		object["legal_entity_id"], err = json.Marshal(a.LegalEntityId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'legal_entity_id': %w", err)
+		}
+	}
+
 	if a.Leid != nil {
 		object["leid"], err = json.Marshal(a.Leid)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'leid': %w", err)
+		}
+	}
+
+	if a.ListingId != nil {
+		object["listing_id"], err = json.Marshal(a.ListingId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'listing_id': %w", err)
 		}
 	}
 
@@ -13806,6 +14401,135 @@ func (a BookingSetupJSONBody) MarshalJSON() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'property_id': %w", err)
 		}
+	}
+
+	if a.RoomId != nil {
+		object["room_id"], err = json.Marshal(a.RoomId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'room_id': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for BookingSetupJSONBody_LegalEntity. Returns the specified
+// element and whether it was found
+func (a BookingSetupJSONBody_LegalEntity) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for BookingSetupJSONBody_LegalEntity
+func (a *BookingSetupJSONBody_LegalEntity) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for BookingSetupJSONBody_LegalEntity to handle AdditionalProperties
+func (a *BookingSetupJSONBody_LegalEntity) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["city"]; found {
+		err = json.Unmarshal(raw, &a.City)
+		if err != nil {
+			return fmt.Errorf("error reading 'city': %w", err)
+		}
+		delete(object, "city")
+	}
+
+	if raw, found := object["company_name"]; found {
+		err = json.Unmarshal(raw, &a.CompanyName)
+		if err != nil {
+			return fmt.Errorf("error reading 'company_name': %w", err)
+		}
+		delete(object, "company_name")
+	}
+
+	if raw, found := object["country"]; found {
+		err = json.Unmarshal(raw, &a.Country)
+		if err != nil {
+			return fmt.Errorf("error reading 'country': %w", err)
+		}
+		delete(object, "country")
+	}
+
+	if raw, found := object["legal_contact_email"]; found {
+		err = json.Unmarshal(raw, &a.LegalContactEmail)
+		if err != nil {
+			return fmt.Errorf("error reading 'legal_contact_email': %w", err)
+		}
+		delete(object, "legal_contact_email")
+	}
+
+	if raw, found := object["legal_contact_name"]; found {
+		err = json.Unmarshal(raw, &a.LegalContactName)
+		if err != nil {
+			return fmt.Errorf("error reading 'legal_contact_name': %w", err)
+		}
+		delete(object, "legal_contact_name")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for BookingSetupJSONBody_LegalEntity to handle AdditionalProperties
+func (a BookingSetupJSONBody_LegalEntity) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.City != nil {
+		object["city"], err = json.Marshal(a.City)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'city': %w", err)
+		}
+	}
+
+	object["company_name"], err = json.Marshal(a.CompanyName)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'company_name': %w", err)
+	}
+
+	if a.Country != nil {
+		object["country"], err = json.Marshal(a.Country)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'country': %w", err)
+		}
+	}
+
+	object["legal_contact_email"], err = json.Marshal(a.LegalContactEmail)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'legal_contact_email': %w", err)
+	}
+
+	object["legal_contact_name"], err = json.Marshal(a.LegalContactName)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'legal_contact_name': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {

@@ -380,11 +380,25 @@ type ClientInterface interface {
 	//
 	// Apply a state action to a listing by id. The path `id` is the canonical Repull listing id.
 	//
-	// **Deactivating in Repull and unlisting on Airbnb are different operations.**
+	// **`delete` here never touches Airbnb. Read this before you call it.**
 	//
-	// `delete` is a **deactivate of the Repull record only** — it sets the listing inactive and KEEPS the row; it does NOT touch the Airbnb listing, which stays live and keeps taking bookings. Use it to exclude a listing from the API / trim back under the plan-listings cap; reactivate via `PATCH /v1/listings/{id}` with `{ "active": true }`. Idempotent.
+	// | | `action: "delete"` (this endpoint) | `action: "unlist"` (this endpoint) |
+	// |---|---|---|
+	// | What it changes | The Repull record | The live Airbnb listing |
+	// | Calls Airbnb | **No. Never.** | Yes |
+	// | The guest-facing listing | Stays live and keeps taking bookings | **Goes down** and stops taking bookings |
+	// | Billing and plan limits | No longer billed, no longer counts toward the cap | Unchanged |
+	// | API access to the listing | `403 listing_inactive` until reactivated | Unchanged — you can still read and write it |
+	// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
+	// | Data kept | Yes, and it keeps syncing | Yes |
+	//
+	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+	//
+	// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 	//
 	// `unlist` calls Airbnb and **takes the live listing down**: it is deactivated with a valid deactivation reason and then READ BACK, so "Airbnb accepted the call but the listing is still live" is reported as a failure rather than a success. Requires `airbnbConnectionId` — a listing can be connected to more than one Airbnb listing, and taking down the wrong one is not undoable through this API. `relist` puts it back up (re-enables sync and makes the listing available again); it does not push content.
+	//
+	// `relist` goes through the channel-publish billing gate and `unlist` does not, so on a workspace whose subscription has lapsed a listing can be taken down and not put back until billing is sorted out. That refusal comes back as `402` with the action that fixes it — never as an Airbnb error, because retrying and reconnecting Airbnb do nothing for it.
 	//
 	// `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking. The result is per-section: see `AirbnbPublishResult`.
 	//
@@ -401,11 +415,25 @@ type ClientInterface interface {
 	//
 	// Apply a state action to a listing by id. The path `id` is the canonical Repull listing id.
 	//
-	// **Deactivating in Repull and unlisting on Airbnb are different operations.**
+	// **`delete` here never touches Airbnb. Read this before you call it.**
 	//
-	// `delete` is a **deactivate of the Repull record only** — it sets the listing inactive and KEEPS the row; it does NOT touch the Airbnb listing, which stays live and keeps taking bookings. Use it to exclude a listing from the API / trim back under the plan-listings cap; reactivate via `PATCH /v1/listings/{id}` with `{ "active": true }`. Idempotent.
+	// | | `action: "delete"` (this endpoint) | `action: "unlist"` (this endpoint) |
+	// |---|---|---|
+	// | What it changes | The Repull record | The live Airbnb listing |
+	// | Calls Airbnb | **No. Never.** | Yes |
+	// | The guest-facing listing | Stays live and keeps taking bookings | **Goes down** and stops taking bookings |
+	// | Billing and plan limits | No longer billed, no longer counts toward the cap | Unchanged |
+	// | API access to the listing | `403 listing_inactive` until reactivated | Unchanged — you can still read and write it |
+	// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
+	// | Data kept | Yes, and it keeps syncing | Yes |
+	//
+	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+	//
+	// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 	//
 	// `unlist` calls Airbnb and **takes the live listing down**: it is deactivated with a valid deactivation reason and then READ BACK, so "Airbnb accepted the call but the listing is still live" is reported as a failure rather than a success. Requires `airbnbConnectionId` — a listing can be connected to more than one Airbnb listing, and taking down the wrong one is not undoable through this API. `relist` puts it back up (re-enables sync and makes the listing available again); it does not push content.
+	//
+	// `relist` goes through the channel-publish billing gate and `unlist` does not, so on a workspace whose subscription has lapsed a listing can be taken down and not put back until billing is sorted out. That refusal comes back as `402` with the action that fixes it — never as an Airbnb error, because retrying and reconnecting Airbnb do nothing for it.
 	//
 	// `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking. The result is per-section: see `AirbnbPublishResult`.
 	//
@@ -1110,7 +1138,7 @@ type ClientInterface interface {
 
 	// SendAirbnbMessageWithBody Send Airbnb message
 	//
-	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `422 airbnb_rejected` carrying Airbnb's own reason. Resending the same text is refused again; edit it first. `502 airbnb_error` is the other answer and means something else entirely: Airbnb did not complete the send, so retry it unchanged.
 	//
 	// ### Sending a photo or video (`mediaUrl`)
 	//
@@ -1129,7 +1157,7 @@ type ClientInterface interface {
 
 	// SendAirbnbMessage Send Airbnb message
 	//
-	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `422 airbnb_rejected` carrying Airbnb's own reason. Resending the same text is refused again; edit it first. `502 airbnb_error` is the other answer and means something else entirely: Airbnb did not complete the send, so retry it unchanged.
 	//
 	// ### Sending a photo or video (`mediaUrl`)
 	//
@@ -1270,7 +1298,7 @@ type ClientInterface interface {
 	// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
 	// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
 	//
-	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and keep the reservation in Repull in sync.
 	//
 	// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 	//
@@ -1291,7 +1319,7 @@ type ClientInterface interface {
 	// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
 	// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
 	//
-	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and keep the reservation in Repull in sync.
 	//
 	// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 	//
@@ -1655,6 +1683,44 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/channels/booking/properties/{id} (the `GetBookingProperty` operationId).
 	GetBookingProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// BookingPropertyActionWithBody Take a property off sale / put it back (unlist/relist)
+	//
+	// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
+	//
+	// **Booking.com has no unlist, so this is an availability write.** Airbnb has a real deactivate; Booking.com does not. `unlist` closes the mapped room across the whole forward window, so the property stops selling. `relist` is not its mirror image: it re-syncs the true calendar, so dates that are genuinely blocked (a reservation, an owner stay) stay blocked and only the closure `unlist` wrote lifts. Re-opening everything would sell dates that are not for sale.
+	//
+	// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+	//
+	// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+	//
+	// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
+	BookingPropertyActionWithBody(ctx context.Context, id int, params *BookingPropertyActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BookingPropertyAction Take a property off sale / put it back (unlist/relist)
+	//
+	// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
+	//
+	// **Booking.com has no unlist, so this is an availability write.** Airbnb has a real deactivate; Booking.com does not. `unlist` closes the mapped room across the whole forward window, so the property stops selling. `relist` is not its mirror image: it re-syncs the true calendar, so dates that are genuinely blocked (a reservation, an owner stay) stay blocked and only the closure `unlist` wrote lifts. Re-opening everything would sell dates that are not for sale.
+	//
+	// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+	//
+	// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+	//
+	// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
+	BookingPropertyAction(ctx context.Context, id int, params *BookingPropertyActionParams, body BookingPropertyActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListBookingPropertyRooms List Booking.com rooms + rate-plan ids for a listing
 	//
 	// Return every Booking.com room and its rate plans for a listing, each with the `roomId` / `rateId` needed to assemble a restriction write via `PUT /v1/channels/booking/availability`.
@@ -1746,20 +1812,61 @@ type ClientInterface interface {
 
 	// BookingSetupWithBody Booking.com property setup actions
 	//
-	// Action-router for onboarding a property onto Booking.com. Select the step with `action`:
+	// Action-router for putting a property onto Booking.com — including building one from nothing. Select the step with `action`.
 	//
-	// - `create-legal-entity` — register the legal entity (returns 201).
-	// - `check-legal-status` — poll legal-entity status by `leid`.
+	// ## Opening a property
+	//
+	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+	// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
+	// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
+	// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+	//
+	// ## Account and policy steps
+	//
+	// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
+	// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
 	// - `check-readiness` — check whether a property is ready to open (`property_id`).
 	// - `open-property` — open the property for sale (`property_id`).
 	// - `set-contacts` — set property contacts (`property_id`, `contacts`).
 	// - `set-policies` — set property policies (`property_id`, plus policy fields).
 	//
-	// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
+	// ## Three things about Booking.com that cost real money
 	//
-	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+	// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
 	//
-	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
+	//
+	// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+	//
+	// ## The legal entity is resolved, not asked for
+	//
+	// A property is created against the legal entity Booking.com contracts with, invoices and pays. You do not normally send one:
+	//
+	// 1. If this workspace already creates properties under a legal entity, that one is reused. A second is never registered.
+	// 2. If it has none and the request carries `legal_entity` (`company_name`, `legal_contact_name`, `legal_contact_email`), one is registered and used. Booking.com emails the legal contact a contract; creation only succeeds once it is signed.
+	// 3. If it has none and no `legal_entity`, the request is refused with `422 legal_entity_required` naming the fields — a contracted company is never invented.
+	//
+	// `legal_entity_id` overrides all of that. An id that already carries another workspace's properties is refused with `403 legal_entity_not_yours` before anything is created.
+	//
+	// ## What you do not control
+	//
+	// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
+	//
+	// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+	//
+	// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
+	//
+	// ## Guards
+	//
+	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`. Every action that takes a `listing_id` requires a listing in this workspace; any other id returns `404 not_found`.
+	//
+	// `create-property` refuses a listing with no coordinates (`422 missing_coordinates`) before anything is created — creating a Booking.com property cannot be undone.
+	//
+	// `create-property` is subject to the same published-listing gate as the dashboard: no plan, or the plan's listing limit reached, returns `403 billing_error` with `used` and `limit`, and nothing is created.
+	//
+	// Returns `403 listing_inactive` when the listing — or any listing mapped to the Booking.com property — is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// If a property is created and a later step fails, the response is `422 booking_create_partial` carrying `property_id`. The property EXISTS. Do not retry `create-property`, which would open a second one — continue with `add-room` and `advance`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1768,20 +1875,61 @@ type ClientInterface interface {
 
 	// BookingSetup Booking.com property setup actions
 	//
-	// Action-router for onboarding a property onto Booking.com. Select the step with `action`:
+	// Action-router for putting a property onto Booking.com — including building one from nothing. Select the step with `action`.
 	//
-	// - `create-legal-entity` — register the legal entity (returns 201).
-	// - `check-legal-status` — poll legal-entity status by `leid`.
+	// ## Opening a property
+	//
+	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+	// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
+	// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
+	// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+	//
+	// ## Account and policy steps
+	//
+	// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
+	// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
 	// - `check-readiness` — check whether a property is ready to open (`property_id`).
 	// - `open-property` — open the property for sale (`property_id`).
 	// - `set-contacts` — set property contacts (`property_id`, `contacts`).
 	// - `set-policies` — set property policies (`property_id`, plus policy fields).
 	//
-	// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
+	// ## Three things about Booking.com that cost real money
 	//
-	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+	// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
 	//
-	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
+	//
+	// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+	//
+	// ## The legal entity is resolved, not asked for
+	//
+	// A property is created against the legal entity Booking.com contracts with, invoices and pays. You do not normally send one:
+	//
+	// 1. If this workspace already creates properties under a legal entity, that one is reused. A second is never registered.
+	// 2. If it has none and the request carries `legal_entity` (`company_name`, `legal_contact_name`, `legal_contact_email`), one is registered and used. Booking.com emails the legal contact a contract; creation only succeeds once it is signed.
+	// 3. If it has none and no `legal_entity`, the request is refused with `422 legal_entity_required` naming the fields — a contracted company is never invented.
+	//
+	// `legal_entity_id` overrides all of that. An id that already carries another workspace's properties is refused with `403 legal_entity_not_yours` before anything is created.
+	//
+	// ## What you do not control
+	//
+	// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
+	//
+	// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+	//
+	// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
+	//
+	// ## Guards
+	//
+	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`. Every action that takes a `listing_id` requires a listing in this workspace; any other id returns `404 not_found`.
+	//
+	// `create-property` refuses a listing with no coordinates (`422 missing_coordinates`) before anything is created — creating a Booking.com property cannot be undone.
+	//
+	// `create-property` is subject to the same published-listing gate as the dashboard: no plan, or the plan's listing limit reached, returns `403 billing_error` with `used` and `limit`, and nothing is created.
+	//
+	// Returns `403 listing_inactive` when the listing — or any listing mapped to the Booking.com property — is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// If a property is created and a later step fails, the response is `422 booking_create_partial` carrying `property_id`. The property EXISTS. Do not retry `create-property`, which would open a second one — continue with `add-room` and `advance`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -2418,7 +2566,7 @@ type ClientInterface interface {
 	//
 	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 	//
-	// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+	// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 	//
 	// ### Airbnb rewrites links — check `contentRewritten`
 	//
@@ -2455,7 +2603,7 @@ type ClientInterface interface {
 	//
 	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 	//
-	// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+	// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 	//
 	// ### Airbnb rewrites links — check `contentRewritten`
 	//
@@ -2494,7 +2642,7 @@ type ClientInterface interface {
 	//
 	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
 	//
-	// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
 	//
 	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 	//
@@ -2513,7 +2661,7 @@ type ClientInterface interface {
 	//
 	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
 	//
-	// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
 	//
 	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 	//
@@ -2532,7 +2680,7 @@ type ClientInterface interface {
 	//
 	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
 	//
 	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
 	//
@@ -2553,7 +2701,7 @@ type ClientInterface interface {
 	//
 	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
 	//
 	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
 	//
@@ -2568,7 +2716,7 @@ type ClientInterface interface {
 
 	// WithdrawConversationSpecialOffer Withdraw a special offer
 	//
-	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. Runs the same action as the Vanio dashboard’s Withdraw offer. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
 	//
 	// Corresponds with DELETE /v1/conversations/{id}/special-offers/{offerId} (the `WithdrawConversationSpecialOffer` operationId).
 	WithdrawConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2971,6 +3119,94 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
 	GenerateListingContent(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// TakeListingOfflineWithBody Take a listing off the market
+	//
+	// Stop this listing being sold, on every channel it is connected to, in one call.
+	//
+	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+	//
+	// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
+	//
+	// | | Take offline (this endpoint) | Deactivate in Repull (`PATCH /v1/listings/{id}` `{"active": false}`) |
+	// |---|---|---|
+	// | The guest-facing listing | **Stops taking bookings** | Stays live and keeps taking bookings |
+	// | Billing and plan limits | Unchanged | No longer billed, no longer counts toward the cap |
+	// | API access to the listing | Unchanged — you can still read and write it | `403 listing_inactive` until reactivated |
+	// | Reverse it with | `POST /v1/listings/{id}/online` | `PATCH /v1/listings/{id}` `{"active": true}` |
+	// | Data kept | Yes | Yes, and it keeps syncing |
+	//
+	// Neither one deletes anything, on either side.
+	//
+	// **The answer is per channel item.** A listing can sit on several Airbnb connections and a Booking.com property at once; they fail independently and a partial result is the ordinary outcome, so every item reports its own `state`, `code` and `message` and there is no top-level success flag to mislead you. Nothing is rolled back — re-send the same request to retry the items that did not land.
+	//
+	// **Booking.com ambiguity is reported, not fanned out.** A listing mapped to more than one active Booking.com property comes back with that item refused (`ambiguous_booking_mapping`) while the Airbnb items still run: closing the wrong property's availability takes real inventory off sale, and taking a listing off Airbnb is not less urgent because its Booking.com mapping is untidy. Name the property with `hotelId` and send it again.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/offline (the `TakeListingOffline` operationId).
+	TakeListingOfflineWithBody(ctx context.Context, id int, params *TakeListingOfflineParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TakeListingOffline Take a listing off the market
+	//
+	// Stop this listing being sold, on every channel it is connected to, in one call.
+	//
+	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+	//
+	// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
+	//
+	// | | Take offline (this endpoint) | Deactivate in Repull (`PATCH /v1/listings/{id}` `{"active": false}`) |
+	// |---|---|---|
+	// | The guest-facing listing | **Stops taking bookings** | Stays live and keeps taking bookings |
+	// | Billing and plan limits | Unchanged | No longer billed, no longer counts toward the cap |
+	// | API access to the listing | Unchanged — you can still read and write it | `403 listing_inactive` until reactivated |
+	// | Reverse it with | `POST /v1/listings/{id}/online` | `PATCH /v1/listings/{id}` `{"active": true}` |
+	// | Data kept | Yes | Yes, and it keeps syncing |
+	//
+	// Neither one deletes anything, on either side.
+	//
+	// **The answer is per channel item.** A listing can sit on several Airbnb connections and a Booking.com property at once; they fail independently and a partial result is the ordinary outcome, so every item reports its own `state`, `code` and `message` and there is no top-level success flag to mislead you. Nothing is rolled back — re-send the same request to retry the items that did not land.
+	//
+	// **Booking.com ambiguity is reported, not fanned out.** A listing mapped to more than one active Booking.com property comes back with that item refused (`ambiguous_booking_mapping`) while the Airbnb items still run: closing the wrong property's availability takes real inventory off sale, and taking a listing off Airbnb is not less urgent because its Booking.com mapping is untidy. Name the property with `hotelId` and send it again.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/offline (the `TakeListingOffline` operationId).
+	TakeListingOffline(ctx context.Context, id int, params *TakeListingOfflineParams, body TakeListingOfflineJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TakeListingOnlineWithBody Put a listing back on the market
+	//
+	// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
+	//
+	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+	//
+	// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/online (the `TakeListingOnline` operationId).
+	TakeListingOnlineWithBody(ctx context.Context, id int, params *TakeListingOnlineParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TakeListingOnline Put a listing back on the market
+	//
+	// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
+	//
+	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+	//
+	// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/online (the `TakeListingOnline` operationId).
+	TakeListingOnline(ctx context.Context, id int, params *TakeListingOnlineParams, body TakeListingOnlineJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteListingPhotoWithBody Delete a stored listing photo
 	//
 	// Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
@@ -3107,6 +3343,10 @@ type ClientInterface interface {
 	//
 	// Returns connection state and sync activity per channel. `channels` is sync activity (empty until first push). `connections` is connection state (populated as soon as a channel is linked). Recommended polling cadence: at most once per 30s per listing — for bulk views, prefer `GET /v1/listings` and filter client-side.
 	//
+	// **When a push fails, this endpoint says why.** `channels[].pushError` carries the channel's own reason for the last failed push, verbatim — `"Links and contact info can't be shared"`, `"Check-in start time must be before end time"`, `"property_type_group must be one of […]"`. It is free text written by the channel, so render it next to the retry button rather than parsing it. `null` when the last push succeeded or none has run; pair it with `pushStatus` to tell those two apart.
+	//
+	// **It also says what you will not be allowed to change.** The `airbnb` entry in `connections` carries `lockedFields` — attributes Airbnb has locked on this listing. Airbnb does not refuse a write to one: it answers 200, reports the field as locked, and applies nothing, so a locked write is indistinguishable from a successful one unless you looked first. Read it before you let someone edit. Airbnb-only; no other channel has the concept, and no other entry carries the field.
+	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/listings/{id}/publish-status (the `GetListingPublishStatus` operationId).
@@ -3117,6 +3357,10 @@ type ClientInterface interface {
 	// Push a Repull listing's canonical content to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
 	//
 	// **A publish is not one call to Airbnb.** It is up to eight independent ones — details, description, amenities, rooms, policies, photos, pricing, checkout_tasks — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Airbnb's own reason, per section, for the ones that did not. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Publish again once you have fixed the failing sections — a re-publish of an unchanged section is harmless.
+	//
+	// `result.live` is a different question from `result.published`. `published` is about CONTENT — every attempted section landed. `live` is about whether the listing takes bookings: it is true only when activation was actually performed and succeeded. A create can land all eight sections and still leave the listing inactive, because activation is skipped when instant-booking cannot be confirmed to be off — so `published: true` with `live: false` is a real and common outcome, and `result.warnings` says why. `live` is ABSENT, not `false`, when activation was never part of the operation: publishing to an already-mapped listing updates content and activates nothing. Only treat a listing as not-live when `live` is present and false.
+	//
+	// `result.warnings[]` lists steps that failed WITHOUT failing the publish — optional work the push carried on past. They were previously swallowed, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
 	//
 	// `result.lockedFields` names the fields Airbnb will not let this listing change at all. They are not retryable by anyone: Airbnb answers 200 and applies nothing. `GET /v1/channels/airbnb/listings/{id}` reports the same list up front.
 	//
@@ -3139,6 +3383,10 @@ type ClientInterface interface {
 	//
 	// **A publish is not one call to Airbnb.** It is up to eight independent ones — details, description, amenities, rooms, policies, photos, pricing, checkout_tasks — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Airbnb's own reason, per section, for the ones that did not. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Publish again once you have fixed the failing sections — a re-publish of an unchanged section is harmless.
 	//
+	// `result.live` is a different question from `result.published`. `published` is about CONTENT — every attempted section landed. `live` is about whether the listing takes bookings: it is true only when activation was actually performed and succeeded. A create can land all eight sections and still leave the listing inactive, because activation is skipped when instant-booking cannot be confirmed to be off — so `published: true` with `live: false` is a real and common outcome, and `result.warnings` says why. `live` is ABSENT, not `false`, when activation was never part of the operation: publishing to an already-mapped listing updates content and activates nothing. Only treat a listing as not-live when `live` is present and false.
+	//
+	// `result.warnings[]` lists steps that failed WITHOUT failing the publish — optional work the push carried on past. They were previously swallowed, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
+	//
 	// `result.lockedFields` names the fields Airbnb will not let this listing change at all. They are not retryable by anyone: Airbnb answers 200 and applies nothing. `GET /v1/channels/airbnb/listings/{id}` reports the same list up front.
 	//
 	// **Which fields this pushes** — title, description sections and house rules (English/primary locale), amenities, rooms and beds, photos, nightly price and fees, cancellation policy and guest controls, check-in/out times, quiet hours, property and room type, checkout tasks. **Not pushed by this endpoint:** non-primary locales (`PUT /v1/channels/airbnb/listings/{id}/descriptions`), guest-safety disclosures (`PUT …/safety-disclosures`), check-in method (`PUT …/details`), permits (`PUT …/permits`), and the calendar (`PUT …/availability`).
@@ -3154,14 +3402,43 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/listings/{id}/publish/airbnb (the `PublishListingToAirbnb` operationId).
 	PublishListingToAirbnb(ctx context.Context, id int, params *PublishListingToAirbnbParams, body PublishListingToAirbnbJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PublishListingToBooking Publish a listing to Booking.com
+	// PublishListingToBookingWithBody Publish a listing to Booking.com
 	//
-	// Push a Repull listing to Booking.com. The listing must already be mapped to a Booking property + room (created via the Booking-claim Connect flow).
+	// Push a Repull listing's content to Booking.com. The listing must already be mapped to a Booking.com property + room — claim the hotel through the Connect Booking flow, then map its rooms with `POST /v1/connect/booking/map-rooms`.
+	//
+	// **Which property the content lands in.** A listing can be mapped to more than one Booking.com property; the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. When the listing has exactly one property you need send nothing. When it has several, name one with `hotelId` in the body (or `?hotel_id=` — the same value, accepted either way, body wins if you send both). Omit it on such a listing and the push is refused with **`409 ambiguous_booking_mapping`**, listing the candidate ids: content pushed into a property chosen for you lands on the wrong listing and reports success, which is worse than a refusal. `GET /v1/channels/booking/properties` lists every property with the listings mapped under it. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+	//
+	// The property that actually received the content comes back as `result.hotelId`.
+	//
+	// **A publish is not one call to Booking.com.** It is several independent Content API calls — details, description, amenities, rooms, photos, pricing — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Booking.com's own reason, per section, for the ones that did not. A property whose Content API credentials do not cover a section answers 403 for that section alone. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Fix the failing sections and publish again — re-publishing an unchanged section is harmless.
+	//
+	// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
+	// Takes any type of body and a specified content type.
+	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
-	PublishListingToBooking(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PublishListingToBookingWithBody(ctx context.Context, id int, params *PublishListingToBookingParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PublishListingToBooking Publish a listing to Booking.com
+	//
+	// Push a Repull listing's content to Booking.com. The listing must already be mapped to a Booking.com property + room — claim the hotel through the Connect Booking flow, then map its rooms with `POST /v1/connect/booking/map-rooms`.
+	//
+	// **Which property the content lands in.** A listing can be mapped to more than one Booking.com property; the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. When the listing has exactly one property you need send nothing. When it has several, name one with `hotelId` in the body (or `?hotel_id=` — the same value, accepted either way, body wins if you send both). Omit it on such a listing and the push is refused with **`409 ambiguous_booking_mapping`**, listing the candidate ids: content pushed into a property chosen for you lands on the wrong listing and reports success, which is worse than a refusal. `GET /v1/channels/booking/properties` lists every property with the listings mapped under it. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+	//
+	// The property that actually received the content comes back as `result.hotelId`.
+	//
+	// **A publish is not one call to Booking.com.** It is several independent Content API calls — details, description, amenities, rooms, photos, pricing — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Booking.com's own reason, per section, for the ones that did not. A property whose Content API credentials do not cover a section answers 403 for that section alone. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Fix the failing sections and publish again — re-publishing an unchanged section is harmless.
+	//
+	// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
+	PublishListingToBooking(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PullListingFromAirbnbWithBody Refresh a listing from Airbnb
 	//
@@ -3416,7 +3693,7 @@ type ClientInterface interface {
 	//
 	// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
 	//
-	// Runs the same action as the Vanio dashboard’s Accept button. Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
+	// Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 	//
 	// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 	//
@@ -3433,7 +3710,7 @@ type ClientInterface interface {
 	//
 	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
 	//
-	// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+	// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
@@ -3448,7 +3725,7 @@ type ClientInterface interface {
 	//
 	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
 	//
-	// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+	// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
@@ -4247,11 +4524,25 @@ func (c *Client) GetAirbnbListing(ctx context.Context, id string, params *GetAir
 //
 // Apply a state action to a listing by id. The path `id` is the canonical Repull listing id.
 //
-// **Deactivating in Repull and unlisting on Airbnb are different operations.**
+// **`delete` here never touches Airbnb. Read this before you call it.**
 //
-// `delete` is a **deactivate of the Repull record only** — it sets the listing inactive and KEEPS the row; it does NOT touch the Airbnb listing, which stays live and keeps taking bookings. Use it to exclude a listing from the API / trim back under the plan-listings cap; reactivate via `PATCH /v1/listings/{id}` with `{ "active": true }`. Idempotent.
+// | | `action: "delete"` (this endpoint) | `action: "unlist"` (this endpoint) |
+// |---|---|---|
+// | What it changes | The Repull record | The live Airbnb listing |
+// | Calls Airbnb | **No. Never.** | Yes |
+// | The guest-facing listing | Stays live and keeps taking bookings | **Goes down** and stops taking bookings |
+// | Billing and plan limits | No longer billed, no longer counts toward the cap | Unchanged |
+// | API access to the listing | `403 listing_inactive` until reactivated | Unchanged — you can still read and write it |
+// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
+// | Data kept | Yes, and it keeps syncing | Yes |
+//
+// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+//
+// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 //
 // `unlist` calls Airbnb and **takes the live listing down**: it is deactivated with a valid deactivation reason and then READ BACK, so "Airbnb accepted the call but the listing is still live" is reported as a failure rather than a success. Requires `airbnbConnectionId` — a listing can be connected to more than one Airbnb listing, and taking down the wrong one is not undoable through this API. `relist` puts it back up (re-enables sync and makes the listing available again); it does not push content.
+//
+// `relist` goes through the channel-publish billing gate and `unlist` does not, so on a workspace whose subscription has lapsed a listing can be taken down and not put back until billing is sorted out. That refusal comes back as `402` with the action that fixes it — never as an Airbnb error, because retrying and reconnecting Airbnb do nothing for it.
 //
 // `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking. The result is per-section: see `AirbnbPublishResult`.
 //
@@ -4278,11 +4569,25 @@ func (c *Client) AirbnbListingActionWithBody(ctx context.Context, id string, par
 //
 // Apply a state action to a listing by id. The path `id` is the canonical Repull listing id.
 //
-// **Deactivating in Repull and unlisting on Airbnb are different operations.**
+// **`delete` here never touches Airbnb. Read this before you call it.**
 //
-// `delete` is a **deactivate of the Repull record only** — it sets the listing inactive and KEEPS the row; it does NOT touch the Airbnb listing, which stays live and keeps taking bookings. Use it to exclude a listing from the API / trim back under the plan-listings cap; reactivate via `PATCH /v1/listings/{id}` with `{ "active": true }`. Idempotent.
+// | | `action: "delete"` (this endpoint) | `action: "unlist"` (this endpoint) |
+// |---|---|---|
+// | What it changes | The Repull record | The live Airbnb listing |
+// | Calls Airbnb | **No. Never.** | Yes |
+// | The guest-facing listing | Stays live and keeps taking bookings | **Goes down** and stops taking bookings |
+// | Billing and plan limits | No longer billed, no longer counts toward the cap | Unchanged |
+// | API access to the listing | `403 listing_inactive` until reactivated | Unchanged — you can still read and write it |
+// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
+// | Data kept | Yes, and it keeps syncing | Yes |
+//
+// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+//
+// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 //
 // `unlist` calls Airbnb and **takes the live listing down**: it is deactivated with a valid deactivation reason and then READ BACK, so "Airbnb accepted the call but the listing is still live" is reported as a failure rather than a success. Requires `airbnbConnectionId` — a listing can be connected to more than one Airbnb listing, and taking down the wrong one is not undoable through this API. `relist` puts it back up (re-enables sync and makes the listing available again); it does not push content.
+//
+// `relist` goes through the channel-publish billing gate and `unlist` does not, so on a workspace whose subscription has lapsed a listing can be taken down and not put back until billing is sorted out. That refusal comes back as `402` with the action that fixes it — never as an Airbnb error, because retrying and reconnecting Airbnb do nothing for it.
 //
 // `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking. The result is per-section: see `AirbnbPublishResult`.
 //
@@ -5477,7 +5782,7 @@ func (c *Client) ListAirbnbThreadMessages(ctx context.Context, threadId string, 
 
 // SendAirbnbMessageWithBody Send Airbnb message
 //
-// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `422 airbnb_rejected` carrying Airbnb's own reason. Resending the same text is refused again; edit it first. `502 airbnb_error` is the other answer and means something else entirely: Airbnb did not complete the send, so retry it unchanged.
 //
 // ### Sending a photo or video (`mediaUrl`)
 //
@@ -5506,7 +5811,7 @@ func (c *Client) SendAirbnbMessageWithBody(ctx context.Context, threadId string,
 
 // SendAirbnbMessage Send Airbnb message
 //
-// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `422 airbnb_rejected` carrying Airbnb's own reason. Resending the same text is refused again; edit it first. `502 airbnb_error` is the other answer and means something else entirely: Airbnb did not complete the send, so retry it unchanged.
 //
 // ### Sending a photo or video (`mediaUrl`)
 //
@@ -5737,7 +6042,7 @@ func (c *Client) GetAirbnbReservation(ctx context.Context, code string, reqEdito
 // - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
 // - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
 //
-// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and keep the reservation in Repull in sync.
 //
 // Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 //
@@ -5768,7 +6073,7 @@ func (c *Client) AirbnbReservationActionWithBody(ctx context.Context, code strin
 // - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
 // - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
 //
-// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and keep the reservation in Repull in sync.
 //
 // Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 //
@@ -6391,6 +6696,64 @@ func (c *Client) GetBookingProperty(ctx context.Context, id int, reqEditors ...R
 	return c.Client.Do(req)
 }
 
+// BookingPropertyActionWithBody Take a property off sale / put it back (unlist/relist)
+//
+// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
+//
+// **Booking.com has no unlist, so this is an availability write.** Airbnb has a real deactivate; Booking.com does not. `unlist` closes the mapped room across the whole forward window, so the property stops selling. `relist` is not its mirror image: it re-syncs the true calendar, so dates that are genuinely blocked (a reservation, an owner stay) stay blocked and only the closure `unlist` wrote lifts. Re-opening everything would sell dates that are not for sale.
+//
+// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+//
+// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+//
+// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
+func (c *Client) BookingPropertyActionWithBody(ctx context.Context, id int, params *BookingPropertyActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBookingPropertyActionRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BookingPropertyAction Take a property off sale / put it back (unlist/relist)
+//
+// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
+//
+// **Booking.com has no unlist, so this is an availability write.** Airbnb has a real deactivate; Booking.com does not. `unlist` closes the mapped room across the whole forward window, so the property stops selling. `relist` is not its mirror image: it re-syncs the true calendar, so dates that are genuinely blocked (a reservation, an owner stay) stay blocked and only the closure `unlist` wrote lifts. Re-opening everything would sell dates that are not for sale.
+//
+// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+//
+// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+//
+// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
+func (c *Client) BookingPropertyAction(ctx context.Context, id int, params *BookingPropertyActionParams, body BookingPropertyActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBookingPropertyActionRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListBookingPropertyRooms List Booking.com rooms + rate-plan ids for a listing
 //
 // Return every Booking.com room and its rate plans for a listing, each with the `roomId` / `rateId` needed to assemble a restriction write via `PUT /v1/channels/booking/availability`.
@@ -6552,20 +6915,61 @@ func (c *Client) ReplyBookingReview(ctx context.Context, body ReplyBookingReview
 
 // BookingSetupWithBody Booking.com property setup actions
 //
-// Action-router for onboarding a property onto Booking.com. Select the step with `action`:
+// Action-router for putting a property onto Booking.com — including building one from nothing. Select the step with `action`.
 //
-// - `create-legal-entity` — register the legal entity (returns 201).
-// - `check-legal-status` — poll legal-entity status by `leid`.
+// ## Opening a property
+//
+// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
+// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
+// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+//
+// ## Account and policy steps
+//
+// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
+// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
 // - `check-readiness` — check whether a property is ready to open (`property_id`).
 // - `open-property` — open the property for sale (`property_id`).
 // - `set-contacts` — set property contacts (`property_id`, `contacts`).
 // - `set-policies` — set property policies (`property_id`, plus policy fields).
 //
-// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
+// ## Three things about Booking.com that cost real money
 //
-// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
 //
-// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
+//
+// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+//
+// ## The legal entity is resolved, not asked for
+//
+// A property is created against the legal entity Booking.com contracts with, invoices and pays. You do not normally send one:
+//
+// 1. If this workspace already creates properties under a legal entity, that one is reused. A second is never registered.
+// 2. If it has none and the request carries `legal_entity` (`company_name`, `legal_contact_name`, `legal_contact_email`), one is registered and used. Booking.com emails the legal contact a contract; creation only succeeds once it is signed.
+// 3. If it has none and no `legal_entity`, the request is refused with `422 legal_entity_required` naming the fields — a contracted company is never invented.
+//
+// `legal_entity_id` overrides all of that. An id that already carries another workspace's properties is refused with `403 legal_entity_not_yours` before anything is created.
+//
+// ## What you do not control
+//
+// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
+//
+// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+//
+// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
+//
+// ## Guards
+//
+// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`. Every action that takes a `listing_id` requires a listing in this workspace; any other id returns `404 not_found`.
+//
+// `create-property` refuses a listing with no coordinates (`422 missing_coordinates`) before anything is created — creating a Booking.com property cannot be undone.
+//
+// `create-property` is subject to the same published-listing gate as the dashboard: no plan, or the plan's listing limit reached, returns `403 billing_error` with `used` and `limit`, and nothing is created.
+//
+// Returns `403 listing_inactive` when the listing — or any listing mapped to the Booking.com property — is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// If a property is created and a later step fails, the response is `422 booking_create_partial` carrying `property_id`. The property EXISTS. Do not retry `create-property`, which would open a second one — continue with `add-room` and `advance`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -6584,20 +6988,61 @@ func (c *Client) BookingSetupWithBody(ctx context.Context, contentType string, b
 
 // BookingSetup Booking.com property setup actions
 //
-// Action-router for onboarding a property onto Booking.com. Select the step with `action`:
+// Action-router for putting a property onto Booking.com — including building one from nothing. Select the step with `action`.
 //
-// - `create-legal-entity` — register the legal entity (returns 201).
-// - `check-legal-status` — poll legal-entity status by `leid`.
+// ## Opening a property
+//
+// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
+// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
+// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+//
+// ## Account and policy steps
+//
+// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
+// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
 // - `check-readiness` — check whether a property is ready to open (`property_id`).
 // - `open-property` — open the property for sale (`property_id`).
 // - `set-contacts` — set property contacts (`property_id`, `contacts`).
 // - `set-policies` — set property policies (`property_id`, plus policy fields).
 //
-// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
+// ## Three things about Booking.com that cost real money
 //
-// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
 //
-// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
+//
+// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+//
+// ## The legal entity is resolved, not asked for
+//
+// A property is created against the legal entity Booking.com contracts with, invoices and pays. You do not normally send one:
+//
+// 1. If this workspace already creates properties under a legal entity, that one is reused. A second is never registered.
+// 2. If it has none and the request carries `legal_entity` (`company_name`, `legal_contact_name`, `legal_contact_email`), one is registered and used. Booking.com emails the legal contact a contract; creation only succeeds once it is signed.
+// 3. If it has none and no `legal_entity`, the request is refused with `422 legal_entity_required` naming the fields — a contracted company is never invented.
+//
+// `legal_entity_id` overrides all of that. An id that already carries another workspace's properties is refused with `403 legal_entity_not_yours` before anything is created.
+//
+// ## What you do not control
+//
+// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
+//
+// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+//
+// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
+//
+// ## Guards
+//
+// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`. Every action that takes a `listing_id` requires a listing in this workspace; any other id returns `404 not_found`.
+//
+// `create-property` refuses a listing with no coordinates (`422 missing_coordinates`) before anything is created — creating a Booking.com property cannot be undone.
+//
+// `create-property` is subject to the same published-listing gate as the dashboard: no plan, or the plan's listing limit reached, returns `403 billing_error` with `used` and `limit`, and nothing is created.
+//
+// Returns `403 listing_inactive` when the listing — or any listing mapped to the Booking.com property — is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// If a property is created and a later step fails, the response is `422 booking_create_partial` carrying `property_id`. The property EXISTS. Do not retry `create-property`, which would open a second one — continue with `add-room` and `advance`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7800,7 +8245,7 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 //
 // Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 //
-// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 //
 // ### Airbnb rewrites links — check `contentRewritten`
 //
@@ -7847,7 +8292,7 @@ func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, pa
 //
 // Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 //
-// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 //
 // ### Airbnb rewrites links — check `contentRewritten`
 //
@@ -7896,7 +8341,7 @@ func (c *Client) SendConversationMessage(ctx context.Context, id int, params *Se
 //
 // **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
 //
-// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
 //
 // An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 //
@@ -7925,7 +8370,7 @@ func (c *Client) PreapproveConversationWithBody(ctx context.Context, id int, par
 //
 // **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
 //
-// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
 //
 // An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 //
@@ -7954,7 +8399,7 @@ func (c *Client) PreapproveConversation(ctx context.Context, id int, params *Pre
 //
 // `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
 //
 // An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
 //
@@ -7985,7 +8430,7 @@ func (c *Client) CreateConversationSpecialOfferWithBody(ctx context.Context, id 
 //
 // `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
 //
 // An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
 //
@@ -8010,7 +8455,7 @@ func (c *Client) CreateConversationSpecialOffer(ctx context.Context, id int, par
 
 // WithdrawConversationSpecialOffer Withdraw a special offer
 //
-// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. Runs the same action as the Vanio dashboard’s Withdraw offer. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
 //
 // Corresponds with DELETE /v1/conversations/{id}/special-offers/{offerId} (the `WithdrawConversationSpecialOffer` operationId).
 func (c *Client) WithdrawConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -8763,6 +9208,134 @@ func (c *Client) GenerateListingContent(ctx context.Context, id int, body Genera
 	return c.Client.Do(req)
 }
 
+// TakeListingOfflineWithBody Take a listing off the market
+//
+// Stop this listing being sold, on every channel it is connected to, in one call.
+//
+// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+//
+// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
+//
+// | | Take offline (this endpoint) | Deactivate in Repull (`PATCH /v1/listings/{id}` `{"active": false}`) |
+// |---|---|---|
+// | The guest-facing listing | **Stops taking bookings** | Stays live and keeps taking bookings |
+// | Billing and plan limits | Unchanged | No longer billed, no longer counts toward the cap |
+// | API access to the listing | Unchanged — you can still read and write it | `403 listing_inactive` until reactivated |
+// | Reverse it with | `POST /v1/listings/{id}/online` | `PATCH /v1/listings/{id}` `{"active": true}` |
+// | Data kept | Yes | Yes, and it keeps syncing |
+//
+// Neither one deletes anything, on either side.
+//
+// **The answer is per channel item.** A listing can sit on several Airbnb connections and a Booking.com property at once; they fail independently and a partial result is the ordinary outcome, so every item reports its own `state`, `code` and `message` and there is no top-level success flag to mislead you. Nothing is rolled back — re-send the same request to retry the items that did not land.
+//
+// **Booking.com ambiguity is reported, not fanned out.** A listing mapped to more than one active Booking.com property comes back with that item refused (`ambiguous_booking_mapping`) while the Airbnb items still run: closing the wrong property's availability takes real inventory off sale, and taking a listing off Airbnb is not less urgent because its Booking.com mapping is untidy. Name the property with `hotelId` and send it again.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/listings/{id}/offline (the `TakeListingOffline` operationId).
+func (c *Client) TakeListingOfflineWithBody(ctx context.Context, id int, params *TakeListingOfflineParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTakeListingOfflineRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TakeListingOffline Take a listing off the market
+//
+// Stop this listing being sold, on every channel it is connected to, in one call.
+//
+// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+//
+// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
+//
+// | | Take offline (this endpoint) | Deactivate in Repull (`PATCH /v1/listings/{id}` `{"active": false}`) |
+// |---|---|---|
+// | The guest-facing listing | **Stops taking bookings** | Stays live and keeps taking bookings |
+// | Billing and plan limits | Unchanged | No longer billed, no longer counts toward the cap |
+// | API access to the listing | Unchanged — you can still read and write it | `403 listing_inactive` until reactivated |
+// | Reverse it with | `POST /v1/listings/{id}/online` | `PATCH /v1/listings/{id}` `{"active": true}` |
+// | Data kept | Yes | Yes, and it keeps syncing |
+//
+// Neither one deletes anything, on either side.
+//
+// **The answer is per channel item.** A listing can sit on several Airbnb connections and a Booking.com property at once; they fail independently and a partial result is the ordinary outcome, so every item reports its own `state`, `code` and `message` and there is no top-level success flag to mislead you. Nothing is rolled back — re-send the same request to retry the items that did not land.
+//
+// **Booking.com ambiguity is reported, not fanned out.** A listing mapped to more than one active Booking.com property comes back with that item refused (`ambiguous_booking_mapping`) while the Airbnb items still run: closing the wrong property's availability takes real inventory off sale, and taking a listing off Airbnb is not less urgent because its Booking.com mapping is untidy. Name the property with `hotelId` and send it again.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/{id}/offline (the `TakeListingOffline` operationId).
+func (c *Client) TakeListingOffline(ctx context.Context, id int, params *TakeListingOfflineParams, body TakeListingOfflineJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTakeListingOfflineRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TakeListingOnlineWithBody Put a listing back on the market
+//
+// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
+//
+// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+//
+// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/listings/{id}/online (the `TakeListingOnline` operationId).
+func (c *Client) TakeListingOnlineWithBody(ctx context.Context, id int, params *TakeListingOnlineParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTakeListingOnlineRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TakeListingOnline Put a listing back on the market
+//
+// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
+//
+// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+//
+// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/{id}/online (the `TakeListingOnline` operationId).
+func (c *Client) TakeListingOnline(ctx context.Context, id int, params *TakeListingOnlineParams, body TakeListingOnlineJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTakeListingOnlineRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // DeleteListingPhotoWithBody Delete a stored listing photo
 //
 // Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
@@ -9019,6 +9592,10 @@ func (c *Client) UpdateListingPricingStrategy(ctx context.Context, id int, body 
 //
 // Returns connection state and sync activity per channel. `channels` is sync activity (empty until first push). `connections` is connection state (populated as soon as a channel is linked). Recommended polling cadence: at most once per 30s per listing — for bulk views, prefer `GET /v1/listings` and filter client-side.
 //
+// **When a push fails, this endpoint says why.** `channels[].pushError` carries the channel's own reason for the last failed push, verbatim — `"Links and contact info can't be shared"`, `"Check-in start time must be before end time"`, `"property_type_group must be one of […]"`. It is free text written by the channel, so render it next to the retry button rather than parsing it. `null` when the last push succeeded or none has run; pair it with `pushStatus` to tell those two apart.
+//
+// **It also says what you will not be allowed to change.** The `airbnb` entry in `connections` carries `lockedFields` — attributes Airbnb has locked on this listing. Airbnb does not refuse a write to one: it answers 200, reports the field as locked, and applies nothing, so a locked write is indistinguishable from a successful one unless you looked first. Read it before you let someone edit. Airbnb-only; no other channel has the concept, and no other entry carries the field.
+//
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/listings/{id}/publish-status (the `GetListingPublishStatus` operationId).
@@ -9039,6 +9616,10 @@ func (c *Client) GetListingPublishStatus(ctx context.Context, id int, reqEditors
 // Push a Repull listing's canonical content to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
 //
 // **A publish is not one call to Airbnb.** It is up to eight independent ones — details, description, amenities, rooms, policies, photos, pricing, checkout_tasks — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Airbnb's own reason, per section, for the ones that did not. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Publish again once you have fixed the failing sections — a re-publish of an unchanged section is harmless.
+//
+// `result.live` is a different question from `result.published`. `published` is about CONTENT — every attempted section landed. `live` is about whether the listing takes bookings: it is true only when activation was actually performed and succeeded. A create can land all eight sections and still leave the listing inactive, because activation is skipped when instant-booking cannot be confirmed to be off — so `published: true` with `live: false` is a real and common outcome, and `result.warnings` says why. `live` is ABSENT, not `false`, when activation was never part of the operation: publishing to an already-mapped listing updates content and activates nothing. Only treat a listing as not-live when `live` is present and false.
+//
+// `result.warnings[]` lists steps that failed WITHOUT failing the publish — optional work the push carried on past. They were previously swallowed, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
 //
 // `result.lockedFields` names the fields Airbnb will not let this listing change at all. They are not retryable by anyone: Airbnb answers 200 and applies nothing. `GET /v1/channels/airbnb/listings/{id}` reports the same list up front.
 //
@@ -9071,6 +9652,10 @@ func (c *Client) PublishListingToAirbnbWithBody(ctx context.Context, id int, par
 //
 // **A publish is not one call to Airbnb.** It is up to eight independent ones — details, description, amenities, rooms, policies, photos, pricing, checkout_tasks — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Airbnb's own reason, per section, for the ones that did not. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Publish again once you have fixed the failing sections — a re-publish of an unchanged section is harmless.
 //
+// `result.live` is a different question from `result.published`. `published` is about CONTENT — every attempted section landed. `live` is about whether the listing takes bookings: it is true only when activation was actually performed and succeeded. A create can land all eight sections and still leave the listing inactive, because activation is skipped when instant-booking cannot be confirmed to be off — so `published: true` with `live: false` is a real and common outcome, and `result.warnings` says why. `live` is ABSENT, not `false`, when activation was never part of the operation: publishing to an already-mapped listing updates content and activates nothing. Only treat a listing as not-live when `live` is present and false.
+//
+// `result.warnings[]` lists steps that failed WITHOUT failing the publish — optional work the push carried on past. They were previously swallowed, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
+//
 // `result.lockedFields` names the fields Airbnb will not let this listing change at all. They are not retryable by anyone: Airbnb answers 200 and applies nothing. `GET /v1/channels/airbnb/listings/{id}` reports the same list up front.
 //
 // **Which fields this pushes** — title, description sections and house rules (English/primary locale), amenities, rooms and beds, photos, nightly price and fees, cancellation policy and guest controls, check-in/out times, quiet hours, property and room type, checkout tasks. **Not pushed by this endpoint:** non-primary locales (`PUT /v1/channels/airbnb/listings/{id}/descriptions`), guest-safety disclosures (`PUT …/safety-disclosures`), check-in method (`PUT …/details`), permits (`PUT …/permits`), and the calendar (`PUT …/availability`).
@@ -9096,15 +9681,54 @@ func (c *Client) PublishListingToAirbnb(ctx context.Context, id int, params *Pub
 	return c.Client.Do(req)
 }
 
-// PublishListingToBooking Publish a listing to Booking.com
+// PublishListingToBookingWithBody Publish a listing to Booking.com
 //
-// Push a Repull listing to Booking.com. The listing must already be mapped to a Booking property + room (created via the Booking-claim Connect flow).
+// Push a Repull listing's content to Booking.com. The listing must already be mapped to a Booking.com property + room — claim the hotel through the Connect Booking flow, then map its rooms with `POST /v1/connect/booking/map-rooms`.
+//
+// **Which property the content lands in.** A listing can be mapped to more than one Booking.com property; the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. When the listing has exactly one property you need send nothing. When it has several, name one with `hotelId` in the body (or `?hotel_id=` — the same value, accepted either way, body wins if you send both). Omit it on such a listing and the push is refused with **`409 ambiguous_booking_mapping`**, listing the candidate ids: content pushed into a property chosen for you lands on the wrong listing and reports success, which is worse than a refusal. `GET /v1/channels/booking/properties` lists every property with the listings mapped under it. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+//
+// The property that actually received the content comes back as `result.hotelId`.
+//
+// **A publish is not one call to Booking.com.** It is several independent Content API calls — details, description, amenities, rooms, photos, pricing — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Booking.com's own reason, per section, for the ones that did not. A property whose Content API credentials do not cover a section answers 403 for that section alone. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Fix the failing sections and publish again — re-publishing an unchanged section is harmless.
+//
+// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
+// Takes any type of body and a specified content type.
+//
 // Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
-func (c *Client) PublishListingToBooking(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPublishListingToBookingRequest(c.Server, id)
+func (c *Client) PublishListingToBookingWithBody(ctx context.Context, id int, params *PublishListingToBookingParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingToBookingRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PublishListingToBooking Publish a listing to Booking.com
+//
+// Push a Repull listing's content to Booking.com. The listing must already be mapped to a Booking.com property + room — claim the hotel through the Connect Booking flow, then map its rooms with `POST /v1/connect/booking/map-rooms`.
+//
+// **Which property the content lands in.** A listing can be mapped to more than one Booking.com property; the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. When the listing has exactly one property you need send nothing. When it has several, name one with `hotelId` in the body (or `?hotel_id=` — the same value, accepted either way, body wins if you send both). Omit it on such a listing and the push is refused with **`409 ambiguous_booking_mapping`**, listing the candidate ids: content pushed into a property chosen for you lands on the wrong listing and reports success, which is worse than a refusal. `GET /v1/channels/booking/properties` lists every property with the listings mapped under it. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+//
+// The property that actually received the content comes back as `result.hotelId`.
+//
+// **A publish is not one call to Booking.com.** It is several independent Content API calls — details, description, amenities, rooms, photos, pricing — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Booking.com's own reason, per section, for the ones that did not. A property whose Content API credentials do not cover a section answers 403 for that section alone. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Fix the failing sections and publish again — re-publishing an unchanged section is harmless.
+//
+// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
+func (c *Client) PublishListingToBooking(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingToBookingRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -9528,7 +10152,7 @@ func (c *Client) UpdateReservation(ctx context.Context, id int, params *UpdateRe
 //
 // Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
 //
-// Runs the same action as the Vanio dashboard’s Accept button. Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
+// Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 //
 // **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 //
@@ -9555,7 +10179,7 @@ func (c *Client) AcceptReservationRequest(ctx context.Context, id int, params *A
 //
 // `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
 //
-// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
@@ -9580,7 +10204,7 @@ func (c *Client) DeclineReservationRequestWithBody(ctx context.Context, id int, 
 //
 // `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
 //
-// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
@@ -13995,6 +14619,95 @@ func NewGetBookingPropertyRequest(server string, id int) (*http.Request, error) 
 	return req, nil
 }
 
+// NewBookingPropertyActionRequest calls the generic BookingPropertyAction builder with application/json body
+func NewBookingPropertyActionRequest(server string, id int, params *BookingPropertyActionParams, body BookingPropertyActionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBookingPropertyActionRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewBookingPropertyActionRequestWithBody constructs an http.Request for the BookingPropertyAction method, with any body, and a specified content type
+func NewBookingPropertyActionRequestWithBody(server string, id int, params *BookingPropertyActionParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/properties/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewListBookingPropertyRoomsRequest constructs an http.Request for the ListBookingPropertyRooms method
 func NewListBookingPropertyRoomsRequest(server string, id int, params *ListBookingPropertyRoomsParams) (*http.Request, error) {
 	var err error
@@ -17708,6 +18421,184 @@ func NewGenerateListingContentRequestWithBody(server string, id int, contentType
 	return req, nil
 }
 
+// NewTakeListingOfflineRequest calls the generic TakeListingOffline builder with application/json body
+func NewTakeListingOfflineRequest(server string, id int, params *TakeListingOfflineParams, body TakeListingOfflineJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTakeListingOfflineRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewTakeListingOfflineRequestWithBody constructs an http.Request for the TakeListingOffline method, with any body, and a specified content type
+func NewTakeListingOfflineRequestWithBody(server string, id int, params *TakeListingOfflineParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/offline", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewTakeListingOnlineRequest calls the generic TakeListingOnline builder with application/json body
+func NewTakeListingOnlineRequest(server string, id int, params *TakeListingOnlineParams, body TakeListingOnlineJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTakeListingOnlineRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewTakeListingOnlineRequestWithBody constructs an http.Request for the TakeListingOnline method, with any body, and a specified content type
+func NewTakeListingOnlineRequestWithBody(server string, id int, params *TakeListingOnlineParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/online", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewDeleteListingPhotoRequest calls the generic DeleteListingPhoto builder with application/json body
 func NewDeleteListingPhotoRequest(server string, id int, body DeleteListingPhotoJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -18242,8 +19133,19 @@ func NewPublishListingToAirbnbRequestWithBody(server string, id int, params *Pub
 	return req, nil
 }
 
-// NewPublishListingToBookingRequest constructs an http.Request for the PublishListingToBooking method
-func NewPublishListingToBookingRequest(server string, id int) (*http.Request, error) {
+// NewPublishListingToBookingRequest calls the generic PublishListingToBooking builder with application/json body
+func NewPublishListingToBookingRequest(server string, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPublishListingToBookingRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewPublishListingToBookingRequestWithBody constructs an http.Request for the PublishListingToBooking method, with any body, and a specified content type
+func NewPublishListingToBookingRequestWithBody(server string, id int, params *PublishListingToBookingParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -18268,10 +19170,39 @@ func NewPublishListingToBookingRequest(server string, id int) (*http.Request, er
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -21114,11 +22045,25 @@ type ClientWithResponsesInterface interface {
 	//
 	// Apply a state action to a listing by id. The path `id` is the canonical Repull listing id.
 	//
-	// **Deactivating in Repull and unlisting on Airbnb are different operations.**
+	// **`delete` here never touches Airbnb. Read this before you call it.**
 	//
-	// `delete` is a **deactivate of the Repull record only** — it sets the listing inactive and KEEPS the row; it does NOT touch the Airbnb listing, which stays live and keeps taking bookings. Use it to exclude a listing from the API / trim back under the plan-listings cap; reactivate via `PATCH /v1/listings/{id}` with `{ "active": true }`. Idempotent.
+	// | | `action: "delete"` (this endpoint) | `action: "unlist"` (this endpoint) |
+	// |---|---|---|
+	// | What it changes | The Repull record | The live Airbnb listing |
+	// | Calls Airbnb | **No. Never.** | Yes |
+	// | The guest-facing listing | Stays live and keeps taking bookings | **Goes down** and stops taking bookings |
+	// | Billing and plan limits | No longer billed, no longer counts toward the cap | Unchanged |
+	// | API access to the listing | `403 listing_inactive` until reactivated | Unchanged — you can still read and write it |
+	// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
+	// | Data kept | Yes, and it keeps syncing | Yes |
+	//
+	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+	//
+	// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 	//
 	// `unlist` calls Airbnb and **takes the live listing down**: it is deactivated with a valid deactivation reason and then READ BACK, so "Airbnb accepted the call but the listing is still live" is reported as a failure rather than a success. Requires `airbnbConnectionId` — a listing can be connected to more than one Airbnb listing, and taking down the wrong one is not undoable through this API. `relist` puts it back up (re-enables sync and makes the listing available again); it does not push content.
+	//
+	// `relist` goes through the channel-publish billing gate and `unlist` does not, so on a workspace whose subscription has lapsed a listing can be taken down and not put back until billing is sorted out. That refusal comes back as `402` with the action that fixes it — never as an Airbnb error, because retrying and reconnecting Airbnb do nothing for it.
 	//
 	// `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking. The result is per-section: see `AirbnbPublishResult`.
 	//
@@ -21135,11 +22080,25 @@ type ClientWithResponsesInterface interface {
 	//
 	// Apply a state action to a listing by id. The path `id` is the canonical Repull listing id.
 	//
-	// **Deactivating in Repull and unlisting on Airbnb are different operations.**
+	// **`delete` here never touches Airbnb. Read this before you call it.**
 	//
-	// `delete` is a **deactivate of the Repull record only** — it sets the listing inactive and KEEPS the row; it does NOT touch the Airbnb listing, which stays live and keeps taking bookings. Use it to exclude a listing from the API / trim back under the plan-listings cap; reactivate via `PATCH /v1/listings/{id}` with `{ "active": true }`. Idempotent.
+	// | | `action: "delete"` (this endpoint) | `action: "unlist"` (this endpoint) |
+	// |---|---|---|
+	// | What it changes | The Repull record | The live Airbnb listing |
+	// | Calls Airbnb | **No. Never.** | Yes |
+	// | The guest-facing listing | Stays live and keeps taking bookings | **Goes down** and stops taking bookings |
+	// | Billing and plan limits | No longer billed, no longer counts toward the cap | Unchanged |
+	// | API access to the listing | `403 listing_inactive` until reactivated | Unchanged — you can still read and write it |
+	// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
+	// | Data kept | Yes, and it keeps syncing | Yes |
+	//
+	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+	//
+	// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 	//
 	// `unlist` calls Airbnb and **takes the live listing down**: it is deactivated with a valid deactivation reason and then READ BACK, so "Airbnb accepted the call but the listing is still live" is reported as a failure rather than a success. Requires `airbnbConnectionId` — a listing can be connected to more than one Airbnb listing, and taking down the wrong one is not undoable through this API. `relist` puts it back up (re-enables sync and makes the listing available again); it does not push content.
+	//
+	// `relist` goes through the channel-publish billing gate and `unlist` does not, so on a workspace whose subscription has lapsed a listing can be taken down and not put back until billing is sorted out. That refusal comes back as `402` with the action that fixes it — never as an Airbnb error, because retrying and reconnecting Airbnb do nothing for it.
 	//
 	// `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking. The result is per-section: see `AirbnbPublishResult`.
 	//
@@ -21884,7 +22843,7 @@ type ClientWithResponsesInterface interface {
 
 	// SendAirbnbMessageWithBodyWithResponse Send Airbnb message
 	//
-	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `422 airbnb_rejected` carrying Airbnb's own reason. Resending the same text is refused again; edit it first. `502 airbnb_error` is the other answer and means something else entirely: Airbnb did not complete the send, so retry it unchanged.
 	//
 	// ### Sending a photo or video (`mediaUrl`)
 	//
@@ -21903,7 +22862,7 @@ type ClientWithResponsesInterface interface {
 
 	// SendAirbnbMessageWithResponse Send Airbnb message
 	//
-	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+	// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `422 airbnb_rejected` carrying Airbnb's own reason. Resending the same text is refused again; edit it first. `502 airbnb_error` is the other answer and means something else entirely: Airbnb did not complete the send, so retry it unchanged.
 	//
 	// ### Sending a photo or video (`mediaUrl`)
 	//
@@ -22052,7 +23011,7 @@ type ClientWithResponsesInterface interface {
 	// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
 	// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
 	//
-	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and keep the reservation in Repull in sync.
 	//
 	// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 	//
@@ -22073,7 +23032,7 @@ type ClientWithResponsesInterface interface {
 	// - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
 	// - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
 	//
-	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+	// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and keep the reservation in Repull in sync.
 	//
 	// Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 	//
@@ -22459,6 +23418,44 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/channels/booking/properties/{id} (the `GetBookingProperty` operationId).
 	GetBookingPropertyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetBookingPropertyClientResponse, error)
 
+	// BookingPropertyActionWithBodyWithResponse Take a property off sale / put it back (unlist/relist)
+	//
+	// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
+	//
+	// **Booking.com has no unlist, so this is an availability write.** Airbnb has a real deactivate; Booking.com does not. `unlist` closes the mapped room across the whole forward window, so the property stops selling. `relist` is not its mirror image: it re-syncs the true calendar, so dates that are genuinely blocked (a reservation, an owner stay) stay blocked and only the closure `unlist` wrote lifts. Re-opening everything would sell dates that are not for sale.
+	//
+	// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+	//
+	// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+	//
+	// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
+	BookingPropertyActionWithBodyWithResponse(ctx context.Context, id int, params *BookingPropertyActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BookingPropertyActionClientResponse, error)
+
+	// BookingPropertyActionWithResponse Take a property off sale / put it back (unlist/relist)
+	//
+	// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
+	//
+	// **Booking.com has no unlist, so this is an availability write.** Airbnb has a real deactivate; Booking.com does not. `unlist` closes the mapped room across the whole forward window, so the property stops selling. `relist` is not its mirror image: it re-syncs the true calendar, so dates that are genuinely blocked (a reservation, an owner stay) stay blocked and only the closure `unlist` wrote lifts. Re-opening everything would sell dates that are not for sale.
+	//
+	// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+	//
+	// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+	//
+	// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
+	BookingPropertyActionWithResponse(ctx context.Context, id int, params *BookingPropertyActionParams, body BookingPropertyActionJSONRequestBody, reqEditors ...RequestEditorFn) (*BookingPropertyActionClientResponse, error)
+
 	// ListBookingPropertyRoomsWithResponse List Booking.com rooms + rate-plan ids for a listing
 	//
 	// Return every Booking.com room and its rate plans for a listing, each with the `roomId` / `rateId` needed to assemble a restriction write via `PUT /v1/channels/booking/availability`.
@@ -22556,20 +23553,61 @@ type ClientWithResponsesInterface interface {
 
 	// BookingSetupWithBodyWithResponse Booking.com property setup actions
 	//
-	// Action-router for onboarding a property onto Booking.com. Select the step with `action`:
+	// Action-router for putting a property onto Booking.com — including building one from nothing. Select the step with `action`.
 	//
-	// - `create-legal-entity` — register the legal entity (returns 201).
-	// - `check-legal-status` — poll legal-entity status by `leid`.
+	// ## Opening a property
+	//
+	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+	// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
+	// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
+	// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+	//
+	// ## Account and policy steps
+	//
+	// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
+	// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
 	// - `check-readiness` — check whether a property is ready to open (`property_id`).
 	// - `open-property` — open the property for sale (`property_id`).
 	// - `set-contacts` — set property contacts (`property_id`, `contacts`).
 	// - `set-policies` — set property policies (`property_id`, plus policy fields).
 	//
-	// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
+	// ## Three things about Booking.com that cost real money
 	//
-	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+	// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
 	//
-	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
+	//
+	// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+	//
+	// ## The legal entity is resolved, not asked for
+	//
+	// A property is created against the legal entity Booking.com contracts with, invoices and pays. You do not normally send one:
+	//
+	// 1. If this workspace already creates properties under a legal entity, that one is reused. A second is never registered.
+	// 2. If it has none and the request carries `legal_entity` (`company_name`, `legal_contact_name`, `legal_contact_email`), one is registered and used. Booking.com emails the legal contact a contract; creation only succeeds once it is signed.
+	// 3. If it has none and no `legal_entity`, the request is refused with `422 legal_entity_required` naming the fields — a contracted company is never invented.
+	//
+	// `legal_entity_id` overrides all of that. An id that already carries another workspace's properties is refused with `403 legal_entity_not_yours` before anything is created.
+	//
+	// ## What you do not control
+	//
+	// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
+	//
+	// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+	//
+	// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
+	//
+	// ## Guards
+	//
+	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`. Every action that takes a `listing_id` requires a listing in this workspace; any other id returns `404 not_found`.
+	//
+	// `create-property` refuses a listing with no coordinates (`422 missing_coordinates`) before anything is created — creating a Booking.com property cannot be undone.
+	//
+	// `create-property` is subject to the same published-listing gate as the dashboard: no plan, or the plan's listing limit reached, returns `403 billing_error` with `used` and `limit`, and nothing is created.
+	//
+	// Returns `403 listing_inactive` when the listing — or any listing mapped to the Booking.com property — is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// If a property is created and a later step fails, the response is `422 booking_create_partial` carrying `property_id`. The property EXISTS. Do not retry `create-property`, which would open a second one — continue with `add-room` and `advance`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -22578,20 +23616,61 @@ type ClientWithResponsesInterface interface {
 
 	// BookingSetupWithResponse Booking.com property setup actions
 	//
-	// Action-router for onboarding a property onto Booking.com. Select the step with `action`:
+	// Action-router for putting a property onto Booking.com — including building one from nothing. Select the step with `action`.
 	//
-	// - `create-legal-entity` — register the legal entity (returns 201).
-	// - `check-legal-status` — poll legal-entity status by `leid`.
+	// ## Opening a property
+	//
+	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+	// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
+	// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
+	// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+	//
+	// ## Account and policy steps
+	//
+	// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
+	// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
 	// - `check-readiness` — check whether a property is ready to open (`property_id`).
 	// - `open-property` — open the property for sale (`property_id`).
 	// - `set-contacts` — set property contacts (`property_id`, `contacts`).
 	// - `set-policies` — set property policies (`property_id`, plus policy fields).
 	//
-	// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
+	// ## Three things about Booking.com that cost real money
 	//
-	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+	// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
 	//
-	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
+	//
+	// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+	//
+	// ## The legal entity is resolved, not asked for
+	//
+	// A property is created against the legal entity Booking.com contracts with, invoices and pays. You do not normally send one:
+	//
+	// 1. If this workspace already creates properties under a legal entity, that one is reused. A second is never registered.
+	// 2. If it has none and the request carries `legal_entity` (`company_name`, `legal_contact_name`, `legal_contact_email`), one is registered and used. Booking.com emails the legal contact a contract; creation only succeeds once it is signed.
+	// 3. If it has none and no `legal_entity`, the request is refused with `422 legal_entity_required` naming the fields — a contracted company is never invented.
+	//
+	// `legal_entity_id` overrides all of that. An id that already carries another workspace's properties is refused with `403 legal_entity_not_yours` before anything is created.
+	//
+	// ## What you do not control
+	//
+	// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
+	//
+	// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+	//
+	// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
+	//
+	// ## Guards
+	//
+	// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`. Every action that takes a `listing_id` requires a listing in this workspace; any other id returns `404 not_found`.
+	//
+	// `create-property` refuses a listing with no coordinates (`422 missing_coordinates`) before anything is created — creating a Booking.com property cannot be undone.
+	//
+	// `create-property` is subject to the same published-listing gate as the dashboard: no plan, or the plan's listing limit reached, returns `403 billing_error` with `used` and `limit`, and nothing is created.
+	//
+	// Returns `403 listing_inactive` when the listing — or any listing mapped to the Booking.com property — is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// If a property is created and a later step fails, the response is `422 booking_create_partial` carrying `property_id`. The property EXISTS. Do not retry `create-property`, which would open a second one — continue with `add-room` and `advance`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -23268,7 +24347,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 	//
-	// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+	// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 	//
 	// ### Airbnb rewrites links — check `contentRewritten`
 	//
@@ -23305,7 +24384,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 	//
-	// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+	// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 	//
 	// ### Airbnb rewrites links — check `contentRewritten`
 	//
@@ -23344,7 +24423,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
 	//
-	// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
 	//
 	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 	//
@@ -23363,7 +24442,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
 	//
-	// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
 	//
 	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 	//
@@ -23382,7 +24461,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
 	//
 	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
 	//
@@ -23403,7 +24482,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
 	//
 	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
 	//
@@ -23418,7 +24497,7 @@ type ClientWithResponsesInterface interface {
 
 	// WithdrawConversationSpecialOfferWithResponse Withdraw a special offer
 	//
-	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. Runs the same action as the Vanio dashboard’s Withdraw offer. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -23859,6 +24938,94 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
 	GenerateListingContentWithResponse(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateListingContentClientResponse, error)
 
+	// TakeListingOfflineWithBodyWithResponse Take a listing off the market
+	//
+	// Stop this listing being sold, on every channel it is connected to, in one call.
+	//
+	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+	//
+	// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
+	//
+	// | | Take offline (this endpoint) | Deactivate in Repull (`PATCH /v1/listings/{id}` `{"active": false}`) |
+	// |---|---|---|
+	// | The guest-facing listing | **Stops taking bookings** | Stays live and keeps taking bookings |
+	// | Billing and plan limits | Unchanged | No longer billed, no longer counts toward the cap |
+	// | API access to the listing | Unchanged — you can still read and write it | `403 listing_inactive` until reactivated |
+	// | Reverse it with | `POST /v1/listings/{id}/online` | `PATCH /v1/listings/{id}` `{"active": true}` |
+	// | Data kept | Yes | Yes, and it keeps syncing |
+	//
+	// Neither one deletes anything, on either side.
+	//
+	// **The answer is per channel item.** A listing can sit on several Airbnb connections and a Booking.com property at once; they fail independently and a partial result is the ordinary outcome, so every item reports its own `state`, `code` and `message` and there is no top-level success flag to mislead you. Nothing is rolled back — re-send the same request to retry the items that did not land.
+	//
+	// **Booking.com ambiguity is reported, not fanned out.** A listing mapped to more than one active Booking.com property comes back with that item refused (`ambiguous_booking_mapping`) while the Airbnb items still run: closing the wrong property's availability takes real inventory off sale, and taking a listing off Airbnb is not less urgent because its Booking.com mapping is untidy. Name the property with `hotelId` and send it again.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/offline (the `TakeListingOffline` operationId).
+	TakeListingOfflineWithBodyWithResponse(ctx context.Context, id int, params *TakeListingOfflineParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TakeListingOfflineClientResponse, error)
+
+	// TakeListingOfflineWithResponse Take a listing off the market
+	//
+	// Stop this listing being sold, on every channel it is connected to, in one call.
+	//
+	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+	//
+	// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
+	//
+	// | | Take offline (this endpoint) | Deactivate in Repull (`PATCH /v1/listings/{id}` `{"active": false}`) |
+	// |---|---|---|
+	// | The guest-facing listing | **Stops taking bookings** | Stays live and keeps taking bookings |
+	// | Billing and plan limits | Unchanged | No longer billed, no longer counts toward the cap |
+	// | API access to the listing | Unchanged — you can still read and write it | `403 listing_inactive` until reactivated |
+	// | Reverse it with | `POST /v1/listings/{id}/online` | `PATCH /v1/listings/{id}` `{"active": true}` |
+	// | Data kept | Yes | Yes, and it keeps syncing |
+	//
+	// Neither one deletes anything, on either side.
+	//
+	// **The answer is per channel item.** A listing can sit on several Airbnb connections and a Booking.com property at once; they fail independently and a partial result is the ordinary outcome, so every item reports its own `state`, `code` and `message` and there is no top-level success flag to mislead you. Nothing is rolled back — re-send the same request to retry the items that did not land.
+	//
+	// **Booking.com ambiguity is reported, not fanned out.** A listing mapped to more than one active Booking.com property comes back with that item refused (`ambiguous_booking_mapping`) while the Airbnb items still run: closing the wrong property's availability takes real inventory off sale, and taking a listing off Airbnb is not less urgent because its Booking.com mapping is untidy. Name the property with `hotelId` and send it again.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/offline (the `TakeListingOffline` operationId).
+	TakeListingOfflineWithResponse(ctx context.Context, id int, params *TakeListingOfflineParams, body TakeListingOfflineJSONRequestBody, reqEditors ...RequestEditorFn) (*TakeListingOfflineClientResponse, error)
+
+	// TakeListingOnlineWithBodyWithResponse Put a listing back on the market
+	//
+	// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
+	//
+	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+	//
+	// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/online (the `TakeListingOnline` operationId).
+	TakeListingOnlineWithBodyWithResponse(ctx context.Context, id int, params *TakeListingOnlineParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TakeListingOnlineClientResponse, error)
+
+	// TakeListingOnlineWithResponse Put a listing back on the market
+	//
+	// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
+	//
+	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+	//
+	// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/online (the `TakeListingOnline` operationId).
+	TakeListingOnlineWithResponse(ctx context.Context, id int, params *TakeListingOnlineParams, body TakeListingOnlineJSONRequestBody, reqEditors ...RequestEditorFn) (*TakeListingOnlineClientResponse, error)
+
 	// DeleteListingPhotoWithBodyWithResponse Delete a stored listing photo
 	//
 	// Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
@@ -24003,6 +25170,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns connection state and sync activity per channel. `channels` is sync activity (empty until first push). `connections` is connection state (populated as soon as a channel is linked). Recommended polling cadence: at most once per 30s per listing — for bulk views, prefer `GET /v1/listings` and filter client-side.
 	//
+	// **When a push fails, this endpoint says why.** `channels[].pushError` carries the channel's own reason for the last failed push, verbatim — `"Links and contact info can't be shared"`, `"Check-in start time must be before end time"`, `"property_type_group must be one of […]"`. It is free text written by the channel, so render it next to the retry button rather than parsing it. `null` when the last push succeeded or none has run; pair it with `pushStatus` to tell those two apart.
+	//
+	// **It also says what you will not be allowed to change.** The `airbnb` entry in `connections` carries `lockedFields` — attributes Airbnb has locked on this listing. Airbnb does not refuse a write to one: it answers 200, reports the field as locked, and applies nothing, so a locked write is indistinguishable from a successful one unless you looked first. Read it before you let someone edit. Airbnb-only; no other channel has the concept, and no other entry carries the field.
+	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -24015,6 +25186,10 @@ type ClientWithResponsesInterface interface {
 	// Push a Repull listing's canonical content to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
 	//
 	// **A publish is not one call to Airbnb.** It is up to eight independent ones — details, description, amenities, rooms, policies, photos, pricing, checkout_tasks — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Airbnb's own reason, per section, for the ones that did not. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Publish again once you have fixed the failing sections — a re-publish of an unchanged section is harmless.
+	//
+	// `result.live` is a different question from `result.published`. `published` is about CONTENT — every attempted section landed. `live` is about whether the listing takes bookings: it is true only when activation was actually performed and succeeded. A create can land all eight sections and still leave the listing inactive, because activation is skipped when instant-booking cannot be confirmed to be off — so `published: true` with `live: false` is a real and common outcome, and `result.warnings` says why. `live` is ABSENT, not `false`, when activation was never part of the operation: publishing to an already-mapped listing updates content and activates nothing. Only treat a listing as not-live when `live` is present and false.
+	//
+	// `result.warnings[]` lists steps that failed WITHOUT failing the publish — optional work the push carried on past. They were previously swallowed, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
 	//
 	// `result.lockedFields` names the fields Airbnb will not let this listing change at all. They are not retryable by anyone: Airbnb answers 200 and applies nothing. `GET /v1/channels/airbnb/listings/{id}` reports the same list up front.
 	//
@@ -24037,6 +25212,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// **A publish is not one call to Airbnb.** It is up to eight independent ones — details, description, amenities, rooms, policies, photos, pricing, checkout_tasks — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Airbnb's own reason, per section, for the ones that did not. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Publish again once you have fixed the failing sections — a re-publish of an unchanged section is harmless.
 	//
+	// `result.live` is a different question from `result.published`. `published` is about CONTENT — every attempted section landed. `live` is about whether the listing takes bookings: it is true only when activation was actually performed and succeeded. A create can land all eight sections and still leave the listing inactive, because activation is skipped when instant-booking cannot be confirmed to be off — so `published: true` with `live: false` is a real and common outcome, and `result.warnings` says why. `live` is ABSENT, not `false`, when activation was never part of the operation: publishing to an already-mapped listing updates content and activates nothing. Only treat a listing as not-live when `live` is present and false.
+	//
+	// `result.warnings[]` lists steps that failed WITHOUT failing the publish — optional work the push carried on past. They were previously swallowed, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
+	//
 	// `result.lockedFields` names the fields Airbnb will not let this listing change at all. They are not retryable by anyone: Airbnb answers 200 and applies nothing. `GET /v1/channels/airbnb/listings/{id}` reports the same list up front.
 	//
 	// **Which fields this pushes** — title, description sections and house rules (English/primary locale), amenities, rooms and beds, photos, nightly price and fees, cancellation policy and guest controls, check-in/out times, quiet hours, property and room type, checkout tasks. **Not pushed by this endpoint:** non-primary locales (`PUT /v1/channels/airbnb/listings/{id}/descriptions`), guest-safety disclosures (`PUT …/safety-disclosures`), check-in method (`PUT …/details`), permits (`PUT …/permits`), and the calendar (`PUT …/availability`).
@@ -24052,16 +25231,43 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/listings/{id}/publish/airbnb (the `PublishListingToAirbnb` operationId).
 	PublishListingToAirbnbWithResponse(ctx context.Context, id int, params *PublishListingToAirbnbParams, body PublishListingToAirbnbJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToAirbnbClientResponse, error)
 
-	// PublishListingToBookingWithResponse Publish a listing to Booking.com
+	// PublishListingToBookingWithBodyWithResponse Publish a listing to Booking.com
 	//
-	// Push a Repull listing to Booking.com. The listing must already be mapped to a Booking property + room (created via the Booking-claim Connect flow).
+	// Push a Repull listing's content to Booking.com. The listing must already be mapped to a Booking.com property + room — claim the hotel through the Connect Booking flow, then map its rooms with `POST /v1/connect/booking/map-rooms`.
+	//
+	// **Which property the content lands in.** A listing can be mapped to more than one Booking.com property; the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. When the listing has exactly one property you need send nothing. When it has several, name one with `hotelId` in the body (or `?hotel_id=` — the same value, accepted either way, body wins if you send both). Omit it on such a listing and the push is refused with **`409 ambiguous_booking_mapping`**, listing the candidate ids: content pushed into a property chosen for you lands on the wrong listing and reports success, which is worse than a refusal. `GET /v1/channels/booking/properties` lists every property with the listings mapped under it. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+	//
+	// The property that actually received the content comes back as `result.hotelId`.
+	//
+	// **A publish is not one call to Booking.com.** It is several independent Content API calls — details, description, amenities, rooms, photos, pricing — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Booking.com's own reason, per section, for the ones that did not. A property whose Content API credentials do not cover a section answers 403 for that section alone. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Fix the failing sections and publish again — re-publishing an unchanged section is harmless.
+	//
+	// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
-	// Returns a wrapper object for the known response body format(s).
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
-	PublishListingToBookingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error)
+	PublishListingToBookingWithBodyWithResponse(ctx context.Context, id int, params *PublishListingToBookingParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error)
+
+	// PublishListingToBookingWithResponse Publish a listing to Booking.com
+	//
+	// Push a Repull listing's content to Booking.com. The listing must already be mapped to a Booking.com property + room — claim the hotel through the Connect Booking flow, then map its rooms with `POST /v1/connect/booking/map-rooms`.
+	//
+	// **Which property the content lands in.** A listing can be mapped to more than one Booking.com property; the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. When the listing has exactly one property you need send nothing. When it has several, name one with `hotelId` in the body (or `?hotel_id=` — the same value, accepted either way, body wins if you send both). Omit it on such a listing and the push is refused with **`409 ambiguous_booking_mapping`**, listing the candidate ids: content pushed into a property chosen for you lands on the wrong listing and reports success, which is worse than a refusal. `GET /v1/channels/booking/properties` lists every property with the listings mapped under it. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+	//
+	// The property that actually received the content comes back as `result.hotelId`.
+	//
+	// **A publish is not one call to Booking.com.** It is several independent Content API calls — details, description, amenities, rooms, photos, pricing — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Booking.com's own reason, per section, for the ones that did not. A property whose Content API credentials do not cover a section answers 403 for that section alone. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Fix the failing sections and publish again — re-publishing an unchanged section is harmless.
+	//
+	// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
+	PublishListingToBookingWithResponse(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error)
 
 	// PullListingFromAirbnbWithBodyWithResponse Refresh a listing from Airbnb
 	//
@@ -24336,7 +25542,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
 	//
-	// Runs the same action as the Vanio dashboard’s Accept button. Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
+	// Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 	//
 	// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 	//
@@ -24355,7 +25561,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
 	//
-	// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+	// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
@@ -24370,7 +25576,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
 	//
-	// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+	// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
@@ -25196,8 +26402,14 @@ type AcceptAirbnbAlterationClientResponse struct {
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -25215,9 +26427,24 @@ func (r AcceptAirbnbAlterationClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
 }
 
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r AcceptAirbnbAlterationClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r AcceptAirbnbAlterationClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r AcceptAirbnbAlterationClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r AcceptAirbnbAlterationClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -25258,8 +26485,14 @@ type CancelAirbnbAlterationClientResponse struct {
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -25277,9 +26510,24 @@ func (r CancelAirbnbAlterationClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
 }
 
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CancelAirbnbAlterationClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CancelAirbnbAlterationClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r CancelAirbnbAlterationClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CancelAirbnbAlterationClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -25320,8 +26568,14 @@ type DeclineAirbnbAlterationClientResponse struct {
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -25339,9 +26593,24 @@ func (r DeclineAirbnbAlterationClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
 }
 
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeclineAirbnbAlterationClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r DeclineAirbnbAlterationClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r DeclineAirbnbAlterationClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r DeclineAirbnbAlterationClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -25605,6 +26874,8 @@ type AirbnbListingActionClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *AirbnbListingAction200JSONResponseBody
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PublishBillingRefused
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *AirbnbWriteForbidden
 	// JSON404 the response for an HTTP 404 `application/json` response
@@ -25620,6 +26891,11 @@ type AirbnbListingActionClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r AirbnbListingActionClientResponse) GetJSON200() *AirbnbListingAction200JSONResponseBody {
 	return r.JSON200
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r AirbnbListingActionClientResponse) GetJSON402() *PublishBillingRefused {
+	return r.JSON402
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
@@ -26523,8 +27799,14 @@ type UpdateAirbnbCheckinGuideClientResponse struct {
 	JSON403 *AirbnbWriteForbidden
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -26542,9 +27824,24 @@ func (r UpdateAirbnbCheckinGuideClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
 }
 
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateAirbnbCheckinGuideClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateAirbnbCheckinGuideClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r UpdateAirbnbCheckinGuideClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateAirbnbCheckinGuideClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -28831,9 +30128,13 @@ type SendAirbnbMessageClientResponse struct {
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *Error
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -28857,13 +30158,23 @@ func (r SendAirbnbMessageClientResponse) GetJSON404() *NotFound {
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r SendAirbnbMessageClientResponse) GetJSON422() *Error {
+func (r SendAirbnbMessageClientResponse) GetJSON422() *AirbnbWriteRejected {
 	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r SendAirbnbMessageClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r SendAirbnbMessageClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r SendAirbnbMessageClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -28905,9 +30216,13 @@ type UpdateAirbnbMessageClientResponse struct {
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -28926,13 +30241,23 @@ func (r UpdateAirbnbMessageClientResponse) GetJSON404() *NotFound {
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r UpdateAirbnbMessageClientResponse) GetJSON422() *UnprocessableEntity {
+func (r UpdateAirbnbMessageClientResponse) GetJSON422() *AirbnbWriteRejected {
 	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateAirbnbMessageClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r UpdateAirbnbMessageClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateAirbnbMessageClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -29594,11 +30919,32 @@ type RespondAirbnbReviewLegacyClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
 func (r RespondAirbnbReviewLegacyClientResponse) GetJSON403() *ListingInactive {
 	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r RespondAirbnbReviewLegacyClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r RespondAirbnbReviewLegacyClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r RespondAirbnbReviewLegacyClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -29642,9 +30988,13 @@ type EditAirbnbReviewClientResponse struct {
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -29668,13 +31018,23 @@ func (r EditAirbnbReviewClientResponse) GetJSON404() *NotFound {
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r EditAirbnbReviewClientResponse) GetJSON422() *UnprocessableEntity {
+func (r EditAirbnbReviewClientResponse) GetJSON422() *AirbnbWriteRejected {
 	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r EditAirbnbReviewClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r EditAirbnbReviewClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r EditAirbnbReviewClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -29718,9 +31078,13 @@ type RespondAirbnbReviewClientResponse struct {
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -29744,13 +31108,23 @@ func (r RespondAirbnbReviewClientResponse) GetJSON404() *NotFound {
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r RespondAirbnbReviewClientResponse) GetJSON422() *UnprocessableEntity {
+func (r RespondAirbnbReviewClientResponse) GetJSON422() *AirbnbWriteRejected {
 	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r RespondAirbnbReviewClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r RespondAirbnbReviewClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r RespondAirbnbReviewClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -30770,6 +32144,117 @@ func (r GetBookingPropertyClientResponse) ContentType() string {
 	return ""
 }
 
+type BookingPropertyActionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *BookingPropertyActionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PublishBillingRefused
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *BookingWriteRejected
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *BookingUpstreamError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ChannelActionUnavailable
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON200() *BookingPropertyActionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON402() *PublishBillingRefused {
+	return r.JSON402
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON422() *BookingWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON502() *BookingUpstreamError {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r BookingPropertyActionClientResponse) GetJSON503() *ChannelActionUnavailable {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r BookingPropertyActionClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BookingPropertyActionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BookingPropertyActionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BookingPropertyActionClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListBookingPropertyRoomsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -31134,11 +32619,15 @@ type BookingSetupClientResponse struct {
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
 }
 
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
@@ -31152,7 +32641,7 @@ func (r BookingSetupClientResponse) GetJSON401() *Unauthorized {
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r BookingSetupClientResponse) GetJSON403() *ListingInactive {
+func (r BookingSetupClientResponse) GetJSON403() *Error {
 	return r.JSON403
 }
 
@@ -31161,9 +32650,19 @@ func (r BookingSetupClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
 }
 
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r BookingSetupClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r BookingSetupClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r BookingSetupClientResponse) GetJSON502() *Error {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -34752,7 +36251,7 @@ type ListInquiriesClientResponse struct {
 			RespondBy   *time.Time `json:"respondBy"`
 			RespondedAt *time.Time `json:"respondedAt"`
 
-			// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, Vanio, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
+			// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, a connected app, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
 			Status    ListInquiries200JSONResponseBodyDataStatus `json:"status"`
 			UpdatedAt *time.Time                                 `json:"updatedAt"`
 		} `json:"data"`
@@ -34829,7 +36328,7 @@ func (r ListInquiriesClientResponse) GetJSON200() *struct {
 		RespondBy   *time.Time `json:"respondBy"`
 		RespondedAt *time.Time `json:"respondedAt"`
 
-		// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, Vanio, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
+		// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, a connected app, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
 		Status    ListInquiries200JSONResponseBodyDataStatus `json:"status"`
 		UpdatedAt *time.Time                                 `json:"updatedAt"`
 	} `json:"data"`
@@ -35871,6 +37370,178 @@ func (r GenerateListingContentClientResponse) ContentType() string {
 	return ""
 }
 
+// TakeListingOfflineClientResponse429Headers the declared response headers of an HTTP 429 response for TakeListingOffline
+type TakeListingOfflineClientResponse429Headers struct {
+	RetryAfter          *int
+	XRateLimitLimit     *int
+	XRateLimitRemaining *int
+	XRateLimitReset     *time.Time
+}
+
+type TakeListingOfflineClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListingMarketStateResponse
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PublishBillingRefused
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *TooManyRequests
+	// Headers429 the parsed response headers for an HTTP 429 response
+	Headers429 *TakeListingOfflineClientResponse429Headers
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r TakeListingOfflineClientResponse) GetJSON200() *ListingMarketStateResponse {
+	return r.JSON200
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r TakeListingOfflineClientResponse) GetJSON402() *PublishBillingRefused {
+	return r.JSON402
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TakeListingOfflineClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r TakeListingOfflineClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r TakeListingOfflineClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r TakeListingOfflineClientResponse) GetJSON429() *TooManyRequests {
+	return r.JSON429
+}
+
+// GetBody returns the raw response body bytes
+func (r TakeListingOfflineClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TakeListingOfflineClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TakeListingOfflineClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TakeListingOfflineClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+// TakeListingOnlineClientResponse429Headers the declared response headers of an HTTP 429 response for TakeListingOnline
+type TakeListingOnlineClientResponse429Headers struct {
+	RetryAfter          *int
+	XRateLimitLimit     *int
+	XRateLimitRemaining *int
+	XRateLimitReset     *time.Time
+}
+
+type TakeListingOnlineClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListingMarketStateResponse
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PublishBillingRefused
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *TooManyRequests
+	// Headers429 the parsed response headers for an HTTP 429 response
+	Headers429 *TakeListingOnlineClientResponse429Headers
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r TakeListingOnlineClientResponse) GetJSON200() *ListingMarketStateResponse {
+	return r.JSON200
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r TakeListingOnlineClientResponse) GetJSON402() *PublishBillingRefused {
+	return r.JSON402
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TakeListingOnlineClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r TakeListingOnlineClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r TakeListingOnlineClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r TakeListingOnlineClientResponse) GetJSON429() *TooManyRequests {
+	return r.JSON429
+}
+
+// GetBody returns the raw response body bytes
+func (r TakeListingOnlineClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TakeListingOnlineClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TakeListingOnlineClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TakeListingOnlineClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type DeleteListingPhotoClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -36457,6 +38128,8 @@ type PublishListingToAirbnbClientResponse struct {
 	JSON200 *ListingPublishAirbnbResponse
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PublishBillingRefused
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
@@ -36471,6 +38144,11 @@ func (r PublishListingToAirbnbClientResponse) GetJSON200() *ListingPublishAirbnb
 // GetJSON400 returns the response for an HTTP 400 `application/json` response
 func (r PublishListingToAirbnbClientResponse) GetJSON400() *BadRequest {
 	return r.JSON400
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r PublishListingToAirbnbClientResponse) GetJSON402() *PublishBillingRefused {
+	return r.JSON402
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
@@ -36516,15 +38194,21 @@ type PublishListingToBookingClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *ListingPublishResponse
+	JSON200 *ListingPublishBookingResponse
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PublishBillingRefused
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r PublishListingToBookingClientResponse) GetJSON200() *ListingPublishResponse {
+func (r PublishListingToBookingClientResponse) GetJSON200() *ListingPublishBookingResponse {
 	return r.JSON200
 }
 
@@ -36533,9 +38217,24 @@ func (r PublishListingToBookingClientResponse) GetJSON400() *BadRequest {
 	return r.JSON400
 }
 
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r PublishListingToBookingClientResponse) GetJSON402() *PublishBillingRefused {
+	return r.JSON402
+}
+
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
 func (r PublishListingToBookingClientResponse) GetJSON403() *ListingInactive {
 	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r PublishListingToBookingClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r PublishListingToBookingClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
 }
 
 // GetBody returns the raw response body bytes
@@ -36587,9 +38286,11 @@ type PullListingFromAirbnbClientResponse struct {
 	// JSON409 the response for an HTTP 409 `application/json` response
 	JSON409 *Conflict
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
+	JSON422 *AirbnbWriteRejected
 	// JSON429 the response for an HTTP 429 `application/json` response
 	JSON429 *TooManyRequests
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 	// Headers429 the parsed response headers for an HTTP 429 response
 	Headers429 *PullListingFromAirbnbClientResponse429Headers
 }
@@ -36615,13 +38316,18 @@ func (r PullListingFromAirbnbClientResponse) GetJSON409() *Conflict {
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r PullListingFromAirbnbClientResponse) GetJSON422() *UnprocessableEntity {
+func (r PullListingFromAirbnbClientResponse) GetJSON422() *AirbnbWriteRejected {
 	return r.JSON422
 }
 
 // GetJSON429 returns the response for an HTTP 429 `application/json` response
 func (r PullListingFromAirbnbClientResponse) GetJSON429() *TooManyRequests {
 	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r PullListingFromAirbnbClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -37811,7 +39517,11 @@ type ReplyToReviewClientResponse struct {
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -37839,8 +39549,18 @@ func (r ReplyToReviewClientResponse) GetJSON404() *NotFound {
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r ReplyToReviewClientResponse) GetJSON422() *UnprocessableEntity {
+func (r ReplyToReviewClientResponse) GetJSON422() *AirbnbWriteRejected {
 	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r ReplyToReviewClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r ReplyToReviewClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -39501,11 +41221,25 @@ func (c *ClientWithResponses) GetAirbnbListingWithResponse(ctx context.Context, 
 //
 // Apply a state action to a listing by id. The path `id` is the canonical Repull listing id.
 //
-// **Deactivating in Repull and unlisting on Airbnb are different operations.**
+// **`delete` here never touches Airbnb. Read this before you call it.**
 //
-// `delete` is a **deactivate of the Repull record only** — it sets the listing inactive and KEEPS the row; it does NOT touch the Airbnb listing, which stays live and keeps taking bookings. Use it to exclude a listing from the API / trim back under the plan-listings cap; reactivate via `PATCH /v1/listings/{id}` with `{ "active": true }`. Idempotent.
+// | | `action: "delete"` (this endpoint) | `action: "unlist"` (this endpoint) |
+// |---|---|---|
+// | What it changes | The Repull record | The live Airbnb listing |
+// | Calls Airbnb | **No. Never.** | Yes |
+// | The guest-facing listing | Stays live and keeps taking bookings | **Goes down** and stops taking bookings |
+// | Billing and plan limits | No longer billed, no longer counts toward the cap | Unchanged |
+// | API access to the listing | `403 listing_inactive` until reactivated | Unchanged — you can still read and write it |
+// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
+// | Data kept | Yes, and it keeps syncing | Yes |
+//
+// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+//
+// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 //
 // `unlist` calls Airbnb and **takes the live listing down**: it is deactivated with a valid deactivation reason and then READ BACK, so "Airbnb accepted the call but the listing is still live" is reported as a failure rather than a success. Requires `airbnbConnectionId` — a listing can be connected to more than one Airbnb listing, and taking down the wrong one is not undoable through this API. `relist` puts it back up (re-enables sync and makes the listing available again); it does not push content.
+//
+// `relist` goes through the channel-publish billing gate and `unlist` does not, so on a workspace whose subscription has lapsed a listing can be taken down and not put back until billing is sorted out. That refusal comes back as `402` with the action that fixes it — never as an Airbnb error, because retrying and reconnecting Airbnb do nothing for it.
 //
 // `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking. The result is per-section: see `AirbnbPublishResult`.
 //
@@ -39528,11 +41262,25 @@ func (c *ClientWithResponses) AirbnbListingActionWithBodyWithResponse(ctx contex
 //
 // Apply a state action to a listing by id. The path `id` is the canonical Repull listing id.
 //
-// **Deactivating in Repull and unlisting on Airbnb are different operations.**
+// **`delete` here never touches Airbnb. Read this before you call it.**
 //
-// `delete` is a **deactivate of the Repull record only** — it sets the listing inactive and KEEPS the row; it does NOT touch the Airbnb listing, which stays live and keeps taking bookings. Use it to exclude a listing from the API / trim back under the plan-listings cap; reactivate via `PATCH /v1/listings/{id}` with `{ "active": true }`. Idempotent.
+// | | `action: "delete"` (this endpoint) | `action: "unlist"` (this endpoint) |
+// |---|---|---|
+// | What it changes | The Repull record | The live Airbnb listing |
+// | Calls Airbnb | **No. Never.** | Yes |
+// | The guest-facing listing | Stays live and keeps taking bookings | **Goes down** and stops taking bookings |
+// | Billing and plan limits | No longer billed, no longer counts toward the cap | Unchanged |
+// | API access to the listing | `403 listing_inactive` until reactivated | Unchanged — you can still read and write it |
+// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
+// | Data kept | Yes, and it keeps syncing | Yes |
+//
+// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+//
+// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 //
 // `unlist` calls Airbnb and **takes the live listing down**: it is deactivated with a valid deactivation reason and then READ BACK, so "Airbnb accepted the call but the listing is still live" is reported as a failure rather than a success. Requires `airbnbConnectionId` — a listing can be connected to more than one Airbnb listing, and taking down the wrong one is not undoable through this API. `relist` puts it back up (re-enables sync and makes the listing available again); it does not push content.
+//
+// `relist` goes through the channel-publish billing gate and `unlist` does not, so on a workspace whose subscription has lapsed a listing can be taken down and not put back until billing is sorted out. That refusal comes back as `402` with the action that fixes it — never as an Airbnb error, because retrying and reconnecting Airbnb do nothing for it.
 //
 // `push` / `publish` push the listing's content to Airbnb via the same host-side sync orchestrator as `POST /v1/listings/{id}/publish/airbnb` — pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create + publish a new one under that host. `force` re-pushes every field, ignoring dirty-field tracking. The result is per-section: see `AirbnbPublishResult`.
 //
@@ -40571,7 +42319,7 @@ func (c *ClientWithResponses) ListAirbnbThreadMessagesWithResponse(ctx context.C
 
 // SendAirbnbMessageWithBodyWithResponse Send Airbnb message
 //
-// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `422 airbnb_rejected` carrying Airbnb's own reason. Resending the same text is refused again; edit it first. `502 airbnb_error` is the other answer and means something else entirely: Airbnb did not complete the send, so retry it unchanged.
 //
 // ### Sending a photo or video (`mediaUrl`)
 //
@@ -40596,7 +42344,7 @@ func (c *ClientWithResponses) SendAirbnbMessageWithBodyWithResponse(ctx context.
 
 // SendAirbnbMessageWithResponse Send Airbnb message
 //
-// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `airbnb_error`.
+// Send a message in an Airbnb thread as the host. Airbnb enforces content rules (no off-platform contact info, no external URLs) — violating messages are rejected upstream and surface as `422 airbnb_rejected` carrying Airbnb's own reason. Resending the same text is refused again; edit it first. `502 airbnb_error` is the other answer and means something else entirely: Airbnb did not complete the send, so retry it unchanged.
 //
 // ### Sending a photo or video (`mediaUrl`)
 //
@@ -40799,7 +42547,7 @@ func (c *ClientWithResponses) GetAirbnbReservationWithResponse(ctx context.Conte
 // - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
 // - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
 //
-// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and keep the reservation in Repull in sync.
 //
 // Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 //
@@ -40826,7 +42574,7 @@ func (c *ClientWithResponses) AirbnbReservationActionWithBodyWithResponse(ctx co
 // - `decline` — decline a pending booking request. Requires `reason` (one of Airbnb's decline reasons) and `message` (sent to the guest, at most 500 characters).
 // - `cancel` — cancel a confirmed booking as the host. Requires `reason` (one of Airbnb's host-cancellation reasons). **Host cancellations carry Airbnb penalties.**
 //
-// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and also update Vanio.
+// The body is validated before anything reaches Airbnb; unknown fields are refused. There is no `pre-approve` action: a pre-approval answers an inquiry, which has no confirmation code — use `POST /v1/conversations/{id}/pre-approval`. For accept/decline, `POST /v1/reservations/{id}/accept` and `/decline` do the same by Repull id and keep the reservation in Repull in sync.
 //
 // Airbnb refusals are mapped rather than returned as a 500: a request that already moved on is `409 request_no_longer_pending` (do not retry), an expired one `409 request_expired`, any other refusal `422 airbnb_rejected` with Airbnb's reason.
 //
@@ -41368,6 +43116,56 @@ func (c *ClientWithResponses) GetBookingPropertyWithResponse(ctx context.Context
 	return ParseGetBookingPropertyClientResponse(rsp)
 }
 
+// BookingPropertyActionWithBodyWithResponse Take a property off sale / put it back (unlist/relist)
+//
+// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
+//
+// **Booking.com has no unlist, so this is an availability write.** Airbnb has a real deactivate; Booking.com does not. `unlist` closes the mapped room across the whole forward window, so the property stops selling. `relist` is not its mirror image: it re-syncs the true calendar, so dates that are genuinely blocked (a reservation, an owner stay) stay blocked and only the closure `unlist` wrote lifts. Re-opening everything would sell dates that are not for sale.
+//
+// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+//
+// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+//
+// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
+func (c *ClientWithResponses) BookingPropertyActionWithBodyWithResponse(ctx context.Context, id int, params *BookingPropertyActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BookingPropertyActionClientResponse, error) {
+	rsp, err := c.BookingPropertyActionWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBookingPropertyActionClientResponse(rsp)
+}
+
+// BookingPropertyActionWithResponse Take a property off sale / put it back (unlist/relist)
+//
+// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
+//
+// **Booking.com has no unlist, so this is an availability write.** Airbnb has a real deactivate; Booking.com does not. `unlist` closes the mapped room across the whole forward window, so the property stops selling. `relist` is not its mirror image: it re-syncs the true calendar, so dates that are genuinely blocked (a reservation, an owner stay) stay blocked and only the closure `unlist` wrote lifts. Re-opening everything would sell dates that are not for sale.
+//
+// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+//
+// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+//
+// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
+func (c *ClientWithResponses) BookingPropertyActionWithResponse(ctx context.Context, id int, params *BookingPropertyActionParams, body BookingPropertyActionJSONRequestBody, reqEditors ...RequestEditorFn) (*BookingPropertyActionClientResponse, error) {
+	rsp, err := c.BookingPropertyAction(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBookingPropertyActionClientResponse(rsp)
+}
+
 // ListBookingPropertyRoomsWithResponse List Booking.com rooms + rate-plan ids for a listing
 //
 // Return every Booking.com room and its rate plans for a listing, each with the `roomId` / `rateId` needed to assemble a restriction write via `PUT /v1/channels/booking/availability`.
@@ -41507,20 +43305,61 @@ func (c *ClientWithResponses) ReplyBookingReviewWithResponse(ctx context.Context
 
 // BookingSetupWithBodyWithResponse Booking.com property setup actions
 //
-// Action-router for onboarding a property onto Booking.com. Select the step with `action`:
+// Action-router for putting a property onto Booking.com — including building one from nothing. Select the step with `action`.
 //
-// - `create-legal-entity` — register the legal entity (returns 201).
-// - `check-legal-status` — poll legal-entity status by `leid`.
+// ## Opening a property
+//
+// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
+// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
+// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+//
+// ## Account and policy steps
+//
+// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
+// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
 // - `check-readiness` — check whether a property is ready to open (`property_id`).
 // - `open-property` — open the property for sale (`property_id`).
 // - `set-contacts` — set property contacts (`property_id`, `contacts`).
 // - `set-policies` — set property policies (`property_id`, plus policy fields).
 //
-// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
+// ## Three things about Booking.com that cost real money
 //
-// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
 //
-// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
+//
+// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+//
+// ## The legal entity is resolved, not asked for
+//
+// A property is created against the legal entity Booking.com contracts with, invoices and pays. You do not normally send one:
+//
+// 1. If this workspace already creates properties under a legal entity, that one is reused. A second is never registered.
+// 2. If it has none and the request carries `legal_entity` (`company_name`, `legal_contact_name`, `legal_contact_email`), one is registered and used. Booking.com emails the legal contact a contract; creation only succeeds once it is signed.
+// 3. If it has none and no `legal_entity`, the request is refused with `422 legal_entity_required` naming the fields — a contracted company is never invented.
+//
+// `legal_entity_id` overrides all of that. An id that already carries another workspace's properties is refused with `403 legal_entity_not_yours` before anything is created.
+//
+// ## What you do not control
+//
+// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
+//
+// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+//
+// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
+//
+// ## Guards
+//
+// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`. Every action that takes a `listing_id` requires a listing in this workspace; any other id returns `404 not_found`.
+//
+// `create-property` refuses a listing with no coordinates (`422 missing_coordinates`) before anything is created — creating a Booking.com property cannot be undone.
+//
+// `create-property` is subject to the same published-listing gate as the dashboard: no plan, or the plan's listing limit reached, returns `403 billing_error` with `used` and `limit`, and nothing is created.
+//
+// Returns `403 listing_inactive` when the listing — or any listing mapped to the Booking.com property — is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// If a property is created and a later step fails, the response is `422 booking_create_partial` carrying `property_id`. The property EXISTS. Do not retry `create-property`, which would open a second one — continue with `add-room` and `advance`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -41535,20 +43374,61 @@ func (c *ClientWithResponses) BookingSetupWithBodyWithResponse(ctx context.Conte
 
 // BookingSetupWithResponse Booking.com property setup actions
 //
-// Action-router for onboarding a property onto Booking.com. Select the step with `action`:
+// Action-router for putting a property onto Booking.com — including building one from nothing. Select the step with `action`.
 //
-// - `create-legal-entity` — register the legal entity (returns 201).
-// - `check-legal-status` — poll legal-entity status by `leid`.
+// ## Opening a property
+//
+// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
+// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
+// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+//
+// ## Account and policy steps
+//
+// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
+// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
 // - `check-readiness` — check whether a property is ready to open (`property_id`).
 // - `open-property` — open the property for sale (`property_id`).
 // - `set-contacts` — set property contacts (`property_id`, `contacts`).
 // - `set-policies` — set property policies (`property_id`, plus policy fields).
 //
-// Missing required fields per action return a validation error; upstream failures surface as `booking_error`.
+// ## Three things about Booking.com that cost real money
 //
-// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`.
+// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
 //
-// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
+//
+// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+//
+// ## The legal entity is resolved, not asked for
+//
+// A property is created against the legal entity Booking.com contracts with, invoices and pays. You do not normally send one:
+//
+// 1. If this workspace already creates properties under a legal entity, that one is reused. A second is never registered.
+// 2. If it has none and the request carries `legal_entity` (`company_name`, `legal_contact_name`, `legal_contact_email`), one is registered and used. Booking.com emails the legal contact a contract; creation only succeeds once it is signed.
+// 3. If it has none and no `legal_entity`, the request is refused with `422 legal_entity_required` naming the fields — a contracted company is never invented.
+//
+// `legal_entity_id` overrides all of that. An id that already carries another workspace's properties is refused with `403 legal_entity_not_yours` before anything is created.
+//
+// ## What you do not control
+//
+// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
+//
+// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+//
+// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
+//
+// ## Guards
+//
+// Every action that takes a `property_id` requires a property connected to this workspace; any other id returns `404 not_found`. Every action that takes a `listing_id` requires a listing in this workspace; any other id returns `404 not_found`.
+//
+// `create-property` refuses a listing with no coordinates (`422 missing_coordinates`) before anything is created — creating a Booking.com property cannot be undone.
+//
+// `create-property` is subject to the same published-listing gate as the dashboard: no plan, or the plan's listing limit reached, returns `403 billing_error` with `used` and `limit`, and nothing is created.
+//
+// Returns `403 listing_inactive` when the listing — or any listing mapped to the Booking.com property — is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// If a property is created and a later step fails, the response is `422 booking_create_partial` carrying `property_id`. The property EXISTS. Do not retry `create-property`, which would open a second one — continue with `add-room` and `advance`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -42566,7 +44446,7 @@ func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.C
 //
 // Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 //
-// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 //
 // ### Airbnb rewrites links — check `contentRewritten`
 //
@@ -42609,7 +44489,7 @@ func (c *ClientWithResponses) SendConversationMessageWithBodyWithResponse(ctx co
 //
 // Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 //
-// The message is attributed to the API, not to Vanio AI: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
+// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 //
 // ### Airbnb rewrites links — check `contentRewritten`
 //
@@ -42654,7 +44534,7 @@ func (c *ClientWithResponses) SendConversationMessageWithResponse(ctx context.Co
 //
 // **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
 //
-// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
 //
 // An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 //
@@ -42679,7 +44559,7 @@ func (c *ClientWithResponses) PreapproveConversationWithBodyWithResponse(ctx con
 //
 // **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
 //
-// Runs the same action as the Vanio dashboard’s Pre-approve button, so the inquiry is marked `pre_approved` everywhere.
+// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
 //
 // An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 //
@@ -42704,7 +44584,7 @@ func (c *ClientWithResponses) PreapproveConversationWithResponse(ctx context.Con
 //
 // `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
 //
 // An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
 //
@@ -42731,7 +44611,7 @@ func (c *ClientWithResponses) CreateConversationSpecialOfferWithBodyWithResponse
 //
 // `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. Runs the same action as the Vanio dashboard, so the inquiry is marked `special_offer_sent`.
+// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
 //
 // An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
 //
@@ -42752,7 +44632,7 @@ func (c *ClientWithResponses) CreateConversationSpecialOfferWithResponse(ctx con
 
 // WithdrawConversationSpecialOfferWithResponse Withdraw a special offer
 //
-// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. Runs the same action as the Vanio dashboard’s Withdraw offer. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -43403,6 +45283,118 @@ func (c *ClientWithResponses) GenerateListingContentWithResponse(ctx context.Con
 	return ParseGenerateListingContentClientResponse(rsp)
 }
 
+// TakeListingOfflineWithBodyWithResponse Take a listing off the market
+//
+// Stop this listing being sold, on every channel it is connected to, in one call.
+//
+// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+//
+// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
+//
+// | | Take offline (this endpoint) | Deactivate in Repull (`PATCH /v1/listings/{id}` `{"active": false}`) |
+// |---|---|---|
+// | The guest-facing listing | **Stops taking bookings** | Stays live and keeps taking bookings |
+// | Billing and plan limits | Unchanged | No longer billed, no longer counts toward the cap |
+// | API access to the listing | Unchanged — you can still read and write it | `403 listing_inactive` until reactivated |
+// | Reverse it with | `POST /v1/listings/{id}/online` | `PATCH /v1/listings/{id}` `{"active": true}` |
+// | Data kept | Yes | Yes, and it keeps syncing |
+//
+// Neither one deletes anything, on either side.
+//
+// **The answer is per channel item.** A listing can sit on several Airbnb connections and a Booking.com property at once; they fail independently and a partial result is the ordinary outcome, so every item reports its own `state`, `code` and `message` and there is no top-level success flag to mislead you. Nothing is rolled back — re-send the same request to retry the items that did not land.
+//
+// **Booking.com ambiguity is reported, not fanned out.** A listing mapped to more than one active Booking.com property comes back with that item refused (`ambiguous_booking_mapping`) while the Airbnb items still run: closing the wrong property's availability takes real inventory off sale, and taking a listing off Airbnb is not less urgent because its Booking.com mapping is untidy. Name the property with `hotelId` and send it again.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/offline (the `TakeListingOffline` operationId).
+func (c *ClientWithResponses) TakeListingOfflineWithBodyWithResponse(ctx context.Context, id int, params *TakeListingOfflineParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TakeListingOfflineClientResponse, error) {
+	rsp, err := c.TakeListingOfflineWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTakeListingOfflineClientResponse(rsp)
+}
+
+// TakeListingOfflineWithResponse Take a listing off the market
+//
+// Stop this listing being sold, on every channel it is connected to, in one call.
+//
+// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+//
+// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
+//
+// | | Take offline (this endpoint) | Deactivate in Repull (`PATCH /v1/listings/{id}` `{"active": false}`) |
+// |---|---|---|
+// | The guest-facing listing | **Stops taking bookings** | Stays live and keeps taking bookings |
+// | Billing and plan limits | Unchanged | No longer billed, no longer counts toward the cap |
+// | API access to the listing | Unchanged — you can still read and write it | `403 listing_inactive` until reactivated |
+// | Reverse it with | `POST /v1/listings/{id}/online` | `PATCH /v1/listings/{id}` `{"active": true}` |
+// | Data kept | Yes | Yes, and it keeps syncing |
+//
+// Neither one deletes anything, on either side.
+//
+// **The answer is per channel item.** A listing can sit on several Airbnb connections and a Booking.com property at once; they fail independently and a partial result is the ordinary outcome, so every item reports its own `state`, `code` and `message` and there is no top-level success flag to mislead you. Nothing is rolled back — re-send the same request to retry the items that did not land.
+//
+// **Booking.com ambiguity is reported, not fanned out.** A listing mapped to more than one active Booking.com property comes back with that item refused (`ambiguous_booking_mapping`) while the Airbnb items still run: closing the wrong property's availability takes real inventory off sale, and taking a listing off Airbnb is not less urgent because its Booking.com mapping is untidy. Name the property with `hotelId` and send it again.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/offline (the `TakeListingOffline` operationId).
+func (c *ClientWithResponses) TakeListingOfflineWithResponse(ctx context.Context, id int, params *TakeListingOfflineParams, body TakeListingOfflineJSONRequestBody, reqEditors ...RequestEditorFn) (*TakeListingOfflineClientResponse, error) {
+	rsp, err := c.TakeListingOffline(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTakeListingOfflineClientResponse(rsp)
+}
+
+// TakeListingOnlineWithBodyWithResponse Put a listing back on the market
+//
+// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
+//
+// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+//
+// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/online (the `TakeListingOnline` operationId).
+func (c *ClientWithResponses) TakeListingOnlineWithBodyWithResponse(ctx context.Context, id int, params *TakeListingOnlineParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TakeListingOnlineClientResponse, error) {
+	rsp, err := c.TakeListingOnlineWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTakeListingOnlineClientResponse(rsp)
+}
+
+// TakeListingOnlineWithResponse Put a listing back on the market
+//
+// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
+//
+// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+//
+// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/online (the `TakeListingOnline` operationId).
+func (c *ClientWithResponses) TakeListingOnlineWithResponse(ctx context.Context, id int, params *TakeListingOnlineParams, body TakeListingOnlineJSONRequestBody, reqEditors ...RequestEditorFn) (*TakeListingOnlineClientResponse, error) {
+	rsp, err := c.TakeListingOnline(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTakeListingOnlineClientResponse(rsp)
+}
+
 // DeleteListingPhotoWithBodyWithResponse Delete a stored listing photo
 //
 // Deletes a single stored photo by its storage `path` (as returned by `GET /v1/listings/{id}/photos` or `POST /v1/listings/{id}/photos/upload-url`).
@@ -43619,6 +45611,10 @@ func (c *ClientWithResponses) UpdateListingPricingStrategyWithResponse(ctx conte
 //
 // Returns connection state and sync activity per channel. `channels` is sync activity (empty until first push). `connections` is connection state (populated as soon as a channel is linked). Recommended polling cadence: at most once per 30s per listing — for bulk views, prefer `GET /v1/listings` and filter client-side.
 //
+// **When a push fails, this endpoint says why.** `channels[].pushError` carries the channel's own reason for the last failed push, verbatim — `"Links and contact info can't be shared"`, `"Check-in start time must be before end time"`, `"property_type_group must be one of […]"`. It is free text written by the channel, so render it next to the retry button rather than parsing it. `null` when the last push succeeded or none has run; pair it with `pushStatus` to tell those two apart.
+//
+// **It also says what you will not be allowed to change.** The `airbnb` entry in `connections` carries `lockedFields` — attributes Airbnb has locked on this listing. Airbnb does not refuse a write to one: it answers 200, reports the field as locked, and applies nothing, so a locked write is indistinguishable from a successful one unless you looked first. Read it before you let someone edit. Airbnb-only; no other channel has the concept, and no other entry carries the field.
+//
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Returns a wrapper object for the known response body format(s).
@@ -43637,6 +45633,10 @@ func (c *ClientWithResponses) GetListingPublishStatusWithResponse(ctx context.Co
 // Push a Repull listing's canonical content to Airbnb. Pass `airbnbConnectionId` to update an already-mapped Airbnb listing, or `hostId` to create a brand-new Airbnb listing under that host.
 //
 // **A publish is not one call to Airbnb.** It is up to eight independent ones — details, description, amenities, rooms, policies, photos, pricing, checkout_tasks — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Airbnb's own reason, per section, for the ones that did not. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Publish again once you have fixed the failing sections — a re-publish of an unchanged section is harmless.
+//
+// `result.live` is a different question from `result.published`. `published` is about CONTENT — every attempted section landed. `live` is about whether the listing takes bookings: it is true only when activation was actually performed and succeeded. A create can land all eight sections and still leave the listing inactive, because activation is skipped when instant-booking cannot be confirmed to be off — so `published: true` with `live: false` is a real and common outcome, and `result.warnings` says why. `live` is ABSENT, not `false`, when activation was never part of the operation: publishing to an already-mapped listing updates content and activates nothing. Only treat a listing as not-live when `live` is present and false.
+//
+// `result.warnings[]` lists steps that failed WITHOUT failing the publish — optional work the push carried on past. They were previously swallowed, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
 //
 // `result.lockedFields` names the fields Airbnb will not let this listing change at all. They are not retryable by anyone: Airbnb answers 200 and applies nothing. `GET /v1/channels/airbnb/listings/{id}` reports the same list up front.
 //
@@ -43665,6 +45665,10 @@ func (c *ClientWithResponses) PublishListingToAirbnbWithBodyWithResponse(ctx con
 //
 // **A publish is not one call to Airbnb.** It is up to eight independent ones — details, description, amenities, rooms, policies, photos, pricing, checkout_tasks — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Airbnb's own reason, per section, for the ones that did not. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Publish again once you have fixed the failing sections — a re-publish of an unchanged section is harmless.
 //
+// `result.live` is a different question from `result.published`. `published` is about CONTENT — every attempted section landed. `live` is about whether the listing takes bookings: it is true only when activation was actually performed and succeeded. A create can land all eight sections and still leave the listing inactive, because activation is skipped when instant-booking cannot be confirmed to be off — so `published: true` with `live: false` is a real and common outcome, and `result.warnings` says why. `live` is ABSENT, not `false`, when activation was never part of the operation: publishing to an already-mapped listing updates content and activates nothing. Only treat a listing as not-live when `live` is present and false.
+//
+// `result.warnings[]` lists steps that failed WITHOUT failing the publish — optional work the push carried on past. They were previously swallowed, so the only sign of one was a listing that was somehow not quite right afterwards. A publish can be `published: true` and still carry warnings; read them before concluding nothing needs doing.
+//
 // `result.lockedFields` names the fields Airbnb will not let this listing change at all. They are not retryable by anyone: Airbnb answers 200 and applies nothing. `GET /v1/channels/airbnb/listings/{id}` reports the same list up front.
 //
 // **Which fields this pushes** — title, description sections and house rules (English/primary locale), amenities, rooms and beds, photos, nightly price and fees, cancellation policy and guest controls, check-in/out times, quiet hours, property and room type, checkout tasks. **Not pushed by this endpoint:** non-primary locales (`PUT /v1/channels/airbnb/listings/{id}/descriptions`), guest-safety disclosures (`PUT …/safety-disclosures`), check-in method (`PUT …/details`), permits (`PUT …/permits`), and the calendar (`PUT …/availability`).
@@ -43686,17 +45690,50 @@ func (c *ClientWithResponses) PublishListingToAirbnbWithResponse(ctx context.Con
 	return ParsePublishListingToAirbnbClientResponse(rsp)
 }
 
-// PublishListingToBookingWithResponse Publish a listing to Booking.com
+// PublishListingToBookingWithBodyWithResponse Publish a listing to Booking.com
 //
-// Push a Repull listing to Booking.com. The listing must already be mapped to a Booking property + room (created via the Booking-claim Connect flow).
+// Push a Repull listing's content to Booking.com. The listing must already be mapped to a Booking.com property + room — claim the hotel through the Connect Booking flow, then map its rooms with `POST /v1/connect/booking/map-rooms`.
+//
+// **Which property the content lands in.** A listing can be mapped to more than one Booking.com property; the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. When the listing has exactly one property you need send nothing. When it has several, name one with `hotelId` in the body (or `?hotel_id=` — the same value, accepted either way, body wins if you send both). Omit it on such a listing and the push is refused with **`409 ambiguous_booking_mapping`**, listing the candidate ids: content pushed into a property chosen for you lands on the wrong listing and reports success, which is worse than a refusal. `GET /v1/channels/booking/properties` lists every property with the listings mapped under it. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+//
+// The property that actually received the content comes back as `result.hotelId`.
+//
+// **A publish is not one call to Booking.com.** It is several independent Content API calls — details, description, amenities, rooms, photos, pricing — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Booking.com's own reason, per section, for the ones that did not. A property whose Content API credentials do not cover a section answers 403 for that section alone. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Fix the failing sections and publish again — re-publishing an unchanged section is harmless.
+//
+// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
-// Returns a wrapper object for the known response body format(s).
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
-func (c *ClientWithResponses) PublishListingToBookingWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error) {
-	rsp, err := c.PublishListingToBooking(ctx, id, reqEditors...)
+func (c *ClientWithResponses) PublishListingToBookingWithBodyWithResponse(ctx context.Context, id int, params *PublishListingToBookingParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error) {
+	rsp, err := c.PublishListingToBookingWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePublishListingToBookingClientResponse(rsp)
+}
+
+// PublishListingToBookingWithResponse Publish a listing to Booking.com
+//
+// Push a Repull listing's content to Booking.com. The listing must already be mapped to a Booking.com property + room — claim the hotel through the Connect Booking flow, then map its rooms with `POST /v1/connect/booking/map-rooms`.
+//
+// **Which property the content lands in.** A listing can be mapped to more than one Booking.com property; the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. When the listing has exactly one property you need send nothing. When it has several, name one with `hotelId` in the body (or `?hotel_id=` — the same value, accepted either way, body wins if you send both). Omit it on such a listing and the push is refused with **`409 ambiguous_booking_mapping`**, listing the candidate ids: content pushed into a property chosen for you lands on the wrong listing and reports success, which is worse than a refusal. `GET /v1/channels/booking/properties` lists every property with the listings mapped under it. Naming a property this listing is not mapped to is a `404` that names the ones it is.
+//
+// The property that actually received the content comes back as `result.hotelId`.
+//
+// **A publish is not one call to Booking.com.** It is several independent Content API calls — details, description, amenities, rooms, photos, pricing — and each can fail on its own. `result.published` is true only when every attempted section landed; `result.sections` lists the ones that did and `result.errors[]` carries Booking.com's own reason, per section, for the ones that did not. A property whose Content API credentials do not cover a section answers 403 for that section alone. **A partial publish is normal and is not rolled back**: what succeeded stays applied. Fix the failing sections and publish again — re-publishing an unchanged section is harmless.
+//
+// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
+func (c *ClientWithResponses) PublishListingToBookingWithResponse(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error) {
+	rsp, err := c.PublishListingToBooking(ctx, id, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -44072,7 +46109,7 @@ func (c *ClientWithResponses) UpdateReservationWithResponse(ctx context.Context,
 //
 // Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
 //
-// Runs the same action as the Vanio dashboard’s Accept button. Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
+// Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 //
 // **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 //
@@ -44097,7 +46134,7 @@ func (c *ClientWithResponses) AcceptReservationRequestWithResponse(ctx context.C
 //
 // `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
 //
-// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
@@ -44118,7 +46155,7 @@ func (c *ClientWithResponses) DeclineReservationRequestWithBodyWithResponse(ctx 
 //
 // `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
 //
-// Runs the same action as the Vanio dashboard’s Decline button. Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
+// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
@@ -45041,12 +47078,33 @@ func ParseAcceptAirbnbAlterationClientResponse(rsp *http.Response) (*AcceptAirbn
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -45091,12 +47149,33 @@ func ParseCancelAirbnbAlterationClientResponse(rsp *http.Response) (*CancelAirbn
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -45141,12 +47220,33 @@ func ParseDeclineAirbnbAlterationClientResponse(rsp *http.Response) (*DeclineAir
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -45340,6 +47440,13 @@ func ParseAirbnbListingActionClientResponse(rsp *http.Response) (*AirbnbListingA
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PublishBillingRefused
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		var dest AirbnbWriteForbidden
@@ -45991,12 +48098,33 @@ func ParseUpdateAirbnbCheckinGuideClientResponse(rsp *http.Response) (*UpdateAir
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -47742,11 +49870,18 @@ func ParseSendAirbnbMessageClientResponse(rsp *http.Response) (*SendAirbnbMessag
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest Error
+		var dest AirbnbWriteRejected
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
@@ -47754,6 +49889,13 @@ func ParseSendAirbnbMessageClientResponse(rsp *http.Response) (*SendAirbnbMessag
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -47799,11 +49941,18 @@ func ParseUpdateAirbnbMessageClientResponse(rsp *http.Response) (*UpdateAirbnbMe
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest AirbnbWriteRejected
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
@@ -47811,6 +49960,13 @@ func ParseUpdateAirbnbMessageClientResponse(rsp *http.Response) (*UpdateAirbnbMe
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -48307,6 +50463,27 @@ func ParseRespondAirbnbReviewLegacyClientResponse(rsp *http.Response) (*RespondA
 		}
 		response.JSON403 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
 	}
 
 	return response, nil
@@ -48355,11 +50532,18 @@ func ParseEditAirbnbReviewClientResponse(rsp *http.Response) (*EditAirbnbReviewC
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest AirbnbWriteRejected
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
@@ -48367,6 +50551,13 @@ func ParseEditAirbnbReviewClientResponse(rsp *http.Response) (*EditAirbnbReviewC
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -48416,11 +50607,18 @@ func ParseRespondAirbnbReviewClientResponse(rsp *http.Response) (*RespondAirbnbR
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest AirbnbWriteRejected
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
@@ -48428,6 +50626,13 @@ func ParseRespondAirbnbReviewClientResponse(rsp *http.Response) (*RespondAirbnbR
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -49219,6 +51424,102 @@ func ParseGetBookingPropertyClientResponse(rsp *http.Response) (*GetBookingPrope
 	return response, nil
 }
 
+// ParseBookingPropertyActionClientResponse parses an HTTP response from a BookingPropertyActionWithResponse call
+func ParseBookingPropertyActionClientResponse(rsp *http.Response) (*BookingPropertyActionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BookingPropertyActionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BookingPropertyActionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PublishBillingRefused
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest BookingWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest BookingUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ChannelActionUnavailable
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListBookingPropertyRoomsClientResponse parses an HTTP response from a ListBookingPropertyRoomsWithResponse call
 func ParseListBookingPropertyRoomsClientResponse(rsp *http.Response) (*ListBookingPropertyRoomsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -49539,7 +51840,7 @@ func ParseBookingSetupClientResponse(rsp *http.Response) (*BookingSetupClientRes
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -49552,12 +51853,26 @@ func ParseBookingSetupClientResponse(rsp *http.Response) (*BookingSetupClientRes
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -52192,7 +54507,7 @@ func ParseListInquiriesClientResponse(rsp *http.Response) (*ListInquiriesClientR
 				RespondBy   *time.Time `json:"respondBy"`
 				RespondedAt *time.Time `json:"respondedAt"`
 
-				// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, Vanio, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
+				// Status `open` — nobody has answered and the stay is still ahead; `pre_approved`; `special_offer_sent` (from the API, a connected app, or Airbnb’s own app); `booked` — the guest booked (`reservationId`); `expired` — the stay has started or Airbnb expired it; `declined`; `not_possible` — Airbnb says the dates cannot be booked.
 				Status    ListInquiries200JSONResponseBodyDataStatus `json:"status"`
 				UpdatedAt *time.Time                                 `json:"updatedAt"`
 			} `json:"data"`
@@ -52971,6 +55286,196 @@ func ParseGenerateListingContentClientResponse(rsp *http.Response) (*GenerateLis
 	return response, nil
 }
 
+// ParseTakeListingOfflineClientResponse parses an HTTP response from a TakeListingOfflineWithResponse call
+func ParseTakeListingOfflineClientResponse(rsp *http.Response) (*TakeListingOfflineClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TakeListingOfflineClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingMarketStateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PublishBillingRefused
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest TooManyRequests
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 429:
+		var headers TakeListingOfflineClientResponse429Headers
+		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.RetryAfter = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Limit"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Limit", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitLimit = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Remaining"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Remaining", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitRemaining = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Reset"); len(values) > 0 {
+			var value time.Time
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Reset", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: "date-time"}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitReset = &value
+		}
+		response.Headers429 = &headers
+	}
+
+	return response, nil
+}
+
+// ParseTakeListingOnlineClientResponse parses an HTTP response from a TakeListingOnlineWithResponse call
+func ParseTakeListingOnlineClientResponse(rsp *http.Response) (*TakeListingOnlineClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TakeListingOnlineClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingMarketStateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PublishBillingRefused
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest TooManyRequests
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 429:
+		var headers TakeListingOnlineClientResponse429Headers
+		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.RetryAfter = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Limit"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Limit", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitLimit = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Remaining"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Remaining", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitRemaining = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Reset"); len(values) > 0 {
+			var value time.Time
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Reset", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: "date-time"}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitReset = &value
+		}
+		response.Headers429 = &headers
+	}
+
+	return response, nil
+}
+
 // ParseDeleteListingPhotoClientResponse parses an HTTP response from a DeleteListingPhotoWithResponse call
 func ParseDeleteListingPhotoClientResponse(rsp *http.Response) (*DeleteListingPhotoClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -53468,6 +55973,13 @@ func ParsePublishListingToAirbnbClientResponse(rsp *http.Response) (*PublishList
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PublishBillingRefused
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		var dest ListingInactive
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -53502,7 +56014,7 @@ func ParsePublishListingToBookingClientResponse(rsp *http.Response) (*PublishLis
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListingPublishResponse
+		var dest ListingPublishBookingResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -53515,12 +56027,33 @@ func ParsePublishListingToBookingClientResponse(rsp *http.Response) (*PublishLis
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PublishBillingRefused
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		var dest ListingInactive
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	}
 
@@ -53570,7 +56103,7 @@ func ParsePullListingFromAirbnbClientResponse(rsp *http.Response) (*PullListingF
 		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest AirbnbWriteRejected
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -53582,6 +56115,13 @@ func ParsePullListingFromAirbnbClientResponse(rsp *http.Response) (*PullListingF
 			return nil, err
 		}
 		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -54554,11 +57094,25 @@ func ParseReplyToReviewClientResponse(rsp *http.Response) (*ReplyToReviewClientR
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest AirbnbWriteRejected
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 

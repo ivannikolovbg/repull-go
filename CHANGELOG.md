@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.2.15 — 2026-09-23
+
+### Additive
+
+- **Regenerated against the live spec (199 → 202 operations, nothing removed).**
+  - `TakeListingOnline` / `TakeListingOffline` — `POST /v1/listings/{id}/online|offline`. Take a listing off sale, or put it back, on every connected channel in one call. This is **not** the same as deactivating a listing in Repull: going offline stops the listing taking bookings but leaves billing, plan limits and API access untouched, while `{"active": false}` does the opposite. Body is `ListingMarketStateRequest` (optional `HotelId`); the reply is `ListingMarketStateResponse` with a `[]ChannelMarketStateItem` — channels fail independently, so read each item's `Ok` rather than the HTTP status alone.
+  - `BookingPropertyAction` — `POST /v1/channels/booking/properties/{id}` (`id` is a Repull listing id, not a Booking.com hotel id). Booking.com has no unlist, so `unlist` closes the mapped room across the forward window; `relist` re-syncs the true calendar rather than opening everything, so genuinely blocked dates stay blocked. Set `HotelId` when the listing maps to several properties, or the call is refused with `409 ambiguous_booking_mapping` and nothing is written.
+- **Booking.com setup actions.** `POST /v1/channels/booking/setup` gains `create-property`, `add-room`, `add-unit` and `advance`.
+- **Listing address + room type on create.** `ListingCreateRequest` gains `RoomTypeCategory`, `PropertyTypeCategory`, `PostalCode` (and the `Zipcode` alias); `ListingContentUpdateRequest.Address` gains `State` and `PostalCode`. Airbnb refuses to activate a listing that has not stated a room type.
+- **Publish diagnostics.** `ListingPublishStatusChannel.PushError` (the channel's own reason for the last failed push, verbatim), `ListingPublishStatusConnection.LockedFields`, `ListingPublishStatusResponse.AddressReadiness` (`ListingAddressReadiness`).
+- **Publish results.** New `BookingPublishResult` / `BookingPublishSectionError`; `AirbnbPublishResult` gains `Live` and `Warnings`. `Published: true` with `Live: false` is a real and common outcome — every content section landed but the listing was never activated, and `Warnings` says why. A nil `Live` is not `false`: the field is omitted when activation was never part of the operation.
+- **Errors.** The error envelope gains `previous_code`.
+
+### Compatibility
+
+- `ListingPublishResponse` is now `ListingPublishBookingResponse` (the model behind `POST /v1/listings/{id}/publish/booking`); the old name is gone.
+
 ## v0.2.14 — 2026-09-22
 
 ### Additive
