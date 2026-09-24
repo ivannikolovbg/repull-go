@@ -1541,25 +1541,151 @@ type ClientInterface interface {
 
 	// GetBookingContent Get Booking.com content
 	//
-	// Fetch the current content (descriptions, amenities, photos) for a Booking.com property. Used to round-trip edits through Repull.
+	// Read one kind of content for a Booking.com property, straight from Booking.com.
+	//
+	// | `type` | What it is |
+	// |---|---|
+	// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+	// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+	// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+	// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+	// | `policies` | Cancellation and prepayment policies. |
+	// | `licences` | The region's licence rules and the licence on file. |
+	// | `checkin_methods` | How guests get in (holiday homes). |
+	// | `contacts` | Who Booking.com contacts about the property. |
+	//
+	// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
 	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Corresponds with GET /v1/channels/booking/content (the `GetBookingContent` operationId).
-	GetBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetBookingContent(ctx context.Context, params *GetBookingContentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateBookingContent Update Booking.com content
+	// UpdateBookingContentWithBody Update Booking.com content
 	//
-	// Push content changes (descriptions, amenities, photos) to Booking.com. Booking enforces editorial review on text fields — changes appear after their content moderation queue clears.
+	// Write one kind of content to a Booking.com property only. Nothing on the canonical listing or on Airbnb changes. To send the listing's own content to every channel instead, use `PUT /v1/listings/{id}/content` and publish.
+	//
+	// | `type` | What it is |
+	// |---|---|
+	// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+	// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+	// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+	// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+	// | `policies` | Cancellation and prepayment policies. |
+	// | `licences` | The region's licence rules and the licence on file. |
+	// | `checkin_methods` | How guests get in (holiday homes). |
+	// | `contacts` | Who Booking.com contacts about the property. |
+	//
+	// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
+	//
+	// What each `type` takes:
+	//
+	// - `description`: `text`, optional `language` (default `en`).
+	// - `facilities`: `facilities: [{ facility_id | room_facility_id, state: "PRESENT" | "MISSING", instances? }]`. Facilities you do not send stay as they are.
+	// - `photos`: `photos: [{ url }]`, uploaded in the background. With `room_id`, send `photo_ids` instead to add photos that have finished processing to that room.
+	// - `settings`: `settings: { <block>: {…} }`, for example `{ "pets": { "pets_allowed": "PETS_ALLOWED" } }`. Each block is written separately and reported in `results`.
+	// - `policies`: `policyCode` (152 = free cancellation at any time, 1 = non-refundable, …), optional `prepaymentRequired`; add `policyId` to change an existing policy. A property holds at most 7 policies and none can be deleted.
+	// - `licences`: `variantId` and `contentData: [{ name, value }]`, from the rules `GET ?type=licences` returns; optional `room_id`.
+	// - `checkin_methods`: `methods: [{ checkin_method }]`, using a name from `GET ?type=checkin_methods` `available`.
+	// - `contacts`: `contacts: [...]` in Booking.com's contact shape.
+	//
+	// If Booking.com refuses the write, the response is `422 booking_rejected` with Booking.com's reason, even when Booking.com answered HTTP 200. Resending the same body will be refused again.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
 	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
+	// Takes any type of body and a specified content type.
+	//
 	// Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
-	UpdateBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateBookingContentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateBookingContent Update Booking.com content
+	//
+	// Write one kind of content to a Booking.com property only. Nothing on the canonical listing or on Airbnb changes. To send the listing's own content to every channel instead, use `PUT /v1/listings/{id}/content` and publish.
+	//
+	// | `type` | What it is |
+	// |---|---|
+	// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+	// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+	// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+	// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+	// | `policies` | Cancellation and prepayment policies. |
+	// | `licences` | The region's licence rules and the licence on file. |
+	// | `checkin_methods` | How guests get in (holiday homes). |
+	// | `contacts` | Who Booking.com contacts about the property. |
+	//
+	// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
+	//
+	// What each `type` takes:
+	//
+	// - `description`: `text`, optional `language` (default `en`).
+	// - `facilities`: `facilities: [{ facility_id | room_facility_id, state: "PRESENT" | "MISSING", instances? }]`. Facilities you do not send stay as they are.
+	// - `photos`: `photos: [{ url }]`, uploaded in the background. With `room_id`, send `photo_ids` instead to add photos that have finished processing to that room.
+	// - `settings`: `settings: { <block>: {…} }`, for example `{ "pets": { "pets_allowed": "PETS_ALLOWED" } }`. Each block is written separately and reported in `results`.
+	// - `policies`: `policyCode` (152 = free cancellation at any time, 1 = non-refundable, …), optional `prepaymentRequired`; add `policyId` to change an existing policy. A property holds at most 7 policies and none can be deleted.
+	// - `licences`: `variantId` and `contentData: [{ name, value }]`, from the rules `GET ?type=licences` returns; optional `room_id`.
+	// - `checkin_methods`: `methods: [{ checkin_method }]`, using a name from `GET ?type=checkin_methods` `available`.
+	// - `contacts`: `contacts: [...]` in Booking.com's contact shape.
+	//
+	// If Booking.com refuses the write, the response is `422 booking_rejected` with Booking.com's reason, even when Booking.com answered HTTP 200. Resending the same body will be refused again.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
+	UpdateBookingContent(ctx context.Context, body UpdateBookingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MapBookingRoomWithBody Map a Booking.com room to a Repull listing
+	//
+	// Link a Booking.com room to a canonical Repull listing — the API-key equivalent of the room mapping the hosted Connect flow performs, and the counterpart of `POST /v1/channels/airbnb/listings/map`.
+	//
+	// Discover `roomBookingId` with `GET /v1/channels/booking/properties/{id}/rooms`, which returns every room of a property with the `roomId` this route takes.
+	//
+	// Booking.com attaches at the ROOM level: a property is a building and its rooms are what a guest books, so each room maps to one listing. Pass `listingId: null` to unmap a room and remove its channel link.
+	//
+	// The room mapping and its channel link are repointed together in one transaction, so a link can never outlive the mapping it describes — a stale link keeps routing that room's reservations to the previous listing. Re-sending a mapping that is already in place writes nothing (`alreadyMapped: true`).
+	//
+	// **The property's reservations are pulled as part of the call.** Once the room is mapped, every active reservation Booking.com holds for the property is imported and attached to its listing — `reservationsImported` says how many were processed. One already present is left as it is, so re-sending never duplicates. You do not need a follow-up call: reservations that arrived before the room was mapped are never picked up by the regular sync, so this is the moment they are brought in. It runs on every successful map, including a re-send, so re-sending retries an import that did not run. If the import cannot run, the mapping still stands and `reservationsImported` is `null`. A property with a long booking history can take tens of seconds. Unmapping pulls nothing.
+	//
+	// Unlike the Airbnb route, there is no conflict when the target listing already carries another Booking.com room: one listing served by several rooms is a normal arrangement and is not refused.
+	//
+	// Scope is enforced on both sides against your workspace — the room's property and the target listing. A room or listing belonging to another workspace returns the same 404 as one that does not exist.
+	//
+	// Returns `403 listing_inactive` when the target listing, or the listing the room is mapped to now, is inactive; nothing is changed.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/booking/listings/map (the `MapBookingRoom` operationId).
+	MapBookingRoomWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MapBookingRoom Map a Booking.com room to a Repull listing
+	//
+	// Link a Booking.com room to a canonical Repull listing — the API-key equivalent of the room mapping the hosted Connect flow performs, and the counterpart of `POST /v1/channels/airbnb/listings/map`.
+	//
+	// Discover `roomBookingId` with `GET /v1/channels/booking/properties/{id}/rooms`, which returns every room of a property with the `roomId` this route takes.
+	//
+	// Booking.com attaches at the ROOM level: a property is a building and its rooms are what a guest books, so each room maps to one listing. Pass `listingId: null` to unmap a room and remove its channel link.
+	//
+	// The room mapping and its channel link are repointed together in one transaction, so a link can never outlive the mapping it describes — a stale link keeps routing that room's reservations to the previous listing. Re-sending a mapping that is already in place writes nothing (`alreadyMapped: true`).
+	//
+	// **The property's reservations are pulled as part of the call.** Once the room is mapped, every active reservation Booking.com holds for the property is imported and attached to its listing — `reservationsImported` says how many were processed. One already present is left as it is, so re-sending never duplicates. You do not need a follow-up call: reservations that arrived before the room was mapped are never picked up by the regular sync, so this is the moment they are brought in. It runs on every successful map, including a re-send, so re-sending retries an import that did not run. If the import cannot run, the mapping still stands and `reservationsImported` is `null`. A property with a long booking history can take tens of seconds. Unmapping pulls nothing.
+	//
+	// Unlike the Airbnb route, there is no conflict when the target listing already carries another Booking.com room: one listing served by several rooms is a normal arrangement and is not refused.
+	//
+	// Scope is enforced on both sides against your workspace — the room's property and the target listing. A room or listing belonging to another workspace returns the same 404 as one that does not exist.
+	//
+	// Returns `403 listing_inactive` when the target listing, or the listing the room is mapped to now, is inactive; nothing is changed.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/booking/listings/map (the `MapBookingRoom` operationId).
+	MapBookingRoom(ctx context.Context, body MapBookingRoomJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetBookingListingPricing Get Booking.com pricing for a listing
 	//
@@ -1816,27 +1942,27 @@ type ClientInterface interface {
 	//
 	// ## Opening a property
 	//
-	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room with the listing's beds, a rate plan and the room-rate product that makes the room sellable (under the listing's cancellation policy), sets the contact and invoice details and the facilities, seeds availability and rates, syncs the calendar, then runs Booking.com's readiness check and reports what still blocks opening in `warnings`. Send `contact` (`name`, `email`, `phone` in international form); without it the workspace owner is used, and a workspace with no usable contact is refused before anything is created. Returns 201.
 	// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
 	// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
-	// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+	// - `advance` — run Booking.com's readiness check for a property (`property_id`) and, when it passes, open it. Returns `checked`, `opened`, `sellable` and `blockers` — Booking.com's own reasons it cannot open yet.
 	//
 	// ## Account and policy steps
 	//
 	// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
 	// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
-	// - `check-readiness` — check whether a property is ready to open (`property_id`).
-	// - `open-property` — open the property for sale (`property_id`).
-	// - `set-contacts` — set property contacts (`property_id`, `contacts`).
-	// - `set-policies` — set property policies (`property_id`, plus policy fields).
+	// - `check-readiness` — whether a property is ready to open (`property_id`): `ready` and `blockers`, without trying to open it.
+	// - `open-property` — open the property for sale (`property_id`). Refused with `422 booking_rejected` naming the blockers when it is not ready.
+	// - `set-contacts` — set property contacts (`property_id`, `contacts` in Booking.com's Contacts API shape; at most one carries the `general` profile).
+	// - `set-policies` — add a cancellation policy (`property_id`, `policyCode`, optional `prepaymentRequired`). House rules, pets, children and the damage deposit are `POST /v1/channels/booking/content` with `type: "settings"`.
 	//
 	// ## Three things about Booking.com that cost real money
 	//
-	// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
+	// **A newly created property is NOT sellable.** Booking.com opens it only when its readiness check passes, and the check names what is missing — a main photo still processing, no availability, a licence the region requires. The response always reports `status: "being_built"` and `sellable: false`, never a guess, with the reasons in `warnings`. Resolve them, then `advance`.
 	//
 	// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
 	//
-	// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+	// **Room names are Booking.com's.** Travellers see one of Booking.com's standard names ("Two-Bedroom Apartment"), chosen from the listing's bedrooms. The listing's own name is kept as the operator-side reference, never shown to guests.
 	//
 	// ## The legal entity is resolved, not asked for
 	//
@@ -1852,7 +1978,7 @@ type ClientInterface interface {
 	//
 	// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
 	//
-	// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+	// The property category comes from the listing's property type (Apartment when it has none; Holiday home, Villa or Chalet when it says so). The initial room count is 1. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
 	//
 	// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
 	//
@@ -1879,27 +2005,27 @@ type ClientInterface interface {
 	//
 	// ## Opening a property
 	//
-	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room with the listing's beds, a rate plan and the room-rate product that makes the room sellable (under the listing's cancellation policy), sets the contact and invoice details and the facilities, seeds availability and rates, syncs the calendar, then runs Booking.com's readiness check and reports what still blocks opening in `warnings`. Send `contact` (`name`, `email`, `phone` in international form); without it the workspace owner is used, and a workspace with no usable contact is refused before anything is created. Returns 201.
 	// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
 	// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
-	// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+	// - `advance` — run Booking.com's readiness check for a property (`property_id`) and, when it passes, open it. Returns `checked`, `opened`, `sellable` and `blockers` — Booking.com's own reasons it cannot open yet.
 	//
 	// ## Account and policy steps
 	//
 	// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
 	// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
-	// - `check-readiness` — check whether a property is ready to open (`property_id`).
-	// - `open-property` — open the property for sale (`property_id`).
-	// - `set-contacts` — set property contacts (`property_id`, `contacts`).
-	// - `set-policies` — set property policies (`property_id`, plus policy fields).
+	// - `check-readiness` — whether a property is ready to open (`property_id`): `ready` and `blockers`, without trying to open it.
+	// - `open-property` — open the property for sale (`property_id`). Refused with `422 booking_rejected` naming the blockers when it is not ready.
+	// - `set-contacts` — set property contacts (`property_id`, `contacts` in Booking.com's Contacts API shape; at most one carries the `general` profile).
+	// - `set-policies` — add a cancellation policy (`property_id`, `policyCode`, optional `prepaymentRequired`). House rules, pets, children and the damage deposit are `POST /v1/channels/booking/content` with `type: "settings"`.
 	//
 	// ## Three things about Booking.com that cost real money
 	//
-	// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
+	// **A newly created property is NOT sellable.** Booking.com opens it only when its readiness check passes, and the check names what is missing — a main photo still processing, no availability, a licence the region requires. The response always reports `status: "being_built"` and `sellable: false`, never a guess, with the reasons in `warnings`. Resolve them, then `advance`.
 	//
 	// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
 	//
-	// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+	// **Room names are Booking.com's.** Travellers see one of Booking.com's standard names ("Two-Bedroom Apartment"), chosen from the listing's bedrooms. The listing's own name is kept as the operator-side reference, never shown to guests.
 	//
 	// ## The legal entity is resolved, not asked for
 	//
@@ -1915,7 +2041,7 @@ type ClientInterface interface {
 	//
 	// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
 	//
-	// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+	// The property category comes from the listing's property type (Apartment when it has none; Holiday home, Villa or Chalet when it says so). The initial room count is 1. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
 	//
 	// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
 	//
@@ -6525,15 +6651,77 @@ func (c *Client) UpdateBookingCharges(ctx context.Context, body UpdateBookingCha
 
 // GetBookingContent Get Booking.com content
 //
-// Fetch the current content (descriptions, amenities, photos) for a Booking.com property. Used to round-trip edits through Repull.
+// Read one kind of content for a Booking.com property, straight from Booking.com.
+//
+// | `type` | What it is |
+// |---|---|
+// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+// | `policies` | Cancellation and prepayment policies. |
+// | `licences` | The region's licence rules and the licence on file. |
+// | `checkin_methods` | How guests get in (holiday homes). |
+// | `contacts` | Who Booking.com contacts about the property. |
+//
+// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
 // Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Corresponds with GET /v1/channels/booking/content (the `GetBookingContent` operationId).
-func (c *Client) GetBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetBookingContentRequest(c.Server)
+func (c *Client) GetBookingContent(ctx context.Context, params *GetBookingContentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBookingContentRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateBookingContentWithBody Update Booking.com content
+//
+// Write one kind of content to a Booking.com property only. Nothing on the canonical listing or on Airbnb changes. To send the listing's own content to every channel instead, use `PUT /v1/listings/{id}/content` and publish.
+//
+// | `type` | What it is |
+// |---|---|
+// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+// | `policies` | Cancellation and prepayment policies. |
+// | `licences` | The region's licence rules and the licence on file. |
+// | `checkin_methods` | How guests get in (holiday homes). |
+// | `contacts` | Who Booking.com contacts about the property. |
+//
+// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
+//
+// What each `type` takes:
+//
+// - `description`: `text`, optional `language` (default `en`).
+// - `facilities`: `facilities: [{ facility_id | room_facility_id, state: "PRESENT" | "MISSING", instances? }]`. Facilities you do not send stay as they are.
+// - `photos`: `photos: [{ url }]`, uploaded in the background. With `room_id`, send `photo_ids` instead to add photos that have finished processing to that room.
+// - `settings`: `settings: { <block>: {…} }`, for example `{ "pets": { "pets_allowed": "PETS_ALLOWED" } }`. Each block is written separately and reported in `results`.
+// - `policies`: `policyCode` (152 = free cancellation at any time, 1 = non-refundable, …), optional `prepaymentRequired`; add `policyId` to change an existing policy. A property holds at most 7 policies and none can be deleted.
+// - `licences`: `variantId` and `contentData: [{ name, value }]`, from the rules `GET ?type=licences` returns; optional `room_id`.
+// - `checkin_methods`: `methods: [{ checkin_method }]`, using a name from `GET ?type=checkin_methods` `available`.
+// - `contacts`: `contacts: [...]` in Booking.com's contact shape.
+//
+// If Booking.com refuses the write, the response is `422 booking_rejected` with Booking.com's reason, even when Booking.com answered HTTP 200. Resending the same body will be refused again.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
+func (c *Client) UpdateBookingContentWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingContentRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6546,15 +6734,109 @@ func (c *Client) GetBookingContent(ctx context.Context, reqEditors ...RequestEdi
 
 // UpdateBookingContent Update Booking.com content
 //
-// Push content changes (descriptions, amenities, photos) to Booking.com. Booking enforces editorial review on text fields — changes appear after their content moderation queue clears.
+// Write one kind of content to a Booking.com property only. Nothing on the canonical listing or on Airbnb changes. To send the listing's own content to every channel instead, use `PUT /v1/listings/{id}/content` and publish.
+//
+// | `type` | What it is |
+// |---|---|
+// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+// | `policies` | Cancellation and prepayment policies. |
+// | `licences` | The region's licence rules and the licence on file. |
+// | `checkin_methods` | How guests get in (holiday homes). |
+// | `contacts` | Who Booking.com contacts about the property. |
+//
+// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
+//
+// What each `type` takes:
+//
+// - `description`: `text`, optional `language` (default `en`).
+// - `facilities`: `facilities: [{ facility_id | room_facility_id, state: "PRESENT" | "MISSING", instances? }]`. Facilities you do not send stay as they are.
+// - `photos`: `photos: [{ url }]`, uploaded in the background. With `room_id`, send `photo_ids` instead to add photos that have finished processing to that room.
+// - `settings`: `settings: { <block>: {…} }`, for example `{ "pets": { "pets_allowed": "PETS_ALLOWED" } }`. Each block is written separately and reported in `results`.
+// - `policies`: `policyCode` (152 = free cancellation at any time, 1 = non-refundable, …), optional `prepaymentRequired`; add `policyId` to change an existing policy. A property holds at most 7 policies and none can be deleted.
+// - `licences`: `variantId` and `contentData: [{ name, value }]`, from the rules `GET ?type=licences` returns; optional `room_id`.
+// - `checkin_methods`: `methods: [{ checkin_method }]`, using a name from `GET ?type=checkin_methods` `available`.
+// - `contacts`: `contacts: [...]` in Booking.com's contact shape.
+//
+// If Booking.com refuses the write, the response is `422 booking_rejected` with Booking.com's reason, even when Booking.com answered HTTP 200. Resending the same body will be refused again.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
 // Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
+// Takes a body of the `application/json` content type.
+//
 // Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
-func (c *Client) UpdateBookingContent(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateBookingContentRequest(c.Server)
+func (c *Client) UpdateBookingContent(ctx context.Context, body UpdateBookingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBookingContentRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MapBookingRoomWithBody Map a Booking.com room to a Repull listing
+//
+// Link a Booking.com room to a canonical Repull listing — the API-key equivalent of the room mapping the hosted Connect flow performs, and the counterpart of `POST /v1/channels/airbnb/listings/map`.
+//
+// Discover `roomBookingId` with `GET /v1/channels/booking/properties/{id}/rooms`, which returns every room of a property with the `roomId` this route takes.
+//
+// Booking.com attaches at the ROOM level: a property is a building and its rooms are what a guest books, so each room maps to one listing. Pass `listingId: null` to unmap a room and remove its channel link.
+//
+// The room mapping and its channel link are repointed together in one transaction, so a link can never outlive the mapping it describes — a stale link keeps routing that room's reservations to the previous listing. Re-sending a mapping that is already in place writes nothing (`alreadyMapped: true`).
+//
+// **The property's reservations are pulled as part of the call.** Once the room is mapped, every active reservation Booking.com holds for the property is imported and attached to its listing — `reservationsImported` says how many were processed. One already present is left as it is, so re-sending never duplicates. You do not need a follow-up call: reservations that arrived before the room was mapped are never picked up by the regular sync, so this is the moment they are brought in. It runs on every successful map, including a re-send, so re-sending retries an import that did not run. If the import cannot run, the mapping still stands and `reservationsImported` is `null`. A property with a long booking history can take tens of seconds. Unmapping pulls nothing.
+//
+// Unlike the Airbnb route, there is no conflict when the target listing already carries another Booking.com room: one listing served by several rooms is a normal arrangement and is not refused.
+//
+// Scope is enforced on both sides against your workspace — the room's property and the target listing. A room or listing belonging to another workspace returns the same 404 as one that does not exist.
+//
+// Returns `403 listing_inactive` when the target listing, or the listing the room is mapped to now, is inactive; nothing is changed.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/booking/listings/map (the `MapBookingRoom` operationId).
+func (c *Client) MapBookingRoomWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMapBookingRoomRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MapBookingRoom Map a Booking.com room to a Repull listing
+//
+// Link a Booking.com room to a canonical Repull listing — the API-key equivalent of the room mapping the hosted Connect flow performs, and the counterpart of `POST /v1/channels/airbnb/listings/map`.
+//
+// Discover `roomBookingId` with `GET /v1/channels/booking/properties/{id}/rooms`, which returns every room of a property with the `roomId` this route takes.
+//
+// Booking.com attaches at the ROOM level: a property is a building and its rooms are what a guest books, so each room maps to one listing. Pass `listingId: null` to unmap a room and remove its channel link.
+//
+// The room mapping and its channel link are repointed together in one transaction, so a link can never outlive the mapping it describes — a stale link keeps routing that room's reservations to the previous listing. Re-sending a mapping that is already in place writes nothing (`alreadyMapped: true`).
+//
+// **The property's reservations are pulled as part of the call.** Once the room is mapped, every active reservation Booking.com holds for the property is imported and attached to its listing — `reservationsImported` says how many were processed. One already present is left as it is, so re-sending never duplicates. You do not need a follow-up call: reservations that arrived before the room was mapped are never picked up by the regular sync, so this is the moment they are brought in. It runs on every successful map, including a re-send, so re-sending retries an import that did not run. If the import cannot run, the mapping still stands and `reservationsImported` is `null`. A property with a long booking history can take tens of seconds. Unmapping pulls nothing.
+//
+// Unlike the Airbnb route, there is no conflict when the target listing already carries another Booking.com room: one listing served by several rooms is a normal arrangement and is not refused.
+//
+// Scope is enforced on both sides against your workspace — the room's property and the target listing. A room or listing belonging to another workspace returns the same 404 as one that does not exist.
+//
+// Returns `403 listing_inactive` when the target listing, or the listing the room is mapped to now, is inactive; nothing is changed.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/booking/listings/map (the `MapBookingRoom` operationId).
+func (c *Client) MapBookingRoom(ctx context.Context, body MapBookingRoomJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMapBookingRoomRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6990,27 +7272,27 @@ func (c *Client) ReplyBookingReview(ctx context.Context, body ReplyBookingReview
 //
 // ## Opening a property
 //
-// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room with the listing's beds, a rate plan and the room-rate product that makes the room sellable (under the listing's cancellation policy), sets the contact and invoice details and the facilities, seeds availability and rates, syncs the calendar, then runs Booking.com's readiness check and reports what still blocks opening in `warnings`. Send `contact` (`name`, `email`, `phone` in international form); without it the workspace owner is used, and a workspace with no usable contact is refused before anything is created. Returns 201.
 // - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
 // - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
-// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+// - `advance` — run Booking.com's readiness check for a property (`property_id`) and, when it passes, open it. Returns `checked`, `opened`, `sellable` and `blockers` — Booking.com's own reasons it cannot open yet.
 //
 // ## Account and policy steps
 //
 // - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
 // - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
-// - `check-readiness` — check whether a property is ready to open (`property_id`).
-// - `open-property` — open the property for sale (`property_id`).
-// - `set-contacts` — set property contacts (`property_id`, `contacts`).
-// - `set-policies` — set property policies (`property_id`, plus policy fields).
+// - `check-readiness` — whether a property is ready to open (`property_id`): `ready` and `blockers`, without trying to open it.
+// - `open-property` — open the property for sale (`property_id`). Refused with `422 booking_rejected` naming the blockers when it is not ready.
+// - `set-contacts` — set property contacts (`property_id`, `contacts` in Booking.com's Contacts API shape; at most one carries the `general` profile).
+// - `set-policies` — add a cancellation policy (`property_id`, `policyCode`, optional `prepaymentRequired`). House rules, pets, children and the damage deposit are `POST /v1/channels/booking/content` with `type: "settings"`.
 //
 // ## Three things about Booking.com that cost real money
 //
-// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
+// **A newly created property is NOT sellable.** Booking.com opens it only when its readiness check passes, and the check names what is missing — a main photo still processing, no availability, a licence the region requires. The response always reports `status: "being_built"` and `sellable: false`, never a guess, with the reasons in `warnings`. Resolve them, then `advance`.
 //
 // **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
 //
-// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+// **Room names are Booking.com's.** Travellers see one of Booking.com's standard names ("Two-Bedroom Apartment"), chosen from the listing's bedrooms. The listing's own name is kept as the operator-side reference, never shown to guests.
 //
 // ## The legal entity is resolved, not asked for
 //
@@ -7026,7 +7308,7 @@ func (c *Client) ReplyBookingReview(ctx context.Context, body ReplyBookingReview
 //
 // Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
 //
-// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+// The property category comes from the listing's property type (Apartment when it has none; Holiday home, Villa or Chalet when it says so). The initial room count is 1. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
 //
 // The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
 //
@@ -7063,27 +7345,27 @@ func (c *Client) BookingSetupWithBody(ctx context.Context, contentType string, b
 //
 // ## Opening a property
 //
-// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room with the listing's beds, a rate plan and the room-rate product that makes the room sellable (under the listing's cancellation policy), sets the contact and invoice details and the facilities, seeds availability and rates, syncs the calendar, then runs Booking.com's readiness check and reports what still blocks opening in `warnings`. Send `contact` (`name`, `email`, `phone` in international form); without it the workspace owner is used, and a workspace with no usable contact is refused before anything is created. Returns 201.
 // - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
 // - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
-// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+// - `advance` — run Booking.com's readiness check for a property (`property_id`) and, when it passes, open it. Returns `checked`, `opened`, `sellable` and `blockers` — Booking.com's own reasons it cannot open yet.
 //
 // ## Account and policy steps
 //
 // - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
 // - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
-// - `check-readiness` — check whether a property is ready to open (`property_id`).
-// - `open-property` — open the property for sale (`property_id`).
-// - `set-contacts` — set property contacts (`property_id`, `contacts`).
-// - `set-policies` — set property policies (`property_id`, plus policy fields).
+// - `check-readiness` — whether a property is ready to open (`property_id`): `ready` and `blockers`, without trying to open it.
+// - `open-property` — open the property for sale (`property_id`). Refused with `422 booking_rejected` naming the blockers when it is not ready.
+// - `set-contacts` — set property contacts (`property_id`, `contacts` in Booking.com's Contacts API shape; at most one carries the `general` profile).
+// - `set-policies` — add a cancellation policy (`property_id`, `policyCode`, optional `prepaymentRequired`). House rules, pets, children and the damage deposit are `POST /v1/channels/booking/content` with `type: "settings"`.
 //
 // ## Three things about Booking.com that cost real money
 //
-// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
+// **A newly created property is NOT sellable.** Booking.com opens it only when its readiness check passes, and the check names what is missing — a main photo still processing, no availability, a licence the region requires. The response always reports `status: "being_built"` and `sellable: false`, never a guess, with the reasons in `warnings`. Resolve them, then `advance`.
 //
 // **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
 //
-// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+// **Room names are Booking.com's.** Travellers see one of Booking.com's standard names ("Two-Bedroom Apartment"), chosen from the listing's bedrooms. The listing's own name is kept as the operator-side reference, never shown to guests.
 //
 // ## The legal entity is resolved, not asked for
 //
@@ -7099,7 +7381,7 @@ func (c *Client) BookingSetupWithBody(ctx context.Context, contentType string, b
 //
 // Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
 //
-// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+// The property category comes from the listing's property type (Apartment when it has none; Holiday home, Villa or Chalet when it says so). The initial room count is 1. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
 //
 // The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
 //
@@ -14487,7 +14769,7 @@ func NewUpdateBookingChargesRequestWithBody(server string, contentType string, b
 }
 
 // NewGetBookingContentRequest constructs an http.Request for the GetBookingContent method
-func NewGetBookingContentRequest(server string) (*http.Request, error) {
+func NewGetBookingContentRequest(server string, params *GetBookingContentParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -14503,6 +14785,53 @@ func NewGetBookingContentRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "property_id", params.PropertyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.RoomId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "room_id", *params.RoomId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -14513,8 +14842,19 @@ func NewGetBookingContentRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewUpdateBookingContentRequest constructs an http.Request for the UpdateBookingContent method
-func NewUpdateBookingContentRequest(server string) (*http.Request, error) {
+// NewUpdateBookingContentRequest calls the generic UpdateBookingContent builder with application/json body
+func NewUpdateBookingContentRequest(server string, body UpdateBookingContentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateBookingContentRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewUpdateBookingContentRequestWithBody constructs an http.Request for the UpdateBookingContent method, with any body, and a specified content type
+func NewUpdateBookingContentRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -14532,10 +14872,52 @@ func NewUpdateBookingContentRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMapBookingRoomRequest calls the generic MapBookingRoom builder with application/json body
+func NewMapBookingRoomRequest(server string, body MapBookingRoomJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMapBookingRoomRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMapBookingRoomRequestWithBody constructs an http.Request for the MapBookingRoom method, with any body, and a specified content type
+func NewMapBookingRoomRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/listings/map")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -23799,7 +24181,20 @@ type ClientWithResponsesInterface interface {
 
 	// GetBookingContentWithResponse Get Booking.com content
 	//
-	// Fetch the current content (descriptions, amenities, photos) for a Booking.com property. Used to round-trip edits through Repull.
+	// Read one kind of content for a Booking.com property, straight from Booking.com.
+	//
+	// | `type` | What it is |
+	// |---|---|
+	// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+	// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+	// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+	// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+	// | `policies` | Cancellation and prepayment policies. |
+	// | `licences` | The region's licence rules and the licence on file. |
+	// | `checkin_methods` | How guests get in (holiday homes). |
+	// | `contacts` | Who Booking.com contacts about the property. |
+	//
+	// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
@@ -23808,20 +24203,131 @@ type ClientWithResponsesInterface interface {
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/content (the `GetBookingContent` operationId).
-	GetBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBookingContentClientResponse, error)
+	GetBookingContentWithResponse(ctx context.Context, params *GetBookingContentParams, reqEditors ...RequestEditorFn) (*GetBookingContentClientResponse, error)
 
-	// UpdateBookingContentWithResponse Update Booking.com content
+	// UpdateBookingContentWithBodyWithResponse Update Booking.com content
 	//
-	// Push content changes (descriptions, amenities, photos) to Booking.com. Booking enforces editorial review on text fields — changes appear after their content moderation queue clears.
+	// Write one kind of content to a Booking.com property only. Nothing on the canonical listing or on Airbnb changes. To send the listing's own content to every channel instead, use `PUT /v1/listings/{id}/content` and publish.
+	//
+	// | `type` | What it is |
+	// |---|---|
+	// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+	// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+	// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+	// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+	// | `policies` | Cancellation and prepayment policies. |
+	// | `licences` | The region's licence rules and the licence on file. |
+	// | `checkin_methods` | How guests get in (holiday homes). |
+	// | `contacts` | Who Booking.com contacts about the property. |
+	//
+	// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
+	//
+	// What each `type` takes:
+	//
+	// - `description`: `text`, optional `language` (default `en`).
+	// - `facilities`: `facilities: [{ facility_id | room_facility_id, state: "PRESENT" | "MISSING", instances? }]`. Facilities you do not send stay as they are.
+	// - `photos`: `photos: [{ url }]`, uploaded in the background. With `room_id`, send `photo_ids` instead to add photos that have finished processing to that room.
+	// - `settings`: `settings: { <block>: {…} }`, for example `{ "pets": { "pets_allowed": "PETS_ALLOWED" } }`. Each block is written separately and reported in `results`.
+	// - `policies`: `policyCode` (152 = free cancellation at any time, 1 = non-refundable, …), optional `prepaymentRequired`; add `policyId` to change an existing policy. A property holds at most 7 policies and none can be deleted.
+	// - `licences`: `variantId` and `contentData: [{ name, value }]`, from the rules `GET ?type=licences` returns; optional `room_id`.
+	// - `checkin_methods`: `methods: [{ checkin_method }]`, using a name from `GET ?type=checkin_methods` `available`.
+	// - `contacts`: `contacts: [...]` in Booking.com's contact shape.
+	//
+	// If Booking.com refuses the write, the response is `422 booking_rejected` with Booking.com's reason, even when Booking.com answered HTTP 200. Resending the same body will be refused again.
 	//
 	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 	//
 	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
-	// Returns a wrapper object for the known response body format(s).
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
-	UpdateBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdateBookingContentClientResponse, error)
+	UpdateBookingContentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingContentClientResponse, error)
+
+	// UpdateBookingContentWithResponse Update Booking.com content
+	//
+	// Write one kind of content to a Booking.com property only. Nothing on the canonical listing or on Airbnb changes. To send the listing's own content to every channel instead, use `PUT /v1/listings/{id}/content` and publish.
+	//
+	// | `type` | What it is |
+	// |---|---|
+	// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+	// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+	// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+	// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+	// | `policies` | Cancellation and prepayment policies. |
+	// | `licences` | The region's licence rules and the licence on file. |
+	// | `checkin_methods` | How guests get in (holiday homes). |
+	// | `contacts` | Who Booking.com contacts about the property. |
+	//
+	// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
+	//
+	// What each `type` takes:
+	//
+	// - `description`: `text`, optional `language` (default `en`).
+	// - `facilities`: `facilities: [{ facility_id | room_facility_id, state: "PRESENT" | "MISSING", instances? }]`. Facilities you do not send stay as they are.
+	// - `photos`: `photos: [{ url }]`, uploaded in the background. With `room_id`, send `photo_ids` instead to add photos that have finished processing to that room.
+	// - `settings`: `settings: { <block>: {…} }`, for example `{ "pets": { "pets_allowed": "PETS_ALLOWED" } }`. Each block is written separately and reported in `results`.
+	// - `policies`: `policyCode` (152 = free cancellation at any time, 1 = non-refundable, …), optional `prepaymentRequired`; add `policyId` to change an existing policy. A property holds at most 7 policies and none can be deleted.
+	// - `licences`: `variantId` and `contentData: [{ name, value }]`, from the rules `GET ?type=licences` returns; optional `room_id`.
+	// - `checkin_methods`: `methods: [{ checkin_method }]`, using a name from `GET ?type=checkin_methods` `available`.
+	// - `contacts`: `contacts: [...]` in Booking.com's contact shape.
+	//
+	// If Booking.com refuses the write, the response is `422 booking_rejected` with Booking.com's reason, even when Booking.com answered HTTP 200. Resending the same body will be refused again.
+	//
+	// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+	//
+	// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
+	UpdateBookingContentWithResponse(ctx context.Context, body UpdateBookingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingContentClientResponse, error)
+
+	// MapBookingRoomWithBodyWithResponse Map a Booking.com room to a Repull listing
+	//
+	// Link a Booking.com room to a canonical Repull listing — the API-key equivalent of the room mapping the hosted Connect flow performs, and the counterpart of `POST /v1/channels/airbnb/listings/map`.
+	//
+	// Discover `roomBookingId` with `GET /v1/channels/booking/properties/{id}/rooms`, which returns every room of a property with the `roomId` this route takes.
+	//
+	// Booking.com attaches at the ROOM level: a property is a building and its rooms are what a guest books, so each room maps to one listing. Pass `listingId: null` to unmap a room and remove its channel link.
+	//
+	// The room mapping and its channel link are repointed together in one transaction, so a link can never outlive the mapping it describes — a stale link keeps routing that room's reservations to the previous listing. Re-sending a mapping that is already in place writes nothing (`alreadyMapped: true`).
+	//
+	// **The property's reservations are pulled as part of the call.** Once the room is mapped, every active reservation Booking.com holds for the property is imported and attached to its listing — `reservationsImported` says how many were processed. One already present is left as it is, so re-sending never duplicates. You do not need a follow-up call: reservations that arrived before the room was mapped are never picked up by the regular sync, so this is the moment they are brought in. It runs on every successful map, including a re-send, so re-sending retries an import that did not run. If the import cannot run, the mapping still stands and `reservationsImported` is `null`. A property with a long booking history can take tens of seconds. Unmapping pulls nothing.
+	//
+	// Unlike the Airbnb route, there is no conflict when the target listing already carries another Booking.com room: one listing served by several rooms is a normal arrangement and is not refused.
+	//
+	// Scope is enforced on both sides against your workspace — the room's property and the target listing. A room or listing belonging to another workspace returns the same 404 as one that does not exist.
+	//
+	// Returns `403 listing_inactive` when the target listing, or the listing the room is mapped to now, is inactive; nothing is changed.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/booking/listings/map (the `MapBookingRoom` operationId).
+	MapBookingRoomWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MapBookingRoomClientResponse, error)
+
+	// MapBookingRoomWithResponse Map a Booking.com room to a Repull listing
+	//
+	// Link a Booking.com room to a canonical Repull listing — the API-key equivalent of the room mapping the hosted Connect flow performs, and the counterpart of `POST /v1/channels/airbnb/listings/map`.
+	//
+	// Discover `roomBookingId` with `GET /v1/channels/booking/properties/{id}/rooms`, which returns every room of a property with the `roomId` this route takes.
+	//
+	// Booking.com attaches at the ROOM level: a property is a building and its rooms are what a guest books, so each room maps to one listing. Pass `listingId: null` to unmap a room and remove its channel link.
+	//
+	// The room mapping and its channel link are repointed together in one transaction, so a link can never outlive the mapping it describes — a stale link keeps routing that room's reservations to the previous listing. Re-sending a mapping that is already in place writes nothing (`alreadyMapped: true`).
+	//
+	// **The property's reservations are pulled as part of the call.** Once the room is mapped, every active reservation Booking.com holds for the property is imported and attached to its listing — `reservationsImported` says how many were processed. One already present is left as it is, so re-sending never duplicates. You do not need a follow-up call: reservations that arrived before the room was mapped are never picked up by the regular sync, so this is the moment they are brought in. It runs on every successful map, including a re-send, so re-sending retries an import that did not run. If the import cannot run, the mapping still stands and `reservationsImported` is `null`. A property with a long booking history can take tens of seconds. Unmapping pulls nothing.
+	//
+	// Unlike the Airbnb route, there is no conflict when the target listing already carries another Booking.com room: one listing served by several rooms is a normal arrangement and is not refused.
+	//
+	// Scope is enforced on both sides against your workspace — the room's property and the target listing. A room or listing belonging to another workspace returns the same 404 as one that does not exist.
+	//
+	// Returns `403 listing_inactive` when the target listing, or the listing the room is mapped to now, is inactive; nothing is changed.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/booking/listings/map (the `MapBookingRoom` operationId).
+	MapBookingRoomWithResponse(ctx context.Context, body MapBookingRoomJSONRequestBody, reqEditors ...RequestEditorFn) (*MapBookingRoomClientResponse, error)
 
 	// GetBookingListingPricingWithResponse Get Booking.com pricing for a listing
 	//
@@ -24092,27 +24598,27 @@ type ClientWithResponsesInterface interface {
 	//
 	// ## Opening a property
 	//
-	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room with the listing's beds, a rate plan and the room-rate product that makes the room sellable (under the listing's cancellation policy), sets the contact and invoice details and the facilities, seeds availability and rates, syncs the calendar, then runs Booking.com's readiness check and reports what still blocks opening in `warnings`. Send `contact` (`name`, `email`, `phone` in international form); without it the workspace owner is used, and a workspace with no usable contact is refused before anything is created. Returns 201.
 	// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
 	// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
-	// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+	// - `advance` — run Booking.com's readiness check for a property (`property_id`) and, when it passes, open it. Returns `checked`, `opened`, `sellable` and `blockers` — Booking.com's own reasons it cannot open yet.
 	//
 	// ## Account and policy steps
 	//
 	// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
 	// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
-	// - `check-readiness` — check whether a property is ready to open (`property_id`).
-	// - `open-property` — open the property for sale (`property_id`).
-	// - `set-contacts` — set property contacts (`property_id`, `contacts`).
-	// - `set-policies` — set property policies (`property_id`, plus policy fields).
+	// - `check-readiness` — whether a property is ready to open (`property_id`): `ready` and `blockers`, without trying to open it.
+	// - `open-property` — open the property for sale (`property_id`). Refused with `422 booking_rejected` naming the blockers when it is not ready.
+	// - `set-contacts` — set property contacts (`property_id`, `contacts` in Booking.com's Contacts API shape; at most one carries the `general` profile).
+	// - `set-policies` — add a cancellation policy (`property_id`, `policyCode`, optional `prepaymentRequired`). House rules, pets, children and the damage deposit are `POST /v1/channels/booking/content` with `type: "settings"`.
 	//
 	// ## Three things about Booking.com that cost real money
 	//
-	// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
+	// **A newly created property is NOT sellable.** Booking.com opens it only when its readiness check passes, and the check names what is missing — a main photo still processing, no availability, a licence the region requires. The response always reports `status: "being_built"` and `sellable: false`, never a guess, with the reasons in `warnings`. Resolve them, then `advance`.
 	//
 	// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
 	//
-	// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+	// **Room names are Booking.com's.** Travellers see one of Booking.com's standard names ("Two-Bedroom Apartment"), chosen from the listing's bedrooms. The listing's own name is kept as the operator-side reference, never shown to guests.
 	//
 	// ## The legal entity is resolved, not asked for
 	//
@@ -24128,7 +24634,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
 	//
-	// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+	// The property category comes from the listing's property type (Apartment when it has none; Holiday home, Villa or Chalet when it says so). The initial room count is 1. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
 	//
 	// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
 	//
@@ -24155,27 +24661,27 @@ type ClientWithResponsesInterface interface {
 	//
 	// ## Opening a property
 	//
-	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+	// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room with the listing's beds, a rate plan and the room-rate product that makes the room sellable (under the listing's cancellation policy), sets the contact and invoice details and the facilities, seeds availability and rates, syncs the calendar, then runs Booking.com's readiness check and reports what still blocks opening in `warnings`. Send `contact` (`name`, `email`, `phone` in international form); without it the workspace owner is used, and a workspace with no usable contact is refused before anything is created. Returns 201.
 	// - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
 	// - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
-	// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+	// - `advance` — run Booking.com's readiness check for a property (`property_id`) and, when it passes, open it. Returns `checked`, `opened`, `sellable` and `blockers` — Booking.com's own reasons it cannot open yet.
 	//
 	// ## Account and policy steps
 	//
 	// - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
 	// - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
-	// - `check-readiness` — check whether a property is ready to open (`property_id`).
-	// - `open-property` — open the property for sale (`property_id`).
-	// - `set-contacts` — set property contacts (`property_id`, `contacts`).
-	// - `set-policies` — set property policies (`property_id`, plus policy fields).
+	// - `check-readiness` — whether a property is ready to open (`property_id`): `ready` and `blockers`, without trying to open it.
+	// - `open-property` — open the property for sale (`property_id`). Refused with `422 booking_rejected` naming the blockers when it is not ready.
+	// - `set-contacts` — set property contacts (`property_id`, `contacts` in Booking.com's Contacts API shape; at most one carries the `general` profile).
+	// - `set-policies` — add a cancellation policy (`property_id`, `policyCode`, optional `prepaymentRequired`). House rules, pets, children and the damage deposit are `POST /v1/channels/booking/content` with `type: "settings"`.
 	//
 	// ## Three things about Booking.com that cost real money
 	//
-	// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
+	// **A newly created property is NOT sellable.** Booking.com opens it only when its readiness check passes, and the check names what is missing — a main photo still processing, no availability, a licence the region requires. The response always reports `status: "being_built"` and `sellable: false`, never a guess, with the reasons in `warnings`. Resolve them, then `advance`.
 	//
 	// **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
 	//
-	// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+	// **Room names are Booking.com's.** Travellers see one of Booking.com's standard names ("Two-Bedroom Apartment"), chosen from the listing's bedrooms. The listing's own name is kept as the operator-side reference, never shown to guests.
 	//
 	// ## The legal entity is resolved, not asked for
 	//
@@ -24191,7 +24697,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
 	//
-	// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+	// The property category comes from the listing's property type (Apartment when it has none; Holiday home, Villa or Chalet when it says so). The initial room count is 1. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
 	//
 	// The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
 	//
@@ -32239,10 +32745,19 @@ func (r UpdateBookingChargesClientResponse) ContentType() string {
 type GetBookingContentClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetBookingContentClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
@@ -32253,6 +32768,11 @@ func (r GetBookingContentClientResponse) GetJSON403() *ListingInactive {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r GetBookingContentClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetBookingContentClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
 }
 
 // GetBody returns the raw response body bytes
@@ -32287,10 +32807,19 @@ func (r GetBookingContentClientResponse) ContentType() string {
 type UpdateBookingContentClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateBookingContentClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
@@ -32301,6 +32830,11 @@ func (r UpdateBookingContentClientResponse) GetJSON403() *ListingInactive {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r UpdateBookingContentClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateBookingContentClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
 }
 
 // GetBody returns the raw response body bytes
@@ -32326,6 +32860,75 @@ func (r UpdateBookingContentClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateBookingContentClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MapBookingRoomClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *MapBookingRoomResponse
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MapBookingRoomClientResponse) GetJSON200() *MapBookingRoomResponse {
+	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MapBookingRoomClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r MapBookingRoomClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r MapBookingRoomClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r MapBookingRoomClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r MapBookingRoomClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MapBookingRoomClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MapBookingRoomClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MapBookingRoomClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -44064,7 +44667,20 @@ func (c *ClientWithResponses) UpdateBookingChargesWithResponse(ctx context.Conte
 
 // GetBookingContentWithResponse Get Booking.com content
 //
-// Fetch the current content (descriptions, amenities, photos) for a Booking.com property. Used to round-trip edits through Repull.
+// Read one kind of content for a Booking.com property, straight from Booking.com.
+//
+// | `type` | What it is |
+// |---|---|
+// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+// | `policies` | Cancellation and prepayment policies. |
+// | `licences` | The region's licence rules and the licence on file. |
+// | `checkin_methods` | How guests get in (holiday homes). |
+// | `contacts` | Who Booking.com contacts about the property. |
+//
+// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
@@ -44073,31 +44689,160 @@ func (c *ClientWithResponses) UpdateBookingChargesWithResponse(ctx context.Conte
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/content (the `GetBookingContent` operationId).
-func (c *ClientWithResponses) GetBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBookingContentClientResponse, error) {
-	rsp, err := c.GetBookingContent(ctx, reqEditors...)
+func (c *ClientWithResponses) GetBookingContentWithResponse(ctx context.Context, params *GetBookingContentParams, reqEditors ...RequestEditorFn) (*GetBookingContentClientResponse, error) {
+	rsp, err := c.GetBookingContent(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseGetBookingContentClientResponse(rsp)
 }
 
-// UpdateBookingContentWithResponse Update Booking.com content
+// UpdateBookingContentWithBodyWithResponse Update Booking.com content
 //
-// Push content changes (descriptions, amenities, photos) to Booking.com. Booking enforces editorial review on text fields — changes appear after their content moderation queue clears.
+// Write one kind of content to a Booking.com property only. Nothing on the canonical listing or on Airbnb changes. To send the listing's own content to every channel instead, use `PUT /v1/listings/{id}/content` and publish.
+//
+// | `type` | What it is |
+// |---|---|
+// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+// | `policies` | Cancellation and prepayment policies. |
+// | `licences` | The region's licence rules and the licence on file. |
+// | `checkin_methods` | How guests get in (holiday homes). |
+// | `contacts` | Who Booking.com contacts about the property. |
+//
+// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
+//
+// What each `type` takes:
+//
+// - `description`: `text`, optional `language` (default `en`).
+// - `facilities`: `facilities: [{ facility_id | room_facility_id, state: "PRESENT" | "MISSING", instances? }]`. Facilities you do not send stay as they are.
+// - `photos`: `photos: [{ url }]`, uploaded in the background. With `room_id`, send `photo_ids` instead to add photos that have finished processing to that room.
+// - `settings`: `settings: { <block>: {…} }`, for example `{ "pets": { "pets_allowed": "PETS_ALLOWED" } }`. Each block is written separately and reported in `results`.
+// - `policies`: `policyCode` (152 = free cancellation at any time, 1 = non-refundable, …), optional `prepaymentRequired`; add `policyId` to change an existing policy. A property holds at most 7 policies and none can be deleted.
+// - `licences`: `variantId` and `contentData: [{ name, value }]`, from the rules `GET ?type=licences` returns; optional `room_id`.
+// - `checkin_methods`: `methods: [{ checkin_method }]`, using a name from `GET ?type=checkin_methods` `available`.
+// - `contacts`: `contacts: [...]` in Booking.com's contact shape.
+//
+// If Booking.com refuses the write, the response is `422 booking_rejected` with Booking.com's reason, even when Booking.com answered HTTP 200. Resending the same body will be refused again.
 //
 // `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
 //
 // Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
-// Returns a wrapper object for the known response body format(s).
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
-func (c *ClientWithResponses) UpdateBookingContentWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdateBookingContentClientResponse, error) {
-	rsp, err := c.UpdateBookingContent(ctx, reqEditors...)
+func (c *ClientWithResponses) UpdateBookingContentWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBookingContentClientResponse, error) {
+	rsp, err := c.UpdateBookingContentWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateBookingContentClientResponse(rsp)
+}
+
+// UpdateBookingContentWithResponse Update Booking.com content
+//
+// Write one kind of content to a Booking.com property only. Nothing on the canonical listing or on Airbnb changes. To send the listing's own content to every channel instead, use `PUT /v1/listings/{id}/content` and publish.
+//
+// | `type` | What it is |
+// |---|---|
+// | `photos` | The property's photos. Add `room_id` to read one room's gallery. |
+// | `facilities` | Property facilities, or a room's with `room_id` (Booking.com's ids — `GET` returns them). |
+// | `description` | The property description. Booking.com rewrites what you send into its own multilingual copy; allow about 3 hours to appear. |
+// | `settings` | House rules, pets, children, damage deposit, invoice recipient, booking model. |
+// | `policies` | Cancellation and prepayment policies. |
+// | `licences` | The region's licence rules and the licence on file. |
+// | `checkin_methods` | How guests get in (holiday homes). |
+// | `contacts` | Who Booking.com contacts about the property. |
+//
+// `amenities` is accepted as another name for `facilities`, and `descriptions` for `description`.
+//
+// What each `type` takes:
+//
+// - `description`: `text`, optional `language` (default `en`).
+// - `facilities`: `facilities: [{ facility_id | room_facility_id, state: "PRESENT" | "MISSING", instances? }]`. Facilities you do not send stay as they are.
+// - `photos`: `photos: [{ url }]`, uploaded in the background. With `room_id`, send `photo_ids` instead to add photos that have finished processing to that room.
+// - `settings`: `settings: { <block>: {…} }`, for example `{ "pets": { "pets_allowed": "PETS_ALLOWED" } }`. Each block is written separately and reported in `results`.
+// - `policies`: `policyCode` (152 = free cancellation at any time, 1 = non-refundable, …), optional `prepaymentRequired`; add `policyId` to change an existing policy. A property holds at most 7 policies and none can be deleted.
+// - `licences`: `variantId` and `contentData: [{ name, value }]`, from the rules `GET ?type=licences` returns; optional `room_id`.
+// - `checkin_methods`: `methods: [{ checkin_method }]`, using a name from `GET ?type=checkin_methods` `available`.
+// - `contacts`: `contacts: [...]` in Booking.com's contact shape.
+//
+// If Booking.com refuses the write, the response is `422 booking_rejected` with Booking.com's reason, even when Booking.com answered HTTP 200. Resending the same body will be refused again.
+//
+// `property_id` must be a Booking.com property connected to this workspace (`GET /v1/channels/booking/properties` lists them). Any other id — including one connected to a different workspace — returns `404 not_found`, the same answer as an id that does not exist.
+//
+// Returns `403 listing_inactive` when any listing mapped to the Booking.com property is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/booking/content (the `UpdateBookingContent` operationId).
+func (c *ClientWithResponses) UpdateBookingContentWithResponse(ctx context.Context, body UpdateBookingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBookingContentClientResponse, error) {
+	rsp, err := c.UpdateBookingContent(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBookingContentClientResponse(rsp)
+}
+
+// MapBookingRoomWithBodyWithResponse Map a Booking.com room to a Repull listing
+//
+// Link a Booking.com room to a canonical Repull listing — the API-key equivalent of the room mapping the hosted Connect flow performs, and the counterpart of `POST /v1/channels/airbnb/listings/map`.
+//
+// Discover `roomBookingId` with `GET /v1/channels/booking/properties/{id}/rooms`, which returns every room of a property with the `roomId` this route takes.
+//
+// Booking.com attaches at the ROOM level: a property is a building and its rooms are what a guest books, so each room maps to one listing. Pass `listingId: null` to unmap a room and remove its channel link.
+//
+// The room mapping and its channel link are repointed together in one transaction, so a link can never outlive the mapping it describes — a stale link keeps routing that room's reservations to the previous listing. Re-sending a mapping that is already in place writes nothing (`alreadyMapped: true`).
+//
+// **The property's reservations are pulled as part of the call.** Once the room is mapped, every active reservation Booking.com holds for the property is imported and attached to its listing — `reservationsImported` says how many were processed. One already present is left as it is, so re-sending never duplicates. You do not need a follow-up call: reservations that arrived before the room was mapped are never picked up by the regular sync, so this is the moment they are brought in. It runs on every successful map, including a re-send, so re-sending retries an import that did not run. If the import cannot run, the mapping still stands and `reservationsImported` is `null`. A property with a long booking history can take tens of seconds. Unmapping pulls nothing.
+//
+// Unlike the Airbnb route, there is no conflict when the target listing already carries another Booking.com room: one listing served by several rooms is a normal arrangement and is not refused.
+//
+// Scope is enforced on both sides against your workspace — the room's property and the target listing. A room or listing belonging to another workspace returns the same 404 as one that does not exist.
+//
+// Returns `403 listing_inactive` when the target listing, or the listing the room is mapped to now, is inactive; nothing is changed.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/booking/listings/map (the `MapBookingRoom` operationId).
+func (c *ClientWithResponses) MapBookingRoomWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MapBookingRoomClientResponse, error) {
+	rsp, err := c.MapBookingRoomWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMapBookingRoomClientResponse(rsp)
+}
+
+// MapBookingRoomWithResponse Map a Booking.com room to a Repull listing
+//
+// Link a Booking.com room to a canonical Repull listing — the API-key equivalent of the room mapping the hosted Connect flow performs, and the counterpart of `POST /v1/channels/airbnb/listings/map`.
+//
+// Discover `roomBookingId` with `GET /v1/channels/booking/properties/{id}/rooms`, which returns every room of a property with the `roomId` this route takes.
+//
+// Booking.com attaches at the ROOM level: a property is a building and its rooms are what a guest books, so each room maps to one listing. Pass `listingId: null` to unmap a room and remove its channel link.
+//
+// The room mapping and its channel link are repointed together in one transaction, so a link can never outlive the mapping it describes — a stale link keeps routing that room's reservations to the previous listing. Re-sending a mapping that is already in place writes nothing (`alreadyMapped: true`).
+//
+// **The property's reservations are pulled as part of the call.** Once the room is mapped, every active reservation Booking.com holds for the property is imported and attached to its listing — `reservationsImported` says how many were processed. One already present is left as it is, so re-sending never duplicates. You do not need a follow-up call: reservations that arrived before the room was mapped are never picked up by the regular sync, so this is the moment they are brought in. It runs on every successful map, including a re-send, so re-sending retries an import that did not run. If the import cannot run, the mapping still stands and `reservationsImported` is `null`. A property with a long booking history can take tens of seconds. Unmapping pulls nothing.
+//
+// Unlike the Airbnb route, there is no conflict when the target listing already carries another Booking.com room: one listing served by several rooms is a normal arrangement and is not refused.
+//
+// Scope is enforced on both sides against your workspace — the room's property and the target listing. A room or listing belonging to another workspace returns the same 404 as one that does not exist.
+//
+// Returns `403 listing_inactive` when the target listing, or the listing the room is mapped to now, is inactive; nothing is changed.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/booking/listings/map (the `MapBookingRoom` operationId).
+func (c *ClientWithResponses) MapBookingRoomWithResponse(ctx context.Context, body MapBookingRoomJSONRequestBody, reqEditors ...RequestEditorFn) (*MapBookingRoomClientResponse, error) {
+	rsp, err := c.MapBookingRoom(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMapBookingRoomClientResponse(rsp)
 }
 
 // GetBookingListingPricingWithResponse Get Booking.com pricing for a listing
@@ -44471,27 +45216,27 @@ func (c *ClientWithResponses) ReplyBookingReviewWithResponse(ctx context.Context
 //
 // ## Opening a property
 //
-// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room with the listing's beds, a rate plan and the room-rate product that makes the room sellable (under the listing's cancellation policy), sets the contact and invoice details and the facilities, seeds availability and rates, syncs the calendar, then runs Booking.com's readiness check and reports what still blocks opening in `warnings`. Send `contact` (`name`, `email`, `phone` in international form); without it the workspace owner is used, and a workspace with no usable contact is refused before anything is created. Returns 201.
 // - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
 // - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
-// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+// - `advance` — run Booking.com's readiness check for a property (`property_id`) and, when it passes, open it. Returns `checked`, `opened`, `sellable` and `blockers` — Booking.com's own reasons it cannot open yet.
 //
 // ## Account and policy steps
 //
 // - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
 // - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
-// - `check-readiness` — check whether a property is ready to open (`property_id`).
-// - `open-property` — open the property for sale (`property_id`).
-// - `set-contacts` — set property contacts (`property_id`, `contacts`).
-// - `set-policies` — set property policies (`property_id`, plus policy fields).
+// - `check-readiness` — whether a property is ready to open (`property_id`): `ready` and `blockers`, without trying to open it.
+// - `open-property` — open the property for sale (`property_id`). Refused with `422 booking_rejected` naming the blockers when it is not ready.
+// - `set-contacts` — set property contacts (`property_id`, `contacts` in Booking.com's Contacts API shape; at most one carries the `general` profile).
+// - `set-policies` — add a cancellation policy (`property_id`, `policyCode`, optional `prepaymentRequired`). House rules, pets, children and the damage deposit are `POST /v1/channels/booking/content` with `type: "settings"`.
 //
 // ## Three things about Booking.com that cost real money
 //
-// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
+// **A newly created property is NOT sellable.** Booking.com opens it only when its readiness check passes, and the check names what is missing — a main photo still processing, no availability, a licence the region requires. The response always reports `status: "being_built"` and `sellable: false`, never a guess, with the reasons in `warnings`. Resolve them, then `advance`.
 //
 // **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
 //
-// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+// **Room names are Booking.com's.** Travellers see one of Booking.com's standard names ("Two-Bedroom Apartment"), chosen from the listing's bedrooms. The listing's own name is kept as the operator-side reference, never shown to guests.
 //
 // ## The legal entity is resolved, not asked for
 //
@@ -44507,7 +45252,7 @@ func (c *ClientWithResponses) ReplyBookingReviewWithResponse(ctx context.Context
 //
 // Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
 //
-// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+// The property category comes from the listing's property type (Apartment when it has none; Holiday home, Villa or Chalet when it says so). The initial room count is 1. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
 //
 // The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
 //
@@ -44540,27 +45285,27 @@ func (c *ClientWithResponses) BookingSetupWithBodyWithResponse(ctx context.Conte
 //
 // ## Opening a property
 //
-// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room, a rate plan and the room-rate product that makes the room sellable, seeds availability and rates, syncs the calendar, then sends the notification that starts Booking's validation. Returns 201.
+// - `create-property` — create a NEW Booking.com property for a Repull listing (`listing_id`). Creates the property, its first room with the listing's beds, a rate plan and the room-rate product that makes the room sellable (under the listing's cancellation policy), sets the contact and invoice details and the facilities, seeds availability and rates, syncs the calendar, then runs Booking.com's readiness check and reports what still blocks opening in `warnings`. Send `contact` (`name`, `email`, `phone` in international form); without it the workspace owner is used, and a workspace with no usable contact is refused before anything is created. Returns 201.
 // - `add-room` — add another room type (and its sellable product) to a property (`listing_id`, `property_id`). Returns 201.
 // - `add-unit` — raise the number of identical units on an existing room (`listing_id`, `property_id`, `room_id`).
-// - `advance` — re-send the summary notification for a property (`property_id`) to move it out of the "XML: Being built" stage.
+// - `advance` — run Booking.com's readiness check for a property (`property_id`) and, when it passes, open it. Returns `checked`, `opened`, `sellable` and `blockers` — Booking.com's own reasons it cannot open yet.
 //
 // ## Account and policy steps
 //
 // - `create-legal-entity` — register a legal entity directly (returns 201). Not normally needed: see the legal-entity rules below.
 // - `check-legal-status` — always `404`. A legal entity's details are readable for any id on the connectivity-provider credentials every workspace shares, and nothing records which workspace registered which entity, so no entity can be shown to be yours. `create-property` resolves it for you.
-// - `check-readiness` — check whether a property is ready to open (`property_id`).
-// - `open-property` — open the property for sale (`property_id`).
-// - `set-contacts` — set property contacts (`property_id`, `contacts`).
-// - `set-policies` — set property policies (`property_id`, plus policy fields).
+// - `check-readiness` — whether a property is ready to open (`property_id`): `ready` and `blockers`, without trying to open it.
+// - `open-property` — open the property for sale (`property_id`). Refused with `422 booking_rejected` naming the blockers when it is not ready.
+// - `set-contacts` — set property contacts (`property_id`, `contacts` in Booking.com's Contacts API shape; at most one carries the `general` profile).
+// - `set-policies` — add a cancellation policy (`property_id`, `policyCode`, optional `prepaymentRequired`). House rules, pets, children and the damage deposit are `POST /v1/channels/booking/content` with `type: "settings"`.
 //
 // ## Three things about Booking.com that cost real money
 //
-// **A newly created property is NOT sellable.** Booking holds it at "XML: Being built" until it validates the summary notification. `create-property` sends that notification, but it can fail on its own after everything else succeeded — the response always reports `status: "being_built"` and `sellable: false`, never a guess. Use `advance` to re-send it, and check the Extranet for the stage.
+// **A newly created property is NOT sellable.** Booking.com opens it only when its readiness check passes, and the check names what is missing — a main photo still processing, no availability, a licence the region requires. The response always reports `status: "being_built"` and `sellable: false`, never a guess, with the reasons in `warnings`. Resolve them, then `advance`.
 //
 // **A room with no ACTIVE rate plan is invisible.** Booking only renders rooms that have at least one active product linkage (room × rate plan). A room can be created successfully, return a `roomId`, and never appear on the property page. If `rateId` comes back `null` from `create-property` or `add-room`, that is exactly what happened: activate a rate plan on the property in the Extranet, then add the room again.
 //
-// **The room name is shown to travellers.** It is taken from the listing's name and appears on the Booking.com property page. Internal nicknames belong on the property's partner reference, not on the room.
+// **Room names are Booking.com's.** Travellers see one of Booking.com's standard names ("Two-Bedroom Apartment"), chosen from the listing's bedrooms. The listing's own name is kept as the operator-side reference, never shown to guests.
 //
 // ## The legal entity is resolved, not asked for
 //
@@ -44576,7 +45321,7 @@ func (c *ClientWithResponses) BookingSetupWithBodyWithResponse(ctx context.Conte
 //
 // Properties are created against Booking's **production** target only. A test-target property cannot be sold through and there is no route back from one, so `target` is not a parameter — sending it changes nothing.
 //
-// These are fixed on every created property and are not parameters: property category (Apartment), initial room count (1), and the property contact record (a placeholder name, email and phone). Set the real contacts afterwards with `set-contacts`. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
+// The property category comes from the listing's property type (Apartment when it has none; Holiday home, Villa or Chalet when it says so). The initial room count is 1. Latitude and longitude come from the listing and are adjusted slightly to clear Booking.com's duplicate detection — send the property's true position on the listing and do not pre-adjust it yourself.
 //
 // The listing's name, check-in/check-out times, currency, capacity and price come from the listing. Its postal code is taken from the listing's own `postalCode`; when the listing has none, it falls back to a connected Airbnb listing. A listing with neither is created without a postal code, so set `postalCode` on the listing first.
 //
@@ -52322,6 +53067,13 @@ func ParseGetBookingContentClientResponse(rsp *http.Response) (*GetBookingConten
 	case rsp.StatusCode == 200:
 		break // No content-type
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		var dest ListingInactive
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -52335,6 +53087,13 @@ func ParseGetBookingContentClientResponse(rsp *http.Response) (*GetBookingConten
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -52358,6 +53117,13 @@ func ParseUpdateBookingContentClientResponse(rsp *http.Response) (*UpdateBooking
 	case rsp.StatusCode == 200:
 		break // No content-type
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		var dest ListingInactive
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -52371,6 +53137,67 @@ func ParseUpdateBookingContentClientResponse(rsp *http.Response) (*UpdateBooking
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMapBookingRoomClientResponse parses an HTTP response from a MapBookingRoomWithResponse call
+func ParseMapBookingRoomClientResponse(rsp *http.Response) (*MapBookingRoomClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MapBookingRoomClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MapBookingRoomResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 

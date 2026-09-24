@@ -1453,6 +1453,36 @@ func (e ListingStatus) Valid() bool {
 	}
 }
 
+// Defines values for ListingContentUpdateRequestCheckoutTasksTaskType.
+const (
+	AdditionalRequests ListingContentUpdateRequestCheckoutTasksTaskType = "additional_requests"
+	GatherTowels       ListingContentUpdateRequestCheckoutTasksTaskType = "gather_towels"
+	LockUp             ListingContentUpdateRequestCheckoutTasksTaskType = "lock_up"
+	ReturnKeys         ListingContentUpdateRequestCheckoutTasksTaskType = "return_keys"
+	ThrowTrash         ListingContentUpdateRequestCheckoutTasksTaskType = "throw_trash"
+	TurnThingsOff      ListingContentUpdateRequestCheckoutTasksTaskType = "turn_things_off"
+)
+
+// Valid indicates whether the value is a known member of the ListingContentUpdateRequestCheckoutTasksTaskType enum.
+func (e ListingContentUpdateRequestCheckoutTasksTaskType) Valid() bool {
+	switch e {
+	case AdditionalRequests:
+		return true
+	case GatherTowels:
+		return true
+	case LockUp:
+		return true
+	case ReturnKeys:
+		return true
+	case ThrowTrash:
+		return true
+	case TurnThingsOff:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingContentUpdateRequestDetailsRoomTypeCategory.
 const (
 	ListingContentUpdateRequestDetailsRoomTypeCategoryEntireHome  ListingContentUpdateRequestDetailsRoomTypeCategory = "entire_home"
@@ -2359,6 +2389,27 @@ const (
 func (e RepullPingEventEvent) Valid() bool {
 	switch e {
 	case RepullPingEventEventRepullPing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationPendingReason.
+const (
+	GuestPayment      ReservationPendingReason = "guest_payment"
+	GuestVerification ReservationPendingReason = "guest_verification"
+	HostApproval      ReservationPendingReason = "host_approval"
+)
+
+// Valid indicates whether the value is a known member of the ReservationPendingReason enum.
+func (e ReservationPendingReason) Valid() bool {
+	switch e {
+	case GuestPayment:
+		return true
+	case GuestVerification:
+		return true
+	case HostApproval:
 		return true
 	default:
 		return false
@@ -3850,6 +3901,78 @@ func (e SyncAirbnbTransactionsJSONBodyTransactionType) Valid() bool {
 	case SyncAirbnbTransactionsJSONBodyTransactionTypeCOMPLETED:
 		return true
 	case SyncAirbnbTransactionsJSONBodyTransactionTypeUPCOMING:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetBookingContentParamsType.
+const (
+	GetBookingContentParamsTypeCheckinMethods GetBookingContentParamsType = "checkin_methods"
+	GetBookingContentParamsTypeContacts       GetBookingContentParamsType = "contacts"
+	GetBookingContentParamsTypeDescription    GetBookingContentParamsType = "description"
+	GetBookingContentParamsTypeFacilities     GetBookingContentParamsType = "facilities"
+	GetBookingContentParamsTypeLicences       GetBookingContentParamsType = "licences"
+	GetBookingContentParamsTypePhotos         GetBookingContentParamsType = "photos"
+	GetBookingContentParamsTypePolicies       GetBookingContentParamsType = "policies"
+	GetBookingContentParamsTypeSettings       GetBookingContentParamsType = "settings"
+)
+
+// Valid indicates whether the value is a known member of the GetBookingContentParamsType enum.
+func (e GetBookingContentParamsType) Valid() bool {
+	switch e {
+	case GetBookingContentParamsTypeCheckinMethods:
+		return true
+	case GetBookingContentParamsTypeContacts:
+		return true
+	case GetBookingContentParamsTypeDescription:
+		return true
+	case GetBookingContentParamsTypeFacilities:
+		return true
+	case GetBookingContentParamsTypeLicences:
+		return true
+	case GetBookingContentParamsTypePhotos:
+		return true
+	case GetBookingContentParamsTypePolicies:
+		return true
+	case GetBookingContentParamsTypeSettings:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateBookingContentJSONBodyType.
+const (
+	UpdateBookingContentJSONBodyTypeCheckinMethods UpdateBookingContentJSONBodyType = "checkin_methods"
+	UpdateBookingContentJSONBodyTypeContacts       UpdateBookingContentJSONBodyType = "contacts"
+	UpdateBookingContentJSONBodyTypeDescription    UpdateBookingContentJSONBodyType = "description"
+	UpdateBookingContentJSONBodyTypeFacilities     UpdateBookingContentJSONBodyType = "facilities"
+	UpdateBookingContentJSONBodyTypeLicences       UpdateBookingContentJSONBodyType = "licences"
+	UpdateBookingContentJSONBodyTypePhotos         UpdateBookingContentJSONBodyType = "photos"
+	UpdateBookingContentJSONBodyTypePolicies       UpdateBookingContentJSONBodyType = "policies"
+	UpdateBookingContentJSONBodyTypeSettings       UpdateBookingContentJSONBodyType = "settings"
+)
+
+// Valid indicates whether the value is a known member of the UpdateBookingContentJSONBodyType enum.
+func (e UpdateBookingContentJSONBodyType) Valid() bool {
+	switch e {
+	case UpdateBookingContentJSONBodyTypeCheckinMethods:
+		return true
+	case UpdateBookingContentJSONBodyTypeContacts:
+		return true
+	case UpdateBookingContentJSONBodyTypeDescription:
+		return true
+	case UpdateBookingContentJSONBodyTypeFacilities:
+		return true
+	case UpdateBookingContentJSONBodyTypeLicences:
+		return true
+	case UpdateBookingContentJSONBodyTypePhotos:
+		return true
+	case UpdateBookingContentJSONBodyTypePolicies:
+		return true
+	case UpdateBookingContentJSONBodyTypeSettings:
 		return true
 	default:
 		return false
@@ -7889,6 +8012,18 @@ type ListingContentUpdateRequest struct {
 	// Amenities FULL replacement of the amenity set. Accepts canonical keys as a string[] or structured rows. Omit to leave amenities untouched; send `[]` to clear them.
 	Amenities *ListingContentUpdateRequest_Amenities `json:"amenities,omitempty"`
 
+	// CheckoutTasks What the guest is asked to do before leaving. FULL replacement: omit to leave untouched; send `[]` to clear. An unknown `taskType` refuses the whole request with `422 invalid_params`.
+	//
+	// Published to Airbnb, which is the only channel with checkout tasks. Airbnb accepts them only from partner apps it has certified for the feature; until then the publish result reports Airbnb's own refusal for this section and every other section still lands.
+	CheckoutTasks *[]struct {
+		// Instructions Detail shown to the guest with the task, e.g. "Leave the keys on the kitchen counter".
+		Instructions *string `json:"instructions,omitempty"`
+		Required     *bool   `json:"required,omitempty"`
+
+		// TaskType Any casing is accepted; stored lowercase.
+		TaskType ListingContentUpdateRequestCheckoutTasksTaskType `json:"taskType"`
+	} `json:"checkoutTasks,omitempty"`
+
 	// Description Long-form listing description.
 	Description *string `json:"description,omitempty"`
 
@@ -7984,7 +8119,7 @@ type ListingContentUpdateRequest struct {
 		// GuestsIncluded Guests covered by the nightly rate before `pricePerExtraGuest` applies.
 		GuestsIncluded *int `json:"guestsIncluded,omitempty"`
 
-		// MonthlyDiscount Fraction, not a percentage.
+		// MonthlyDiscount A percentage, not a fraction: `20` is 20% off a stay of 28 nights or more. Values between 0 and 1 are refused, as for `weeklyDiscount`.
 		MonthlyDiscount    *float32 `json:"monthlyDiscount,omitempty"`
 		PricePerExtraGuest *float32 `json:"pricePerExtraGuest,omitempty"`
 		SecurityDeposit    *float32 `json:"securityDeposit,omitempty"`
@@ -7992,9 +8127,38 @@ type ListingContentUpdateRequest struct {
 		// WeekendPrice Nightly rate for Saturday and Sunday nights (UTC).
 		WeekendPrice *float32 `json:"weekendPrice,omitempty"`
 
-		// WeeklyDiscount Fraction, not a percentage: `0.1` is 10% off a stay of a week or more.
+		// WeeklyDiscount A percentage, not a fraction: `10` is 10% off a stay of a week or more. A value between 0 and 1 is refused (it would publish as a fraction of one percent) — send `10`, not `0.1`. `0` clears it.
 		WeeklyDiscount *float32 `json:"weeklyDiscount,omitempty"`
 	} `json:"pricing,omitempty"`
+
+	// Rooms The listing's rooms and the beds in each — what Airbnb shows as the sleeping arrangements and needs before a listing can go live. FULL replacement: the rooms you send become the whole set. Omit to leave rooms untouched; send `[]` to clear them.
+	//
+	// Every entry is checked before anything is written, so a bad entry refuses the whole request with `422 invalid_params` naming it (e.g. `rooms[1].beds[0].quantity`) — a listing is never left with half its rooms.
+	//
+	// Values use Airbnb's vocabulary, which Booking.com room mapping also reads. This is a local write; publish to send it to a channel.
+	Rooms *[]struct {
+		Beds *[]struct {
+			// BedType e.g. `king_bed`, `queen_bed`, `double_bed`, `single_bed`, `sofa_bed`, `bunk_bed`.
+			//
+			// Example: queen_bed
+			BedType  string `json:"bedType"`
+			Quantity int    `json:"quantity"`
+		} `json:"beds,omitempty"`
+
+		// IsPrivate Whether the room is private to the guest.
+		IsPrivate *bool `json:"isPrivate,omitempty"`
+
+		// RoomName Your own label, e.g. "Primary bedroom".
+		RoomName *string `json:"roomName,omitempty"`
+
+		// RoomNumber Order among rooms of the same type, from 1.
+		RoomNumber *int `json:"roomNumber,omitempty"`
+
+		// RoomType e.g. `bedroom`, `full_bathroom`, `half_bathroom`, `living_room`, `kitchen`. Not a closed list — Airbnb validates it at publish and its refusal comes back in the publish result.
+		//
+		// Example: bedroom
+		RoomType string `json:"roomType"`
+	} `json:"rooms,omitempty"`
 
 	// Summary Short summary / tagline.
 	Summary *string `json:"summary,omitempty"`
@@ -8018,6 +8182,9 @@ type ListingContentUpdateRequestAmenities1 = []struct {
 type ListingContentUpdateRequest_Amenities struct {
 	union json.RawMessage
 }
+
+// ListingContentUpdateRequestCheckoutTasksTaskType Any casing is accepted; stored lowercase.
+type ListingContentUpdateRequestCheckoutTasksTaskType string
 
 // ListingContentUpdateRequestDetailsRoomTypeCategory What the guest gets of the property.
 type ListingContentUpdateRequestDetailsRoomTypeCategory string
@@ -9063,6 +9230,52 @@ type MapAirbnbListingResponse struct {
 	Success bool `json:"success"`
 }
 
+// MapBookingRoomRequest Body for `POST /v1/channels/booking/listings/map`.
+type MapBookingRoomRequest struct {
+	// HotelId Optional. When present, must be the Booking.com property the room belongs to — guards against mapping a room of the wrong property when looping over several.
+	HotelId *string `json:"hotelId,omitempty"`
+
+	// ListingId Canonical Repull listing id to link the room to. Must belong to your workspace and be active. `null` unmaps the room and removes its channel link. The field is required — omitting it is a 422, not an unmap.
+	ListingId *int `json:"listingId"`
+
+	// RoomBookingId Booking.com's own room id. Discover it via `GET /v1/channels/booking/properties/{id}/rooms` (`rooms[].roomId`). A number is also accepted.
+	RoomBookingId string `json:"roomBookingId"`
+
+	// SyncEnabled Whether the resulting channel link has sync enabled.
+	SyncEnabled *bool `json:"syncEnabled,omitempty"`
+}
+
+// MapBookingRoomResponse Id fields are strings (API-wide convention — bigint ids are stringified to avoid 53-bit JS-number precision loss).
+type MapBookingRoomResponse struct {
+	// AlreadyMapped True when the room already pointed at this listing (or was already unmapped) and its channel link agreed. Nothing was written.
+	AlreadyMapped bool `json:"alreadyMapped"`
+
+	// HotelId The Booking.com property the room belongs to.
+	HotelId string `json:"hotelId"`
+
+	// ListingId The listing the room now points at. Null after an unmap.
+	ListingId *string `json:"listingId"`
+
+	// PlatformLinkId Id of the resulting channel-link row. Null after an unmap, and for a room Booking.com has given us no room id for.
+	PlatformLinkId *string `json:"platformLinkId,omitempty"`
+
+	// PreviousListingId The listing the room pointed at before this call; null when it was unmapped. Omitted on a no-op.
+	PreviousListingId *string `json:"previousListingId,omitempty"`
+
+	// ReservationsImported Reservations Booking.com returned for the property and ran through the import after the room was mapped — the property's active bookings, which would otherwise never reach the listing. A reservation already present is left as it is, so this counts what was processed, not what was new, and re-sending never duplicates. Runs on every successful map, including a re-map to the same listing, so re-sending retries an import that did not run. `null` means the mapping succeeded but the import could not run; the room is still mapped. Absent after an unmap, when there is nothing to pull.
+	ReservationsImported *int `json:"reservationsImported,omitempty"`
+
+	// RoomBookingId Booking.com's room id, as recorded for this room.
+	RoomBookingId *string `json:"roomBookingId"`
+
+	// RoomId Repull-side id of the room record — the `roomId` the Connect room-mapping flow takes.
+	RoomId   string  `json:"roomId"`
+	RoomName *string `json:"roomName,omitempty"`
+
+	// Success Example: true
+	Success bool `json:"success"`
+}
+
 // MapConnectBookingRoomsRequest Body for `POST /v1/connect/booking/map-rooms`. Submits all room→listing assignments in one transaction; on success the Connect session is marked `completed`.
 type MapConnectBookingRoomsRequest struct {
 	Mappings  []BookingRoomMapping `json:"mappings"`
@@ -10008,6 +10221,11 @@ type Reservation struct {
 	// Occupancy Normalized guest counts. May be undefined when the source channel did not provide counts.
 	Occupancy *ReservationOccupancy `json:"occupancy,omitempty"`
 
+	// PendingReason Why a `pending` reservation is pending — who has to act next. `host_approval`: a booking request the host must accept or decline (see `respondBy`). `guest_payment`: Airbnb is waiting for the guest to pay. `guest_verification`: Airbnb is holding the booking while the guest completes identity verification. The last two need no action from the host, and Airbnb does not publish a deadline for them. Present only while `status` is `pending`; when it changes you receive `reservation.updated` with the previous raw status in `previousAttributes.status`, even if `status` stays `pending`.
+	//
+	// Example: guest_verification
+	PendingReason *ReservationPendingReason `json:"pendingReason,omitempty"`
+
 	// Platform DEPRECATED alias for `source`. Same value, kept for back-compat.
 	//
 	// Example: airbnb
@@ -10017,7 +10235,7 @@ type Reservation struct {
 	// PrimaryGuest Inline guest summary. May be undefined for owner-blocks / pre-arrival rows.
 	PrimaryGuest *ReservationPrimaryGuest `json:"primaryGuest,omitempty"`
 
-	// RespondBy On a `pending` Airbnb booking request that can still be answered: when it lapses (24 hours after the guest asked). Accept or decline before then with `POST /v1/reservations/{id}/accept` / `/decline`. Absent on every other reservation.
+	// RespondBy On a `pending` Airbnb booking request (`pendingReason: host_approval`) that can still be answered: when it lapses (24 hours after the guest asked). Accept or decline before then with `POST /v1/reservations/{id}/accept` / `/decline`. Absent on every other reservation, including bookings Airbnb is holding for the guest's payment or verification — those have no deadline we can report.
 	//
 	// Example: 2026-09-23T09:00:00.000Z
 	RespondBy *time.Time `json:"respondBy,omitempty"`
@@ -10046,6 +10264,11 @@ type Reservation struct {
 	// UpdatedAt Last time this reservation was modified (dates, status, price, or guest details). Advances on every amendment or cancellation — poll or compare this value to reconcile changes instead of fingerprinting individual fields.
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+// ReservationPendingReason Why a `pending` reservation is pending — who has to act next. `host_approval`: a booking request the host must accept or decline (see `respondBy`). `guest_payment`: Airbnb is waiting for the guest to pay. `guest_verification`: Airbnb is holding the booking while the guest completes identity verification. The last two need no action from the host, and Airbnb does not publish a deadline for them. Present only while `status` is `pending`; when it changes you receive `reservation.updated` with the previous raw status in `previousAttributes.status`, even if `status` stays `pending`.
+//
+// Example: guest_verification
+type ReservationPendingReason string
 
 // ReservationPlatform DEPRECATED alias for `source`. Same value, kept for back-compat.
 //
@@ -12228,7 +12451,7 @@ type GetBookingAvailabilityParams struct {
 	// RoomId Restrict to a single Booking.com room id.
 	RoomId *string `form:"room_id,omitempty" json:"room_id,omitempty"`
 
-	// RoomLevel When true, returns room-level (vs rate-plan-level) state.
+	// RoomLevel Defaults to `true`: availability per room, which is how Booking.com keeps inventory and how Vanio reads it. Send `false` for the per-rate read — its `roomsToSell` is often 0 for rooms that are on sale.
 	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
 }
 
@@ -12247,13 +12470,66 @@ type UpdateBookingChargesJSONBody struct {
 	PropertyId string `json:"property_id"`
 }
 
+// GetBookingContentParams defines parameters for GetBookingContent.
+type GetBookingContentParams struct {
+	// PropertyId Booking.com property id.
+	PropertyId string `form:"property_id" json:"property_id"`
+
+	// Type Which content to read.
+	Type *GetBookingContentParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// RoomId A Booking.com room id, for `photos`, `facilities` and `licences`.
+	RoomId *string `form:"room_id,omitempty" json:"room_id,omitempty"`
+}
+
+// GetBookingContentParamsType defines parameters for GetBookingContent.
+type GetBookingContentParamsType string
+
+// UpdateBookingContentJSONBody defines parameters for UpdateBookingContent.
+type UpdateBookingContentJSONBody struct {
+	Contacts    *[]map[string]interface{} `json:"contacts,omitempty"`
+	ContentData *[]struct {
+		Name  *string `json:"name,omitempty"`
+		Value *string `json:"value,omitempty"`
+	} `json:"contentData,omitempty"`
+	Facilities *[]map[string]interface{} `json:"facilities,omitempty"`
+
+	// Language `description`: language code, e.g. `en` or `es`.
+	Language *string `json:"language,omitempty"`
+
+	// Methods `checkin_methods`: [{ checkin_method }].
+	Methods  *[]map[string]interface{} `json:"methods,omitempty"`
+	PhotoIds *[]string                 `json:"photo_ids,omitempty"`
+	Photos   *[]struct {
+		Url string `json:"url"`
+	} `json:"photos,omitempty"`
+	PolicyCode         *int    `json:"policyCode,omitempty"`
+	PolicyId           *string `json:"policyId,omitempty"`
+	PrepaymentRequired *bool   `json:"prepaymentRequired,omitempty"`
+
+	// PropertyId Booking.com property id.
+	PropertyId string `json:"property_id"`
+
+	// RoomId A Booking.com room id, for `facilities`, `photos` (gallery) and `licences`.
+	RoomId   *string                 `json:"room_id,omitempty"`
+	Settings *map[string]interface{} `json:"settings,omitempty"`
+
+	// Text `description`: the property description, up to 65,535 characters.
+	Text      *string                          `json:"text,omitempty"`
+	Type      UpdateBookingContentJSONBodyType `json:"type"`
+	VariantId *int                             `json:"variantId,omitempty"`
+}
+
+// UpdateBookingContentJSONBodyType defines parameters for UpdateBookingContent.
+type UpdateBookingContentJSONBodyType string
+
 // GetBookingListingPricingParams defines parameters for GetBookingListingPricing.
 type GetBookingListingPricingParams struct {
 	StartDate    *openapi_types.Date `form:"startDate,omitempty" json:"startDate,omitempty"`
 	NumberOfDays *int                `form:"number_of_days,omitempty" json:"number_of_days,omitempty"`
 	RoomId       *string             `form:"room_id,omitempty" json:"room_id,omitempty"`
 
-	// RoomLevel When true, returns room-level (vs rate-plan-level) availability.
+	// RoomLevel Defaults to `true`: availability per room, which is how Booking.com keeps inventory and how Vanio reads it. Send `false` for the per-rate read — its `roomsToSell` is often 0 for rooms that are on sale.
 	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
 
 	// HotelId Booking.com hotel id, when this listing is published under more than one property. Omit it and a read uses the oldest mapping (reporting the rest in `otherHotelIds`), while a write is refused with `409 ambiguous_booking_mapping` rather than guess. `GET /v1/channels/booking/properties` lists the valid ids.
@@ -13149,7 +13425,7 @@ type ListReservationsParams struct {
 	// Platform Filter by booking platform
 	Platform *string `form:"platform,omitempty" json:"platform,omitempty"`
 
-	// Status Filter by lifecycle status. **Case-insensitive** — `confirmed`, `Confirmed`, and `CONFIRMED` all match. Each public value expands to the full set of internal sub-states server-side: `confirmed` matches `accept`/`confirmed`/`modified`, `cancelled` matches every cancellation sub-state (`cancelled_by_host`, `declined`, `expired`, etc.), `pending` includes `inquiry`/`awaiting_payment`. `completed` is a derived state — combine `status=confirmed` with `check_out_before=<today>` to filter for past stays. `pending` is how an Airbnb booking **request** awaiting the host appears — answer it with `POST /v1/reservations/{id}/accept` or `/decline` before its `respondBy`. `pending` lists only requests that can still be answered: one the channel already let lapse (Airbnb expires a request 24 hours after the guest asks; no request survives its check-in date) is left out and appears under `cancelled` with `statusDetail: "request_expired"` instead. The stored record is not changed — this is derived when you read it. Airbnb **inquiries** (questions before booking) are not reservations: list them with `GET /v1/inquiries`.
+	// Status Filter by lifecycle status. **Case-insensitive** — `confirmed`, `Confirmed`, and `CONFIRMED` all match. Each public value expands to the full set of internal sub-states server-side: `confirmed` matches `accept`/`confirmed`/`modified`, `cancelled` matches every cancellation sub-state (`cancelled_by_host`, `declined`, `expired`, etc.), `pending` covers three different situations, told apart by `pendingReason` on each reservation: a booking **request** awaiting the host (`host_approval` — answer it with `POST /v1/reservations/{id}/accept` or `/decline` before its `respondBy`), and a booking Airbnb is holding for the guest to pay (`guest_payment`) or to complete identity verification (`guest_verification`), which need no action from the host. `completed` is a derived state — combine `status=confirmed` with `check_out_before=<today>` to filter for past stays. `pending` lists only bookings that can still go ahead: a request the channel already let lapse (Airbnb expires a request 24 hours after the guest asks) and any pending booking whose check-in date has passed are left out and appear under `cancelled` with `statusDetail: "request_expired"` instead. The stored record is not changed — this is derived when you read it. Airbnb **inquiries** (questions before booking) are not reservations: list them with `GET /v1/inquiries`.
 	Status *ListReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ListingId Filter to a single listing
@@ -13535,6 +13811,12 @@ type UpdateBookingAvailabilityJSONRequestBody = BookingAvailabilityUpdateRequest
 
 // UpdateBookingChargesJSONRequestBody defines body for UpdateBookingCharges for application/json ContentType.
 type UpdateBookingChargesJSONRequestBody UpdateBookingChargesJSONBody
+
+// UpdateBookingContentJSONRequestBody defines body for UpdateBookingContent for application/json ContentType.
+type UpdateBookingContentJSONRequestBody UpdateBookingContentJSONBody
+
+// MapBookingRoomJSONRequestBody defines body for MapBookingRoom for application/json ContentType.
+type MapBookingRoomJSONRequestBody = MapBookingRoomRequest
 
 // UpdateBookingListingPricingJSONRequestBody defines body for UpdateBookingListingPricing for application/json ContentType.
 type UpdateBookingListingPricingJSONRequestBody = BookingPricingUpdateRequest
