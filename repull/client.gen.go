@@ -718,7 +718,7 @@ type ClientInterface interface {
 	//
 	// **DB-only by default.** `?source=cache` (the default) returns the permits as last mirrored by the sync worker — regulatory body, regulation type, status, permit number — with no upstream call.
 	//
-	// **`?source=live` also returns the QUESTIONS.** The mirror stores the RESULT of a permit, not what Airbnb asks for it, so a caller that is about to write needs `?source=live` once: it returns each permit flow with the `question_key`, `answer_type` and `options` of every question, and the answers already on file. Airbnb refuses a `question_key` it did not ask for on this listing, so this is not optional guesswork you can skip.
+	// **`?source=live` also returns the QUESTIONS.** The mirror stores the RESULT of a permit, not what Airbnb asks for it, so a caller that is about to write needs `?source=live` once: it returns each permit's `flows[]` with the `answer_key`, `type` and `choices` of every question, and the answers already on file. Airbnb refuses an `answer_key` it did not ask for on this listing, so this is not optional guesswork you can skip.
 	//
 	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
 	//
@@ -729,11 +729,11 @@ type ClientInterface interface {
 	//
 	// Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 	//
-	// Read the questions first with `GET …/permits?source=live`: every answer is keyed by a `question_key` Airbnb asks for THIS listing, and the question's `answer_type` decides which value field applies (`text_value`, `date_value`, or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 	//
 	// Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 	//
-	// Airbnb refusing the answers (an unknown question key, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+	// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -744,11 +744,11 @@ type ClientInterface interface {
 	//
 	// Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 	//
-	// Read the questions first with `GET …/permits?source=live`: every answer is keyed by a `question_key` Airbnb asks for THIS listing, and the question's `answer_type` decides which value field applies (`text_value`, `date_value`, or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 	//
 	// Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 	//
-	// Airbnb refusing the answers (an unknown question key, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+	// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -2787,13 +2787,6 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/health (the `GetHealth` operationId).
 	GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetAtlasHealth Atlas market-intelligence backend health
-	//
-	// Component-level probe. `GET /v1/health` reports the API as a whole; this reports one dependency so an incident can be localised without guessing.
-	//
-	// Corresponds with GET /v1/health/atlas (the `GetAtlasHealth` operationId).
-	GetAtlasHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetAuthHealth API-key authentication path health
 	//
 	// Component-level probe. `GET /v1/health` reports the API as a whole; this reports one dependency so an incident can be localised without guessing.
@@ -3527,6 +3520,84 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/markets/{city}/calendar (the `GetMarketCalendar` operationId).
 	GetMarketCalendar(ctx context.Context, city string, params *GetMarketCalendarParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListMigrations List migrations
+	//
+	// Every property manager your workspace has moved through Repull Migrate, newest first, each with where it stands. Page with `pagination.nextCursor`.
+	//
+	// Corresponds with GET /v1/migrations (the `ListMigrations` operationId).
+	ListMigrations(ctx context.Context, params *ListMigrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteMigration End a migration
+	//
+	// Disconnects the source (it stops syncing) and deactivates the migration's workspace. The imported data is kept and stays readable.
+	//
+	// Corresponds with DELETE /v1/migrations/{workspaceId} (the `DeleteMigration` operationId).
+	DeleteMigration(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMigration Get a migration
+	//
+	// Where one migration stands: its state, the source connections with their last import run, and how much data has landed.
+	//
+	// Corresponds with GET /v1/migrations/{workspaceId} (the `GetMigration` operationId).
+	GetMigration(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMigrationChannelMap Get channel links
+	//
+	// The Airbnb, Booking.com and VRBO listing each migrated property is linked to in the source PMS, read live. Use it to link each listing to the right property when the channels are reconnected in the destination — channel connections themselves cannot be moved between PMSs.
+	//
+	// Corresponds with GET /v1/migrations/{workspaceId}/channel-map (the `GetMigrationChannelMap` operationId).
+	GetMigrationChannelMap(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CutoverMigration Cut over
+	//
+	// The property manager has switched: disconnect the source so it stops syncing. The imported data stays readable. Idempotent.
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/cutover (the `CutoverMigration` operationId).
+	CutoverMigration(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CheckMigrationCutoverWithBody Check reservations before switching
+	//
+	// Send every upcoming reservation the destination holds; get back what is missing, extra, or on different dates compared with the source. Read-only — run it as often as you like before cutover.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/cutover-check (the `CheckMigrationCutover` operationId).
+	CheckMigrationCutoverWithBody(ctx context.Context, workspaceId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CheckMigrationCutover Check reservations before switching
+	//
+	// Send every upcoming reservation the destination holds; get back what is missing, extra, or on different dates compared with the source. Read-only — run it as often as you like before cutover.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/cutover-check (the `CheckMigrationCutover` operationId).
+	CheckMigrationCutover(ctx context.Context, workspaceId int, body CheckMigrationCutoverJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RunMigrationImportWithBody Run the import again
+	//
+	// Queue another import from the source PMS — for example messages after the first pass, or only reservations changed since a date. Progress shows on `GET /v1/migrations/{workspaceId}`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/import (the `RunMigrationImport` operationId).
+	RunMigrationImportWithBody(ctx context.Context, workspaceId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RunMigrationImport Run the import again
+	//
+	// Queue another import from the source PMS — for example messages after the first pass, or only reservations changed since a date. Progress shows on `GET /v1/migrations/{workspaceId}`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/import (the `RunMigrationImport` operationId).
+	RunMigrationImport(ctx context.Context, workspaceId int, body RunMigrationImportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMigrationReport Get a migration report
+	//
+	// What came across and what needs a decision in the destination: properties without an address, upcoming reservations with no guest contact, channel reservations that must not be re-created, and anything the source PMS cannot carry. Includes the source's capability matrix.
+	//
+	// Corresponds with GET /v1/migrations/{workspaceId}/report (the `GetMigrationReport` operationId).
+	GetMigrationReport(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListProperties List properties
 	//
@@ -5062,7 +5133,7 @@ func (c *Client) UpdateAirbnbListingDetails(ctx context.Context, id string, para
 //
 // **DB-only by default.** `?source=cache` (the default) returns the permits as last mirrored by the sync worker — regulatory body, regulation type, status, permit number — with no upstream call.
 //
-// **`?source=live` also returns the QUESTIONS.** The mirror stores the RESULT of a permit, not what Airbnb asks for it, so a caller that is about to write needs `?source=live` once: it returns each permit flow with the `question_key`, `answer_type` and `options` of every question, and the answers already on file. Airbnb refuses a `question_key` it did not ask for on this listing, so this is not optional guesswork you can skip.
+// **`?source=live` also returns the QUESTIONS.** The mirror stores the RESULT of a permit, not what Airbnb asks for it, so a caller that is about to write needs `?source=live` once: it returns each permit's `flows[]` with the `answer_key`, `type` and `choices` of every question, and the answers already on file. Airbnb refuses an `answer_key` it did not ask for on this listing, so this is not optional guesswork you can skip.
 //
 // Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
 //
@@ -5083,11 +5154,11 @@ func (c *Client) ListAirbnbListingPermits(ctx context.Context, id string, params
 //
 // Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 //
-// Read the questions first with `GET …/permits?source=live`: every answer is keyed by a `question_key` Airbnb asks for THIS listing, and the question's `answer_type` decides which value field applies (`text_value`, `date_value`, or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 //
 // Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 //
-// Airbnb refusing the answers (an unknown question key, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5108,11 +5179,11 @@ func (c *Client) UpdateAirbnbListingPermitsWithBody(ctx context.Context, id stri
 //
 // Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 //
-// Read the questions first with `GET …/permits?source=live`: every answer is keyed by a `question_key` Airbnb asks for THIS listing, and the question's `answer_type` decides which value field applies (`text_value`, `date_value`, or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 //
 // Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 //
-// Airbnb refusing the answers (an unknown question key, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -8596,23 +8667,6 @@ func (c *Client) GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (
 	return c.Client.Do(req)
 }
 
-// GetAtlasHealth Atlas market-intelligence backend health
-//
-// Component-level probe. `GET /v1/health` reports the API as a whole; this reports one dependency so an incident can be localised without guessing.
-//
-// Corresponds with GET /v1/health/atlas (the `GetAtlasHealth` operationId).
-func (c *Client) GetAtlasHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetAtlasHealthRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 // GetAuthHealth API-key authentication path health
 //
 // Component-level probe. `GET /v1/health` reports the API as a whole; this reports one dependency so an incident can be localised without guessing.
@@ -9887,6 +9941,184 @@ func (c *Client) GetMarket(ctx context.Context, city string, params *GetMarketPa
 // Corresponds with GET /v1/markets/{city}/calendar (the `GetMarketCalendar` operationId).
 func (c *Client) GetMarketCalendar(ctx context.Context, city string, params *GetMarketCalendarParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetMarketCalendarRequest(c.Server, city, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListMigrations List migrations
+//
+// Every property manager your workspace has moved through Repull Migrate, newest first, each with where it stands. Page with `pagination.nextCursor`.
+//
+// Corresponds with GET /v1/migrations (the `ListMigrations` operationId).
+func (c *Client) ListMigrations(ctx context.Context, params *ListMigrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListMigrationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteMigration End a migration
+//
+// Disconnects the source (it stops syncing) and deactivates the migration's workspace. The imported data is kept and stays readable.
+//
+// Corresponds with DELETE /v1/migrations/{workspaceId} (the `DeleteMigration` operationId).
+func (c *Client) DeleteMigration(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteMigrationRequest(c.Server, workspaceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetMigration Get a migration
+//
+// Where one migration stands: its state, the source connections with their last import run, and how much data has landed.
+//
+// Corresponds with GET /v1/migrations/{workspaceId} (the `GetMigration` operationId).
+func (c *Client) GetMigration(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMigrationRequest(c.Server, workspaceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetMigrationChannelMap Get channel links
+//
+// The Airbnb, Booking.com and VRBO listing each migrated property is linked to in the source PMS, read live. Use it to link each listing to the right property when the channels are reconnected in the destination — channel connections themselves cannot be moved between PMSs.
+//
+// Corresponds with GET /v1/migrations/{workspaceId}/channel-map (the `GetMigrationChannelMap` operationId).
+func (c *Client) GetMigrationChannelMap(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMigrationChannelMapRequest(c.Server, workspaceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CutoverMigration Cut over
+//
+// The property manager has switched: disconnect the source so it stops syncing. The imported data stays readable. Idempotent.
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/cutover (the `CutoverMigration` operationId).
+func (c *Client) CutoverMigration(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCutoverMigrationRequest(c.Server, workspaceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CheckMigrationCutoverWithBody Check reservations before switching
+//
+// Send every upcoming reservation the destination holds; get back what is missing, extra, or on different dates compared with the source. Read-only — run it as often as you like before cutover.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/cutover-check (the `CheckMigrationCutover` operationId).
+func (c *Client) CheckMigrationCutoverWithBody(ctx context.Context, workspaceId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCheckMigrationCutoverRequestWithBody(c.Server, workspaceId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CheckMigrationCutover Check reservations before switching
+//
+// Send every upcoming reservation the destination holds; get back what is missing, extra, or on different dates compared with the source. Read-only — run it as often as you like before cutover.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/cutover-check (the `CheckMigrationCutover` operationId).
+func (c *Client) CheckMigrationCutover(ctx context.Context, workspaceId int, body CheckMigrationCutoverJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCheckMigrationCutoverRequest(c.Server, workspaceId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RunMigrationImportWithBody Run the import again
+//
+// Queue another import from the source PMS — for example messages after the first pass, or only reservations changed since a date. Progress shows on `GET /v1/migrations/{workspaceId}`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/import (the `RunMigrationImport` operationId).
+func (c *Client) RunMigrationImportWithBody(ctx context.Context, workspaceId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRunMigrationImportRequestWithBody(c.Server, workspaceId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RunMigrationImport Run the import again
+//
+// Queue another import from the source PMS — for example messages after the first pass, or only reservations changed since a date. Progress shows on `GET /v1/migrations/{workspaceId}`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/import (the `RunMigrationImport` operationId).
+func (c *Client) RunMigrationImport(ctx context.Context, workspaceId int, body RunMigrationImportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRunMigrationImportRequest(c.Server, workspaceId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetMigrationReport Get a migration report
+//
+// What came across and what needs a decision in the destination: properties without an address, upcoming reservations with no guest contact, channel reservations that must not be re-created, and anything the source PMS cannot carry. Includes the source's capability matrix.
+//
+// Corresponds with GET /v1/migrations/{workspaceId}/report (the `GetMigrationReport` operationId).
+func (c *Client) GetMigrationReport(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMigrationReportRequest(c.Server, workspaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -17205,33 +17437,6 @@ func NewGetHealthRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetAtlasHealthRequest constructs an http.Request for the GetAtlasHealth method
-func NewGetAtlasHealthRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/health/atlas")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewGetAuthHealthRequest constructs an http.Request for the GetAuthHealth method
 func NewGetAuthHealthRequest(server string) (*http.Request, error) {
 	var err error
@@ -19616,6 +19821,336 @@ func NewGetMarketCalendarRequest(server string, city string, params *GetMarketCa
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
 		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListMigrationsRequest constructs an http.Request for the ListMigrations method
+func NewListMigrationsRequest(server string, params *ListMigrationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteMigrationRequest constructs an http.Request for the DeleteMigration method
+func NewDeleteMigrationRequest(server string, workspaceId int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMigrationRequest constructs an http.Request for the GetMigration method
+func NewGetMigrationRequest(server string, workspaceId int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMigrationChannelMapRequest constructs an http.Request for the GetMigrationChannelMap method
+func NewGetMigrationChannelMapRequest(server string, workspaceId int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations/%s/channel-map", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCutoverMigrationRequest constructs an http.Request for the CutoverMigration method
+func NewCutoverMigrationRequest(server string, workspaceId int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations/%s/cutover", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCheckMigrationCutoverRequest calls the generic CheckMigrationCutover builder with application/json body
+func NewCheckMigrationCutoverRequest(server string, workspaceId int, body CheckMigrationCutoverJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCheckMigrationCutoverRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// NewCheckMigrationCutoverRequestWithBody constructs an http.Request for the CheckMigrationCutover method, with any body, and a specified content type
+func NewCheckMigrationCutoverRequestWithBody(server string, workspaceId int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations/%s/cutover-check", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRunMigrationImportRequest calls the generic RunMigrationImport builder with application/json body
+func NewRunMigrationImportRequest(server string, workspaceId int, body RunMigrationImportJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRunMigrationImportRequestWithBody(server, workspaceId, "application/json", bodyReader)
+}
+
+// NewRunMigrationImportRequestWithBody constructs an http.Request for the RunMigrationImport method, with any body, and a specified content type
+func NewRunMigrationImportRequestWithBody(server string, workspaceId int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations/%s/import", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetMigrationReportRequest constructs an http.Request for the GetMigrationReport method
+func NewGetMigrationReportRequest(server string, workspaceId int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations/%s/report", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -22399,7 +22934,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **DB-only by default.** `?source=cache` (the default) returns the permits as last mirrored by the sync worker — regulatory body, regulation type, status, permit number — with no upstream call.
 	//
-	// **`?source=live` also returns the QUESTIONS.** The mirror stores the RESULT of a permit, not what Airbnb asks for it, so a caller that is about to write needs `?source=live` once: it returns each permit flow with the `question_key`, `answer_type` and `options` of every question, and the answers already on file. Airbnb refuses a `question_key` it did not ask for on this listing, so this is not optional guesswork you can skip.
+	// **`?source=live` also returns the QUESTIONS.** The mirror stores the RESULT of a permit, not what Airbnb asks for it, so a caller that is about to write needs `?source=live` once: it returns each permit's `flows[]` with the `answer_key`, `type` and `choices` of every question, and the answers already on file. Airbnb refuses an `answer_key` it did not ask for on this listing, so this is not optional guesswork you can skip.
 	//
 	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
 	//
@@ -22412,11 +22947,11 @@ type ClientWithResponsesInterface interface {
 	//
 	// Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 	//
-	// Read the questions first with `GET …/permits?source=live`: every answer is keyed by a `question_key` Airbnb asks for THIS listing, and the question's `answer_type` decides which value field applies (`text_value`, `date_value`, or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 	//
 	// Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 	//
-	// Airbnb refusing the answers (an unknown question key, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+	// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -22427,11 +22962,11 @@ type ClientWithResponsesInterface interface {
 	//
 	// Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 	//
-	// Read the questions first with `GET …/permits?source=live`: every answer is keyed by a `question_key` Airbnb asks for THIS listing, and the question's `answer_type` decides which value field applies (`text_value`, `date_value`, or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 	//
 	// Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 	//
-	// Airbnb refusing the answers (an unknown question key, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+	// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -24578,15 +25113,6 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/health (the `GetHealth` operationId).
 	GetHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthClientResponse, error)
 
-	// GetAtlasHealthWithResponse Atlas market-intelligence backend health
-	//
-	// Component-level probe. `GET /v1/health` reports the API as a whole; this reports one dependency so an incident can be localised without guessing.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with GET /v1/health/atlas (the `GetAtlasHealth` operationId).
-	GetAtlasHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAtlasHealthClientResponse, error)
-
 	// GetAuthHealthWithResponse API-key authentication path health
 	//
 	// Component-level probe. `GET /v1/health` reports the API as a whole; this reports one dependency so an incident can be localised without guessing.
@@ -25366,6 +25892,96 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/markets/{city}/calendar (the `GetMarketCalendar` operationId).
 	GetMarketCalendarWithResponse(ctx context.Context, city string, params *GetMarketCalendarParams, reqEditors ...RequestEditorFn) (*GetMarketCalendarClientResponse, error)
+
+	// ListMigrationsWithResponse List migrations
+	//
+	// Every property manager your workspace has moved through Repull Migrate, newest first, each with where it stands. Page with `pagination.nextCursor`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/migrations (the `ListMigrations` operationId).
+	ListMigrationsWithResponse(ctx context.Context, params *ListMigrationsParams, reqEditors ...RequestEditorFn) (*ListMigrationsClientResponse, error)
+
+	// DeleteMigrationWithResponse End a migration
+	//
+	// Disconnects the source (it stops syncing) and deactivates the migration's workspace. The imported data is kept and stays readable.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/migrations/{workspaceId} (the `DeleteMigration` operationId).
+	DeleteMigrationWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*DeleteMigrationClientResponse, error)
+
+	// GetMigrationWithResponse Get a migration
+	//
+	// Where one migration stands: its state, the source connections with their last import run, and how much data has landed.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/migrations/{workspaceId} (the `GetMigration` operationId).
+	GetMigrationWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*GetMigrationClientResponse, error)
+
+	// GetMigrationChannelMapWithResponse Get channel links
+	//
+	// The Airbnb, Booking.com and VRBO listing each migrated property is linked to in the source PMS, read live. Use it to link each listing to the right property when the channels are reconnected in the destination — channel connections themselves cannot be moved between PMSs.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/migrations/{workspaceId}/channel-map (the `GetMigrationChannelMap` operationId).
+	GetMigrationChannelMapWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*GetMigrationChannelMapClientResponse, error)
+
+	// CutoverMigrationWithResponse Cut over
+	//
+	// The property manager has switched: disconnect the source so it stops syncing. The imported data stays readable. Idempotent.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/cutover (the `CutoverMigration` operationId).
+	CutoverMigrationWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*CutoverMigrationClientResponse, error)
+
+	// CheckMigrationCutoverWithBodyWithResponse Check reservations before switching
+	//
+	// Send every upcoming reservation the destination holds; get back what is missing, extra, or on different dates compared with the source. Read-only — run it as often as you like before cutover.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/cutover-check (the `CheckMigrationCutover` operationId).
+	CheckMigrationCutoverWithBodyWithResponse(ctx context.Context, workspaceId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CheckMigrationCutoverClientResponse, error)
+
+	// CheckMigrationCutoverWithResponse Check reservations before switching
+	//
+	// Send every upcoming reservation the destination holds; get back what is missing, extra, or on different dates compared with the source. Read-only — run it as often as you like before cutover.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/cutover-check (the `CheckMigrationCutover` operationId).
+	CheckMigrationCutoverWithResponse(ctx context.Context, workspaceId int, body CheckMigrationCutoverJSONRequestBody, reqEditors ...RequestEditorFn) (*CheckMigrationCutoverClientResponse, error)
+
+	// RunMigrationImportWithBodyWithResponse Run the import again
+	//
+	// Queue another import from the source PMS — for example messages after the first pass, or only reservations changed since a date. Progress shows on `GET /v1/migrations/{workspaceId}`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/import (the `RunMigrationImport` operationId).
+	RunMigrationImportWithBodyWithResponse(ctx context.Context, workspaceId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RunMigrationImportClientResponse, error)
+
+	// RunMigrationImportWithResponse Run the import again
+	//
+	// Queue another import from the source PMS — for example messages after the first pass, or only reservations changed since a date. Progress shows on `GET /v1/migrations/{workspaceId}`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/migrations/{workspaceId}/import (the `RunMigrationImport` operationId).
+	RunMigrationImportWithResponse(ctx context.Context, workspaceId int, body RunMigrationImportJSONRequestBody, reqEditors ...RequestEditorFn) (*RunMigrationImportClientResponse, error)
+
+	// GetMigrationReportWithResponse Get a migration report
+	//
+	// What came across and what needs a decision in the destination: properties without an address, upcoming reservations with no guest contact, channel reservations that must not be re-created, and anything the source PMS cannot carry. Includes the source's capability matrix.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/migrations/{workspaceId}/report (the `GetMigrationReport` operationId).
+	GetMigrationReportWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*GetMigrationReportClientResponse, error)
 
 	// ListPropertiesWithResponse List properties
 	//
@@ -35982,47 +36598,6 @@ func (r GetHealthClientResponse) ContentType() string {
 	return ""
 }
 
-type GetAtlasHealthClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *map[string]interface{}
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r GetAtlasHealthClientResponse) GetJSON200() *map[string]interface{} {
-	return r.JSON200
-}
-
-// GetBody returns the raw response body bytes
-func (r GetAtlasHealthClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r GetAtlasHealthClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetAtlasHealthClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r GetAtlasHealthClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
 type GetAuthHealthClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -38628,6 +39203,593 @@ func (r GetMarketCalendarClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetMarketCalendarClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListMigrationsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data       *[]Migration `json:"data,omitempty"`
+		Pagination *struct {
+			HasMore    *bool   `json:"hasMore,omitempty"`
+			NextCursor *string `json:"nextCursor,omitempty"`
+			Total      *int    `json:"total,omitempty"`
+		} `json:"pagination,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListMigrationsClientResponse) GetJSON200() *struct {
+	Data       *[]Migration `json:"data,omitempty"`
+	Pagination *struct {
+		HasMore    *bool   `json:"hasMore,omitempty"`
+		NextCursor *string `json:"nextCursor,omitempty"`
+		Total      *int    `json:"total,omitempty"`
+	} `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListMigrationsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListMigrationsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListMigrationsClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListMigrationsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListMigrationsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListMigrationsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListMigrationsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteMigrationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *struct {
+			Deactivated   *bool      `json:"deactivated,omitempty"`
+			DeactivatedAt *time.Time `json:"deactivatedAt,omitempty"`
+			WorkspaceId   *string    `json:"workspaceId,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteMigrationClientResponse) GetJSON200() *struct {
+	Data *struct {
+		Deactivated   *bool      `json:"deactivated,omitempty"`
+		DeactivatedAt *time.Time `json:"deactivatedAt,omitempty"`
+		WorkspaceId   *string    `json:"workspaceId,omitempty"`
+	} `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteMigrationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteMigrationClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteMigrationClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteMigrationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteMigrationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteMigrationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteMigrationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetMigrationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// Data One migration: a property manager moved through Repull Migrate, living in its own workspace.
+		Data *Migration `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetMigrationClientResponse) GetJSON200() *struct {
+	// Data One migration: a property manager moved through Repull Migrate, living in its own workspace.
+	Data *Migration `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetMigrationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetMigrationClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetMigrationClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetMigrationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMigrationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMigrationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetMigrationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetMigrationChannelMapClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *MigrationChannelMap `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetMigrationChannelMapClientResponse) GetJSON200() *struct {
+	Data *MigrationChannelMap `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetMigrationChannelMapClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetMigrationChannelMapClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetMigrationChannelMapClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetMigrationChannelMapClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMigrationChannelMapClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMigrationChannelMapClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetMigrationChannelMapClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CutoverMigrationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// Data One migration: a property manager moved through Repull Migrate, living in its own workspace.
+		Data *Migration `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CutoverMigrationClientResponse) GetJSON200() *struct {
+	// Data One migration: a property manager moved through Repull Migrate, living in its own workspace.
+	Data *Migration `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CutoverMigrationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CutoverMigrationClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CutoverMigrationClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CutoverMigrationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CutoverMigrationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CutoverMigrationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CutoverMigrationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CheckMigrationCutoverClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *MigrationCutoverCheck `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CheckMigrationCutoverClientResponse) GetJSON200() *struct {
+	Data *MigrationCutoverCheck `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CheckMigrationCutoverClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CheckMigrationCutoverClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CheckMigrationCutoverClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CheckMigrationCutoverClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CheckMigrationCutoverClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CheckMigrationCutoverClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CheckMigrationCutoverClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CheckMigrationCutoverClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RunMigrationImportClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON202 the response for an HTTP 202 `application/json` response
+	JSON202 *struct {
+		Data *struct {
+			Queued *[]struct {
+				ConnectionId *string `json:"connectionId,omitempty"`
+				Error        *string `json:"error,omitempty"`
+				Provider     *string `json:"provider,omitempty"`
+				Queued       *bool   `json:"queued,omitempty"`
+			} `json:"queued,omitempty"`
+			WorkspaceId *string `json:"workspaceId,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON202 returns the response for an HTTP 202 `application/json` response
+func (r RunMigrationImportClientResponse) GetJSON202() *struct {
+	Data *struct {
+		Queued *[]struct {
+			ConnectionId *string `json:"connectionId,omitempty"`
+			Error        *string `json:"error,omitempty"`
+			Provider     *string `json:"provider,omitempty"`
+			Queued       *bool   `json:"queued,omitempty"`
+		} `json:"queued,omitempty"`
+		WorkspaceId *string `json:"workspaceId,omitempty"`
+	} `json:"data,omitempty"`
+} {
+	return r.JSON202
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RunMigrationImportClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r RunMigrationImportClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r RunMigrationImportClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r RunMigrationImportClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RunMigrationImportClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RunMigrationImportClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RunMigrationImportClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RunMigrationImportClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RunMigrationImportClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetMigrationReportClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *MigrationReport `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetMigrationReportClientResponse) GetJSON200() *struct {
+	Data *MigrationReport `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetMigrationReportClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetMigrationReportClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetMigrationReportClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetMigrationReportClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMigrationReportClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMigrationReportClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetMigrationReportClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -41695,7 +42857,7 @@ func (c *ClientWithResponses) UpdateAirbnbListingDetailsWithResponse(ctx context
 //
 // **DB-only by default.** `?source=cache` (the default) returns the permits as last mirrored by the sync worker — regulatory body, regulation type, status, permit number — with no upstream call.
 //
-// **`?source=live` also returns the QUESTIONS.** The mirror stores the RESULT of a permit, not what Airbnb asks for it, so a caller that is about to write needs `?source=live` once: it returns each permit flow with the `question_key`, `answer_type` and `options` of every question, and the answers already on file. Airbnb refuses a `question_key` it did not ask for on this listing, so this is not optional guesswork you can skip.
+// **`?source=live` also returns the QUESTIONS.** The mirror stores the RESULT of a permit, not what Airbnb asks for it, so a caller that is about to write needs `?source=live` once: it returns each permit's `flows[]` with the `answer_key`, `type` and `choices` of every question, and the answers already on file. Airbnb refuses an `answer_key` it did not ask for on this listing, so this is not optional guesswork you can skip.
 //
 // Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
 //
@@ -41714,11 +42876,11 @@ func (c *ClientWithResponses) ListAirbnbListingPermitsWithResponse(ctx context.C
 //
 // Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 //
-// Read the questions first with `GET …/permits?source=live`: every answer is keyed by a `question_key` Airbnb asks for THIS listing, and the question's `answer_type` decides which value field applies (`text_value`, `date_value`, or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 //
 // Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 //
-// Airbnb refusing the answers (an unknown question key, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -41735,11 +42897,11 @@ func (c *ClientWithResponses) UpdateAirbnbListingPermitsWithBodyWithResponse(ctx
 //
 // Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 //
-// Read the questions first with `GET …/permits?source=live`: every answer is keyed by a `question_key` Airbnb asks for THIS listing, and the question's `answer_type` decides which value field applies (`text_value`, `date_value`, or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 //
 // Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 //
-// Airbnb refusing the answers (an unknown question key, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -44755,21 +45917,6 @@ func (c *ClientWithResponses) GetHealthWithResponse(ctx context.Context, reqEdit
 	return ParseGetHealthClientResponse(rsp)
 }
 
-// GetAtlasHealthWithResponse Atlas market-intelligence backend health
-//
-// Component-level probe. `GET /v1/health` reports the API as a whole; this reports one dependency so an incident can be localised without guessing.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with GET /v1/health/atlas (the `GetAtlasHealth` operationId).
-func (c *ClientWithResponses) GetAtlasHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAtlasHealthClientResponse, error) {
-	rsp, err := c.GetAtlasHealth(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetAtlasHealthClientResponse(rsp)
-}
-
 // GetAuthHealthWithResponse API-key authentication path health
 //
 // Component-level probe. `GET /v1/health` reports the API as a whole; this reports one dependency so an incident can be localised without guessing.
@@ -45878,6 +47025,156 @@ func (c *ClientWithResponses) GetMarketCalendarWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseGetMarketCalendarClientResponse(rsp)
+}
+
+// ListMigrationsWithResponse List migrations
+//
+// Every property manager your workspace has moved through Repull Migrate, newest first, each with where it stands. Page with `pagination.nextCursor`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/migrations (the `ListMigrations` operationId).
+func (c *ClientWithResponses) ListMigrationsWithResponse(ctx context.Context, params *ListMigrationsParams, reqEditors ...RequestEditorFn) (*ListMigrationsClientResponse, error) {
+	rsp, err := c.ListMigrations(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListMigrationsClientResponse(rsp)
+}
+
+// DeleteMigrationWithResponse End a migration
+//
+// Disconnects the source (it stops syncing) and deactivates the migration's workspace. The imported data is kept and stays readable.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/migrations/{workspaceId} (the `DeleteMigration` operationId).
+func (c *ClientWithResponses) DeleteMigrationWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*DeleteMigrationClientResponse, error) {
+	rsp, err := c.DeleteMigration(ctx, workspaceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteMigrationClientResponse(rsp)
+}
+
+// GetMigrationWithResponse Get a migration
+//
+// Where one migration stands: its state, the source connections with their last import run, and how much data has landed.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/migrations/{workspaceId} (the `GetMigration` operationId).
+func (c *ClientWithResponses) GetMigrationWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*GetMigrationClientResponse, error) {
+	rsp, err := c.GetMigration(ctx, workspaceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetMigrationClientResponse(rsp)
+}
+
+// GetMigrationChannelMapWithResponse Get channel links
+//
+// The Airbnb, Booking.com and VRBO listing each migrated property is linked to in the source PMS, read live. Use it to link each listing to the right property when the channels are reconnected in the destination — channel connections themselves cannot be moved between PMSs.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/migrations/{workspaceId}/channel-map (the `GetMigrationChannelMap` operationId).
+func (c *ClientWithResponses) GetMigrationChannelMapWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*GetMigrationChannelMapClientResponse, error) {
+	rsp, err := c.GetMigrationChannelMap(ctx, workspaceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetMigrationChannelMapClientResponse(rsp)
+}
+
+// CutoverMigrationWithResponse Cut over
+//
+// The property manager has switched: disconnect the source so it stops syncing. The imported data stays readable. Idempotent.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/cutover (the `CutoverMigration` operationId).
+func (c *ClientWithResponses) CutoverMigrationWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*CutoverMigrationClientResponse, error) {
+	rsp, err := c.CutoverMigration(ctx, workspaceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCutoverMigrationClientResponse(rsp)
+}
+
+// CheckMigrationCutoverWithBodyWithResponse Check reservations before switching
+//
+// Send every upcoming reservation the destination holds; get back what is missing, extra, or on different dates compared with the source. Read-only — run it as often as you like before cutover.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/cutover-check (the `CheckMigrationCutover` operationId).
+func (c *ClientWithResponses) CheckMigrationCutoverWithBodyWithResponse(ctx context.Context, workspaceId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CheckMigrationCutoverClientResponse, error) {
+	rsp, err := c.CheckMigrationCutoverWithBody(ctx, workspaceId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCheckMigrationCutoverClientResponse(rsp)
+}
+
+// CheckMigrationCutoverWithResponse Check reservations before switching
+//
+// Send every upcoming reservation the destination holds; get back what is missing, extra, or on different dates compared with the source. Read-only — run it as often as you like before cutover.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/cutover-check (the `CheckMigrationCutover` operationId).
+func (c *ClientWithResponses) CheckMigrationCutoverWithResponse(ctx context.Context, workspaceId int, body CheckMigrationCutoverJSONRequestBody, reqEditors ...RequestEditorFn) (*CheckMigrationCutoverClientResponse, error) {
+	rsp, err := c.CheckMigrationCutover(ctx, workspaceId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCheckMigrationCutoverClientResponse(rsp)
+}
+
+// RunMigrationImportWithBodyWithResponse Run the import again
+//
+// Queue another import from the source PMS — for example messages after the first pass, or only reservations changed since a date. Progress shows on `GET /v1/migrations/{workspaceId}`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/import (the `RunMigrationImport` operationId).
+func (c *ClientWithResponses) RunMigrationImportWithBodyWithResponse(ctx context.Context, workspaceId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RunMigrationImportClientResponse, error) {
+	rsp, err := c.RunMigrationImportWithBody(ctx, workspaceId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRunMigrationImportClientResponse(rsp)
+}
+
+// RunMigrationImportWithResponse Run the import again
+//
+// Queue another import from the source PMS — for example messages after the first pass, or only reservations changed since a date. Progress shows on `GET /v1/migrations/{workspaceId}`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/migrations/{workspaceId}/import (the `RunMigrationImport` operationId).
+func (c *ClientWithResponses) RunMigrationImportWithResponse(ctx context.Context, workspaceId int, body RunMigrationImportJSONRequestBody, reqEditors ...RequestEditorFn) (*RunMigrationImportClientResponse, error) {
+	rsp, err := c.RunMigrationImport(ctx, workspaceId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRunMigrationImportClientResponse(rsp)
+}
+
+// GetMigrationReportWithResponse Get a migration report
+//
+// What came across and what needs a decision in the destination: properties without an address, upcoming reservations with no guest contact, channel reservations that must not be re-created, and anything the source PMS cannot carry. Includes the source's capability matrix.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/migrations/{workspaceId}/report (the `GetMigrationReport` operationId).
+func (c *ClientWithResponses) GetMigrationReportWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*GetMigrationReportClientResponse, error) {
+	rsp, err := c.GetMigrationReport(ctx, workspaceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetMigrationReportClientResponse(rsp)
 }
 
 // ListPropertiesWithResponse List properties
@@ -54302,32 +55599,6 @@ func ParseGetHealthClientResponse(rsp *http.Response) (*GetHealthClientResponse,
 	return response, nil
 }
 
-// ParseGetAtlasHealthClientResponse parses an HTTP response from a GetAtlasHealthWithResponse call
-func ParseGetAtlasHealthClientResponse(rsp *http.Response) (*GetAtlasHealthClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetAtlasHealthClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest map[string]interface{}
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseGetAuthHealthClientResponse parses an HTTP response from a GetAuthHealthWithResponse call
 func ParseGetAuthHealthClientResponse(rsp *http.Response) (*GetAuthHealthClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -56365,6 +57636,438 @@ func ParseGetMarketCalendarClientResponse(rsp *http.Response) (*GetMarketCalenda
 
 	case rsp.StatusCode == 502:
 		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseListMigrationsClientResponse parses an HTTP response from a ListMigrationsWithResponse call
+func ParseListMigrationsClientResponse(rsp *http.Response) (*ListMigrationsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListMigrationsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data       *[]Migration `json:"data,omitempty"`
+			Pagination *struct {
+				HasMore    *bool   `json:"hasMore,omitempty"`
+				NextCursor *string `json:"nextCursor,omitempty"`
+				Total      *int    `json:"total,omitempty"`
+			} `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteMigrationClientResponse parses an HTTP response from a DeleteMigrationWithResponse call
+func ParseDeleteMigrationClientResponse(rsp *http.Response) (*DeleteMigrationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteMigrationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				Deactivated   *bool      `json:"deactivated,omitempty"`
+				DeactivatedAt *time.Time `json:"deactivatedAt,omitempty"`
+				WorkspaceId   *string    `json:"workspaceId,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetMigrationClientResponse parses an HTTP response from a GetMigrationWithResponse call
+func ParseGetMigrationClientResponse(rsp *http.Response) (*GetMigrationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMigrationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data One migration: a property manager moved through Repull Migrate, living in its own workspace.
+			Data *Migration `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetMigrationChannelMapClientResponse parses an HTTP response from a GetMigrationChannelMapWithResponse call
+func ParseGetMigrationChannelMapClientResponse(rsp *http.Response) (*GetMigrationChannelMapClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMigrationChannelMapClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *MigrationChannelMap `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCutoverMigrationClientResponse parses an HTTP response from a CutoverMigrationWithResponse call
+func ParseCutoverMigrationClientResponse(rsp *http.Response) (*CutoverMigrationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CutoverMigrationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data One migration: a property manager moved through Repull Migrate, living in its own workspace.
+			Data *Migration `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCheckMigrationCutoverClientResponse parses an HTTP response from a CheckMigrationCutoverWithResponse call
+func ParseCheckMigrationCutoverClientResponse(rsp *http.Response) (*CheckMigrationCutoverClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CheckMigrationCutoverClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *MigrationCutoverCheck `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRunMigrationImportClientResponse parses an HTTP response from a RunMigrationImportWithResponse call
+func ParseRunMigrationImportClientResponse(rsp *http.Response) (*RunMigrationImportClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RunMigrationImportClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest struct {
+			Data *struct {
+				Queued *[]struct {
+					ConnectionId *string `json:"connectionId,omitempty"`
+					Error        *string `json:"error,omitempty"`
+					Provider     *string `json:"provider,omitempty"`
+					Queued       *bool   `json:"queued,omitempty"`
+				} `json:"queued,omitempty"`
+				WorkspaceId *string `json:"workspaceId,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetMigrationReportClientResponse parses an HTTP response from a GetMigrationReportWithResponse call
+func ParseGetMigrationReportClientResponse(rsp *http.Response) (*GetMigrationReportClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMigrationReportClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *MigrationReport `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 

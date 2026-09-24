@@ -1180,6 +1180,21 @@ func (e ConnectProviderStatus) Valid() bool {
 	}
 }
 
+// Defines values for ConnectSessionPurpose.
+const (
+	ConnectSessionPurposeMigrate ConnectSessionPurpose = "migrate"
+)
+
+// Valid indicates whether the value is a known member of the ConnectSessionPurpose enum.
+func (e ConnectSessionPurpose) Valid() bool {
+	switch e {
+	case ConnectSessionPurposeMigrate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectStatusStatus.
 const (
 	ConnectStatusStatusActive   ConnectStatusStatus = "active"
@@ -2074,6 +2089,126 @@ func (e MessageDirection) Valid() bool {
 	}
 }
 
+// Defines values for MigrationState.
+const (
+	MigrationStateAwaitingConnection MigrationState = "awaiting_connection"
+	MigrationStateCutOver            MigrationState = "cut_over"
+	MigrationStateDeactivated        MigrationState = "deactivated"
+	MigrationStateFailed             MigrationState = "failed"
+	MigrationStateImported           MigrationState = "imported"
+	MigrationStateImporting          MigrationState = "importing"
+)
+
+// Valid indicates whether the value is a known member of the MigrationState enum.
+func (e MigrationState) Valid() bool {
+	switch e {
+	case MigrationStateAwaitingConnection:
+		return true
+	case MigrationStateCutOver:
+		return true
+	case MigrationStateDeactivated:
+		return true
+	case MigrationStateFailed:
+		return true
+	case MigrationStateImported:
+		return true
+	case MigrationStateImporting:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MigrationCompletedEventEvent.
+const (
+	MigrationCompletedEventEventMigrationCompleted MigrationCompletedEventEvent = "migration.completed"
+)
+
+// Valid indicates whether the value is a known member of the MigrationCompletedEventEvent enum.
+func (e MigrationCompletedEventEvent) Valid() bool {
+	switch e {
+	case MigrationCompletedEventEventMigrationCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MigrationFailedEventEvent.
+const (
+	MigrationFailedEventEventMigrationFailed MigrationFailedEventEvent = "migration.failed"
+)
+
+// Valid indicates whether the value is a known member of the MigrationFailedEventEvent enum.
+func (e MigrationFailedEventEvent) Valid() bool {
+	switch e {
+	case MigrationFailedEventEventMigrationFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MigrationImportPayloadStatus.
+const (
+	MigrationImportPayloadStatusCompleted MigrationImportPayloadStatus = "completed"
+	MigrationImportPayloadStatusFailed    MigrationImportPayloadStatus = "failed"
+)
+
+// Valid indicates whether the value is a known member of the MigrationImportPayloadStatus enum.
+func (e MigrationImportPayloadStatus) Valid() bool {
+	switch e {
+	case MigrationImportPayloadStatusCompleted:
+		return true
+	case MigrationImportPayloadStatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MigrationImportRunStatus.
+const (
+	MigrationImportRunStatusCompleted MigrationImportRunStatus = "completed"
+	MigrationImportRunStatusFailed    MigrationImportRunStatus = "failed"
+	MigrationImportRunStatusRunning   MigrationImportRunStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the MigrationImportRunStatus enum.
+func (e MigrationImportRunStatus) Valid() bool {
+	switch e {
+	case MigrationImportRunStatusCompleted:
+		return true
+	case MigrationImportRunStatusFailed:
+		return true
+	case MigrationImportRunStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MigrationReportIssuesSeverity.
+const (
+	MigrationReportIssuesSeverityError   MigrationReportIssuesSeverity = "error"
+	MigrationReportIssuesSeverityInfo    MigrationReportIssuesSeverity = "info"
+	MigrationReportIssuesSeverityWarning MigrationReportIssuesSeverity = "warning"
+)
+
+// Valid indicates whether the value is a known member of the MigrationReportIssuesSeverity enum.
+func (e MigrationReportIssuesSeverity) Valid() bool {
+	switch e {
+	case MigrationReportIssuesSeverityError:
+		return true
+	case MigrationReportIssuesSeverityInfo:
+		return true
+	case MigrationReportIssuesSeverityWarning:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PaymentCompletedEventEvent.
 const (
 	PaymentCompletedEventEventPaymentCompleted PaymentCompletedEventEvent = "payment.completed"
@@ -2793,6 +2928,8 @@ const (
 	WebhookEventTypeListingReactivated             WebhookEventType = "listing.reactivated"
 	WebhookEventTypeListingSuspended               WebhookEventType = "listing.suspended"
 	WebhookEventTypeListingUpdated                 WebhookEventType = "listing.updated"
+	WebhookEventTypeMigrationCompleted             WebhookEventType = "migration.completed"
+	WebhookEventTypeMigrationFailed                WebhookEventType = "migration.failed"
 	WebhookEventTypePaymentCompleted               WebhookEventType = "payment.completed"
 	WebhookEventTypePaymentRefunded                WebhookEventType = "payment.refunded"
 	WebhookEventTypeRepullPing                     WebhookEventType = "repull.ping"
@@ -2835,6 +2972,10 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeListingSuspended:
 		return true
 	case WebhookEventTypeListingUpdated:
+		return true
+	case WebhookEventTypeMigrationCompleted:
+		return true
+	case WebhookEventTypeMigrationFailed:
 		return true
 	case WebhookEventTypePaymentCompleted:
 		return true
@@ -3778,6 +3919,81 @@ func (e BookingSetupJSONBodyAction) Valid() bool {
 	}
 }
 
+// Defines values for CreateConnectSessionJSONBodyPurpose.
+const (
+	CreateConnectSessionJSONBodyPurposeConnect CreateConnectSessionJSONBodyPurpose = "connect"
+	CreateConnectSessionJSONBodyPurposeMigrate CreateConnectSessionJSONBodyPurpose = "migrate"
+)
+
+// Valid indicates whether the value is a known member of the CreateConnectSessionJSONBodyPurpose enum.
+func (e CreateConnectSessionJSONBodyPurpose) Valid() bool {
+	switch e {
+	case CreateConnectSessionJSONBodyPurposeConnect:
+		return true
+	case CreateConnectSessionJSONBodyPurposeMigrate:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateConnectSessionJSONBodyScope.
+const (
+	CreateConnectSessionJSONBodyScopeAmenities     CreateConnectSessionJSONBodyScope = "amenities"
+	CreateConnectSessionJSONBodyScopeCalendar      CreateConnectSessionJSONBodyScope = "calendar"
+	CreateConnectSessionJSONBodyScopeChannelIds    CreateConnectSessionJSONBodyScope = "channelIds"
+	CreateConnectSessionJSONBodyScopeConversations CreateConnectSessionJSONBodyScope = "conversations"
+	CreateConnectSessionJSONBodyScopeFees          CreateConnectSessionJSONBodyScope = "fees"
+	CreateConnectSessionJSONBodyScopeGuests        CreateConnectSessionJSONBodyScope = "guests"
+	CreateConnectSessionJSONBodyScopeHouseRules    CreateConnectSessionJSONBodyScope = "houseRules"
+	CreateConnectSessionJSONBodyScopeListings      CreateConnectSessionJSONBodyScope = "listings"
+	CreateConnectSessionJSONBodyScopeOwners        CreateConnectSessionJSONBodyScope = "owners"
+	CreateConnectSessionJSONBodyScopePayments      CreateConnectSessionJSONBodyScope = "payments"
+	CreateConnectSessionJSONBodyScopePhotos        CreateConnectSessionJSONBodyScope = "photos"
+	CreateConnectSessionJSONBodyScopeRates         CreateConnectSessionJSONBodyScope = "rates"
+	CreateConnectSessionJSONBodyScopeReservations  CreateConnectSessionJSONBodyScope = "reservations"
+	CreateConnectSessionJSONBodyScopeRooms         CreateConnectSessionJSONBodyScope = "rooms"
+	CreateConnectSessionJSONBodyScopeTaxes         CreateConnectSessionJSONBodyScope = "taxes"
+)
+
+// Valid indicates whether the value is a known member of the CreateConnectSessionJSONBodyScope enum.
+func (e CreateConnectSessionJSONBodyScope) Valid() bool {
+	switch e {
+	case CreateConnectSessionJSONBodyScopeAmenities:
+		return true
+	case CreateConnectSessionJSONBodyScopeCalendar:
+		return true
+	case CreateConnectSessionJSONBodyScopeChannelIds:
+		return true
+	case CreateConnectSessionJSONBodyScopeConversations:
+		return true
+	case CreateConnectSessionJSONBodyScopeFees:
+		return true
+	case CreateConnectSessionJSONBodyScopeGuests:
+		return true
+	case CreateConnectSessionJSONBodyScopeHouseRules:
+		return true
+	case CreateConnectSessionJSONBodyScopeListings:
+		return true
+	case CreateConnectSessionJSONBodyScopeOwners:
+		return true
+	case CreateConnectSessionJSONBodyScopePayments:
+		return true
+	case CreateConnectSessionJSONBodyScopePhotos:
+		return true
+	case CreateConnectSessionJSONBodyScopeRates:
+		return true
+	case CreateConnectSessionJSONBodyScopeReservations:
+		return true
+	case CreateConnectSessionJSONBodyScopeRooms:
+		return true
+	case CreateConnectSessionJSONBodyScopeTaxes:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateConnectionJSONBodyAccessType.
 const (
 	CreateConnectionJSONBodyAccessTypeFullAccess CreateConnectionJSONBodyAccessType = "full_access"
@@ -4039,6 +4255,30 @@ func (e ListMarketBrowseParamsSort) Valid() bool {
 	case ListingsDesc:
 		return true
 	case NameAsc:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RunMigrationImportJSONBodyEntities.
+const (
+	RunMigrationImportJSONBodyEntitiesCalendar     RunMigrationImportJSONBodyEntities = "calendar"
+	RunMigrationImportJSONBodyEntitiesListings     RunMigrationImportJSONBodyEntities = "listings"
+	RunMigrationImportJSONBodyEntitiesMessages     RunMigrationImportJSONBodyEntities = "messages"
+	RunMigrationImportJSONBodyEntitiesReservations RunMigrationImportJSONBodyEntities = "reservations"
+)
+
+// Valid indicates whether the value is a known member of the RunMigrationImportJSONBodyEntities enum.
+func (e RunMigrationImportJSONBodyEntities) Valid() bool {
+	switch e {
+	case RunMigrationImportJSONBodyEntitiesCalendar:
+		return true
+	case RunMigrationImportJSONBodyEntitiesListings:
+		return true
+	case RunMigrationImportJSONBodyEntitiesMessages:
+		return true
+	case RunMigrationImportJSONBodyEntitiesReservations:
 		return true
 	default:
 		return false
@@ -5254,23 +5494,36 @@ type AirbnbPermitsResponse struct {
 		UpdatedAt      *time.Time              `json:"updatedAt,omitempty"`
 	} `json:"cached,omitempty"`
 
-	// Permits The live permit flows from Airbnb — present only with `?source=live`, `null` otherwise. Each flow names its `regulatory_body`, `regulation_type`, `status`, and the `question_key` / `answer_type` / `options` of every question you have to answer, plus the answers already on file.
+	// Permits The live permit flows from Airbnb — present only with `?source=live`, `null` otherwise. Each flow names its `regulatory_body`, `regulation_type`, `status`, its `flows[]` with the `answer_key` / `type` / `choices` of every question you have to answer, plus the answers already on file.
 	Permits *[]map[string]interface{} `json:"permits,omitempty"`
 }
 
-// AirbnbPermitsWriteRequest Answer the regulatory permit questions Airbnb asks for this listing. Read them first with `?source=live` on the GET — Airbnb refuses a `question_key` it did not ask for on this listing.
+// AirbnbPermitsWriteRequest Answer the regulatory permit questions Airbnb asks for this listing, in Airbnb's Listing Permits shape. Read them first with `?source=live` on the GET: each permit lists its `flows[]`, and each flow its `questions[]` with an `answer_key` and a `type`.
+//
+// Example: {"permits":[{"answers":{"attestation":{"attestation_value":true},"permit_number":{"text_value":"TMK-2-3-004-005"}},"flow_slug":"existing_registration","regulation_context":"initial","regulation_type":"registration","regulatory_body":"maui_county_hawaii"}]}
 type AirbnbPermitsWriteRequest struct {
 	Permits []struct {
-		Answers []struct {
+		// Answers Keyed by each question's `answer_key`. Each value carries exactly one field, chosen by the question's `type`: TEXT → `text_value`, ATTESTATION → `attestation_value`, RADIO → `radio_value`, DATE → `date_value`, SELECT → `selected_options_value`.
+		Answers map[string]struct {
+			AttestationValue *bool `json:"attestation_value,omitempty"`
+
 			// DateValue ISO date, YYYY-MM-DD.
 			DateValue            *string   `json:"date_value,omitempty"`
-			QuestionKey          string    `json:"question_key"`
+			RadioValue           *string   `json:"radio_value,omitempty"`
 			SelectedOptionsValue *[]string `json:"selected_options_value,omitempty"`
 			TextValue            *string   `json:"text_value,omitempty"`
 		} `json:"answers"`
+
+		// FlowSlug The `slug` of the flow you are answering, e.g. `existing_registration` or `exemption_claim`.
+		FlowSlug string `json:"flow_slug"`
+
+		// RegulationContext Echo the GET's `regulation_context` (e.g. `initial`) when present.
+		RegulationContext *string `json:"regulation_context,omitempty"`
+
+		// RegulationType As returned by the GET.
 		RegulationType string `json:"regulation_type"`
 
-		// RegulatoryBody As named by the GET, e.g. the city or registry asking.
+		// RegulatoryBody As returned by the GET, e.g. `maui_county_hawaii`.
 		RegulatoryBody string `json:"regulatory_body"`
 	} `json:"permits"`
 }
@@ -6663,6 +6916,9 @@ type ConnectProvider struct {
 	// LogoUrl Logo URL — Clearbit stand-in until self-hosted SVGs land.
 	LogoUrl string `json:"logoUrl"`
 
+	// MigrationCapabilities PMS providers: what Repull Migrate can carry across, per entity — `{ read: { listings: { level, notes }, … }, write: { … } }` with `level` `full` | `partial` | `none`. `null` for channels (OTAs).
+	MigrationCapabilities *map[string]interface{} `json:"migrationCapabilities,omitempty"`
+
 	// Status Pickers should hide / disable `coming-soon` cards. `beta` cards are clickable but show a Beta pill.
 	Status ConnectProviderStatus `json:"status"`
 }
@@ -6685,6 +6941,9 @@ type ConnectProviderListResponse struct {
 type ConnectSession struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 
+	// Purpose Present only on a Repull Migrate session.
+	Purpose *ConnectSessionPurpose `json:"purpose,omitempty"`
+
 	// SessionId Example: cs_8gQrT2v9k3M4nLp7wJxYzAbCdEfGhIjKlMnOp
 	SessionId string `json:"sessionId"`
 
@@ -6693,7 +6952,15 @@ type ConnectSession struct {
 
 	// Url Example: https://connect.repull.dev/cs_8gQrT2v9k3M4nLp7wJxYzAbCdEfGhIjKlMnOp
 	Url string `json:"url"`
+
+	// WorkspaceId Repull Migrate only: the workspace the property manager's data lands in. Read it with `X-Workspace-Id`, track it with `GET /v1/migrations/{workspaceId}`.
+	//
+	// Example: 1204
+	WorkspaceId *string `json:"workspaceId,omitempty"`
 }
+
+// ConnectSessionPurpose Present only on a Repull Migrate session.
+type ConnectSessionPurpose string
 
 // ConnectStatus Connection status response for a single provider. When `connected` is false, all other fields except `provider` and `host` may be omitted, and `host` is null.
 type ConnectStatus struct {
@@ -7700,6 +7967,35 @@ type ListingContentUpdateRequest struct {
 		QuietHoursStart *string `json:"quietHoursStart,omitempty"`
 	} `json:"policies,omitempty"`
 
+	// Pricing The listing's standing rates. Partial like every other section: only the fields you send are written, and `null` clears one.
+	//
+	// Changing `defaultDailyPrice` or `weekendPrice` also moves the nights on the calendar that still carry the old rate and were written by us — a night you or a channel priced yourself is never touched, and neither is a blocked or reserved one. So a price change reaches the calendar without overwriting anyone's work.
+	//
+	// This is still a local write. Publish to send the new rates to a channel.
+	Pricing *struct {
+		CleaningFee *float32 `json:"cleaningFee,omitempty"`
+
+		// Currency ISO 4217, e.g. `USD`.
+		Currency *string `json:"currency,omitempty"`
+
+		// DefaultDailyPrice Nightly rate for every night that is not a weekend night.
+		DefaultDailyPrice *float32 `json:"defaultDailyPrice,omitempty"`
+
+		// GuestsIncluded Guests covered by the nightly rate before `pricePerExtraGuest` applies.
+		GuestsIncluded *int `json:"guestsIncluded,omitempty"`
+
+		// MonthlyDiscount Fraction, not a percentage.
+		MonthlyDiscount    *float32 `json:"monthlyDiscount,omitempty"`
+		PricePerExtraGuest *float32 `json:"pricePerExtraGuest,omitempty"`
+		SecurityDeposit    *float32 `json:"securityDeposit,omitempty"`
+
+		// WeekendPrice Nightly rate for Saturday and Sunday nights (UTC).
+		WeekendPrice *float32 `json:"weekendPrice,omitempty"`
+
+		// WeeklyDiscount Fraction, not a percentage: `0.1` is 10% off a stay of a week or more.
+		WeeklyDiscount *float32 `json:"weeklyDiscount,omitempty"`
+	} `json:"pricing,omitempty"`
+
 	// Summary Short summary / tagline.
 	Summary *string `json:"summary,omitempty"`
 
@@ -7762,7 +8058,7 @@ type ListingContentUpdateRequestPoliciesCheckInMethod string
 
 // ListingContentUpdateResponse defines model for ListingContentUpdateResponse.
 type ListingContentUpdateResponse struct {
-	// Changed Content slabs that were actually written, e.g. ["title","occupancy","amenities"]. A non-English write also reports `locale:<tag>` so you can see which row was written.
+	// Changed Content slabs that were actually written, e.g. ["title","occupancy","amenities"]. A non-English write also reports `locale:<tag>` so you can see which row was written. A rate change reports `pricing`, and `calendar` as well when nights on the calendar moved to the new rate.
 	Changed *[]string `json:"changed,omitempty"`
 
 	// Deferred Provided-but-not-applied fields — e.g. "photos" when a non-empty photos array carried no valid http(s) URL.
@@ -7806,7 +8102,9 @@ type ListingCreateRequest struct {
 	// CountryCode ISO-3166 alpha-2 country code. **Send this for any non-US property.** Omitting it does not mean "unknown" — the publish path treats a listing with no country as US, which then requires `state` and `postalCode` and will refuse the listing when they are absent.
 	//
 	// Example: US
-	CountryCode       *string  `json:"countryCode,omitempty"`
+	CountryCode *string `json:"countryCode,omitempty"`
+
+	// DefaultDailyPrice Nightly rate for every night that is not a weekend night. Stating it is what gives the new listing a calendar: 365 nights are written from it, and that calendar is what a publish sends to the channel. Without a price the listing has no availability to publish, which Booking.com refuses with "No availability pushed".
 	DefaultDailyPrice *float32 `json:"defaultDailyPrice,omitempty"`
 	Description       *string  `json:"description,omitempty"`
 
@@ -7833,6 +8131,9 @@ type ListingCreateRequest struct {
 	// Example: 33139
 	PostalCode *string `json:"postalCode,omitempty"`
 
+	// PricePerExtraGuest Charged per guest above the number included in the nightly rate.
+	PricePerExtraGuest *float32 `json:"pricePerExtraGuest,omitempty"`
+
 	// PropertyType Example: apartment
 	PropertyType *string `json:"propertyType,omitempty"`
 
@@ -7855,6 +8156,9 @@ type ListingCreateRequest struct {
 	Street  *string `json:"street,omitempty"`
 	Summary *string `json:"summary,omitempty"`
 
+	// WeekendPrice Nightly rate for Saturday and Sunday nights (UTC). Omit it and those nights take `defaultDailyPrice`. It is the same rate the direct-booking quoter charges for a weekend night, so the calendar and a quote cannot disagree.
+	WeekendPrice *float32 `json:"weekendPrice,omitempty"`
+
 	// Zipcode Alias for `postalCode`, accepted because it is the field name on the Airbnb mirror. `postalCode` wins if you send both. Prefer `postalCode` — the field holds non-US postcodes too.
 	//
 	// Example: 33139
@@ -7871,6 +8175,9 @@ type ListingCreateRequestRoomTypeCategory string
 
 // ListingCreateResponse defines model for ListingCreateResponse.
 type ListingCreateResponse struct {
+	// CalendarDaysSeeded Nights of calendar written from the price you stated. `0` means the listing has no calendar and a publish will send no availability — state `defaultDailyPrice` on the create, or set it later with `PUT /v1/listings/{id}/content` under `pricing`.
+	CalendarDaysSeeded *int `json:"calendarDaysSeeded,omitempty"`
+
 	// Id New listing ID — use for follow-up generate-content / publish calls
 	Id *string `json:"id,omitempty"`
 }
@@ -9059,6 +9366,230 @@ type MessageListResponse struct {
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
+}
+
+// Migration One migration: a property manager moved through Repull Migrate, living in its own workspace.
+type Migration struct {
+	Connections []struct {
+		ConnectedAt *time.Time `json:"connectedAt,omitempty"`
+		Id          *string    `json:"id,omitempty"`
+
+		// Import The last import run, or null before the first one (and for channels, which sync on their own schedule).
+		Import       *MigrationImportRun `json:"import,omitempty"`
+		LastPolledAt *time.Time          `json:"lastPolledAt,omitempty"`
+
+		// Provider Example: guesty
+		Provider *string `json:"provider,omitempty"`
+
+		// Status Example: active
+		Status *string `json:"status,omitempty"`
+	} `json:"connections"`
+	Counts struct {
+		Conversations        *int `json:"conversations,omitempty"`
+		Guests               *int `json:"guests,omitempty"`
+		Listings             *int `json:"listings,omitempty"`
+		Reservations         *int `json:"reservations,omitempty"`
+		UpcomingReservations *int `json:"upcomingReservations,omitempty"`
+	} `json:"counts"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	CutoverAt *time.Time `json:"cutoverAt,omitempty"`
+
+	// ExternalRef Your own id for this property manager, as sent when the migration was created.
+	ExternalRef *string `json:"externalRef,omitempty"`
+
+	// Name Example: Seaside Rentals
+	Name string `json:"name"`
+
+	// State `awaiting_connection` — not connected yet. `importing` — the first import is running. `imported` — data is in and kept fresh until cutover. `failed` — the last import failed (see `connections[].import.error`). `cut_over` — the source was disconnected. `deactivated` — the migration was deleted.
+	State MigrationState `json:"state"`
+
+	// WorkspaceId Pass as `X-Workspace-Id` to read this property manager's listings, reservations and conversations through the regular endpoints.
+	//
+	// Example: 1204
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// MigrationState `awaiting_connection` — not connected yet. `importing` — the first import is running. `imported` — data is in and kept fresh until cutover. `failed` — the last import failed (see `connections[].import.error`). `cut_over` — the source was disconnected. `deactivated` — the migration was deleted.
+type MigrationState string
+
+// MigrationChannelMap defines model for MigrationChannelMap.
+type MigrationChannelMap struct {
+	Listings *[]struct {
+		Airbnb *struct {
+			ListingId *string `json:"listingId,omitempty"`
+			Url       *string `json:"url,omitempty"`
+		} `json:"airbnb,omitempty"`
+		Booking *struct {
+			HotelId *string `json:"hotelId,omitempty"`
+			RoomId  *string `json:"roomId,omitempty"`
+		} `json:"booking,omitempty"`
+
+		// ExternalListingId The listing id in the source PMS.
+		ExternalListingId *string `json:"externalListingId,omitempty"`
+
+		// ListingId The property in this workspace, when it came across.
+		ListingId *string `json:"listingId,omitempty"`
+		Name      *string `json:"name,omitempty"`
+		Provider  *string `json:"provider,omitempty"`
+		Vrbo      *struct {
+			ListingId *string `json:"listingId,omitempty"`
+			Url       *string `json:"url,omitempty"`
+		} `json:"vrbo,omitempty"`
+	} `json:"listings,omitempty"`
+	Sources *[]struct {
+		Error    *string `json:"error,omitempty"`
+		Provider *string `json:"provider,omitempty"`
+
+		// Supported False when this PMS does not expose channel links.
+		Supported *bool `json:"supported,omitempty"`
+	} `json:"sources,omitempty"`
+	WorkspaceId *string `json:"workspaceId,omitempty"`
+}
+
+// MigrationCompletedEvent An import into a migration workspace finished.
+type MigrationCompletedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data One import run into a migration workspace.
+	Data MigrationImportPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event MigrationCompletedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The migration's workspace — pass it as `X-Workspace-Id`, or to `GET /v1/migrations/{workspaceId}`.
+	WorkspaceId int `json:"workspaceId"`
+}
+
+// MigrationCompletedEventEvent The event name. This field is `event`, not `type`.
+type MigrationCompletedEventEvent string
+
+// MigrationCutoverCheck defines model for MigrationCutoverCheck.
+type MigrationCutoverCheck struct {
+	CheckedAt *time.Time `json:"checkedAt,omitempty"`
+
+	// Extra In the destination, not an upcoming reservation in the source.
+	Extra      *[]MigrationReservationRef `json:"extra,omitempty"`
+	Matched    *int                       `json:"matched,omitempty"`
+	Mismatched *[]struct {
+		Destination *MigrationReservationRef `json:"destination,omitempty"`
+		Source      *MigrationReservationRef `json:"source,omitempty"`
+	} `json:"mismatched,omitempty"`
+
+	// Missing Upcoming in the source, absent from the destination.
+	Missing     *[]MigrationReservationRef `json:"missing,omitempty"`
+	WorkspaceId *string                    `json:"workspaceId,omitempty"`
+}
+
+// MigrationFailedEvent An import into a migration workspace stopped with an error.
+type MigrationFailedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data One import run into a migration workspace.
+	Data MigrationImportPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event MigrationFailedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The migration's workspace — pass it as `X-Workspace-Id`, or to `GET /v1/migrations/{workspaceId}`.
+	WorkspaceId int `json:"workspaceId"`
+}
+
+// MigrationFailedEventEvent The event name. This field is `event`, not `type`.
+type MigrationFailedEventEvent string
+
+// MigrationImportPayload One import run into a migration workspace.
+type MigrationImportPayload struct {
+	ConnectionId *int      `json:"connectionId,omitempty"`
+	Entities     *[]string `json:"entities,omitempty"`
+
+	// Error Present on `migration.failed`.
+	Error      *string    `json:"error,omitempty"`
+	FinishedAt *time.Time `json:"finishedAt,omitempty"`
+
+	// Provider Example: guesty
+	Provider *string `json:"provider,omitempty"`
+	Results  *[]struct {
+		EntityType *string `json:"entityType,omitempty"`
+		Errors     *int    `json:"errors,omitempty"`
+		Processed  *int    `json:"processed,omitempty"`
+	} `json:"results,omitempty"`
+	StartedAt   *time.Time                    `json:"startedAt,omitempty"`
+	Status      *MigrationImportPayloadStatus `json:"status,omitempty"`
+	WorkspaceId *int                          `json:"workspaceId,omitempty"`
+}
+
+// MigrationImportPayloadStatus defines model for MigrationImportPayload.Status.
+type MigrationImportPayloadStatus string
+
+// MigrationImportRun The last import run on a connection.
+type MigrationImportRun struct {
+	Entities   *[]string  `json:"entities,omitempty"`
+	Error      *string    `json:"error,omitempty"`
+	FinishedAt *time.Time `json:"finishedAt,omitempty"`
+	Results    *[]struct {
+		// EntityType Example: listings
+		EntityType *string `json:"entityType,omitempty"`
+		Errors     *int    `json:"errors,omitempty"`
+		Processed  *int    `json:"processed,omitempty"`
+	} `json:"results,omitempty"`
+	StartedAt *time.Time                `json:"startedAt,omitempty"`
+	Status    *MigrationImportRunStatus `json:"status,omitempty"`
+}
+
+// MigrationImportRunStatus defines model for MigrationImportRun.Status.
+type MigrationImportRunStatus string
+
+// MigrationReport defines model for MigrationReport.
+type MigrationReport struct {
+	// Capabilities Per source provider: what it can carry, per entity — `{ read: { listings: { level, notes } … }, write: { … } }`, level `full` | `partial` | `none`.
+	Capabilities *map[string]interface{} `json:"capabilities,omitempty"`
+	GeneratedAt  *time.Time              `json:"generatedAt,omitempty"`
+	Issues       *[]struct {
+		// Code Example: reservation_missing_guest_contact
+		Code  *string `json:"code,omitempty"`
+		Count *int    `json:"count,omitempty"`
+
+		// Entity Example: reservations
+		Entity  *string `json:"entity,omitempty"`
+		Message *string `json:"message,omitempty"`
+
+		// SampleIds Up to 10 affected listing / reservation ids.
+		SampleIds *[]int                         `json:"sampleIds,omitempty"`
+		Severity  *MigrationReportIssuesSeverity `json:"severity,omitempty"`
+	} `json:"issues,omitempty"`
+	WorkspaceId *string `json:"workspaceId,omitempty"`
+}
+
+// MigrationReportIssuesSeverity defines model for MigrationReport.Issues.Severity.
+type MigrationReportIssuesSeverity string
+
+// MigrationReservationRef defines model for MigrationReservationRef.
+type MigrationReservationRef struct {
+	CheckIn          *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckOut         *openapi_types.Date `json:"checkOut,omitempty"`
+	ConfirmationCode *string             `json:"confirmationCode,omitempty"`
+	Platform         *string             `json:"platform,omitempty"`
+	ReservationId    *string             `json:"reservationId,omitempty"`
 }
 
 // Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
@@ -11898,17 +12429,48 @@ type CreateConnectSessionJSONBody struct {
 	// AllowedProviders Optional whitelist of provider IDs the picker should expose. Omit to show every channel in the registry.
 	AllowedProviders *[]string `json:"allowedProviders,omitempty"`
 
+	// Copy Migrate only — your wording for the hosted pages. Anything you leave out uses Repull's localized migration copy.
+	Copy *struct {
+		CompletedBody  *string `json:"completedBody,omitempty"`
+		CompletedTitle *string `json:"completedTitle,omitempty"`
+		Subtitle       *string `json:"subtitle,omitempty"`
+		Title          *string `json:"title,omitempty"`
+	} `json:"copy,omitempty"`
+
 	// Locale Optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`). When set it pins the language for the whole flow, overriding the workspace `default_language`. Unknown codes are ignored and the page falls back to the workspace default, then `Accept-Language`, then `en`. The end user can still override per-visit with a `?locale=` query param on the hosted page.
 	//
 	// Example: fr
 	Locale *string `json:"locale,omitempty"`
 
+	// Purpose `migrate` starts a Repull Migrate session: the property manager connects their current PMS (or channel) and their data is copied into a new workspace of theirs, which you read with `X-Workspace-Id`. The hosted pages use migration wording, and after connecting they show the import's progress.
+	Purpose *CreateConnectSessionJSONBodyPurpose `json:"purpose,omitempty"`
+
 	// RedirectUrl Where to send the user after they finish (or cancel). Status query params are appended.
 	RedirectUrl string `json:"redirectUrl"`
 
+	// Scope Migrate only — what you want brought across, listed to the property manager before they connect.
+	Scope *[]CreateConnectSessionJSONBodyScope `json:"scope,omitempty"`
+
 	// State Opaque pass-through correlation token. Echoed back in the response.
 	State *string `json:"state,omitempty"`
+
+	// Workspace Migrate only — the property manager being moved. Required unless you send `X-Workspace-Id` to reconnect an existing migration.
+	Workspace *struct {
+		// ExternalRef Your own id for this property manager. Returned on every migration read.
+		//
+		// Example: acct_8812
+		ExternalRef *string `json:"externalRef,omitempty"`
+
+		// Name Example: Seaside Rentals
+		Name *string `json:"name,omitempty"`
+	} `json:"workspace,omitempty"`
 }
+
+// CreateConnectSessionJSONBodyPurpose defines parameters for CreateConnectSession.
+type CreateConnectSessionJSONBodyPurpose string
+
+// CreateConnectSessionJSONBodyScope defines parameters for CreateConnectSession.
+type CreateConnectSessionJSONBodyScope string
 
 // SubmitBeds24CredentialsJSONBody defines parameters for SubmitBeds24Credentials.
 type SubmitBeds24CredentialsJSONBody struct {
@@ -12468,6 +13030,35 @@ type GetMarketCalendarParams struct {
 	// ListingId Optional — overlays the customer's own pricing/availability for direct comparison. Bypasses the upstream cache.
 	ListingId *int `form:"listingId,omitempty" json:"listingId,omitempty"`
 }
+
+// ListMigrationsParams defines parameters for ListMigrations.
+type ListMigrationsParams struct {
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor `pagination.nextCursor` from the previous page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
+// CheckMigrationCutoverJSONBody defines parameters for CheckMigrationCutover.
+type CheckMigrationCutoverJSONBody struct {
+	Reservations []struct {
+		CheckIn          openapi_types.Date `json:"checkIn"`
+		CheckOut         openapi_types.Date `json:"checkOut"`
+		ConfirmationCode string             `json:"confirmationCode"`
+	} `json:"reservations"`
+}
+
+// RunMigrationImportJSONBody defines parameters for RunMigrationImport.
+type RunMigrationImportJSONBody struct {
+	// Entities Defaults to listings and reservations.
+	Entities *[]RunMigrationImportJSONBodyEntities `json:"entities,omitempty"`
+
+	// Since Only reservations changed after this.
+	Since *time.Time `json:"since,omitempty"`
+}
+
+// RunMigrationImportJSONBodyEntities defines parameters for RunMigrationImport.
+type RunMigrationImportJSONBodyEntities string
 
 // ListPropertiesParams defines parameters for ListProperties.
 type ListPropertiesParams struct {
@@ -13078,6 +13669,12 @@ type PublishListingToBookingJSONRequestBody = ListingPublishBookingRequest
 
 // PullListingFromAirbnbJSONRequestBody defines body for PullListingFromAirbnb for application/json ContentType.
 type PullListingFromAirbnbJSONRequestBody = ListingPullAirbnbRequest
+
+// CheckMigrationCutoverJSONRequestBody defines body for CheckMigrationCutover for application/json ContentType.
+type CheckMigrationCutoverJSONRequestBody CheckMigrationCutoverJSONBody
+
+// RunMigrationImportJSONRequestBody defines body for RunMigrationImport for application/json ContentType.
+type RunMigrationImportJSONRequestBody RunMigrationImportJSONBody
 
 // CreateReservationJSONRequestBody defines body for CreateReservation for application/json ContentType.
 type CreateReservationJSONRequestBody = ReservationCreateRequest
@@ -15797,6 +16394,74 @@ func (t *WebhookEvent) MergeUsageQuotaWarningEvent(v UsageQuotaWarningEvent) err
 	return err
 }
 
+// AsMigrationCompletedEvent returns the union data inside the WebhookEvent as a MigrationCompletedEvent
+func (t WebhookEvent) AsMigrationCompletedEvent() (MigrationCompletedEvent, error) {
+	var body MigrationCompletedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMigrationCompletedEvent overwrites any union data inside the WebhookEvent as the provided MigrationCompletedEvent
+func (t *WebhookEvent) FromMigrationCompletedEvent(v MigrationCompletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"migration.completed"}`))
+	t.union = b
+	return err
+}
+
+// MergeMigrationCompletedEvent performs a merge with any union data inside the WebhookEvent, using the provided MigrationCompletedEvent
+func (t *WebhookEvent) MergeMigrationCompletedEvent(v MigrationCompletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"migration.completed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMigrationFailedEvent returns the union data inside the WebhookEvent as a MigrationFailedEvent
+func (t WebhookEvent) AsMigrationFailedEvent() (MigrationFailedEvent, error) {
+	var body MigrationFailedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMigrationFailedEvent overwrites any union data inside the WebhookEvent as the provided MigrationFailedEvent
+func (t *WebhookEvent) FromMigrationFailedEvent(v MigrationFailedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"migration.failed"}`))
+	t.union = b
+	return err
+}
+
+// MergeMigrationFailedEvent performs a merge with any union data inside the WebhookEvent, using the provided MigrationFailedEvent
+func (t *WebhookEvent) MergeMigrationFailedEvent(v MigrationFailedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"migration.failed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t WebhookEvent) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"event"`
@@ -15835,6 +16500,10 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsListingSuspendedEvent()
 	case "listing.updated":
 		return t.AsListingUpdatedEvent()
+	case "migration.completed":
+		return t.AsMigrationCompletedEvent()
+	case "migration.failed":
+		return t.AsMigrationFailedEvent()
 	case "payment.completed":
 		return t.AsPaymentCompletedEvent()
 	case "payment.refunded":

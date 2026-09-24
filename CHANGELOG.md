@@ -220,3 +220,21 @@ Refs: vanio-repull-api #59 (listings include), vanio-repull-api #61 (properties 
 ## v0.1.0 — 2026-05-01
 
 - Initial release. Bootstrapped Go SDK for Repull from `api.repull.dev/openapi.json`.
+
+## [0.2.16] - 2026-09-24
+
+Regenerated against the live `https://api.repull.dev/openapi.json` (202 → 209 operations).
+
+### Added
+- **Repull Migrate** — `ListMigrations`, `GetMigration`, `GetMigrationReport`, `GetMigrationChannelMap`,
+  `RunMigrationImport`, `CheckMigrationCutover`, `CutoverMigration`, `DeleteMigration`.
+- `CreateConnectSession` accepts `purpose: "migrate"`, `workspace`, `copy` and `scope`; the session returns `workspaceId`.
+- `migration.completed` / `migration.failed` webhook events; child-workspace events carry `workspaceId`.
+- `ConnectProvider.MigrationCapabilities`.
+
+### Changed
+- Airbnb permits write takes Airbnb's submission shape (`flow_slug` + `answers` keyed by `answer_key`).
+
+### Removed
+- `GetAtlasHealth` (endpoint retired).
+
