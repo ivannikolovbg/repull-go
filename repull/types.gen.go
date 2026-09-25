@@ -4369,6 +4369,24 @@ func (e ListListingsParamsStatus) Valid() bool {
 	}
 }
 
+// Defines values for SetListingMarkupJSONBodyChannel.
+const (
+	SetListingMarkupJSONBodyChannelAirbnb  SetListingMarkupJSONBodyChannel = "airbnb"
+	SetListingMarkupJSONBodyChannelBooking SetListingMarkupJSONBodyChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the SetListingMarkupJSONBodyChannel enum.
+func (e SetListingMarkupJSONBodyChannel) Valid() bool {
+	switch e {
+	case SetListingMarkupJSONBodyChannelAirbnb:
+		return true
+	case SetListingMarkupJSONBodyChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetListingSegmentsParamsLevel.
 const (
 	GetListingSegmentsParamsLevelCompSet GetListingSegmentsParamsLevel = "comp_set"
@@ -5341,7 +5359,7 @@ type AirbnbConnection struct {
 	// Example: ["name","summary","property_type_category"]
 	LockedFields *[]string `json:"lockedFields,omitempty"`
 
-	// Markup Decimal markup (e.g. "1.10" for +10%).
+	// Markup The Airbnb markup as a fraction: "0.35" = +35% on the listing's own price. Read or set it as a percentage with `/v1/listings/{id}/markups`.
 	Markup  *string `json:"markup,omitempty"`
 	Primary *bool   `json:"primary,omitempty"`
 
@@ -6402,12 +6420,14 @@ type BookingProperty struct {
 	} `json:"listings,omitempty"`
 
 	// MappingStatus `mapped` — at least one room points at a listing. `unmapped` — the property is claimed but its rooms are not mapped yet, so `listings` is empty; finish `POST /v1/connect/booking/map-rooms`. An unmapped property is listed rather than hidden, so a half-finished connection is visible instead of looking like no connection at all.
-	MappingStatus    *BookingPropertyMappingStatus `json:"mappingStatus,omitempty"`
-	Markup           *string                       `json:"markup,omitempty"`
-	SuspendedAt      *time.Time                    `json:"suspendedAt,omitempty"`
-	SuspensionReason *string                       `json:"suspensionReason,omitempty"`
-	SyncCategory     *string                       `json:"syncCategory,omitempty"`
-	SyncEnabled      *bool                         `json:"syncEnabled,omitempty"`
+	MappingStatus *BookingPropertyMappingStatus `json:"mappingStatus,omitempty"`
+
+	// Markup The Booking.com markup on this property, as a fraction: "0.18" = +18%, shared by every listing on the property. Read or set it as a percentage with `/v1/listings/{id}/markups`.
+	Markup           *string    `json:"markup,omitempty"`
+	SuspendedAt      *time.Time `json:"suspendedAt,omitempty"`
+	SuspensionReason *string    `json:"suspensionReason,omitempty"`
+	SyncCategory     *string    `json:"syncCategory,omitempty"`
+	SyncEnabled      *bool      `json:"syncEnabled,omitempty"`
 }
 
 // BookingPropertyListingsMappedVia Which record carries the mapping: the room mapping written by Connect, or the legacy property-level link.
@@ -13208,6 +13228,20 @@ type UpdateListingContentParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// SetListingMarkupJSONBody defines parameters for SetListingMarkup.
+type SetListingMarkupJSONBody struct {
+	Channel SetListingMarkupJSONBodyChannel `json:"channel"`
+
+	// HotelId Booking.com property — required when the listing is on more than one.
+	HotelId *string `json:"hotelId,omitempty"`
+
+	// MarkupPercent 15 = +15%. `null` removes the markup.
+	MarkupPercent *float32 `json:"markupPercent"`
+}
+
+// SetListingMarkupJSONBodyChannel defines parameters for SetListingMarkup.
+type SetListingMarkupJSONBodyChannel string
+
 // TakeListingOfflineParams defines parameters for TakeListingOffline.
 type TakeListingOfflineParams struct {
 	// HotelId Booking.com property to act on, for a listing mapped to more than one. The query-string spelling of the body's `hotelId`; the body wins when both are sent.
@@ -13945,6 +13979,9 @@ type UpdateListingContentJSONRequestBody = ListingContentUpdateRequest
 
 // GenerateListingContentJSONRequestBody defines body for GenerateListingContent for application/json ContentType.
 type GenerateListingContentJSONRequestBody = ListingGenerateContentRequest
+
+// SetListingMarkupJSONRequestBody defines body for SetListingMarkup for application/json ContentType.
+type SetListingMarkupJSONRequestBody SetListingMarkupJSONBody
 
 // TakeListingOfflineJSONRequestBody defines body for TakeListingOffline for application/json ContentType.
 type TakeListingOfflineJSONRequestBody = ListingMarketStateRequest

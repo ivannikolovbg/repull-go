@@ -3238,6 +3238,60 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
 	GenerateListingContent(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetListingMarkups Get a listing's channel markups
+	//
+	// The markup each channel adds to this listing's price.
+	//
+	// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+	//
+	// - **Airbnb** — one markup per listing.
+	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	//
+	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+	//
+	// Corresponds with GET /v1/listings/{id}/markups (the `GetListingMarkups` operationId).
+	GetListingMarkups(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetListingMarkupWithBody Set a listing's markup on a channel
+	//
+	// Set the markup one channel adds to this listing's price. When the value changes, the affected listings' prices are re-sent to that channel straight away (`pricesResent`); nothing else is sent.
+	//
+	// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+	//
+	// - **Airbnb** — one markup per listing.
+	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	//
+	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+	//
+	// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+	//
+	// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/listings/{id}/markups (the `SetListingMarkup` operationId).
+	SetListingMarkupWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetListingMarkup Set a listing's markup on a channel
+	//
+	// Set the markup one channel adds to this listing's price. When the value changes, the affected listings' prices are re-sent to that channel straight away (`pricesResent`); nothing else is sent.
+	//
+	// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+	//
+	// - **Airbnb** — one markup per listing.
+	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	//
+	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+	//
+	// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+	//
+	// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/listings/{id}/markups (the `SetListingMarkup` operationId).
+	SetListingMarkup(ctx context.Context, id string, body SetListingMarkupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// TakeListingOfflineWithBody Take a listing off the market
 	//
 	// Stop this listing being sold, on every channel it is connected to, in one call.
@@ -3725,7 +3779,9 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/migrations/{workspaceId}/report (the `GetMigrationReport` operationId).
 	GetMigrationReport(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListProperties List properties
+	// ListProperties List properties (older name for /v1/listings)
+	//
+	// **`/v1/properties` is the older name for `/v1/listings`** — the same listings, the same ids. It stays for existing integrations; new code should use `/v1/listings`, which is where create, content, publishing and markups live.
 	//
 	// Cursor-paginated list of properties for the authenticated workspace. Walk pages with `?cursor=<pagination.nextCursor>`; stop when `pagination.hasMore` is `false`. Cursor is opaque base64 — do not parse it.
 	//
@@ -3740,7 +3796,9 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/properties (the `ListProperties` operationId).
 	ListProperties(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetProperty Get property details
+	// GetProperty Get property details (older name for /v1/listings/{id})
+	//
+	// **`/v1/properties` is the older name for `/v1/listings`** — the same listings, the same ids. It stays for existing integrations; new code should use `/v1/listings`, which is where create, content, publishing and markups live.
 	//
 	// Fetch a single property by Repull id. Property ids are workspace-scoped — an id from one workspace is not valid in another. 404 means the id does not exist OR belongs to a different workspace.
 	//
@@ -9544,6 +9602,90 @@ func (c *Client) GenerateListingContent(ctx context.Context, id int, body Genera
 	return c.Client.Do(req)
 }
 
+// GetListingMarkups Get a listing's channel markups
+//
+// The markup each channel adds to this listing's price.
+//
+// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+//
+// - **Airbnb** — one markup per listing.
+// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+//
+// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+//
+// Corresponds with GET /v1/listings/{id}/markups (the `GetListingMarkups` operationId).
+func (c *Client) GetListingMarkups(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingMarkupsRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetListingMarkupWithBody Set a listing's markup on a channel
+//
+// Set the markup one channel adds to this listing's price. When the value changes, the affected listings' prices are re-sent to that channel straight away (`pricesResent`); nothing else is sent.
+//
+// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+//
+// - **Airbnb** — one markup per listing.
+// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+//
+// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+//
+// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+//
+// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/listings/{id}/markups (the `SetListingMarkup` operationId).
+func (c *Client) SetListingMarkupWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetListingMarkupRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetListingMarkup Set a listing's markup on a channel
+//
+// Set the markup one channel adds to this listing's price. When the value changes, the affected listings' prices are re-sent to that channel straight away (`pricesResent`); nothing else is sent.
+//
+// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+//
+// - **Airbnb** — one markup per listing.
+// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+//
+// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+//
+// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+//
+// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/listings/{id}/markups (the `SetListingMarkup` operationId).
+func (c *Client) SetListingMarkup(ctx context.Context, id string, body SetListingMarkupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetListingMarkupRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // TakeListingOfflineWithBody Take a listing off the market
 //
 // Stop this listing being sold, on every channel it is connected to, in one call.
@@ -10411,7 +10553,9 @@ func (c *Client) GetMigrationReport(ctx context.Context, workspaceId int, reqEdi
 	return c.Client.Do(req)
 }
 
-// ListProperties List properties
+// ListProperties List properties (older name for /v1/listings)
+//
+// **`/v1/properties` is the older name for `/v1/listings`** — the same listings, the same ids. It stays for existing integrations; new code should use `/v1/listings`, which is where create, content, publishing and markups live.
 //
 // Cursor-paginated list of properties for the authenticated workspace. Walk pages with `?cursor=<pagination.nextCursor>`; stop when `pagination.hasMore` is `false`. Cursor is opaque base64 — do not parse it.
 //
@@ -10436,7 +10580,9 @@ func (c *Client) ListProperties(ctx context.Context, params *ListPropertiesParam
 	return c.Client.Do(req)
 }
 
-// GetProperty Get property details
+// GetProperty Get property details (older name for /v1/listings/{id})
+//
+// **`/v1/properties` is the older name for `/v1/listings`** — the same listings, the same ids. It stays for existing integrations; new code should use `/v1/listings`, which is where create, content, publishing and markups live.
 //
 // Fetch a single property by Repull id. Property ids are workspace-scoped — an id from one workspace is not valid in another. 404 means the id does not exist OR belongs to a different workspace.
 //
@@ -19008,6 +19154,87 @@ func NewGenerateListingContentRequestWithBody(server string, id int, contentType
 	return req, nil
 }
 
+// NewGetListingMarkupsRequest constructs an http.Request for the GetListingMarkups method
+func NewGetListingMarkupsRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/markups", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSetListingMarkupRequest calls the generic SetListingMarkup builder with application/json body
+func NewSetListingMarkupRequest(server string, id string, body SetListingMarkupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSetListingMarkupRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewSetListingMarkupRequestWithBody constructs an http.Request for the SetListingMarkup method, with any body, and a specified content type
+func NewSetListingMarkupRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/markups", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewTakeListingOfflineRequest calls the generic TakeListingOffline builder with application/json body
 func NewTakeListingOfflineRequest(server string, id int, params *TakeListingOfflineParams, body TakeListingOfflineJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -25970,6 +26197,62 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
 	GenerateListingContentWithResponse(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateListingContentClientResponse, error)
 
+	// GetListingMarkupsWithResponse Get a listing's channel markups
+	//
+	// The markup each channel adds to this listing's price.
+	//
+	// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+	//
+	// - **Airbnb** — one markup per listing.
+	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	//
+	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/listings/{id}/markups (the `GetListingMarkups` operationId).
+	GetListingMarkupsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetListingMarkupsClientResponse, error)
+
+	// SetListingMarkupWithBodyWithResponse Set a listing's markup on a channel
+	//
+	// Set the markup one channel adds to this listing's price. When the value changes, the affected listings' prices are re-sent to that channel straight away (`pricesResent`); nothing else is sent.
+	//
+	// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+	//
+	// - **Airbnb** — one markup per listing.
+	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	//
+	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+	//
+	// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+	//
+	// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/listings/{id}/markups (the `SetListingMarkup` operationId).
+	SetListingMarkupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetListingMarkupClientResponse, error)
+
+	// SetListingMarkupWithResponse Set a listing's markup on a channel
+	//
+	// Set the markup one channel adds to this listing's price. When the value changes, the affected listings' prices are re-sent to that channel straight away (`pricesResent`); nothing else is sent.
+	//
+	// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+	//
+	// - **Airbnb** — one markup per listing.
+	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	//
+	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+	//
+	// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+	//
+	// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/listings/{id}/markups (the `SetListingMarkup` operationId).
+	SetListingMarkupWithResponse(ctx context.Context, id string, body SetListingMarkupJSONRequestBody, reqEditors ...RequestEditorFn) (*SetListingMarkupClientResponse, error)
+
 	// TakeListingOfflineWithBodyWithResponse Take a listing off the market
 	//
 	// Stop this listing being sold, on every channel it is connected to, in one call.
@@ -26489,7 +26772,9 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/migrations/{workspaceId}/report (the `GetMigrationReport` operationId).
 	GetMigrationReportWithResponse(ctx context.Context, workspaceId int, reqEditors ...RequestEditorFn) (*GetMigrationReportClientResponse, error)
 
-	// ListPropertiesWithResponse List properties
+	// ListPropertiesWithResponse List properties (older name for /v1/listings)
+	//
+	// **`/v1/properties` is the older name for `/v1/listings`** — the same listings, the same ids. It stays for existing integrations; new code should use `/v1/listings`, which is where create, content, publishing and markups live.
 	//
 	// Cursor-paginated list of properties for the authenticated workspace. Walk pages with `?cursor=<pagination.nextCursor>`; stop when `pagination.hasMore` is `false`. Cursor is opaque base64 — do not parse it.
 	//
@@ -26506,7 +26791,9 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/properties (the `ListProperties` operationId).
 	ListPropertiesWithResponse(ctx context.Context, params *ListPropertiesParams, reqEditors ...RequestEditorFn) (*ListPropertiesClientResponse, error)
 
-	// GetPropertyWithResponse Get property details
+	// GetPropertyWithResponse Get property details (older name for /v1/listings/{id})
+	//
+	// **`/v1/properties` is the older name for `/v1/listings`** — the same listings, the same ids. It stays for existing integrations; new code should use `/v1/listings`, which is where create, content, publishing and markups live.
 	//
 	// Fetch a single property by Repull id. Property ids are workspace-scoped — an id from one workspace is not valid in another. 404 means the id does not exist OR belongs to a different workspace.
 	//
@@ -38548,6 +38835,180 @@ func (r GenerateListingContentClientResponse) ContentType() string {
 	return ""
 }
 
+type GetListingMarkupsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Airbnb *[]struct {
+			// AirbnbId Airbnb listing id.
+			AirbnbId *string `json:"airbnbId,omitempty"`
+
+			// MarkupPercent Percent added to the listing's price on Airbnb. 35 = +35%. `null` = none.
+			//
+			// Example: 35
+			MarkupPercent *float32 `json:"markupPercent,omitempty"`
+		} `json:"airbnb,omitempty"`
+		Booking *[]struct {
+			// HotelId Booking.com property id.
+			HotelId *string `json:"hotelId,omitempty"`
+
+			// ListingIds Listings in this workspace priced through this property — all share this markup.
+			ListingIds *[]string `json:"listingIds,omitempty"`
+
+			// MarkupPercent Percent added on Booking.com, for every listing on this property.
+			//
+			// Example: 18
+			MarkupPercent *float32 `json:"markupPercent,omitempty"`
+		} `json:"booking,omitempty"`
+
+		// Id Repull listing id.
+		Id *string `json:"id,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetListingMarkupsClientResponse) GetJSON200() *struct {
+	Airbnb *[]struct {
+		// AirbnbId Airbnb listing id.
+		AirbnbId *string `json:"airbnbId,omitempty"`
+
+		// MarkupPercent Percent added to the listing's price on Airbnb. 35 = +35%. `null` = none.
+		//
+		// Example: 35
+		MarkupPercent *float32 `json:"markupPercent,omitempty"`
+	} `json:"airbnb,omitempty"`
+	Booking *[]struct {
+		// HotelId Booking.com property id.
+		HotelId *string `json:"hotelId,omitempty"`
+
+		// ListingIds Listings in this workspace priced through this property — all share this markup.
+		ListingIds *[]string `json:"listingIds,omitempty"`
+
+		// MarkupPercent Percent added on Booking.com, for every listing on this property.
+		//
+		// Example: 18
+		MarkupPercent *float32 `json:"markupPercent,omitempty"`
+	} `json:"booking,omitempty"`
+
+	// Id Repull listing id.
+	Id *string `json:"id,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetListingMarkupsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingMarkupsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetListingMarkupsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r GetListingMarkupsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingMarkupsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingMarkupsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetListingMarkupsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SetListingMarkupClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SetListingMarkupClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SetListingMarkupClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SetListingMarkupClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SetListingMarkupClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r SetListingMarkupClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SetListingMarkupClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetListingMarkupClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SetListingMarkupClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // TakeListingOfflineClientResponse429Headers the declared response headers of an HTTP 429 response for TakeListingOffline
 type TakeListingOfflineClientResponse429Headers struct {
 	RetryAfter          *int
@@ -47175,6 +47636,80 @@ func (c *ClientWithResponses) GenerateListingContentWithResponse(ctx context.Con
 	return ParseGenerateListingContentClientResponse(rsp)
 }
 
+// GetListingMarkupsWithResponse Get a listing's channel markups
+//
+// The markup each channel adds to this listing's price.
+//
+// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+//
+// - **Airbnb** — one markup per listing.
+// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+//
+// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/listings/{id}/markups (the `GetListingMarkups` operationId).
+func (c *ClientWithResponses) GetListingMarkupsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetListingMarkupsClientResponse, error) {
+	rsp, err := c.GetListingMarkups(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetListingMarkupsClientResponse(rsp)
+}
+
+// SetListingMarkupWithBodyWithResponse Set a listing's markup on a channel
+//
+// Set the markup one channel adds to this listing's price. When the value changes, the affected listings' prices are re-sent to that channel straight away (`pricesResent`); nothing else is sent.
+//
+// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+//
+// - **Airbnb** — one markup per listing.
+// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+//
+// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+//
+// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+//
+// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/listings/{id}/markups (the `SetListingMarkup` operationId).
+func (c *ClientWithResponses) SetListingMarkupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetListingMarkupClientResponse, error) {
+	rsp, err := c.SetListingMarkupWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetListingMarkupClientResponse(rsp)
+}
+
+// SetListingMarkupWithResponse Set a listing's markup on a channel
+//
+// Set the markup one channel adds to this listing's price. When the value changes, the affected listings' prices are re-sent to that channel straight away (`pricesResent`); nothing else is sent.
+//
+// A listing's price on a channel is its own nightly price plus the channel's markup: a $200 night with a 35% Airbnb markup is sent to Airbnb as $270. The calendar keeps the listing's own price (`GET /v1/availability/{propertyId}` returns it); the markup is added only when a price is sent to the channel.
+//
+// - **Airbnb** — one markup per listing.
+// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+//
+// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
+//
+// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+//
+// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/listings/{id}/markups (the `SetListingMarkup` operationId).
+func (c *ClientWithResponses) SetListingMarkupWithResponse(ctx context.Context, id string, body SetListingMarkupJSONRequestBody, reqEditors ...RequestEditorFn) (*SetListingMarkupClientResponse, error) {
+	rsp, err := c.SetListingMarkup(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetListingMarkupClientResponse(rsp)
+}
+
 // TakeListingOfflineWithBodyWithResponse Take a listing off the market
 //
 // Stop this listing being sold, on every channel it is connected to, in one call.
@@ -47922,7 +48457,9 @@ func (c *ClientWithResponses) GetMigrationReportWithResponse(ctx context.Context
 	return ParseGetMigrationReportClientResponse(rsp)
 }
 
-// ListPropertiesWithResponse List properties
+// ListPropertiesWithResponse List properties (older name for /v1/listings)
+//
+// **`/v1/properties` is the older name for `/v1/listings`** — the same listings, the same ids. It stays for existing integrations; new code should use `/v1/listings`, which is where create, content, publishing and markups live.
 //
 // Cursor-paginated list of properties for the authenticated workspace. Walk pages with `?cursor=<pagination.nextCursor>`; stop when `pagination.hasMore` is `false`. Cursor is opaque base64 — do not parse it.
 //
@@ -47945,7 +48482,9 @@ func (c *ClientWithResponses) ListPropertiesWithResponse(ctx context.Context, pa
 	return ParseListPropertiesClientResponse(rsp)
 }
 
-// GetPropertyWithResponse Get property details
+// GetPropertyWithResponse Get property details (older name for /v1/listings/{id})
+//
+// **`/v1/properties` is the older name for `/v1/listings`** — the same listings, the same ids. It stays for existing integrations; new code should use `/v1/listings`, which is where create, content, publishing and markups live.
 //
 // Fetch a single property by Repull id. Property ids are workspace-scoped — an id from one workspace is not valid in another. 404 means the id does not exist OR belongs to a different workspace.
 //
@@ -57378,6 +57917,131 @@ func ParseGenerateListingContentClientResponse(rsp *http.Response) (*GenerateLis
 
 	case rsp.StatusCode == 502:
 		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingMarkupsClientResponse parses an HTTP response from a GetListingMarkupsWithResponse call
+func ParseGetListingMarkupsClientResponse(rsp *http.Response) (*GetListingMarkupsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingMarkupsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Airbnb *[]struct {
+				// AirbnbId Airbnb listing id.
+				AirbnbId *string `json:"airbnbId,omitempty"`
+
+				// MarkupPercent Percent added to the listing's price on Airbnb. 35 = +35%. `null` = none.
+				//
+				// Example: 35
+				MarkupPercent *float32 `json:"markupPercent,omitempty"`
+			} `json:"airbnb,omitempty"`
+			Booking *[]struct {
+				// HotelId Booking.com property id.
+				HotelId *string `json:"hotelId,omitempty"`
+
+				// ListingIds Listings in this workspace priced through this property — all share this markup.
+				ListingIds *[]string `json:"listingIds,omitempty"`
+
+				// MarkupPercent Percent added on Booking.com, for every listing on this property.
+				//
+				// Example: 18
+				MarkupPercent *float32 `json:"markupPercent,omitempty"`
+			} `json:"booking,omitempty"`
+
+			// Id Repull listing id.
+			Id *string `json:"id,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetListingMarkupClientResponse parses an HTTP response from a SetListingMarkupWithResponse call
+func ParseSetListingMarkupClientResponse(rsp *http.Response) (*SetListingMarkupClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetListingMarkupClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 

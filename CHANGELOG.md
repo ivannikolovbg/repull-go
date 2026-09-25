@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.19] - 2026-09-25
+
+Regenerated against the live `https://api.repull.dev/openapi.json`:
+
+- `GET /v1/listings/{id}/markups` and `PUT /v1/listings/{id}/markups` — a listing's markup per channel (Airbnb per listing, Booking.com per property), as a percentage; prices are re-sent to the channel on change.
+- The `markup` field on Airbnb connections and Booking.com properties is documented as a fraction (`"0.35"` = +35%).
+- `/v1/properties` is documented as the older name for `/v1/listings`.
+
 ## [0.2.18] - 2026-09-25
 
 Regenerated against the live `https://api.repull.dev/openapi.json`:
