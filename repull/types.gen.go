@@ -2514,13 +2514,34 @@ func (e ReservationStatus) Valid() bool {
 
 // Defines values for ReservationStatusDetail.
 const (
-	RequestExpired ReservationStatusDetail = "request_expired"
+	ReservationStatusDetailCancelledByGuest    ReservationStatusDetail = "cancelled_by_guest"
+	ReservationStatusDetailCancelledByHost     ReservationStatusDetail = "cancelled_by_host"
+	ReservationStatusDetailCancelledByPlatform ReservationStatusDetail = "cancelled_by_platform"
+	ReservationStatusDetailDeclined            ReservationStatusDetail = "declined"
+	ReservationStatusDetailHoldVoided          ReservationStatusDetail = "hold_voided"
+	ReservationStatusDetailRequestExpired      ReservationStatusDetail = "request_expired"
+	ReservationStatusDetailRequestVoided       ReservationStatusDetail = "request_voided"
+	ReservationStatusDetailVerificationFailed  ReservationStatusDetail = "verification_failed"
 )
 
 // Valid indicates whether the value is a known member of the ReservationStatusDetail enum.
 func (e ReservationStatusDetail) Valid() bool {
 	switch e {
-	case RequestExpired:
+	case ReservationStatusDetailCancelledByGuest:
+		return true
+	case ReservationStatusDetailCancelledByHost:
+		return true
+	case ReservationStatusDetailCancelledByPlatform:
+		return true
+	case ReservationStatusDetailDeclined:
+		return true
+	case ReservationStatusDetailHoldVoided:
+		return true
+	case ReservationStatusDetailRequestExpired:
+		return true
+	case ReservationStatusDetailRequestVoided:
+		return true
+	case ReservationStatusDetailVerificationFailed:
 		return true
 	default:
 		return false
@@ -10245,14 +10266,14 @@ type Reservation struct {
 	// Example: airbnb
 	Source *ReservationSource `json:"source,omitempty"`
 
-	// Status Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`. A `pending` booking request the channel already let lapse — Airbnb expires an unanswered request 24 hours after the guest asks, and no request can be answered once its check-in has passed — is reported as `cancelled` with `statusDetail: "request_expired"`, even when the channel never told us.
+	// Status Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`. A `pending` booking request the channel already let lapse — Airbnb expires an unanswered request 24 hours after the guest asks, and no request can be answered once its check-in has passed — is reported as `cancelled` with `statusDetail: "request_expired"`, even when the channel never told us. Every `cancelled` reservation says how it ended in `statusDetail` when the channel tells us.
 	//
 	// Example: confirmed
 	Status ReservationStatus `json:"status"`
 
-	// StatusDetail Present only when `status` was derived rather than reported by the channel. `request_expired` — a booking request nobody answered in time (Airbnb's 24-hour window passed, or the check-in did). Absent otherwise.
+	// StatusDetail On a `cancelled` reservation: how it ended. `request_expired` — a booking request nobody answered in time (Airbnb's 24-hour window passed, or the check-in did), whether the channel reported it or we derived it. `declined` — the host declined the request. `request_voided` — the request was withdrawn or voided before anyone answered it. `verification_failed` — the guest failed Airbnb's identity verification. `hold_voided` — Airbnb voided a booking it was holding for the guest's payment or verification. `cancelled_by_guest` / `cancelled_by_host` / `cancelled_by_platform` — a booking cancelled by that party (`platform` is the channel itself, e.g. Airbnb support). Matches what the webhooks report for the same change. Absent on every other status, and on a cancellation whose channel gives no reason.
 	//
-	// Example: request_expired
+	// Example: declined
 	StatusDetail *ReservationStatusDetail `json:"statusDetail,omitempty"`
 
 	// TotalPrice DEPRECATED — use `financials.totalPrice` (a number). Decimal-as-string (precision 10, scale 2) kept for back-compat.
@@ -10282,14 +10303,14 @@ type ReservationPlatform string
 // Example: airbnb
 type ReservationSource string
 
-// ReservationStatus Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`. A `pending` booking request the channel already let lapse — Airbnb expires an unanswered request 24 hours after the guest asks, and no request can be answered once its check-in has passed — is reported as `cancelled` with `statusDetail: "request_expired"`, even when the channel never told us.
+// ReservationStatus Lifecycle status. The API normalises a multi-decade internal taxonomy down to these four buckets, so the value you receive is always one of the enum constants. `completed` is derived from `checkOut < today`. A `pending` booking request the channel already let lapse — Airbnb expires an unanswered request 24 hours after the guest asks, and no request can be answered once its check-in has passed — is reported as `cancelled` with `statusDetail: "request_expired"`, even when the channel never told us. Every `cancelled` reservation says how it ended in `statusDetail` when the channel tells us.
 //
 // Example: confirmed
 type ReservationStatus string
 
-// ReservationStatusDetail Present only when `status` was derived rather than reported by the channel. `request_expired` — a booking request nobody answered in time (Airbnb's 24-hour window passed, or the check-in did). Absent otherwise.
+// ReservationStatusDetail On a `cancelled` reservation: how it ended. `request_expired` — a booking request nobody answered in time (Airbnb's 24-hour window passed, or the check-in did), whether the channel reported it or we derived it. `declined` — the host declined the request. `request_voided` — the request was withdrawn or voided before anyone answered it. `verification_failed` — the guest failed Airbnb's identity verification. `hold_voided` — Airbnb voided a booking it was holding for the guest's payment or verification. `cancelled_by_guest` / `cancelled_by_host` / `cancelled_by_platform` — a booking cancelled by that party (`platform` is the channel itself, e.g. Airbnb support). Matches what the webhooks report for the same change. Absent on every other status, and on a cancellation whose channel gives no reason.
 //
-// Example: request_expired
+// Example: declined
 type ReservationStatusDetail string
 
 // ReservationAlterationCreatedEvent defines model for ReservationAlterationCreatedEvent.
