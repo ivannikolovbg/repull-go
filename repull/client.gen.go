@@ -124,13 +124,13 @@ type ClientInterface interface {
 
 	// GetAvailability Get property availability
 	//
-	// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights }` — projected from the property calendar.
+	// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the rooms of the type left for a hotel-model listing (a Mews or Cloudbeds room type).
 	//
 	// The `from` and `to` query params are **required** (ISO `YYYY-MM-DD`, inclusive) — omitting or malforming either returns 422. The window is capped at 366 days; longer ranges are truncated to the first 366 days.
 	//
 	// **`days` contains only the dates we actually hold calendar data for.** Requested dates with no calendar row are listed in `coverage.missingDates` — their availability is unknown. Never treat a missing date as bookable: this endpoint deliberately does not synthesise availability, because a fabricated open date can be double-booked. A property with no calendar still returns a real 200 (`days: []`, every date in `coverage.missingDates`), never a 404 — 404 means the property id does not exist or belongs to a different workspace.
 	//
-	// This endpoint is read-only, and the projected per-date shape carries **availability, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
+	// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -367,7 +367,7 @@ type ClientInterface interface {
 
 	// GetAirbnbListing Get Airbnb listing
 	//
-	// Fetch all Airbnb connection rows for a single Vanio listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
+	// Fetch all Airbnb connection rows for a single Repull listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
 	//
 	// Each row carries `syncCategory` — Airbnb's own per-listing API sync decision (`sync_all`, `sync_rates_and_availability`, or `none`) — and `writable`, which is `false` exactly when that category is `none`, meaning Airbnb refuses every write to the listing and Repull returns `403 listing_not_api_connected` without sending anything. `GET /v1/channels/airbnb/listings` reports both fields for the whole portfolio in one call.
 	//
@@ -392,7 +392,7 @@ type ClientInterface interface {
 	// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
 	// | Data kept | Yes, and it keeps syncing | Yes |
 	//
-	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else.
 	//
 	// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 	//
@@ -427,7 +427,7 @@ type ClientInterface interface {
 	// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
 	// | Data kept | Yes, and it keeps syncing | Yes |
 	//
-	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else.
 	//
 	// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 	//
@@ -1226,7 +1226,7 @@ type ClientInterface interface {
 
 	// CreateAirbnbOfferWithBody Create Airbnb special offer or pre-approval
 	//
-	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
+	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Repull, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 	//
 	// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
 	// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
@@ -1246,7 +1246,7 @@ type ClientInterface interface {
 
 	// CreateAirbnbOffer Create Airbnb special offer or pre-approval
 	//
-	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
+	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Repull, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 	//
 	// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
 	// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
@@ -1402,34 +1402,42 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
 	RespondAirbnbReview(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListAirbnbTransactions List Airbnb transactions
+	// ListAirbnbTransactions List Airbnb transactions (settlement ledger)
 	//
-	// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `dataFreshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+	// The Airbnb settlement ledger for this workspace: every payout Airbnb sent to the host, each followed by the lines it paid — reservations and their installments, adjustments, resolution payouts and adjustments, cancellation fees. A payout's lines' signed `amount`s sum to its `payout.paidOutAmount` exactly, negative lines included (an adjustment offset against a later payout appears under that payout). `status: UPCOMING` lines are expected earnings not paid out yet; they belong to no payout.
 	//
-	// Transactions of reservations on inactive listings are left out; payout rows, which belong to no listing, are always included.
+	// **Ids are stable.** Airbnb sends no line id and no payout id on lines, so Repull derives them deterministically: a Payout row's id is Airbnb's payout id; a line's is `<payoutId>:<type>:<confirmationCode>:<n>`. The same line has the same id on every refresh and every page, so you can upsert on `transactionId`. A payout that nets to $0.00 has no Airbnb id; it gets a derived `Z-<date>-<hash>` id with `payout.payoutIdSynthetic: true`.
 	//
-	// **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
+	// **Order:** newest first by the payout's date; each Payout row is followed by its lines in Airbnb's order (`payout.lineIndex`).
+	//
+	// **Dates:** `start_date` / `end_date` match the payout's date for settled lines (a line can be dated the day before its payout, and is still returned with it) and the line's own date for UPCOMING lines.
+	//
+	// **Pure DB read** — never calls Airbnb. Refresh with `POST` on this path. `dataFreshness` reports when each account's ledger was last refreshed.
+	//
+	// Lines on listings that are inactive in Repull are included and flagged `onInactiveListing: true`, so every payout reconciles. Lines Repull cannot match to a reservation keep `reservationId: null`.
+	//
+	// **Not in Airbnb's transaction history** (listed in `unavailableFields`): taxes Airbnb collects and remits itself, and the guest-paid total (see the reservation's financial breakdown); pass-through occupancy tax paid to the host does appear, as its own `Pass Through Tot` lines, the original line a refund or reversal reverses (it names the stay and the resolution), and currency-conversion amounts (only the payout currency is reported).
 	//
 	// Corresponds with GET /v1/channels/airbnb/transactions (the `ListAirbnbTransactions` operationId).
 	ListAirbnbTransactions(ctx context.Context, params *ListAirbnbTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// SyncAirbnbTransactionsWithBody Sync Airbnb transactions
+	// SyncAirbnbTransactionsWithBody Refresh Airbnb transactions
 	//
-	// Refresh the Airbnb transactions mirror for this workspace by pulling from Airbnb upstream and upserting the breakdown that `GET` serves. Optional JSON body `{ start_date, end_date, transaction_type }` (`transaction_type` is `COMPLETED` or `UPCOMING`; both are synced when omitted). Returns `{ synced, count }`.
+	// Pull the transaction history from Airbnb into the ledger `GET` serves. Every connected Airbnb account is refreshed, or only `?account_id=`. Without dates: settled lines from the last 12 months and the forecast for the next 12. Safe to repeat: settled lines are upserted on their stable ids, never duplicated or removed; the UPCOMING forecast inside the fetched window is replaced, so a line that has since been paid out moves to its payout. Each account reports its own outcome in `accounts[]`: one account Airbnb refuses (a revoked host, a listing Airbnb no longer serves) is reported there with Airbnb's reason and does not stop the others. When every account fails, the response is Airbnb's answer with its usual code.
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/transactions (the `SyncAirbnbTransactions` operationId).
-	SyncAirbnbTransactionsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	SyncAirbnbTransactionsWithBody(ctx context.Context, params *SyncAirbnbTransactionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// SyncAirbnbTransactions Sync Airbnb transactions
+	// SyncAirbnbTransactions Refresh Airbnb transactions
 	//
-	// Refresh the Airbnb transactions mirror for this workspace by pulling from Airbnb upstream and upserting the breakdown that `GET` serves. Optional JSON body `{ start_date, end_date, transaction_type }` (`transaction_type` is `COMPLETED` or `UPCOMING`; both are synced when omitted). Returns `{ synced, count }`.
+	// Pull the transaction history from Airbnb into the ledger `GET` serves. Every connected Airbnb account is refreshed, or only `?account_id=`. Without dates: settled lines from the last 12 months and the forecast for the next 12. Safe to repeat: settled lines are upserted on their stable ids, never duplicated or removed; the UPCOMING forecast inside the fetched window is replaced, so a line that has since been paid out moves to its payout. Each account reports its own outcome in `accounts[]`: one account Airbnb refuses (a revoked host, a listing Airbnb no longer serves) is reported there with Airbnb's reason and does not stop the others. When every account fails, the response is Airbnb's answer with its usual code.
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/transactions (the `SyncAirbnbTransactions` operationId).
-	SyncAirbnbTransactions(ctx context.Context, body SyncAirbnbTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	SyncAirbnbTransactions(ctx context.Context, params *SyncAirbnbTransactionsParams, body SyncAirbnbTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetBookingAvailability Read current Booking.com rates/availability/restrictions
 	//
@@ -2364,6 +2372,40 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connect/bookingsync/credentials (the `SubmitBookingsyncCredentials` operationId).
 	SubmitBookingsyncCredentials(ctx context.Context, body SubmitBookingsyncCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SubmitCloudbedsCredentialsWithBody Submit Cloudbeds credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
+	//
+	// In Cloudbeds a listing is a room type and its rooms are units. A booking with several rooms becomes one reservation per room.
+	//
+	// The key is validated and the properties it can see are read before anything is stored. On success Repull subscribes to the property's Cloudbeds webhooks (reservations, guests, room blocks) and queues the first sync.
+	//
+	// Cloudbeds keys expire if unused for 30 days; the connection's regular sync keeps them alive.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/cloudbeds/credentials (the `SubmitCloudbedsCredentials` operationId).
+	SubmitCloudbedsCredentialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitCloudbedsCredentials Submit Cloudbeds credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
+	//
+	// In Cloudbeds a listing is a room type and its rooms are units. A booking with several rooms becomes one reservation per room.
+	//
+	// The key is validated and the properties it can see are read before anything is stored. On success Repull subscribes to the property's Cloudbeds webhooks (reservations, guests, room blocks) and queues the first sync.
+	//
+	// Cloudbeds keys expire if unused for 30 days; the connection's regular sync keeps them alive.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/cloudbeds/credentials (the `SubmitCloudbedsCredentials` operationId).
+	SubmitCloudbedsCredentials(ctx context.Context, body SubmitCloudbedsCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SubmitGuestyCredentialsWithBody Submit Guesty credentials for a Connect session
 	//
 	// Completes a credentials-pattern connection for Guesty. Client ID + secret from Guesty → Integrations → Open API.
@@ -2493,6 +2535,40 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /v1/connect/lodgify/credentials (the `SubmitLodgifyCredentials` operationId).
 	SubmitLodgifyCredentials(ctx context.Context, body SubmitLodgifyCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitMewsCredentialsWithBody Submit Mews credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Mews. The property enables Repull in Mews and shares its Connector API access token.
+	//
+	// In Mews a listing is a room type and its rooms are units: rates, restrictions and availability live on the room type, and each reservation names the room it was assigned.
+	//
+	// The token is validated against Mews and the property it belongs to is read before anything is stored, so a bad token returns `invalid_credentials` rather than a dead connection. The first sync (listings, rooms, reservations) is queued on success.
+	//
+	// To try it without a Mews customer, send the demo access token from Mews's documentation with `environment: "demo"`.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/mews/credentials (the `SubmitMewsCredentials` operationId).
+	SubmitMewsCredentialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitMewsCredentials Submit Mews credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Mews. The property enables Repull in Mews and shares its Connector API access token.
+	//
+	// In Mews a listing is a room type and its rooms are units: rates, restrictions and availability live on the room type, and each reservation names the room it was assigned.
+	//
+	// The token is validated against Mews and the property it belongs to is read before anything is stored, so a bad token returns `invalid_credentials` rather than a dead connection. The first sync (listings, rooms, reservations) is queued on success.
+	//
+	// To try it without a Mews customer, send the demo access token from Mews's documentation with `environment: "demo"`.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/mews/credentials (the `SubmitMewsCredentials` operationId).
+	SubmitMewsCredentials(ctx context.Context, body SubmitMewsCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SubmitOwnerrezCredentialsWithBody Submit OwnerRez credentials for a Connect session
 	//
@@ -2655,7 +2731,7 @@ type ClientInterface interface {
 
 	// ListConversations List conversations
 	//
-	// Cursor-paginated list of message threads owned by the workspace. Backed by main vanio's `/api/threads/list` which keyset-paginates against `(last_message_at, id)` for constant per-page cost. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
+	// Cursor-paginated list of message threads owned by the workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 	//
@@ -2899,7 +2975,7 @@ type ClientInterface interface {
 
 	// GetGuest Get guest profile
 	//
-	// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates. Aggregates main vanio's `GuestService.getGuestProfile()` into the public Repull shape so SDK consumers don't have to learn the internal schema.
+	// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates.
 	//
 	// **Inactive listings:** a guest whose every reservation is on an inactive listing returns `403 listing_inactive` naming those listings (the guest is kept, so this is not a 404). Otherwise the reservation aggregates exclude reservations on inactive listings. A guest with no reservations is always readable.
 	//
@@ -3013,7 +3089,7 @@ type ClientInterface interface {
 
 	// CreateListingWithBody Create a Repull listing
 	//
-	// Create a new vacation-rental listing under the authenticated workspace. The listing is stored in the canonical Vanio listings tables and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
+	// Create a new vacation-rental listing under the authenticated workspace. The listing is stored as a canonical Repull listing and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3022,7 +3098,7 @@ type ClientInterface interface {
 
 	// CreateListing Create a Repull listing
 	//
-	// Create a new vacation-rental listing under the authenticated workspace. The listing is stored in the canonical Vanio listings tables and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
+	// Create a new vacation-rental listing under the authenticated workspace. The listing is stored as a canonical Repull listing and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3413,9 +3489,9 @@ type ClientInterface interface {
 
 	// CreateListingPhotoUploadUrlWithBody Mint a direct-to-storage photo upload URL
 	//
-	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
+	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 	//
-	// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+	// Flow: (1) POST here with `fileName`, `fileType` and `fileSize` (bytes) to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) **attach it** — uploading does not put the photo on the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos). The response's `nextStep` says the same.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -3426,9 +3502,9 @@ type ClientInterface interface {
 
 	// CreateListingPhotoUploadUrl Mint a direct-to-storage photo upload URL
 	//
-	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
+	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 	//
-	// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+	// Flow: (1) POST here with `fileName`, `fileType` and `fileSize` (bytes) to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) **attach it** — uploading does not put the photo on the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos). The response's `nextStep` says the same.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -3589,6 +3665,8 @@ type ClientInterface interface {
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
+	// A listing with no Booking.com room linked is refused with `409 listing_not_on_booking` and the next step, rather than answered with `published: false`.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
@@ -3607,6 +3685,8 @@ type ClientInterface interface {
 	// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// A listing with no Booking.com room linked is refused with `409 listing_not_on_booking` and the next step, rather than answered with `published: false`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3668,6 +3748,15 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/listings/{id}/segments (the `GetListingSegments` operationId).
 	GetListingSegments(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListListingUnits List a listing's units (rooms)
+	//
+	// The physical rooms under a listing. For a hotel-model PMS (Mews, Cloudbeds) a listing is a room type: prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+	//
+	// Any other listing is a single home, which is its own unit, and returns an empty list.
+	//
+	// Corresponds with GET /v1/listings/{id}/units (the `ListListingUnits` operationId).
+	ListListingUnits(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListMarkets List markets the customer operates in
 	//
@@ -3959,6 +4048,40 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/reservations/{id}/accept (the `AcceptReservationRequest` operationId).
 	AcceptReservationRequest(ctx context.Context, id int, params *AcceptReservationRequestParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CancelReservationWithBody Cancel a reservation
+	//
+	// Cancels a reservation where it lives.
+	//
+	// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+	// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
+	// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+	//
+	// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
+	CancelReservationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CancelReservation Cancel a reservation
+	//
+	// Cancels a reservation where it lives.
+	//
+	// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+	// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
+	// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+	//
+	// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
+	CancelReservation(ctx context.Context, id int, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeclineReservationRequestWithBody Decline a booking request
 	//
 	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
@@ -3991,7 +4114,7 @@ type ClientInterface interface {
 
 	// ListReviews List reviews
 	//
-	// Cursor-paginated guest + host review stream for the workspace. Backed by main vanio's unified `reviews` table (populated by per-channel backfill crons), so this surface returns the complete cross-channel history — separate from `/v1/channels/airbnb/reviews` which hits Airbnb live.
+	// Cursor-paginated guest + host review stream for the workspace. This surface returns the complete cross-channel history — separate from `/v1/channels/airbnb/reviews` which hits Airbnb live.
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 	//
@@ -4323,13 +4446,13 @@ func (c *Client) BatchUpdateAvailability(ctx context.Context, body BatchUpdateAv
 
 // GetAvailability Get property availability
 //
-// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights }` — projected from the property calendar.
+// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the rooms of the type left for a hotel-model listing (a Mews or Cloudbeds room type).
 //
 // The `from` and `to` query params are **required** (ISO `YYYY-MM-DD`, inclusive) — omitting or malforming either returns 422. The window is capped at 366 days; longer ranges are truncated to the first 366 days.
 //
 // **`days` contains only the dates we actually hold calendar data for.** Requested dates with no calendar row are listed in `coverage.missingDates` — their availability is unknown. Never treat a missing date as bookable: this endpoint deliberately does not synthesise availability, because a fabricated open date can be double-booked. A property with no calendar still returns a real 200 (`days: []`, every date in `coverage.missingDates`), never a 404 — 404 means the property id does not exist or belongs to a different workspace.
 //
-// This endpoint is read-only, and the projected per-date shape carries **availability, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
+// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -4756,7 +4879,7 @@ func (c *Client) MapAirbnbListing(ctx context.Context, body MapAirbnbListingJSON
 
 // GetAirbnbListing Get Airbnb listing
 //
-// Fetch all Airbnb connection rows for a single Vanio listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
+// Fetch all Airbnb connection rows for a single Repull listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
 //
 // Each row carries `syncCategory` — Airbnb's own per-listing API sync decision (`sync_all`, `sync_rates_and_availability`, or `none`) — and `writable`, which is `false` exactly when that category is `none`, meaning Airbnb refuses every write to the listing and Repull returns `403 listing_not_api_connected` without sending anything. `GET /v1/channels/airbnb/listings` reports both fields for the whole portfolio in one call.
 //
@@ -4791,7 +4914,7 @@ func (c *Client) GetAirbnbListing(ctx context.Context, id string, params *GetAir
 // | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
 // | Data kept | Yes, and it keeps syncing | Yes |
 //
-// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else.
 //
 // `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 //
@@ -4836,7 +4959,7 @@ func (c *Client) AirbnbListingActionWithBody(ctx context.Context, id string, par
 // | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
 // | Data kept | Yes, and it keeps syncing | Yes |
 //
-// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else.
 //
 // `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 //
@@ -6185,7 +6308,7 @@ func (c *Client) GetAirbnbOffer(ctx context.Context, params *GetAirbnbOfferParam
 
 // CreateAirbnbOfferWithBody Create Airbnb special offer or pre-approval
 //
-// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
+// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Repull, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 //
 // - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
 // - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
@@ -6215,7 +6338,7 @@ func (c *Client) CreateAirbnbOfferWithBody(ctx context.Context, params *CreateAi
 
 // CreateAirbnbOffer Create Airbnb special offer or pre-approval
 //
-// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
+// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Repull, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 //
 // - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
 // - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
@@ -6480,13 +6603,21 @@ func (c *Client) RespondAirbnbReview(ctx context.Context, id string, body Respon
 	return c.Client.Do(req)
 }
 
-// ListAirbnbTransactions List Airbnb transactions
+// ListAirbnbTransactions List Airbnb transactions (settlement ledger)
 //
-// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `dataFreshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+// The Airbnb settlement ledger for this workspace: every payout Airbnb sent to the host, each followed by the lines it paid — reservations and their installments, adjustments, resolution payouts and adjustments, cancellation fees. A payout's lines' signed `amount`s sum to its `payout.paidOutAmount` exactly, negative lines included (an adjustment offset against a later payout appears under that payout). `status: UPCOMING` lines are expected earnings not paid out yet; they belong to no payout.
 //
-// Transactions of reservations on inactive listings are left out; payout rows, which belong to no listing, are always included.
+// **Ids are stable.** Airbnb sends no line id and no payout id on lines, so Repull derives them deterministically: a Payout row's id is Airbnb's payout id; a line's is `<payoutId>:<type>:<confirmationCode>:<n>`. The same line has the same id on every refresh and every page, so you can upsert on `transactionId`. A payout that nets to $0.00 has no Airbnb id; it gets a derived `Z-<date>-<hash>` id with `payout.payoutIdSynthetic: true`.
 //
-// **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
+// **Order:** newest first by the payout's date; each Payout row is followed by its lines in Airbnb's order (`payout.lineIndex`).
+//
+// **Dates:** `start_date` / `end_date` match the payout's date for settled lines (a line can be dated the day before its payout, and is still returned with it) and the line's own date for UPCOMING lines.
+//
+// **Pure DB read** — never calls Airbnb. Refresh with `POST` on this path. `dataFreshness` reports when each account's ledger was last refreshed.
+//
+// Lines on listings that are inactive in Repull are included and flagged `onInactiveListing: true`, so every payout reconciles. Lines Repull cannot match to a reservation keep `reservationId: null`.
+//
+// **Not in Airbnb's transaction history** (listed in `unavailableFields`): taxes Airbnb collects and remits itself, and the guest-paid total (see the reservation's financial breakdown); pass-through occupancy tax paid to the host does appear, as its own `Pass Through Tot` lines, the original line a refund or reversal reverses (it names the stay and the resolution), and currency-conversion amounts (only the payout currency is reported).
 //
 // Corresponds with GET /v1/channels/airbnb/transactions (the `ListAirbnbTransactions` operationId).
 func (c *Client) ListAirbnbTransactions(ctx context.Context, params *ListAirbnbTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -6501,15 +6632,15 @@ func (c *Client) ListAirbnbTransactions(ctx context.Context, params *ListAirbnbT
 	return c.Client.Do(req)
 }
 
-// SyncAirbnbTransactionsWithBody Sync Airbnb transactions
+// SyncAirbnbTransactionsWithBody Refresh Airbnb transactions
 //
-// Refresh the Airbnb transactions mirror for this workspace by pulling from Airbnb upstream and upserting the breakdown that `GET` serves. Optional JSON body `{ start_date, end_date, transaction_type }` (`transaction_type` is `COMPLETED` or `UPCOMING`; both are synced when omitted). Returns `{ synced, count }`.
+// Pull the transaction history from Airbnb into the ledger `GET` serves. Every connected Airbnb account is refreshed, or only `?account_id=`. Without dates: settled lines from the last 12 months and the forecast for the next 12. Safe to repeat: settled lines are upserted on their stable ids, never duplicated or removed; the UPCOMING forecast inside the fetched window is replaced, so a line that has since been paid out moves to its payout. Each account reports its own outcome in `accounts[]`: one account Airbnb refuses (a revoked host, a listing Airbnb no longer serves) is reported there with Airbnb's reason and does not stop the others. When every account fails, the response is Airbnb's answer with its usual code.
 //
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/channels/airbnb/transactions (the `SyncAirbnbTransactions` operationId).
-func (c *Client) SyncAirbnbTransactionsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSyncAirbnbTransactionsRequestWithBody(c.Server, contentType, body)
+func (c *Client) SyncAirbnbTransactionsWithBody(ctx context.Context, params *SyncAirbnbTransactionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSyncAirbnbTransactionsRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6520,15 +6651,15 @@ func (c *Client) SyncAirbnbTransactionsWithBody(ctx context.Context, contentType
 	return c.Client.Do(req)
 }
 
-// SyncAirbnbTransactions Sync Airbnb transactions
+// SyncAirbnbTransactions Refresh Airbnb transactions
 //
-// Refresh the Airbnb transactions mirror for this workspace by pulling from Airbnb upstream and upserting the breakdown that `GET` serves. Optional JSON body `{ start_date, end_date, transaction_type }` (`transaction_type` is `COMPLETED` or `UPCOMING`; both are synced when omitted). Returns `{ synced, count }`.
+// Pull the transaction history from Airbnb into the ledger `GET` serves. Every connected Airbnb account is refreshed, or only `?account_id=`. Without dates: settled lines from the last 12 months and the forecast for the next 12. Safe to repeat: settled lines are upserted on their stable ids, never duplicated or removed; the UPCOMING forecast inside the fetched window is replaced, so a line that has since been paid out moves to its payout. Each account reports its own outcome in `accounts[]`: one account Airbnb refuses (a revoked host, a listing Airbnb no longer serves) is reported there with Airbnb's reason and does not stop the others. When every account fails, the response is Airbnb's answer with its usual code.
 //
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/transactions (the `SyncAirbnbTransactions` operationId).
-func (c *Client) SyncAirbnbTransactions(ctx context.Context, body SyncAirbnbTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSyncAirbnbTransactionsRequest(c.Server, body)
+func (c *Client) SyncAirbnbTransactions(ctx context.Context, params *SyncAirbnbTransactionsParams, body SyncAirbnbTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSyncAirbnbTransactionsRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8068,6 +8199,60 @@ func (c *Client) SubmitBookingsyncCredentials(ctx context.Context, body SubmitBo
 	return c.Client.Do(req)
 }
 
+// SubmitCloudbedsCredentialsWithBody Submit Cloudbeds credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
+//
+// In Cloudbeds a listing is a room type and its rooms are units. A booking with several rooms becomes one reservation per room.
+//
+// The key is validated and the properties it can see are read before anything is stored. On success Repull subscribes to the property's Cloudbeds webhooks (reservations, guests, room blocks) and queues the first sync.
+//
+// Cloudbeds keys expire if unused for 30 days; the connection's regular sync keeps them alive.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/cloudbeds/credentials (the `SubmitCloudbedsCredentials` operationId).
+func (c *Client) SubmitCloudbedsCredentialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitCloudbedsCredentialsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitCloudbedsCredentials Submit Cloudbeds credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
+//
+// In Cloudbeds a listing is a room type and its rooms are units. A booking with several rooms becomes one reservation per room.
+//
+// The key is validated and the properties it can see are read before anything is stored. On success Repull subscribes to the property's Cloudbeds webhooks (reservations, guests, room blocks) and queues the first sync.
+//
+// Cloudbeds keys expire if unused for 30 days; the connection's regular sync keeps them alive.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/cloudbeds/credentials (the `SubmitCloudbedsCredentials` operationId).
+func (c *Client) SubmitCloudbedsCredentials(ctx context.Context, body SubmitCloudbedsCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitCloudbedsCredentialsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // SubmitGuestyCredentialsWithBody Submit Guesty credentials for a Connect session
 //
 // Completes a credentials-pattern connection for Guesty. Client ID + secret from Guesty → Integrations → Open API.
@@ -8288,6 +8473,60 @@ func (c *Client) SubmitLodgifyCredentialsWithBody(ctx context.Context, contentTy
 // Corresponds with POST /v1/connect/lodgify/credentials (the `SubmitLodgifyCredentials` operationId).
 func (c *Client) SubmitLodgifyCredentials(ctx context.Context, body SubmitLodgifyCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSubmitLodgifyCredentialsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitMewsCredentialsWithBody Submit Mews credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Mews. The property enables Repull in Mews and shares its Connector API access token.
+//
+// In Mews a listing is a room type and its rooms are units: rates, restrictions and availability live on the room type, and each reservation names the room it was assigned.
+//
+// The token is validated against Mews and the property it belongs to is read before anything is stored, so a bad token returns `invalid_credentials` rather than a dead connection. The first sync (listings, rooms, reservations) is queued on success.
+//
+// To try it without a Mews customer, send the demo access token from Mews's documentation with `environment: "demo"`.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/mews/credentials (the `SubmitMewsCredentials` operationId).
+func (c *Client) SubmitMewsCredentialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitMewsCredentialsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitMewsCredentials Submit Mews credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Mews. The property enables Repull in Mews and shares its Connector API access token.
+//
+// In Mews a listing is a room type and its rooms are units: rates, restrictions and availability live on the room type, and each reservation names the room it was assigned.
+//
+// The token is validated against Mews and the property it belongs to is read before anything is stored, so a bad token returns `invalid_credentials` rather than a dead connection. The first sync (listings, rooms, reservations) is queued on success.
+//
+// To try it without a Mews customer, send the demo access token from Mews's documentation with `environment: "demo"`.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/mews/credentials (the `SubmitMewsCredentials` operationId).
+func (c *Client) SubmitMewsCredentials(ctx context.Context, body SubmitMewsCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitMewsCredentialsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8589,7 +8828,7 @@ func (c *Client) CreateConnection(ctx context.Context, provider Provider, body C
 
 // ListConversations List conversations
 //
-// Cursor-paginated list of message threads owned by the workspace. Backed by main vanio's `/api/threads/list` which keyset-paginates against `(last_message_at, id)` for constant per-page cost. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
+// Cursor-paginated list of message threads owned by the workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 //
@@ -8973,7 +9212,7 @@ func (c *Client) CreateGuest(ctx context.Context, params *CreateGuestParams, bod
 
 // GetGuest Get guest profile
 //
-// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates. Aggregates main vanio's `GuestService.getGuestProfile()` into the public Repull shape so SDK consumers don't have to learn the internal schema.
+// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates.
 //
 // **Inactive listings:** a guest whose every reservation is on an inactive listing returns `403 listing_inactive` naming those listings (the guest is kept, so this is not a 404). Otherwise the reservation aggregates exclude reservations on inactive listings. A guest with no reservations is always readable.
 //
@@ -9227,7 +9466,7 @@ func (c *Client) ListListings(ctx context.Context, params *ListListingsParams, r
 
 // CreateListingWithBody Create a Repull listing
 //
-// Create a new vacation-rental listing under the authenticated workspace. The listing is stored in the canonical Vanio listings tables and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
+// Create a new vacation-rental listing under the authenticated workspace. The listing is stored as a canonical Repull listing and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
 //
 // Takes any type of body and a specified content type.
 //
@@ -9246,7 +9485,7 @@ func (c *Client) CreateListingWithBody(ctx context.Context, contentType string, 
 
 // CreateListing Create a Repull listing
 //
-// Create a new vacation-rental listing under the authenticated workspace. The listing is stored in the canonical Vanio listings tables and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
+// Create a new vacation-rental listing under the authenticated workspace. The listing is stored as a canonical Repull listing and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -9877,9 +10116,9 @@ func (c *Client) ListListingPhotos(ctx context.Context, id int, reqEditors ...Re
 
 // CreateListingPhotoUploadUrlWithBody Mint a direct-to-storage photo upload URL
 //
-// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
+// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 //
-// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+// Flow: (1) POST here with `fileName`, `fileType` and `fileSize` (bytes) to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) **attach it** — uploading does not put the photo on the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos). The response's `nextStep` says the same.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -9900,9 +10139,9 @@ func (c *Client) CreateListingPhotoUploadUrlWithBody(ctx context.Context, id int
 
 // CreateListingPhotoUploadUrl Mint a direct-to-storage photo upload URL
 //
-// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
+// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 //
-// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+// Flow: (1) POST here with `fileName`, `fileType` and `fileSize` (bytes) to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) **attach it** — uploading does not put the photo on the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos). The response's `nextStep` says the same.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -10173,6 +10412,8 @@ func (c *Client) PublishListingToAirbnb(ctx context.Context, id int, params *Pub
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
+// A listing with no Booking.com room linked is refused with `409 listing_not_on_booking` and the next step, rather than answered with `published: false`.
+//
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
@@ -10201,6 +10442,8 @@ func (c *Client) PublishListingToBookingWithBody(ctx context.Context, id int, pa
 // A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// A listing with no Booking.com room linked is refused with `409 listing_not_on_booking` and the next step, rather than answered with `published: false`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -10293,6 +10536,25 @@ func (c *Client) PullListingFromAirbnb(ctx context.Context, id int, body PullLis
 // Corresponds with GET /v1/listings/{id}/segments (the `GetListingSegments` operationId).
 func (c *Client) GetListingSegments(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetListingSegmentsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListListingUnits List a listing's units (rooms)
+//
+// The physical rooms under a listing. For a hotel-model PMS (Mews, Cloudbeds) a listing is a room type: prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+//
+// Any other listing is a single home, which is its own unit, and returns an empty list.
+//
+// Corresponds with GET /v1/listings/{id}/units (the `ListListingUnits` operationId).
+func (c *Client) ListListingUnits(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListListingUnitsRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -10833,6 +11095,60 @@ func (c *Client) AcceptReservationRequest(ctx context.Context, id int, params *A
 	return c.Client.Do(req)
 }
 
+// CancelReservationWithBody Cancel a reservation
+//
+// Cancels a reservation where it lives.
+//
+// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
+// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+//
+// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
+//
+// Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
+func (c *Client) CancelReservationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelReservationRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CancelReservation Cancel a reservation
+//
+// Cancels a reservation where it lives.
+//
+// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
+// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+//
+// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
+//
+// Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
+func (c *Client) CancelReservation(ctx context.Context, id int, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelReservationRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // DeclineReservationRequestWithBody Decline a booking request
 //
 // Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
@@ -10885,7 +11201,7 @@ func (c *Client) DeclineReservationRequest(ctx context.Context, id int, params *
 
 // ListReviews List reviews
 //
-// Cursor-paginated guest + host review stream for the workspace. Backed by main vanio's unified `reviews` table (populated by per-channel backfill crons), so this surface returns the complete cross-channel history — separate from `/v1/channels/airbnb/reviews` which hits Airbnb live.
+// Cursor-paginated guest + host review stream for the workspace. This surface returns the complete cross-channel history — separate from `/v1/channels/airbnb/reviews` which hits Airbnb live.
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 //
@@ -14632,6 +14948,102 @@ func NewListAirbnbTransactionsRequest(server string, params *ListAirbnbTransacti
 
 		}
 
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.PayoutId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "payout_id", *params.PayoutId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ConfirmationCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "confirmation_code", *params.ConfirmationCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if encoded := queryValues.Encode(); encoded != "" {
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
@@ -14647,18 +15059,18 @@ func NewListAirbnbTransactionsRequest(server string, params *ListAirbnbTransacti
 }
 
 // NewSyncAirbnbTransactionsRequest calls the generic SyncAirbnbTransactions builder with application/json body
-func NewSyncAirbnbTransactionsRequest(server string, body SyncAirbnbTransactionsJSONRequestBody) (*http.Request, error) {
+func NewSyncAirbnbTransactionsRequest(server string, params *SyncAirbnbTransactionsParams, body SyncAirbnbTransactionsJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewSyncAirbnbTransactionsRequestWithBody(server, "application/json", bodyReader)
+	return NewSyncAirbnbTransactionsRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewSyncAirbnbTransactionsRequestWithBody constructs an http.Request for the SyncAirbnbTransactions method, with any body, and a specified content type
-func NewSyncAirbnbTransactionsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+func NewSyncAirbnbTransactionsRequestWithBody(server string, params *SyncAirbnbTransactionsParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -14674,6 +15086,33 @@ func NewSyncAirbnbTransactionsRequestWithBody(server string, contentType string,
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.AccountId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account_id", *params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
@@ -16623,6 +17062,46 @@ func NewSubmitBookingsyncCredentialsRequestWithBody(server string, contentType s
 	return req, nil
 }
 
+// NewSubmitCloudbedsCredentialsRequest calls the generic SubmitCloudbedsCredentials builder with application/json body
+func NewSubmitCloudbedsCredentialsRequest(server string, body SubmitCloudbedsCredentialsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSubmitCloudbedsCredentialsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSubmitCloudbedsCredentialsRequestWithBody constructs an http.Request for the SubmitCloudbedsCredentials method, with any body, and a specified content type
+func NewSubmitCloudbedsCredentialsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/cloudbeds/credentials")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewSubmitGuestyCredentialsRequest calls the generic SubmitGuestyCredentials builder with application/json body
 func NewSubmitGuestyCredentialsRequest(server string, body SubmitGuestyCredentialsJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -16804,6 +17283,46 @@ func NewSubmitLodgifyCredentialsRequestWithBody(server string, contentType strin
 	}
 
 	operationPath := fmt.Sprintf("/v1/connect/lodgify/credentials")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSubmitMewsCredentialsRequest calls the generic SubmitMewsCredentials builder with application/json body
+func NewSubmitMewsCredentialsRequest(server string, body SubmitMewsCredentialsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSubmitMewsCredentialsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSubmitMewsCredentialsRequestWithBody constructs an http.Request for the SubmitMewsCredentials method, with any body, and a specified content type
+func NewSubmitMewsCredentialsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/mews/credentials")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -20141,6 +20660,40 @@ func NewGetListingSegmentsRequest(server string, id int, params *GetListingSegme
 	return req, nil
 }
 
+// NewListListingUnitsRequest constructs an http.Request for the ListListingUnits method
+func NewListListingUnitsRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/units", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListMarketsRequest constructs an http.Request for the ListMarkets method
 func NewListMarketsRequest(server string) (*http.Request, error) {
 	var err error
@@ -21571,6 +22124,53 @@ func NewAcceptReservationRequestRequest(server string, id int, params *AcceptRes
 	return req, nil
 }
 
+// NewCancelReservationRequest calls the generic CancelReservation builder with application/json body
+func NewCancelReservationRequest(server string, id int, body CancelReservationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCancelReservationRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewCancelReservationRequestWithBody constructs an http.Request for the CancelReservation method, with any body, and a specified content type
+func NewCancelReservationRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reservations/%s/cancel", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeclineReservationRequestRequest calls the generic DeclineReservationRequest builder with application/json body
 func NewDeclineReservationRequestRequest(server string, id int, params *DeclineReservationRequestParams, body DeclineReservationRequestJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -22921,13 +23521,13 @@ type ClientWithResponsesInterface interface {
 
 	// GetAvailabilityWithResponse Get property availability
 	//
-	// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights }` — projected from the property calendar.
+	// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the rooms of the type left for a hotel-model listing (a Mews or Cloudbeds room type).
 	//
 	// The `from` and `to` query params are **required** (ISO `YYYY-MM-DD`, inclusive) — omitting or malforming either returns 422. The window is capped at 366 days; longer ranges are truncated to the first 366 days.
 	//
 	// **`days` contains only the dates we actually hold calendar data for.** Requested dates with no calendar row are listed in `coverage.missingDates` — their availability is unknown. Never treat a missing date as bookable: this endpoint deliberately does not synthesise availability, because a fabricated open date can be double-booked. A property with no calendar still returns a real 200 (`days: []`, every date in `coverage.missingDates`), never a 404 — 404 means the property id does not exist or belongs to a different workspace.
 	//
-	// This endpoint is read-only, and the projected per-date shape carries **availability, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
+	// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -23174,7 +23774,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetAirbnbListingWithResponse Get Airbnb listing
 	//
-	// Fetch all Airbnb connection rows for a single Vanio listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
+	// Fetch all Airbnb connection rows for a single Repull listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
 	//
 	// Each row carries `syncCategory` — Airbnb's own per-listing API sync decision (`sync_all`, `sync_rates_and_availability`, or `none`) — and `writable`, which is `false` exactly when that category is `none`, meaning Airbnb refuses every write to the listing and Repull returns `403 listing_not_api_connected` without sending anything. `GET /v1/channels/airbnb/listings` reports both fields for the whole portfolio in one call.
 	//
@@ -23201,7 +23801,7 @@ type ClientWithResponsesInterface interface {
 	// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
 	// | Data kept | Yes, and it keeps syncing | Yes |
 	//
-	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else.
 	//
 	// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 	//
@@ -23236,7 +23836,7 @@ type ClientWithResponsesInterface interface {
 	// | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
 	// | Data kept | Yes, and it keeps syncing | Yes |
 	//
-	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+	// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else.
 	//
 	// `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 	//
@@ -24079,7 +24679,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateAirbnbOfferWithBodyWithResponse Create Airbnb special offer or pre-approval
 	//
-	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
+	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Repull, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 	//
 	// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
 	// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
@@ -24099,7 +24699,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateAirbnbOfferWithResponse Create Airbnb special offer or pre-approval
 	//
-	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
+	// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Repull, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 	//
 	// - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
 	// - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
@@ -24263,36 +24863,44 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
 	RespondAirbnbReviewWithResponse(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error)
 
-	// ListAirbnbTransactionsWithResponse List Airbnb transactions
+	// ListAirbnbTransactionsWithResponse List Airbnb transactions (settlement ledger)
 	//
-	// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `dataFreshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+	// The Airbnb settlement ledger for this workspace: every payout Airbnb sent to the host, each followed by the lines it paid — reservations and their installments, adjustments, resolution payouts and adjustments, cancellation fees. A payout's lines' signed `amount`s sum to its `payout.paidOutAmount` exactly, negative lines included (an adjustment offset against a later payout appears under that payout). `status: UPCOMING` lines are expected earnings not paid out yet; they belong to no payout.
 	//
-	// Transactions of reservations on inactive listings are left out; payout rows, which belong to no listing, are always included.
+	// **Ids are stable.** Airbnb sends no line id and no payout id on lines, so Repull derives them deterministically: a Payout row's id is Airbnb's payout id; a line's is `<payoutId>:<type>:<confirmationCode>:<n>`. The same line has the same id on every refresh and every page, so you can upsert on `transactionId`. A payout that nets to $0.00 has no Airbnb id; it gets a derived `Z-<date>-<hash>` id with `payout.payoutIdSynthetic: true`.
 	//
-	// **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
+	// **Order:** newest first by the payout's date; each Payout row is followed by its lines in Airbnb's order (`payout.lineIndex`).
+	//
+	// **Dates:** `start_date` / `end_date` match the payout's date for settled lines (a line can be dated the day before its payout, and is still returned with it) and the line's own date for UPCOMING lines.
+	//
+	// **Pure DB read** — never calls Airbnb. Refresh with `POST` on this path. `dataFreshness` reports when each account's ledger was last refreshed.
+	//
+	// Lines on listings that are inactive in Repull are included and flagged `onInactiveListing: true`, so every payout reconciles. Lines Repull cannot match to a reservation keep `reservationId: null`.
+	//
+	// **Not in Airbnb's transaction history** (listed in `unavailableFields`): taxes Airbnb collects and remits itself, and the guest-paid total (see the reservation's financial breakdown); pass-through occupancy tax paid to the host does appear, as its own `Pass Through Tot` lines, the original line a refund or reversal reverses (it names the stay and the resolution), and currency-conversion amounts (only the payout currency is reported).
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/airbnb/transactions (the `ListAirbnbTransactions` operationId).
 	ListAirbnbTransactionsWithResponse(ctx context.Context, params *ListAirbnbTransactionsParams, reqEditors ...RequestEditorFn) (*ListAirbnbTransactionsClientResponse, error)
 
-	// SyncAirbnbTransactionsWithBodyWithResponse Sync Airbnb transactions
+	// SyncAirbnbTransactionsWithBodyWithResponse Refresh Airbnb transactions
 	//
-	// Refresh the Airbnb transactions mirror for this workspace by pulling from Airbnb upstream and upserting the breakdown that `GET` serves. Optional JSON body `{ start_date, end_date, transaction_type }` (`transaction_type` is `COMPLETED` or `UPCOMING`; both are synced when omitted). Returns `{ synced, count }`.
+	// Pull the transaction history from Airbnb into the ledger `GET` serves. Every connected Airbnb account is refreshed, or only `?account_id=`. Without dates: settled lines from the last 12 months and the forecast for the next 12. Safe to repeat: settled lines are upserted on their stable ids, never duplicated or removed; the UPCOMING forecast inside the fetched window is replaced, so a line that has since been paid out moves to its payout. Each account reports its own outcome in `accounts[]`: one account Airbnb refuses (a revoked host, a listing Airbnb no longer serves) is reported there with Airbnb's reason and does not stop the others. When every account fails, the response is Airbnb's answer with its usual code.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/transactions (the `SyncAirbnbTransactions` operationId).
-	SyncAirbnbTransactionsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SyncAirbnbTransactionsClientResponse, error)
+	SyncAirbnbTransactionsWithBodyWithResponse(ctx context.Context, params *SyncAirbnbTransactionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SyncAirbnbTransactionsClientResponse, error)
 
-	// SyncAirbnbTransactionsWithResponse Sync Airbnb transactions
+	// SyncAirbnbTransactionsWithResponse Refresh Airbnb transactions
 	//
-	// Refresh the Airbnb transactions mirror for this workspace by pulling from Airbnb upstream and upserting the breakdown that `GET` serves. Optional JSON body `{ start_date, end_date, transaction_type }` (`transaction_type` is `COMPLETED` or `UPCOMING`; both are synced when omitted). Returns `{ synced, count }`.
+	// Pull the transaction history from Airbnb into the ledger `GET` serves. Every connected Airbnb account is refreshed, or only `?account_id=`. Without dates: settled lines from the last 12 months and the forecast for the next 12. Safe to repeat: settled lines are upserted on their stable ids, never duplicated or removed; the UPCOMING forecast inside the fetched window is replaced, so a line that has since been paid out moves to its payout. Each account reports its own outcome in `accounts[]`: one account Airbnb refuses (a revoked host, a listing Airbnb no longer serves) is reported there with Airbnb's reason and does not stop the others. When every account fails, the response is Airbnb's answer with its usual code.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/transactions (the `SyncAirbnbTransactions` operationId).
-	SyncAirbnbTransactionsWithResponse(ctx context.Context, body SyncAirbnbTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*SyncAirbnbTransactionsClientResponse, error)
+	SyncAirbnbTransactionsWithResponse(ctx context.Context, params *SyncAirbnbTransactionsParams, body SyncAirbnbTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*SyncAirbnbTransactionsClientResponse, error)
 
 	// GetBookingAvailabilityWithResponse Read current Booking.com rates/availability/restrictions
 	//
@@ -25275,6 +25883,40 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connect/bookingsync/credentials (the `SubmitBookingsyncCredentials` operationId).
 	SubmitBookingsyncCredentialsWithResponse(ctx context.Context, body SubmitBookingsyncCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitBookingsyncCredentialsClientResponse, error)
 
+	// SubmitCloudbedsCredentialsWithBodyWithResponse Submit Cloudbeds credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
+	//
+	// In Cloudbeds a listing is a room type and its rooms are units. A booking with several rooms becomes one reservation per room.
+	//
+	// The key is validated and the properties it can see are read before anything is stored. On success Repull subscribes to the property's Cloudbeds webhooks (reservations, guests, room blocks) and queues the first sync.
+	//
+	// Cloudbeds keys expire if unused for 30 days; the connection's regular sync keeps them alive.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/cloudbeds/credentials (the `SubmitCloudbedsCredentials` operationId).
+	SubmitCloudbedsCredentialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitCloudbedsCredentialsClientResponse, error)
+
+	// SubmitCloudbedsCredentialsWithResponse Submit Cloudbeds credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
+	//
+	// In Cloudbeds a listing is a room type and its rooms are units. A booking with several rooms becomes one reservation per room.
+	//
+	// The key is validated and the properties it can see are read before anything is stored. On success Repull subscribes to the property's Cloudbeds webhooks (reservations, guests, room blocks) and queues the first sync.
+	//
+	// Cloudbeds keys expire if unused for 30 days; the connection's regular sync keeps them alive.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/cloudbeds/credentials (the `SubmitCloudbedsCredentials` operationId).
+	SubmitCloudbedsCredentialsWithResponse(ctx context.Context, body SubmitCloudbedsCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitCloudbedsCredentialsClientResponse, error)
+
 	// SubmitGuestyCredentialsWithBodyWithResponse Submit Guesty credentials for a Connect session
 	//
 	// Completes a credentials-pattern connection for Guesty. Client ID + secret from Guesty → Integrations → Open API.
@@ -25404,6 +26046,40 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/connect/lodgify/credentials (the `SubmitLodgifyCredentials` operationId).
 	SubmitLodgifyCredentialsWithResponse(ctx context.Context, body SubmitLodgifyCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitLodgifyCredentialsClientResponse, error)
+
+	// SubmitMewsCredentialsWithBodyWithResponse Submit Mews credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Mews. The property enables Repull in Mews and shares its Connector API access token.
+	//
+	// In Mews a listing is a room type and its rooms are units: rates, restrictions and availability live on the room type, and each reservation names the room it was assigned.
+	//
+	// The token is validated against Mews and the property it belongs to is read before anything is stored, so a bad token returns `invalid_credentials` rather than a dead connection. The first sync (listings, rooms, reservations) is queued on success.
+	//
+	// To try it without a Mews customer, send the demo access token from Mews's documentation with `environment: "demo"`.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/mews/credentials (the `SubmitMewsCredentials` operationId).
+	SubmitMewsCredentialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitMewsCredentialsClientResponse, error)
+
+	// SubmitMewsCredentialsWithResponse Submit Mews credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Mews. The property enables Repull in Mews and shares its Connector API access token.
+	//
+	// In Mews a listing is a room type and its rooms are units: rates, restrictions and availability live on the room type, and each reservation names the room it was assigned.
+	//
+	// The token is validated against Mews and the property it belongs to is read before anything is stored, so a bad token returns `invalid_credentials` rather than a dead connection. The first sync (listings, rooms, reservations) is queued on success.
+	//
+	// To try it without a Mews customer, send the demo access token from Mews's documentation with `environment: "demo"`.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/mews/credentials (the `SubmitMewsCredentials` operationId).
+	SubmitMewsCredentialsWithResponse(ctx context.Context, body SubmitMewsCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitMewsCredentialsClientResponse, error)
 
 	// SubmitOwnerrezCredentialsWithBodyWithResponse Submit OwnerRez credentials for a Connect session
 	//
@@ -25572,7 +26248,7 @@ type ClientWithResponsesInterface interface {
 
 	// ListConversationsWithResponse List conversations
 	//
-	// Cursor-paginated list of message threads owned by the workspace. Backed by main vanio's `/api/threads/list` which keyset-paginates against `(last_message_at, id)` for constant per-page cost. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
+	// Cursor-paginated list of message threads owned by the workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 	//
@@ -25828,7 +26504,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetGuestWithResponse Get guest profile
 	//
-	// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates. Aggregates main vanio's `GuestService.getGuestProfile()` into the public Repull shape so SDK consumers don't have to learn the internal schema.
+	// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates.
 	//
 	// **Inactive listings:** a guest whose every reservation is on an inactive listing returns `403 listing_inactive` naming those listings (the guest is kept, so this is not a 404). Otherwise the reservation aggregates exclude reservations on inactive listings. A guest with no reservations is always readable.
 	//
@@ -25966,7 +26642,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateListingWithBodyWithResponse Create a Repull listing
 	//
-	// Create a new vacation-rental listing under the authenticated workspace. The listing is stored in the canonical Vanio listings tables and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
+	// Create a new vacation-rental listing under the authenticated workspace. The listing is stored as a canonical Repull listing and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -25975,7 +26651,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateListingWithResponse Create a Repull listing
 	//
-	// Create a new vacation-rental listing under the authenticated workspace. The listing is stored in the canonical Vanio listings tables and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
+	// Create a new vacation-rental listing under the authenticated workspace. The listing is stored as a canonical Repull listing and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -26376,9 +27052,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateListingPhotoUploadUrlWithBodyWithResponse Mint a direct-to-storage photo upload URL
 	//
-	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
+	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 	//
-	// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+	// Flow: (1) POST here with `fileName`, `fileType` and `fileSize` (bytes) to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) **attach it** — uploading does not put the photo on the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos). The response's `nextStep` says the same.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -26389,9 +27065,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateListingPhotoUploadUrlWithResponse Mint a direct-to-storage photo upload URL
 	//
-	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
+	// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 	//
-	// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+	// Flow: (1) POST here with `fileName`, `fileType` and `fileSize` (bytes) to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) **attach it** — uploading does not put the photo on the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos). The response's `nextStep` says the same.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -26560,6 +27236,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
+	// A listing with no Booking.com room linked is refused with `409 listing_not_on_booking` and the next step, rather than answered with `published: false`.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
@@ -26578,6 +27256,8 @@ type ClientWithResponsesInterface interface {
 	// A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// A listing with no Booking.com room linked is refused with `409 listing_not_on_booking` and the next step, rather than answered with `published: false`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -26641,6 +27321,17 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/listings/{id}/segments (the `GetListingSegments` operationId).
 	GetListingSegmentsWithResponse(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*GetListingSegmentsClientResponse, error)
+
+	// ListListingUnitsWithResponse List a listing's units (rooms)
+	//
+	// The physical rooms under a listing. For a hotel-model PMS (Mews, Cloudbeds) a listing is a room type: prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+	//
+	// Any other listing is a single home, which is its own unit, and returns an empty list.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/listings/{id}/units (the `ListListingUnits` operationId).
+	ListListingUnitsWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*ListListingUnitsClientResponse, error)
 
 	// ListMarketsWithResponse List markets the customer operates in
 	//
@@ -26964,6 +27655,40 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/reservations/{id}/accept (the `AcceptReservationRequest` operationId).
 	AcceptReservationRequestWithResponse(ctx context.Context, id int, params *AcceptReservationRequestParams, reqEditors ...RequestEditorFn) (*AcceptReservationRequestClientResponse, error)
 
+	// CancelReservationWithBodyWithResponse Cancel a reservation
+	//
+	// Cancels a reservation where it lives.
+	//
+	// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+	// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
+	// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+	//
+	// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
+	CancelReservationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error)
+
+	// CancelReservationWithResponse Cancel a reservation
+	//
+	// Cancels a reservation where it lives.
+	//
+	// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+	// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
+	// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+	//
+	// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
+	CancelReservationWithResponse(ctx context.Context, id int, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error)
+
 	// DeclineReservationRequestWithBodyWithResponse Decline a booking request
 	//
 	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
@@ -26996,7 +27721,7 @@ type ClientWithResponsesInterface interface {
 
 	// ListReviewsWithResponse List reviews
 	//
-	// Cursor-paginated guest + host review stream for the workspace. Backed by main vanio's unified `reviews` table (populated by per-channel backfill crons), so this surface returns the complete cross-channel history — separate from `/v1/channels/airbnb/reviews` which hits Airbnb live.
+	// Cursor-paginated guest + host review stream for the workspace. This surface returns the complete cross-channel history — separate from `/v1/channels/airbnb/reviews` which hits Airbnb live.
 	//
 	// `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 	//
@@ -32576,11 +33301,16 @@ type ListAirbnbTransactionsClientResponse struct {
 		//
 		// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
 		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+
+		// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+		Pagination Pagination `json:"pagination"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *AirbnbAccountNotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
 }
@@ -32593,6 +33323,9 @@ func (r ListAirbnbTransactionsClientResponse) GetJSON200() *struct {
 	//
 	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
 	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination Pagination `json:"pagination"`
 } {
 	return r.JSON200
 }
@@ -32605,6 +33338,11 @@ func (r ListAirbnbTransactionsClientResponse) GetJSON401() *Unauthorized {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r ListAirbnbTransactionsClientResponse) GetJSON404() *AirbnbAccountNotFound {
 	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListAirbnbTransactionsClientResponse) GetJSON422() *Error {
+	return r.JSON422
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
@@ -32646,21 +33384,67 @@ type SyncAirbnbTransactionsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
-		// Count Number of transactions upserted.
+		Accounts []struct {
+			// AccountId Airbnb host id.
+			AccountId string `json:"accountId"`
+			Count     int    `json:"count"`
+
+			// Error Present only when this account was not refreshed. `code` is `connection_reauth_required`, `airbnb_rejected`, `airbnb_rate_limited`, `airbnb_error`, or `time_budget` (the request ran out of time before reaching it: refresh it alone with `?account_id=`).
+			Error *struct {
+				Code    string `json:"code"`
+				Message string `json:"message"`
+			} `json:"error,omitempty"`
+
+			// Payouts Payouts in the refreshed window.
+			Payouts int `json:"payouts"`
+
+			// UpcomingRemoved UPCOMING lines Airbnb no longer lists (paid out or cancelled) and were removed.
+			UpcomingRemoved int `json:"upcomingRemoved"`
+		} `json:"accounts"`
+
+		// Count Ledger lines written, Payout rows included.
 		Count  int  `json:"count"`
 		Synced bool `json:"synced"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *AirbnbAccountNotFound
 	// JSON409 the response for an HTTP 409 `application/json` response
 	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r SyncAirbnbTransactionsClientResponse) GetJSON200() *struct {
-	// Count Number of transactions upserted.
+	Accounts []struct {
+		// AccountId Airbnb host id.
+		AccountId string `json:"accountId"`
+		Count     int    `json:"count"`
+
+		// Error Present only when this account was not refreshed. `code` is `connection_reauth_required`, `airbnb_rejected`, `airbnb_rate_limited`, `airbnb_error`, or `time_budget` (the request ran out of time before reaching it: refresh it alone with `?account_id=`).
+		Error *struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"error,omitempty"`
+
+		// Payouts Payouts in the refreshed window.
+		Payouts int `json:"payouts"`
+
+		// UpcomingRemoved UPCOMING lines Airbnb no longer lists (paid out or cancelled) and were removed.
+		UpcomingRemoved int `json:"upcomingRemoved"`
+	} `json:"accounts"`
+
+	// Count Ledger lines written, Payout rows included.
 	Count  int  `json:"count"`
 	Synced bool `json:"synced"`
 } {
@@ -32672,14 +33456,39 @@ func (r SyncAirbnbTransactionsClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
 }
 
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SyncAirbnbTransactionsClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SyncAirbnbTransactionsClientResponse) GetJSON404() *AirbnbAccountNotFound {
+	return r.JSON404
+}
+
 // GetJSON409 returns the response for an HTTP 409 `application/json` response
 func (r SyncAirbnbTransactionsClientResponse) GetJSON409() *Error {
 	return r.JSON409
 }
 
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SyncAirbnbTransactionsClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r SyncAirbnbTransactionsClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r SyncAirbnbTransactionsClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r SyncAirbnbTransactionsClientResponse) GetJSON502() *Error {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -35387,6 +36196,131 @@ func (r SubmitBookingsyncCredentialsClientResponse) ContentType() string {
 	return ""
 }
 
+type SubmitCloudbedsCredentialsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AccountInfo *struct {
+			AccountName *string `json:"accountName,omitempty"`
+
+			// ExternalAccountId The Cloudbeds property id these credentials belong to.
+			ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+			// PropertyIds Every property the credentials cover.
+			PropertyIds *[]string `json:"propertyIds,omitempty"`
+		} `json:"accountInfo,omitempty"`
+		Connected *bool `json:"connected,omitempty"`
+
+		// Created False when an existing connection was updated.
+		Created *bool `json:"created,omitempty"`
+
+		// PmsConnectionId Id of the stored connection.
+		PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+		// Provider Example: cloudbeds
+		Provider  *string `json:"provider,omitempty"`
+		SessionId *string `json:"sessionId,omitempty"`
+		Webhooks  *struct {
+			// Error Why subscribing failed, if it did. The connection still syncs by polling.
+			Error *string `json:"error,omitempty"`
+
+			// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
+			Registered *int `json:"registered,omitempty"`
+		} `json:"webhooks,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SubmitCloudbedsCredentialsClientResponse) GetJSON200() *struct {
+	AccountInfo *struct {
+		AccountName *string `json:"accountName,omitempty"`
+
+		// ExternalAccountId The Cloudbeds property id these credentials belong to.
+		ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+		// PropertyIds Every property the credentials cover.
+		PropertyIds *[]string `json:"propertyIds,omitempty"`
+	} `json:"accountInfo,omitempty"`
+	Connected *bool `json:"connected,omitempty"`
+
+	// Created False when an existing connection was updated.
+	Created *bool `json:"created,omitempty"`
+
+	// PmsConnectionId Id of the stored connection.
+	PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+	// Provider Example: cloudbeds
+	Provider  *string `json:"provider,omitempty"`
+	SessionId *string `json:"sessionId,omitempty"`
+	Webhooks  *struct {
+		// Error Why subscribing failed, if it did. The connection still syncs by polling.
+		Error *string `json:"error,omitempty"`
+
+		// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
+		Registered *int `json:"registered,omitempty"`
+	} `json:"webhooks,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SubmitCloudbedsCredentialsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SubmitCloudbedsCredentialsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SubmitCloudbedsCredentialsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SubmitCloudbedsCredentialsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r SubmitCloudbedsCredentialsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SubmitCloudbedsCredentialsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SubmitCloudbedsCredentialsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SubmitCloudbedsCredentialsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SubmitGuestyCredentialsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -35756,6 +36690,131 @@ func (r SubmitLodgifyCredentialsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r SubmitLodgifyCredentialsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SubmitMewsCredentialsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AccountInfo *struct {
+			AccountName *string `json:"accountName,omitempty"`
+
+			// ExternalAccountId The Mews property id these credentials belong to.
+			ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+			// PropertyIds Every property the credentials cover.
+			PropertyIds *[]string `json:"propertyIds,omitempty"`
+		} `json:"accountInfo,omitempty"`
+		Connected *bool `json:"connected,omitempty"`
+
+		// Created False when an existing connection was updated.
+		Created *bool `json:"created,omitempty"`
+
+		// PmsConnectionId Id of the stored connection.
+		PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+		// Provider Example: mews
+		Provider  *string `json:"provider,omitempty"`
+		SessionId *string `json:"sessionId,omitempty"`
+		Webhooks  *struct {
+			// Error Why subscribing failed, if it did. The connection still syncs by polling.
+			Error *string `json:"error,omitempty"`
+
+			// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
+			Registered *int `json:"registered,omitempty"`
+		} `json:"webhooks,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SubmitMewsCredentialsClientResponse) GetJSON200() *struct {
+	AccountInfo *struct {
+		AccountName *string `json:"accountName,omitempty"`
+
+		// ExternalAccountId The Mews property id these credentials belong to.
+		ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+		// PropertyIds Every property the credentials cover.
+		PropertyIds *[]string `json:"propertyIds,omitempty"`
+	} `json:"accountInfo,omitempty"`
+	Connected *bool `json:"connected,omitempty"`
+
+	// Created False when an existing connection was updated.
+	Created *bool `json:"created,omitempty"`
+
+	// PmsConnectionId Id of the stored connection.
+	PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+	// Provider Example: mews
+	Provider  *string `json:"provider,omitempty"`
+	SessionId *string `json:"sessionId,omitempty"`
+	Webhooks  *struct {
+		// Error Why subscribing failed, if it did. The connection still syncs by polling.
+		Error *string `json:"error,omitempty"`
+
+		// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
+		Registered *int `json:"registered,omitempty"`
+	} `json:"webhooks,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SubmitMewsCredentialsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SubmitMewsCredentialsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SubmitMewsCredentialsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SubmitMewsCredentialsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r SubmitMewsCredentialsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SubmitMewsCredentialsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SubmitMewsCredentialsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SubmitMewsCredentialsClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -39772,7 +40831,9 @@ type PublishListingToAirbnbClientResponse struct {
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
+	JSON404 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -39796,8 +40857,13 @@ func (r PublishListingToAirbnbClientResponse) GetJSON403() *ListingInactive {
 }
 
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r PublishListingToAirbnbClientResponse) GetJSON404() *NotFound {
+func (r PublishListingToAirbnbClientResponse) GetJSON404() *Error {
 	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r PublishListingToAirbnbClientResponse) GetJSON422() *Error {
+	return r.JSON422
 }
 
 // GetBody returns the raw response body bytes
@@ -39843,7 +40909,7 @@ type PublishListingToBookingClientResponse struct {
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
 	// JSON409 the response for an HTTP 409 `application/json` response
-	JSON409 *Conflict
+	JSON409 *Error
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -39872,7 +40938,7 @@ func (r PublishListingToBookingClientResponse) GetJSON404() *NotFound {
 }
 
 // GetJSON409 returns the response for an HTTP 409 `application/json` response
-func (r PublishListingToBookingClientResponse) GetJSON409() *Conflict {
+func (r PublishListingToBookingClientResponse) GetJSON409() *Error {
 	return r.JSON409
 }
 
@@ -40068,6 +41134,112 @@ func (r GetListingSegmentsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetListingSegmentsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListListingUnitsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]struct {
+			Active *bool   `json:"active,omitempty"`
+			Floor  *string `json:"floor,omitempty"`
+
+			// HousekeepingStatus The PMS's housekeeping state, verbatim (e.g. `Dirty`, `Clean`, `Inspected`).
+			HousekeepingStatus *string `json:"housekeepingStatus,omitempty"`
+
+			// Id The PMS's id for the room; `reservation.unit.id` refers to it.
+			Id *string `json:"id,omitempty"`
+
+			// Name Example: 101
+			Name *string `json:"name,omitempty"`
+
+			// ParentId A sub-space's parent room (a bed in a dorm), else null.
+			ParentId *string `json:"parentId,omitempty"`
+
+			// Source Example: mews
+			Source *string `json:"source,omitempty"`
+		} `json:"data,omitempty"`
+		ListingId *int `json:"listingId,omitempty"`
+		Total     *int `json:"total,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListListingUnitsClientResponse) GetJSON200() *struct {
+	Data *[]struct {
+		Active *bool   `json:"active,omitempty"`
+		Floor  *string `json:"floor,omitempty"`
+
+		// HousekeepingStatus The PMS's housekeeping state, verbatim (e.g. `Dirty`, `Clean`, `Inspected`).
+		HousekeepingStatus *string `json:"housekeepingStatus,omitempty"`
+
+		// Id The PMS's id for the room; `reservation.unit.id` refers to it.
+		Id *string `json:"id,omitempty"`
+
+		// Name Example: 101
+		Name *string `json:"name,omitempty"`
+
+		// ParentId A sub-space's parent room (a bed in a dorm), else null.
+		ParentId *string `json:"parentId,omitempty"`
+
+		// Source Example: mews
+		Source *string `json:"source,omitempty"`
+	} `json:"data,omitempty"`
+	ListingId *int `json:"listingId,omitempty"`
+	Total     *int `json:"total,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListListingUnitsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListListingUnitsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListListingUnitsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r ListListingUnitsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListListingUnitsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListListingUnitsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListListingUnitsClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -41452,6 +42624,114 @@ func (r AcceptReservationRequestClientResponse) ContentType() string {
 	return ""
 }
 
+type CancelReservationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// AlreadyCancelled Present and true when the reservation was already cancelled.
+		AlreadyCancelled *bool               `json:"alreadyCancelled,omitempty"`
+		CheckIn          *openapi_types.Date `json:"checkIn,omitempty"`
+		CheckOut         *openapi_types.Date `json:"checkOut,omitempty"`
+		ConfirmationCode *string             `json:"confirmationCode,omitempty"`
+		Id               *string             `json:"id,omitempty"`
+		ListingId        *string             `json:"listingId,omitempty"`
+
+		// Pms Present when the cancellation was made in a PMS.
+		Pms *struct {
+			Applied *[]string `json:"applied,omitempty"`
+			Errors  *[]struct {
+				Code    *string `json:"code,omitempty"`
+				Message *string `json:"message,omitempty"`
+				Section *string `json:"section,omitempty"`
+			} `json:"errors,omitempty"`
+
+			// Provider Example: mews
+			Provider *string `json:"provider,omitempty"`
+		} `json:"pms,omitempty"`
+		Status    *CancelReservation200JSONResponseBodyStatus `json:"status,omitempty"`
+		UpdatedAt *string                                     `json:"updatedAt,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CancelReservationClientResponse) GetJSON200() *struct {
+	// AlreadyCancelled Present and true when the reservation was already cancelled.
+	AlreadyCancelled *bool               `json:"alreadyCancelled,omitempty"`
+	CheckIn          *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckOut         *openapi_types.Date `json:"checkOut,omitempty"`
+	ConfirmationCode *string             `json:"confirmationCode,omitempty"`
+	Id               *string             `json:"id,omitempty"`
+	ListingId        *string             `json:"listingId,omitempty"`
+
+	// Pms Present when the cancellation was made in a PMS.
+	Pms *struct {
+		Applied *[]string `json:"applied,omitempty"`
+		Errors  *[]struct {
+			Code    *string `json:"code,omitempty"`
+			Message *string `json:"message,omitempty"`
+			Section *string `json:"section,omitempty"`
+		} `json:"errors,omitempty"`
+
+		// Provider Example: mews
+		Provider *string `json:"provider,omitempty"`
+	} `json:"pms,omitempty"`
+	Status    *CancelReservation200JSONResponseBodyStatus `json:"status,omitempty"`
+	UpdatedAt *string                                     `json:"updatedAt,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CancelReservationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CancelReservationClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CancelReservationClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r CancelReservationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CancelReservationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CancelReservationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CancelReservationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type DeclineReservationRequestClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -42266,8 +43546,11 @@ type GetUsageSummaryClientResponse struct {
 			DailyRequests   *int `json:"dailyRequests,omitempty"`
 			MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 		} `json:"limits,omitempty"`
-		Range     *string `json:"range,omitempty"`
-		Remaining *struct {
+
+		// PlanNotice Added to the body of EVERY JSON response (success or error, except bare arrays and 5xx) while the workspace is connected to more listings than its plan lets it use — so a developer reading any payload, or an AI assistant relaying it, sees it. Connect keeps every listing it finds, but on a capped plan only as many as the plan allows are active; the rest are held back inactive and keep syncing. The same responses also carry the `X-Repull-Listings-Held-Back` and `X-Repull-Active-Listing-Limit` headers. Using a held-back listing answers `403 listing_inactive` with `reason: "plan_limit"`. Tell the user: they can see the held-back listings with `GET /v1/listings?status=all`, choose which are active with `POST /v1/listings/status`, or upgrade.
+		PlanNotice *PlanNotice `json:"planNotice,omitempty"`
+		Range      *string     `json:"range,omitempty"`
+		Remaining  *struct {
 			Daily   *int `json:"daily,omitempty"`
 			DailyAi *int `json:"dailyAi,omitempty"`
 			Monthly *int `json:"monthly,omitempty"`
@@ -42317,8 +43600,11 @@ func (r GetUsageSummaryClientResponse) GetJSON200() *struct {
 		DailyRequests   *int `json:"dailyRequests,omitempty"`
 		MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 	} `json:"limits,omitempty"`
-	Range     *string `json:"range,omitempty"`
-	Remaining *struct {
+
+	// PlanNotice Added to the body of EVERY JSON response (success or error, except bare arrays and 5xx) while the workspace is connected to more listings than its plan lets it use — so a developer reading any payload, or an AI assistant relaying it, sees it. Connect keeps every listing it finds, but on a capped plan only as many as the plan allows are active; the rest are held back inactive and keep syncing. The same responses also carry the `X-Repull-Listings-Held-Back` and `X-Repull-Active-Listing-Limit` headers. Using a held-back listing answers `403 listing_inactive` with `reason: "plan_limit"`. Tell the user: they can see the held-back listings with `GET /v1/listings?status=all`, choose which are active with `POST /v1/listings/status`, or upgrade.
+	PlanNotice *PlanNotice `json:"planNotice,omitempty"`
+	Range      *string     `json:"range,omitempty"`
+	Remaining  *struct {
 		Daily   *int `json:"daily,omitempty"`
 		DailyAi *int `json:"dailyAi,omitempty"`
 		Monthly *int `json:"monthly,omitempty"`
@@ -43059,13 +44345,13 @@ func (c *ClientWithResponses) BatchUpdateAvailabilityWithResponse(ctx context.Co
 
 // GetAvailabilityWithResponse Get property availability
 //
-// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights }` — projected from the property calendar.
+// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the rooms of the type left for a hotel-model listing (a Mews or Cloudbeds room type).
 //
 // The `from` and `to` query params are **required** (ISO `YYYY-MM-DD`, inclusive) — omitting or malforming either returns 422. The window is capped at 366 days; longer ranges are truncated to the first 366 days.
 //
 // **`days` contains only the dates we actually hold calendar data for.** Requested dates with no calendar row are listed in `coverage.missingDates` — their availability is unknown. Never treat a missing date as bookable: this endpoint deliberately does not synthesise availability, because a fabricated open date can be double-booked. A property with no calendar still returns a real 200 (`days: []`, every date in `coverage.missingDates`), never a 404 — 404 means the property id does not exist or belongs to a different workspace.
 //
-// This endpoint is read-only, and the projected per-date shape carries **availability, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
+// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -43426,7 +44712,7 @@ func (c *ClientWithResponses) MapAirbnbListingWithResponse(ctx context.Context, 
 
 // GetAirbnbListingWithResponse Get Airbnb listing
 //
-// Fetch all Airbnb connection rows for a single Vanio listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
+// Fetch all Airbnb connection rows for a single Repull listing id. A property may be linked from multiple Airbnb hosts — every match is returned. Pass `?include=amenities` to enrich each row with its current Airbnb amenities.
 //
 // Each row carries `syncCategory` — Airbnb's own per-listing API sync decision (`sync_all`, `sync_rates_and_availability`, or `none`) — and `writable`, which is `false` exactly when that category is `none`, meaning Airbnb refuses every write to the listing and Repull returns `403 listing_not_api_connected` without sending anything. `GET /v1/channels/airbnb/listings` reports both fields for the whole portfolio in one call.
 //
@@ -43459,7 +44745,7 @@ func (c *ClientWithResponses) GetAirbnbListingWithResponse(ctx context.Context, 
 // | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
 // | Data kept | Yes, and it keeps syncing | Yes |
 //
-// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else.
 //
 // `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 //
@@ -43500,7 +44786,7 @@ func (c *ClientWithResponses) AirbnbListingActionWithBodyWithResponse(ctx contex
 // | Reverse it with | `PATCH /v1/listings/{id}` `{ "active": true }` | `action: "relist"` |
 // | Data kept | Yes, and it keeps syncing | Yes |
 //
-// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else. (Main vanio's internal listing-sync layer has a same-named action that DOES hard-delete on Airbnb; it is not exposed here, by any endpoint, deliberately. If you have read that code, note that the two names do not mean the same thing.)
+// Neither one deletes anything on Airbnb. **There is no endpoint on this API that deletes an Airbnb listing** — the word `delete` on this route means "deactivate the Repull record" and nothing else.
 //
 // `delete` is idempotent. To take a listing off the market on every channel at once — Airbnb and Booking.com together — use `POST /v1/listings/{id}/offline`.
 //
@@ -44673,7 +45959,7 @@ func (c *ClientWithResponses) GetAirbnbOfferWithResponse(ctx context.Context, pa
 
 // CreateAirbnbOfferWithBodyWithResponse Create Airbnb special offer or pre-approval
 //
-// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
+// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Repull, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 //
 // - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
 // - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
@@ -44699,7 +45985,7 @@ func (c *ClientWithResponses) CreateAirbnbOfferWithBodyWithResponse(ctx context.
 
 // CreateAirbnbOfferWithResponse Create Airbnb special offer or pre-approval
 //
-// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Vanio, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
+// Create a pre-approval or a special offer on an Airbnb thread, addressed by **Airbnb** ids. **Write-side** — calls Airbnb upstream. The Repull-id equivalents, which also update the inquiry in Repull, are `POST /v1/conversations/{id}/pre-approval` and `POST /v1/conversations/{id}/special-offers` — prefer those unless you only hold Airbnb ids.
 //
 // - `type: "preapproval"` — let the guest book the dates and price they asked about. Requires `thread_id`; optional `block_instant_booking`.
 // - `type: "offer"` — your own terms. Requires `thread_id`, `listing_id` (the **Airbnb** listing id, as a string), `start_date`, `nights`, `total_price` (whole stay, listing currency) and `guest_details` with `number_of_guests` (or `number_of_adults`; Airbnb counts adults + children).
@@ -44929,13 +46215,21 @@ func (c *ClientWithResponses) RespondAirbnbReviewWithResponse(ctx context.Contex
 	return ParseRespondAirbnbReviewClientResponse(rsp)
 }
 
-// ListAirbnbTransactionsWithResponse List Airbnb transactions
+// ListAirbnbTransactionsWithResponse List Airbnb transactions (settlement ledger)
 //
-// List Airbnb host transactions (reservation earnings, payouts, resolution adjustments) for this workspace, newest first. **Pure DB read** — customer-facing reads never call Airbnb upstream; they serve the `airbnb_transactions` mirror. Each row carries the genuine host- and guest-side financial breakdown (accommodation subtotal, cleaning fee, host + guest service fees split base/VAT, tax buckets, expected/actual host payout with settlement status). Trigger a refresh with `POST` on this path. When the mirror is empty or the host disconnected, `dataFreshness.stale = true` with a `reason` (`never_synced`, `host_disconnected_<iso>`, `sync_lag_>_24h`).
+// The Airbnb settlement ledger for this workspace: every payout Airbnb sent to the host, each followed by the lines it paid — reservations and their installments, adjustments, resolution payouts and adjustments, cancellation fees. A payout's lines' signed `amount`s sum to its `payout.paidOutAmount` exactly, negative lines included (an adjustment offset against a later payout appears under that payout). `status: UPCOMING` lines are expected earnings not paid out yet; they belong to no payout.
 //
-// Transactions of reservations on inactive listings are left out; payout rows, which belong to no listing, are always included.
+// **Ids are stable.** Airbnb sends no line id and no payout id on lines, so Repull derives them deterministically: a Payout row's id is Airbnb's payout id; a line's is `<payoutId>:<type>:<confirmationCode>:<n>`. The same line has the same id on every refresh and every page, so you can upsert on `transactionId`. A payout that nets to $0.00 has no Airbnb id; it gets a derived `Z-<date>-<hash>` id with `payout.payoutIdSynthetic: true`.
 //
-// **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
+// **Order:** newest first by the payout's date; each Payout row is followed by its lines in Airbnb's order (`payout.lineIndex`).
+//
+// **Dates:** `start_date` / `end_date` match the payout's date for settled lines (a line can be dated the day before its payout, and is still returned with it) and the line's own date for UPCOMING lines.
+//
+// **Pure DB read** — never calls Airbnb. Refresh with `POST` on this path. `dataFreshness` reports when each account's ledger was last refreshed.
+//
+// Lines on listings that are inactive in Repull are included and flagged `onInactiveListing: true`, so every payout reconciles. Lines Repull cannot match to a reservation keep `reservationId: null`.
+//
+// **Not in Airbnb's transaction history** (listed in `unavailableFields`): taxes Airbnb collects and remits itself, and the guest-paid total (see the reservation's financial breakdown); pass-through occupancy tax paid to the host does appear, as its own `Pass Through Tot` lines, the original line a refund or reversal reverses (it names the stay and the resolution), and currency-conversion amounts (only the payout currency is reported).
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -44948,30 +46242,30 @@ func (c *ClientWithResponses) ListAirbnbTransactionsWithResponse(ctx context.Con
 	return ParseListAirbnbTransactionsClientResponse(rsp)
 }
 
-// SyncAirbnbTransactionsWithBodyWithResponse Sync Airbnb transactions
+// SyncAirbnbTransactionsWithBodyWithResponse Refresh Airbnb transactions
 //
-// Refresh the Airbnb transactions mirror for this workspace by pulling from Airbnb upstream and upserting the breakdown that `GET` serves. Optional JSON body `{ start_date, end_date, transaction_type }` (`transaction_type` is `COMPLETED` or `UPCOMING`; both are synced when omitted). Returns `{ synced, count }`.
+// Pull the transaction history from Airbnb into the ledger `GET` serves. Every connected Airbnb account is refreshed, or only `?account_id=`. Without dates: settled lines from the last 12 months and the forecast for the next 12. Safe to repeat: settled lines are upserted on their stable ids, never duplicated or removed; the UPCOMING forecast inside the fetched window is replaced, so a line that has since been paid out moves to its payout. Each account reports its own outcome in `accounts[]`: one account Airbnb refuses (a revoked host, a listing Airbnb no longer serves) is reported there with Airbnb's reason and does not stop the others. When every account fails, the response is Airbnb's answer with its usual code.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/transactions (the `SyncAirbnbTransactions` operationId).
-func (c *ClientWithResponses) SyncAirbnbTransactionsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SyncAirbnbTransactionsClientResponse, error) {
-	rsp, err := c.SyncAirbnbTransactionsWithBody(ctx, contentType, body, reqEditors...)
+func (c *ClientWithResponses) SyncAirbnbTransactionsWithBodyWithResponse(ctx context.Context, params *SyncAirbnbTransactionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SyncAirbnbTransactionsClientResponse, error) {
+	rsp, err := c.SyncAirbnbTransactionsWithBody(ctx, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseSyncAirbnbTransactionsClientResponse(rsp)
 }
 
-// SyncAirbnbTransactionsWithResponse Sync Airbnb transactions
+// SyncAirbnbTransactionsWithResponse Refresh Airbnb transactions
 //
-// Refresh the Airbnb transactions mirror for this workspace by pulling from Airbnb upstream and upserting the breakdown that `GET` serves. Optional JSON body `{ start_date, end_date, transaction_type }` (`transaction_type` is `COMPLETED` or `UPCOMING`; both are synced when omitted). Returns `{ synced, count }`.
+// Pull the transaction history from Airbnb into the ledger `GET` serves. Every connected Airbnb account is refreshed, or only `?account_id=`. Without dates: settled lines from the last 12 months and the forecast for the next 12. Safe to repeat: settled lines are upserted on their stable ids, never duplicated or removed; the UPCOMING forecast inside the fetched window is replaced, so a line that has since been paid out moves to its payout. Each account reports its own outcome in `accounts[]`: one account Airbnb refuses (a revoked host, a listing Airbnb no longer serves) is reported there with Airbnb's reason and does not stop the others. When every account fails, the response is Airbnb's answer with its usual code.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/transactions (the `SyncAirbnbTransactions` operationId).
-func (c *ClientWithResponses) SyncAirbnbTransactionsWithResponse(ctx context.Context, body SyncAirbnbTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*SyncAirbnbTransactionsClientResponse, error) {
-	rsp, err := c.SyncAirbnbTransactions(ctx, body, reqEditors...)
+func (c *ClientWithResponses) SyncAirbnbTransactionsWithResponse(ctx context.Context, params *SyncAirbnbTransactionsParams, body SyncAirbnbTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*SyncAirbnbTransactionsClientResponse, error) {
+	rsp, err := c.SyncAirbnbTransactions(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -46318,6 +47612,52 @@ func (c *ClientWithResponses) SubmitBookingsyncCredentialsWithResponse(ctx conte
 	return ParseSubmitBookingsyncCredentialsClientResponse(rsp)
 }
 
+// SubmitCloudbedsCredentialsWithBodyWithResponse Submit Cloudbeds credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
+//
+// In Cloudbeds a listing is a room type and its rooms are units. A booking with several rooms becomes one reservation per room.
+//
+// The key is validated and the properties it can see are read before anything is stored. On success Repull subscribes to the property's Cloudbeds webhooks (reservations, guests, room blocks) and queues the first sync.
+//
+// Cloudbeds keys expire if unused for 30 days; the connection's regular sync keeps them alive.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/cloudbeds/credentials (the `SubmitCloudbedsCredentials` operationId).
+func (c *ClientWithResponses) SubmitCloudbedsCredentialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitCloudbedsCredentialsClientResponse, error) {
+	rsp, err := c.SubmitCloudbedsCredentialsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitCloudbedsCredentialsClientResponse(rsp)
+}
+
+// SubmitCloudbedsCredentialsWithResponse Submit Cloudbeds credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
+//
+// In Cloudbeds a listing is a room type and its rooms are units. A booking with several rooms becomes one reservation per room.
+//
+// The key is validated and the properties it can see are read before anything is stored. On success Repull subscribes to the property's Cloudbeds webhooks (reservations, guests, room blocks) and queues the first sync.
+//
+// Cloudbeds keys expire if unused for 30 days; the connection's regular sync keeps them alive.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/cloudbeds/credentials (the `SubmitCloudbedsCredentials` operationId).
+func (c *ClientWithResponses) SubmitCloudbedsCredentialsWithResponse(ctx context.Context, body SubmitCloudbedsCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitCloudbedsCredentialsClientResponse, error) {
+	rsp, err := c.SubmitCloudbedsCredentials(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitCloudbedsCredentialsClientResponse(rsp)
+}
+
 // SubmitGuestyCredentialsWithBodyWithResponse Submit Guesty credentials for a Connect session
 //
 // Completes a credentials-pattern connection for Guesty. Client ID + secret from Guesty → Integrations → Open API.
@@ -46506,6 +47846,52 @@ func (c *ClientWithResponses) SubmitLodgifyCredentialsWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseSubmitLodgifyCredentialsClientResponse(rsp)
+}
+
+// SubmitMewsCredentialsWithBodyWithResponse Submit Mews credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Mews. The property enables Repull in Mews and shares its Connector API access token.
+//
+// In Mews a listing is a room type and its rooms are units: rates, restrictions and availability live on the room type, and each reservation names the room it was assigned.
+//
+// The token is validated against Mews and the property it belongs to is read before anything is stored, so a bad token returns `invalid_credentials` rather than a dead connection. The first sync (listings, rooms, reservations) is queued on success.
+//
+// To try it without a Mews customer, send the demo access token from Mews's documentation with `environment: "demo"`.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/mews/credentials (the `SubmitMewsCredentials` operationId).
+func (c *ClientWithResponses) SubmitMewsCredentialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitMewsCredentialsClientResponse, error) {
+	rsp, err := c.SubmitMewsCredentialsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitMewsCredentialsClientResponse(rsp)
+}
+
+// SubmitMewsCredentialsWithResponse Submit Mews credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Mews. The property enables Repull in Mews and shares its Connector API access token.
+//
+// In Mews a listing is a room type and its rooms are units: rates, restrictions and availability live on the room type, and each reservation names the room it was assigned.
+//
+// The token is validated against Mews and the property it belongs to is read before anything is stored, so a bad token returns `invalid_credentials` rather than a dead connection. The first sync (listings, rooms, reservations) is queued on success.
+//
+// To try it without a Mews customer, send the demo access token from Mews's documentation with `environment: "demo"`.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/mews/credentials (the `SubmitMewsCredentials` operationId).
+func (c *ClientWithResponses) SubmitMewsCredentialsWithResponse(ctx context.Context, body SubmitMewsCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitMewsCredentialsClientResponse, error) {
+	rsp, err := c.SubmitMewsCredentials(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitMewsCredentialsClientResponse(rsp)
 }
 
 // SubmitOwnerrezCredentialsWithBodyWithResponse Submit OwnerRez credentials for a Connect session
@@ -46753,7 +48139,7 @@ func (c *ClientWithResponses) CreateConnectionWithResponse(ctx context.Context, 
 
 // ListConversationsWithResponse List conversations
 //
-// Cursor-paginated list of message threads owned by the workspace. Backed by main vanio's `/api/threads/list` which keyset-paginates against `(last_message_at, id)` for constant per-page cost. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
+// Cursor-paginated list of message threads owned by the workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 //
@@ -47093,7 +48479,7 @@ func (c *ClientWithResponses) CreateGuestWithResponse(ctx context.Context, param
 
 // GetGuestWithResponse Get guest profile
 //
-// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates. Aggregates main vanio's `GuestService.getGuestProfile()` into the public Repull shape so SDK consumers don't have to learn the internal schema.
+// Returns the full guest profile — base list-row fields plus contacts, flags, notes, risk metadata, and reservation aggregates.
 //
 // **Inactive listings:** a guest whose every reservation is on an inactive listing returns `403 listing_inactive` naming those listings (the guest is kept, so this is not a 404). Otherwise the reservation aggregates exclude reservations on inactive listings. A guest with no reservations is always readable.
 //
@@ -47315,7 +48701,7 @@ func (c *ClientWithResponses) ListListingsWithResponse(ctx context.Context, para
 
 // CreateListingWithBodyWithResponse Create a Repull listing
 //
-// Create a new vacation-rental listing under the authenticated workspace. The listing is stored in the canonical Vanio listings tables and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
+// Create a new vacation-rental listing under the authenticated workspace. The listing is stored as a canonical Repull listing and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -47330,7 +48716,7 @@ func (c *ClientWithResponses) CreateListingWithBodyWithResponse(ctx context.Cont
 
 // CreateListingWithResponse Create a Repull listing
 //
-// Create a new vacation-rental listing under the authenticated workspace. The listing is stored in the canonical Vanio listings tables and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
+// Create a new vacation-rental listing under the authenticated workspace. The listing is stored as a canonical Repull listing and can be published to multiple channels (Airbnb, Booking.com) via the publish endpoints.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -47875,9 +49261,9 @@ func (c *ClientWithResponses) ListListingPhotosWithResponse(ctx context.Context,
 
 // CreateListingPhotoUploadUrlWithBodyWithResponse Mint a direct-to-storage photo upload URL
 //
-// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
+// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 //
-// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+// Flow: (1) POST here with `fileName`, `fileType` and `fileSize` (bytes) to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) **attach it** — uploading does not put the photo on the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos). The response's `nextStep` says the same.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -47894,9 +49280,9 @@ func (c *ClientWithResponses) CreateListingPhotoUploadUrlWithBodyWithResponse(ct
 
 // CreateListingPhotoUploadUrlWithResponse Mint a direct-to-storage photo upload URL
 //
-// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API or main vanio.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
+// Mints a short-lived signed upload URL + token for a listing photo. **The client PUTs the raw file bytes directly to the returned `uploadUrl` — the file bytes never pass through the Repull API.** This endpoint only mints the URL; do not POST the file itself here, it will not be accepted.
 //
-// Flow: (1) POST here with `fileName`/`fileType`/optional `fileSize` to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) `publicUrl` is the durable URL for the uploaded photo — attach it to the listing via `PUT /v1/listings/{id}/content` (`photos` field) or list it back via `GET /v1/listings/{id}/photos`.
+// Flow: (1) POST here with `fileName`, `fileType` and `fileSize` (bytes) to get `{ uploadUrl, token, path, publicUrl, expiresIn }`; (2) PUT the raw file bytes to `uploadUrl` from the client; (3) **attach it** — uploading does not put the photo on the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos). The response's `nextStep` says the same.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -48131,6 +49517,8 @@ func (c *ClientWithResponses) PublishListingToAirbnbWithResponse(ctx context.Con
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
+// A listing with no Booking.com room linked is refused with `409 listing_not_on_booking` and the next step, rather than answered with `published: false`.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
@@ -48155,6 +49543,8 @@ func (c *ClientWithResponses) PublishListingToBookingWithBodyWithResponse(ctx co
 // A listing with no Booking.com property mapped at all is not an error: the call returns `result.published: false` with `result.reason` and `result.hotelId: null`, and nothing is pushed.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// A listing with no Booking.com room linked is refused with `409 listing_not_on_booking` and the next step, rather than answered with `published: false`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -48241,6 +49631,23 @@ func (c *ClientWithResponses) GetListingSegmentsWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseGetListingSegmentsClientResponse(rsp)
+}
+
+// ListListingUnitsWithResponse List a listing's units (rooms)
+//
+// The physical rooms under a listing. For a hotel-model PMS (Mews, Cloudbeds) a listing is a room type: prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+//
+// Any other listing is a single home, which is its own unit, and returns an empty list.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/listings/{id}/units (the `ListListingUnits` operationId).
+func (c *ClientWithResponses) ListListingUnitsWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*ListListingUnitsClientResponse, error) {
+	rsp, err := c.ListListingUnits(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListListingUnitsClientResponse(rsp)
 }
 
 // ListMarketsWithResponse List markets the customer operates in
@@ -48709,6 +50116,52 @@ func (c *ClientWithResponses) AcceptReservationRequestWithResponse(ctx context.C
 	return ParseAcceptReservationRequestClientResponse(rsp)
 }
 
+// CancelReservationWithBodyWithResponse Cancel a reservation
+//
+// Cancels a reservation where it lives.
+//
+// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
+// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+//
+// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
+//
+// Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
+func (c *ClientWithResponses) CancelReservationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error) {
+	rsp, err := c.CancelReservationWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelReservationClientResponse(rsp)
+}
+
+// CancelReservationWithResponse Cancel a reservation
+//
+// Cancels a reservation where it lives.
+//
+// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
+// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+//
+// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
+//
+// Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
+func (c *ClientWithResponses) CancelReservationWithResponse(ctx context.Context, id int, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error) {
+	rsp, err := c.CancelReservation(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelReservationClientResponse(rsp)
+}
+
 // DeclineReservationRequestWithBodyWithResponse Decline a booking request
 //
 // Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
@@ -48753,7 +50206,7 @@ func (c *ClientWithResponses) DeclineReservationRequestWithResponse(ctx context.
 
 // ListReviewsWithResponse List reviews
 //
-// Cursor-paginated guest + host review stream for the workspace. Backed by main vanio's unified `reviews` table (populated by per-channel backfill crons), so this surface returns the complete cross-channel history — separate from `/v1/channels/airbnb/reviews` which hits Airbnb live.
+// Cursor-paginated guest + host review stream for the workspace. This surface returns the complete cross-channel history — separate from `/v1/channels/airbnb/reviews` which hits Airbnb live.
 //
 // `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`.
 //
@@ -53242,6 +54695,9 @@ func ParseListAirbnbTransactionsClientResponse(rsp *http.Response) (*ListAirbnbT
 			//
 			// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
 			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+
+			// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+			Pagination Pagination `json:"pagination"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -53261,6 +54717,13 @@ func ParseListAirbnbTransactionsClientResponse(rsp *http.Response) (*ListAirbnbT
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
@@ -53290,7 +54753,25 @@ func ParseSyncAirbnbTransactionsClientResponse(rsp *http.Response) (*SyncAirbnbT
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			// Count Number of transactions upserted.
+			Accounts []struct {
+				// AccountId Airbnb host id.
+				AccountId string `json:"accountId"`
+				Count     int    `json:"count"`
+
+				// Error Present only when this account was not refreshed. `code` is `connection_reauth_required`, `airbnb_rejected`, `airbnb_rate_limited`, `airbnb_error`, or `time_budget` (the request ran out of time before reaching it: refresh it alone with `?account_id=`).
+				Error *struct {
+					Code    string `json:"code"`
+					Message string `json:"message"`
+				} `json:"error,omitempty"`
+
+				// Payouts Payouts in the refreshed window.
+				Payouts int `json:"payouts"`
+
+				// UpcomingRemoved UPCOMING lines Airbnb no longer lists (paid out or cancelled) and were removed.
+				UpcomingRemoved int `json:"upcomingRemoved"`
+			} `json:"accounts"`
+
+			// Count Ledger lines written, Payout rows included.
 			Count  int  `json:"count"`
 			Synced bool `json:"synced"`
 		}
@@ -53306,6 +54787,20 @@ func ParseSyncAirbnbTransactionsClientResponse(rsp *http.Response) (*SyncAirbnbT
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest AirbnbAccountNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
 		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -53313,12 +54808,33 @@ func ParseSyncAirbnbTransactionsClientResponse(rsp *http.Response) (*SyncAirbnbT
 		}
 		response.JSON409 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -55420,6 +56936,88 @@ func ParseSubmitBookingsyncCredentialsClientResponse(rsp *http.Response) (*Submi
 	return response, nil
 }
 
+// ParseSubmitCloudbedsCredentialsClientResponse parses an HTTP response from a SubmitCloudbedsCredentialsWithResponse call
+func ParseSubmitCloudbedsCredentialsClientResponse(rsp *http.Response) (*SubmitCloudbedsCredentialsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SubmitCloudbedsCredentialsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AccountInfo *struct {
+				AccountName *string `json:"accountName,omitempty"`
+
+				// ExternalAccountId The Cloudbeds property id these credentials belong to.
+				ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+				// PropertyIds Every property the credentials cover.
+				PropertyIds *[]string `json:"propertyIds,omitempty"`
+			} `json:"accountInfo,omitempty"`
+			Connected *bool `json:"connected,omitempty"`
+
+			// Created False when an existing connection was updated.
+			Created *bool `json:"created,omitempty"`
+
+			// PmsConnectionId Id of the stored connection.
+			PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+			// Provider Example: cloudbeds
+			Provider  *string `json:"provider,omitempty"`
+			SessionId *string `json:"sessionId,omitempty"`
+			Webhooks  *struct {
+				// Error Why subscribing failed, if it did. The connection still syncs by polling.
+				Error *string `json:"error,omitempty"`
+
+				// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
+				Registered *int `json:"registered,omitempty"`
+			} `json:"webhooks,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseSubmitGuestyCredentialsClientResponse parses an HTTP response from a SubmitGuestyCredentialsWithResponse call
 func ParseSubmitGuestyCredentialsClientResponse(rsp *http.Response) (*SubmitGuestyCredentialsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -55666,6 +57264,88 @@ func ParseSubmitLodgifyCredentialsClientResponse(rsp *http.Response) (*SubmitLod
 		var dest struct {
 			AccountInfo *map[string]interface{} `json:"accountInfo,omitempty"`
 			Ok          *bool                   `json:"ok,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSubmitMewsCredentialsClientResponse parses an HTTP response from a SubmitMewsCredentialsWithResponse call
+func ParseSubmitMewsCredentialsClientResponse(rsp *http.Response) (*SubmitMewsCredentialsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SubmitMewsCredentialsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AccountInfo *struct {
+				AccountName *string `json:"accountName,omitempty"`
+
+				// ExternalAccountId The Mews property id these credentials belong to.
+				ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+				// PropertyIds Every property the credentials cover.
+				PropertyIds *[]string `json:"propertyIds,omitempty"`
+			} `json:"accountInfo,omitempty"`
+			Connected *bool `json:"connected,omitempty"`
+
+			// Created False when an existing connection was updated.
+			Created *bool `json:"created,omitempty"`
+
+			// PmsConnectionId Id of the stored connection.
+			PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+			// Provider Example: mews
+			Provider  *string `json:"provider,omitempty"`
+			SessionId *string `json:"sessionId,omitempty"`
+			Webhooks  *struct {
+				// Error Why subscribing failed, if it did. The connection still syncs by polling.
+				Error *string `json:"error,omitempty"`
+
+				// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
+				Registered *int `json:"registered,omitempty"`
+			} `json:"webhooks,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -58750,11 +60430,18 @@ func ParsePublishListingToAirbnbClientResponse(rsp *http.Response) (*PublishList
 		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -58811,7 +60498,7 @@ func ParsePublishListingToBookingClientResponse(rsp *http.Response) (*PublishLis
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Conflict
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -58979,6 +60666,75 @@ func ParseGetListingSegmentsClientResponse(rsp *http.Response) (*GetListingSegme
 			return nil, err
 		}
 		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListListingUnitsClientResponse parses an HTTP response from a ListListingUnitsWithResponse call
+func ParseListListingUnitsClientResponse(rsp *http.Response) (*ListListingUnitsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListListingUnitsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]struct {
+				Active *bool   `json:"active,omitempty"`
+				Floor  *string `json:"floor,omitempty"`
+
+				// HousekeepingStatus The PMS's housekeeping state, verbatim (e.g. `Dirty`, `Clean`, `Inspected`).
+				HousekeepingStatus *string `json:"housekeepingStatus,omitempty"`
+
+				// Id The PMS's id for the room; `reservation.unit.id` refers to it.
+				Id *string `json:"id,omitempty"`
+
+				// Name Example: 101
+				Name *string `json:"name,omitempty"`
+
+				// ParentId A sub-space's parent room (a bed in a dorm), else null.
+				ParentId *string `json:"parentId,omitempty"`
+
+				// Source Example: mews
+				Source *string `json:"source,omitempty"`
+			} `json:"data,omitempty"`
+			ListingId *int `json:"listingId,omitempty"`
+			Total     *int `json:"total,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -60024,6 +61780,79 @@ func ParseAcceptReservationRequestClientResponse(rsp *http.Response) (*AcceptRes
 	return response, nil
 }
 
+// ParseCancelReservationClientResponse parses an HTTP response from a CancelReservationWithResponse call
+func ParseCancelReservationClientResponse(rsp *http.Response) (*CancelReservationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CancelReservationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// AlreadyCancelled Present and true when the reservation was already cancelled.
+			AlreadyCancelled *bool               `json:"alreadyCancelled,omitempty"`
+			CheckIn          *openapi_types.Date `json:"checkIn,omitempty"`
+			CheckOut         *openapi_types.Date `json:"checkOut,omitempty"`
+			ConfirmationCode *string             `json:"confirmationCode,omitempty"`
+			Id               *string             `json:"id,omitempty"`
+			ListingId        *string             `json:"listingId,omitempty"`
+
+			// Pms Present when the cancellation was made in a PMS.
+			Pms *struct {
+				Applied *[]string `json:"applied,omitempty"`
+				Errors  *[]struct {
+					Code    *string `json:"code,omitempty"`
+					Message *string `json:"message,omitempty"`
+					Section *string `json:"section,omitempty"`
+				} `json:"errors,omitempty"`
+
+				// Provider Example: mews
+				Provider *string `json:"provider,omitempty"`
+			} `json:"pms,omitempty"`
+			Status    *CancelReservation200JSONResponseBodyStatus `json:"status,omitempty"`
+			UpdatedAt *string                                     `json:"updatedAt,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case rsp.StatusCode == 409:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDeclineReservationRequestClientResponse parses an HTTP response from a DeclineReservationRequestWithResponse call
 func ParseDeclineReservationRequestClientResponse(rsp *http.Response) (*DeclineReservationRequestClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -60660,8 +62489,11 @@ func ParseGetUsageSummaryClientResponse(rsp *http.Response) (*GetUsageSummaryCli
 				DailyRequests   *int `json:"dailyRequests,omitempty"`
 				MonthlyRequests *int `json:"monthlyRequests,omitempty"`
 			} `json:"limits,omitempty"`
-			Range     *string `json:"range,omitempty"`
-			Remaining *struct {
+
+			// PlanNotice Added to the body of EVERY JSON response (success or error, except bare arrays and 5xx) while the workspace is connected to more listings than its plan lets it use — so a developer reading any payload, or an AI assistant relaying it, sees it. Connect keeps every listing it finds, but on a capped plan only as many as the plan allows are active; the rest are held back inactive and keep syncing. The same responses also carry the `X-Repull-Listings-Held-Back` and `X-Repull-Active-Listing-Limit` headers. Using a held-back listing answers `403 listing_inactive` with `reason: "plan_limit"`. Tell the user: they can see the held-back listings with `GET /v1/listings?status=all`, choose which are active with `POST /v1/listings/status`, or upgrade.
+			PlanNotice *PlanNotice `json:"planNotice,omitempty"`
+			Range      *string     `json:"range,omitempty"`
+			Remaining  *struct {
 				Daily   *int `json:"daily,omitempty"`
 				DailyAi *int `json:"dailyAi,omitempty"`
 				Monthly *int `json:"monthly,omitempty"`

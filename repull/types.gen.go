@@ -526,27 +526,6 @@ func (e AirbnbTransactionStatus) Valid() bool {
 	}
 }
 
-// Defines values for AirbnbTransactionType.
-const (
-	AirbnbTransactionTypePayout               AirbnbTransactionType = "Payout"
-	AirbnbTransactionTypeReservation          AirbnbTransactionType = "Reservation"
-	AirbnbTransactionTypeResolutionAdjustment AirbnbTransactionType = "Resolution_Adjustment"
-)
-
-// Valid indicates whether the value is a known member of the AirbnbTransactionType enum.
-func (e AirbnbTransactionType) Valid() bool {
-	switch e {
-	case AirbnbTransactionTypePayout:
-		return true
-	case AirbnbTransactionTypeReservation:
-		return true
-	case AirbnbTransactionTypeResolutionAdjustment:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for AlterationWebhookObjectInitiator.
 const (
 	AlterationWebhookObjectInitiatorGuest       AlterationWebhookObjectInitiator = "guest"
@@ -2305,6 +2284,51 @@ func (e PaymentWebhookObjectTransactionType) Valid() bool {
 	}
 }
 
+// Defines values for PayoutCompletedEventEvent.
+const (
+	PayoutCompletedEventEventPayoutCompleted PayoutCompletedEventEvent = "payout.completed"
+)
+
+// Valid indicates whether the value is a known member of the PayoutCompletedEventEvent enum.
+func (e PayoutCompletedEventEvent) Valid() bool {
+	switch e {
+	case PayoutCompletedEventEventPayoutCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PayoutCompletedPayloadChannel.
+const (
+	PayoutCompletedPayloadChannelAirbnb PayoutCompletedPayloadChannel = "airbnb"
+)
+
+// Valid indicates whether the value is a known member of the PayoutCompletedPayloadChannel enum.
+func (e PayoutCompletedPayloadChannel) Valid() bool {
+	switch e {
+	case PayoutCompletedPayloadChannelAirbnb:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PlanNoticeCode.
+const (
+	ListingsHeldBack PlanNoticeCode = "listings_held_back"
+)
+
+// Valid indicates whether the value is a known member of the PlanNoticeCode enum.
+func (e PlanNoticeCode) Valid() bool {
+	switch e {
+	case ListingsHeldBack:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PropertyStatus.
 const (
 	PropertyStatusActive   PropertyStatus = "active"
@@ -2665,6 +2689,87 @@ func (e ReservationMessageReceivedEventEvent) Valid() bool {
 	}
 }
 
+// Defines values for ReservationMessageSentEventEvent.
+const (
+	ReservationMessageSentEventEventReservationMessageSent ReservationMessageSentEventEvent = "reservation.message.sent"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageSentEventEvent enum.
+func (e ReservationMessageSentEventEvent) Valid() bool {
+	switch e {
+	case ReservationMessageSentEventEventReservationMessageSent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationMessageSentPayloadDirection.
+const (
+	ReservationMessageSentPayloadDirectionOutbound ReservationMessageSentPayloadDirection = "outbound"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageSentPayloadDirection enum.
+func (e ReservationMessageSentPayloadDirection) Valid() bool {
+	switch e {
+	case ReservationMessageSentPayloadDirectionOutbound:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationMessageSentPayloadSource.
+const (
+	Channel ReservationMessageSentPayloadSource = "channel"
+	Repull  ReservationMessageSentPayloadSource = "repull"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageSentPayloadSource enum.
+func (e ReservationMessageSentPayloadSource) Valid() bool {
+	switch e {
+	case Channel:
+		return true
+	case Repull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationMessageUpdatedEventEvent.
+const (
+	ReservationMessageUpdatedEventEventReservationMessageUpdated ReservationMessageUpdatedEventEvent = "reservation.message.updated"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageUpdatedEventEvent enum.
+func (e ReservationMessageUpdatedEventEvent) Valid() bool {
+	switch e {
+	case ReservationMessageUpdatedEventEventReservationMessageUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationMessageUpdatedPayloadDirection.
+const (
+	ReservationMessageUpdatedPayloadDirectionInbound  ReservationMessageUpdatedPayloadDirection = "inbound"
+	ReservationMessageUpdatedPayloadDirectionOutbound ReservationMessageUpdatedPayloadDirection = "outbound"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageUpdatedPayloadDirection enum.
+func (e ReservationMessageUpdatedPayloadDirection) Valid() bool {
+	switch e {
+	case ReservationMessageUpdatedPayloadDirectionInbound:
+		return true
+	case ReservationMessageUpdatedPayloadDirectionOutbound:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationRequestCreatedEventEvent.
 const (
 	ReservationRequestCreatedEventEventReservationRequestCreated ReservationRequestCreatedEventEvent = "reservation.request.created"
@@ -3004,12 +3109,15 @@ const (
 	WebhookEventTypeMigrationFailed                WebhookEventType = "migration.failed"
 	WebhookEventTypePaymentCompleted               WebhookEventType = "payment.completed"
 	WebhookEventTypePaymentRefunded                WebhookEventType = "payment.refunded"
+	WebhookEventTypePayoutCompleted                WebhookEventType = "payout.completed"
 	WebhookEventTypeRepullPing                     WebhookEventType = "repull.ping"
 	WebhookEventTypeReservationAlterationCreated   WebhookEventType = "reservation.alteration.created"
 	WebhookEventTypeReservationAlterationResponded WebhookEventType = "reservation.alteration.responded"
 	WebhookEventTypeReservationCancelled           WebhookEventType = "reservation.cancelled"
 	WebhookEventTypeReservationCreated             WebhookEventType = "reservation.created"
 	WebhookEventTypeReservationMessageReceived     WebhookEventType = "reservation.message.received"
+	WebhookEventTypeReservationMessageSent         WebhookEventType = "reservation.message.sent"
+	WebhookEventTypeReservationMessageUpdated      WebhookEventType = "reservation.message.updated"
 	WebhookEventTypeReservationRequestCreated      WebhookEventType = "reservation.request.created"
 	WebhookEventTypeReservationRequestUpdated      WebhookEventType = "reservation.request.updated"
 	WebhookEventTypeReservationUpdated             WebhookEventType = "reservation.updated"
@@ -3053,6 +3161,8 @@ func (e WebhookEventType) Valid() bool {
 		return true
 	case WebhookEventTypePaymentRefunded:
 		return true
+	case WebhookEventTypePayoutCompleted:
+		return true
 	case WebhookEventTypeRepullPing:
 		return true
 	case WebhookEventTypeReservationAlterationCreated:
@@ -3064,6 +3174,10 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeReservationCreated:
 		return true
 	case WebhookEventTypeReservationMessageReceived:
+		return true
+	case WebhookEventTypeReservationMessageSent:
+		return true
+	case WebhookEventTypeReservationMessageUpdated:
 		return true
 	case WebhookEventTypeReservationRequestCreated:
 		return true
@@ -3910,6 +4024,24 @@ func (e AirbnbReservationActionJSONBodyReason) Valid() bool {
 	}
 }
 
+// Defines values for ListAirbnbTransactionsParamsStatus.
+const (
+	ListAirbnbTransactionsParamsStatusCOMPLETED ListAirbnbTransactionsParamsStatus = "COMPLETED"
+	ListAirbnbTransactionsParamsStatusUPCOMING  ListAirbnbTransactionsParamsStatus = "UPCOMING"
+)
+
+// Valid indicates whether the value is a known member of the ListAirbnbTransactionsParamsStatus enum.
+func (e ListAirbnbTransactionsParamsStatus) Valid() bool {
+	switch e {
+	case ListAirbnbTransactionsParamsStatusCOMPLETED:
+		return true
+	case ListAirbnbTransactionsParamsStatusUPCOMING:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SyncAirbnbTransactionsJSONBodyTransactionType.
 const (
 	SyncAirbnbTransactionsJSONBodyTransactionTypeCOMPLETED SyncAirbnbTransactionsJSONBodyTransactionType = "COMPLETED"
@@ -4132,6 +4264,24 @@ func (e CreateConnectSessionJSONBodyScope) Valid() bool {
 	case CreateConnectSessionJSONBodyScopeRooms:
 		return true
 	case CreateConnectSessionJSONBodyScopeTaxes:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubmitMewsCredentialsJSONBodyCredentialsEnvironment.
+const (
+	Demo       SubmitMewsCredentialsJSONBodyCredentialsEnvironment = "demo"
+	Production SubmitMewsCredentialsJSONBodyCredentialsEnvironment = "production"
+)
+
+// Valid indicates whether the value is a known member of the SubmitMewsCredentialsJSONBodyCredentialsEnvironment enum.
+func (e SubmitMewsCredentialsJSONBodyCredentialsEnvironment) Valid() bool {
+	switch e {
+	case Demo:
+		return true
+	case Production:
 		return true
 	default:
 		return false
@@ -4606,6 +4756,21 @@ func (e AcceptReservationRequest200JSONResponseBodyStatus) Valid() bool {
 	case AcceptReservationRequest200JSONResponseBodyStatusAccepted:
 		return true
 	case AcceptReservationRequest200JSONResponseBodyStatusDeclined:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CancelReservation200JSONResponseBodyStatus.
+const (
+	CancelReservation200JSONResponseBodyStatusCancelled CancelReservation200JSONResponseBodyStatus = "cancelled"
+)
+
+// Valid indicates whether the value is a known member of the CancelReservation200JSONResponseBodyStatus enum.
+func (e CancelReservation200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case CancelReservation200JSONResponseBodyStatusCancelled:
 		return true
 	default:
 		return false
@@ -5107,7 +5272,7 @@ type AirbnbAccountFreshness struct {
 
 	// AccountName Display name of the connected account.
 	//
-	// Example: Pomello
+	// Example: Seaside Stays
 	AccountName *string `json:"accountName,omitempty"`
 
 	// FixUrl Where to reconnect this account. Omitted when it is fresh.
@@ -5132,7 +5297,7 @@ type AirbnbAlteration struct {
 
 	// AccountName Display name of that connected Airbnb account.
 	//
-	// Example: Pomello
+	// Example: Seaside Stays
 	AccountName *string `json:"accountName,omitempty"`
 
 	// AlterationId Airbnb alteration id. This is the `{id}` you pass to `GET/POST /v1/channels/airbnb/alterations/{id}` and the accept / decline sub-routes.
@@ -5308,7 +5473,7 @@ type AirbnbCalendarOperationAvailability string
 // AirbnbCalendarOperationBusySubtype Why a blocked date is blocked. Airbnb requires it whenever `availability` is `unavailable`; when you leave it out, Repull sends **`BLOCKED_BY_HOST`**. Use `OUTSIDE_RESERVATION` for a date held by a booking made on another channel.
 type AirbnbCalendarOperationBusySubtype string
 
-// AirbnbConnection An Airbnb-side connection record for a Vanio listing. The same property may appear under multiple connections if it has been linked from multiple Airbnb host accounts.
+// AirbnbConnection An Airbnb-side connection record for a listing. The same property may appear under multiple connections if it has been linked from multiple Airbnb host accounts.
 type AirbnbConnection struct {
 	// AccessibilityAmenities Present only when `?include=amenities` is passed. Accessibility-tagged subset of the local amenity cache (step-free access, wide doorways, grab rails, disabled parking, wheelchair, accessible-height fixtures, hoists, etc). Returns an empty array when amenities synced but none qualify as accessibility; returns `null` when the cache is empty for this connection (use `dataFreshness` to disambiguate "never synced" from "fresh and genuinely empty").
 	AccessibilityAmenities *[]struct {
@@ -5325,13 +5490,13 @@ type AirbnbConnection struct {
 
 	// AccountName Display name of that connected Airbnb account.
 	//
-	// Example: Pomello
+	// Example: Seaside Stays
 	AccountName *string `json:"accountName,omitempty"`
 	Active      *bool   `json:"active,omitempty"`
 
 	// AirbnbId Airbnb-side listing id
 	//
-	// Example: 1116939745194659457
+	// Example: 1234567890123456789
 	AirbnbId *string `json:"airbnbId,omitempty"`
 
 	// Amenities Present only when `?include=amenities` is passed. Sourced from the local `listings_airbnb_amenities` cache (populated by the Airbnb sync worker). Returns `null` when the cache is empty for this connection — see the top-level `dataFreshness` envelope to disambiguate "never synced" vs "host disconnected" vs "fresh and genuinely empty".
@@ -5511,13 +5676,13 @@ type AirbnbDescriptionWriteRequest struct {
 	Locale string `json:"locale"`
 }
 
-// AirbnbListing A Vanio listing paired with its Airbnb connection rows. The list endpoint groups every `listings_airbnb` row that points at the same Vanio `listingId` under a single `connections[]` array.
+// AirbnbListing A listing paired with its Airbnb connections. The list endpoint groups every Airbnb connection of the same `listingId` under a single `connections[]` array.
 type AirbnbListing struct {
 	// City Example: Malibu
 	City        *string             `json:"city,omitempty"`
 	Connections *[]AirbnbConnection `json:"connections,omitempty"`
 
-	// ListingId Vanio (Repull) listing id
+	// ListingId Repull listing id
 	//
 	// Example: 6248
 	ListingId *string `json:"listingId,omitempty"`
@@ -5527,7 +5692,7 @@ type AirbnbListing struct {
 	// Example: Oceanview Villa
 	Name *string `json:"name,omitempty"`
 
-	// ThumbnailUrl Cover photo URL for the Vanio listing. **Only present when the caller passes `?include=thumbnail`.** `null` when the listing has no cover photo stored — the listing is still returned.
+	// ThumbnailUrl Cover photo URL for the listing. **Only present when the caller passes `?include=thumbnail`.** `null` when the listing has no cover photo stored — the listing is still returned.
 	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
 }
 
@@ -5621,7 +5786,7 @@ type AirbnbListingLifecycleResponse struct {
 	// Live Whether the Airbnb listing is taking bookings after this call. `false` after `unlist`, `true` after `relist`.
 	Live *bool `json:"live,omitempty"`
 
-	// Verified True when the result was confirmed by reading the listing back from Airbnb (done on `unlist`: Airbnb accepting the call is not proof the listing came down).
+	// Verified True when the result was confirmed by reading the listing back from Airbnb, on `unlist` and `relist` alike: Airbnb accepting the call is not proof the listing came down or went live. `false` means the read-back could not run — an unknown, not a success. A read-back that shows the wrong state is returned as an error, not as `verified: false`.
 	Verified *bool `json:"verified,omitempty"`
 }
 
@@ -5778,7 +5943,7 @@ type AirbnbReservation struct {
 
 	// AccountName Display name of that connected Airbnb account.
 	//
-	// Example: Pomello
+	// Example: Seaside Stays
 	AccountName *string             `json:"accountName,omitempty"`
 	CheckIn     *openapi_types.Date `json:"checkIn,omitempty"`
 	CheckOut    *openapi_types.Date `json:"checkOut,omitempty"`
@@ -5820,7 +5985,7 @@ type AirbnbReview struct {
 
 	// AccountName Display name of that connected Airbnb account.
 	//
-	// Example: Pomello
+	// Example: Seaside Stays
 	AccountName     *string    `json:"accountName,omitempty"`
 	Comment         *string    `json:"comment,omitempty"`
 	CreatedAt       *time.Time `json:"createdAt,omitempty"`
@@ -5881,7 +6046,7 @@ type AirbnbThread struct {
 
 	// AccountName Display name of that connected Airbnb account.
 	//
-	// Example: Pomello
+	// Example: Seaside Stays
 	AccountName   *string    `json:"accountName,omitempty"`
 	GuestName     *string    `json:"guestName,omitempty"`
 	Id            *string    `json:"id,omitempty"`
@@ -5903,107 +6068,106 @@ type AirbnbThreadListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
-// AirbnbTransaction One Airbnb host transaction — a reservation earning, a settled payout, or a resolution adjustment — with the genuine host- and guest-side financial breakdown Airbnb exposes. All money is in host currency; fees and withholding are negative (deductions). Two owner-statement concepts are NOT available from Airbnb and are listed in `unavailable_fields` rather than fabricated: property-management fee and itemised nightly discounts (the latter are already netted into `host_breakdown.accommodation_subtotal`).
+// AirbnbTransaction One line of the Airbnb settlement ledger: a Payout row (`isPayout: true`) or a line it paid. Money is in the payout currency; `amount` is signed (negative = taken back, e.g. an adjustment offset against this payout). A payout's lines sum to its `payout.paidOutAmount`.
 type AirbnbTransaction struct {
-	// AccountId Which connected Airbnb account this transaction belongs to — the Airbnb host id, as a string (they exceed 2^53). `null` on rows that name no listing (payouts).
+	// AccountId The connected Airbnb account (host id, as a string — they exceed 2^53).
 	//
-	// Example: 1772489413932732258
-	AccountId *string `json:"account_id,omitempty"`
+	// Example: 10000001
+	AccountId *string `json:"accountId,omitempty"`
 
-	// AccountName Display name of that connected Airbnb account.
+	// AccountName Example: Seaside Stays
+	AccountName *string `json:"accountName,omitempty"`
+
+	// Amount Signed amount this line contributes to its payout, after Airbnb's host service fee. On a Payout row, the amount paid out.
 	//
-	// Example: Pomello
-	AccountName *string `json:"account_name,omitempty"`
+	// Example: 40.6
+	Amount *float32 `json:"amount,omitempty"`
 
-	// Amount Top-level transaction amount.
-	Amount   *float32   `json:"amount,omitempty"`
-	BookedAt *time.Time `json:"booked_at,omitempty"`
-	CheckIn  *time.Time `json:"check_in,omitempty"`
-	CheckOut *time.Time `json:"check_out,omitempty"`
+	// ConfirmationCode Example: HMRQ8FC4YN
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
 
-	// ConfirmationCode Airbnb confirmation code — links this transaction to a reservation.
-	ConfirmationCode *string `json:"confirmation_code,omitempty"`
-	Currency         *string `json:"currency,omitempty"`
+	// Currency Example: USD
+	Currency *string `json:"currency,omitempty"`
 
-	// Date Transaction date.
+	// Date The line's date as Airbnb reports it. Can be the day before its payout's date.
 	Date *openapi_types.Date `json:"date,omitempty"`
 
-	// GuestBreakdown Guest-side breakdown (what the guest paid).
-	GuestBreakdown struct {
-		ServiceFeeBase *float32 `json:"service_fee_base,omitempty"`
-		ServiceFeeVat  *float32 `json:"service_fee_vat,omitempty"`
-		TotalPaid      *float32 `json:"total_paid"`
-	} `json:"guest_breakdown"`
-	GuestName *string `json:"guest_name,omitempty"`
+	// Description Airbnb's description: the stay dates, the resolution, or on a Payout row the payout method.
+	Description *string `json:"description,omitempty"`
+	Fees        struct {
+		// CleaningFee Cleaning fee included in this line's gross.
+		//
+		// Example: 40.57
+		CleaningFee *float32 `json:"cleaningFee"`
 
-	// HostBreakdown Host-side breakdown (all host currency).
-	HostBreakdown struct {
-		// AccommodationSubtotal Nightly rate × nights, net of stay-level discounts already applied by Airbnb.
-		AccommodationSubtotal *float32 `json:"accommodation_subtotal,omitempty"`
-		AirbnbCollectedTax    *float32 `json:"airbnb_collected_tax,omitempty"`
-		CleaningFee           *float32 `json:"cleaning_fee,omitempty"`
+		// HostServiceFee Airbnb's host service fee on this line, as a deduction (negative). Already taken out of `amount`.
+		//
+		// Example: -7.45
+		HostServiceFee *float32 `json:"hostServiceFee"`
+	} `json:"fees"`
 
-		// HostPayout Expected/actual net payout to the host.
-		HostPayout *float32 `json:"host_payout"`
+	// GrossAmount Before Airbnb's host service fee: `amount - fees.hostServiceFee`.
+	//
+	// Example: 48.05
+	GrossAmount *float32 `json:"grossAmount,omitempty"`
+	GuestName   *string  `json:"guestName,omitempty"`
 
-		// HostServiceFeeBase Airbnb host service fee, base component (negative = deduction).
-		HostServiceFeeBase *float32 `json:"host_service_fee_base,omitempty"`
-
-		// HostServiceFeeTotal Convenience sum of base + VAT.
-		HostServiceFeeTotal *float32 `json:"host_service_fee_total,omitempty"`
-
-		// HostServiceFeeVat Airbnb host service fee, VAT component (negative = deduction).
-		HostServiceFeeVat *float32 `json:"host_service_fee_vat,omitempty"`
-		OccupancyTax      *float32 `json:"occupancy_tax,omitempty"`
-		PassThroughTax    *float32 `json:"pass_through_tax,omitempty"`
-		TaxWithholding    *float32 `json:"tax_withholding,omitempty"`
-	} `json:"host_breakdown"`
-	HostCurrency *string `json:"host_currency,omitempty"`
+	// IsPayout `true` on the Payout row itself.
+	IsPayout bool `json:"isPayout"`
 
 	// ListingId Airbnb listing id.
-	ListingId *string `json:"listing_id,omitempty"`
-	Nights    *int    `json:"nights,omitempty"`
-	Payout    struct {
-		PaidOutAmount *float32 `json:"paid_out_amount"`
+	ListingId   *string `json:"listingId,omitempty"`
+	ListingName *string `json:"listingName,omitempty"`
+	Nights      *int    `json:"nights,omitempty"`
 
-		// PayoutDate Settlement date (populated on Payout-type rows).
-		PayoutDate *openapi_types.Date `json:"payout_date"`
-		PayoutId   *string             `json:"payout_id"`
+	// OnInactiveListing `true` when the line is on a listing that is inactive in Repull. Still returned, so the payout reconciles.
+	OnInactiveListing bool `json:"onInactiveListing"`
+	Payout            struct {
+		// LineIndex Position within the payout, from 1. `null` on the Payout row and on UPCOMING lines.
+		LineIndex *int `json:"lineIndex"`
+
+		// PaidOutAmount On the Payout row only: the amount paid out. Its lines sum to it.
+		PaidOutAmount *float32            `json:"paidOutAmount"`
+		PayoutDate    *openapi_types.Date `json:"payoutDate"`
+
+		// PayoutId The payout this line was settled in (its own id on a Payout row). `null` on an UPCOMING line.
+		//
+		// Example: M-HQLLNSWKUWK7R
+		PayoutId *string `json:"payoutId"`
+
+		// PayoutIdSynthetic `true` when Airbnb sent no payout id (a payout netting to $0.00) and Repull derived a stable one.
+		PayoutIdSynthetic bool `json:"payoutIdSynthetic"`
 	} `json:"payout"`
+
+	// Reference The resolution id on resolution payouts and adjustments; else `null`.
+	//
+	// Example: CLSF-06472635
 	Reference *string `json:"reference,omitempty"`
 
-	// ReservationId Resolved Vanio reservation id when the confirmation code matched a reservation in this workspace; null otherwise.
-	ReservationId        *int                `json:"reservation_id,omitempty"`
-	ReservationStartDate *openapi_types.Date `json:"reservation_start_date,omitempty"`
+	// ReservationId Repull reservation id when the confirmation code matches a reservation in this workspace; `null` when it does not (explicitly unlinked).
+	ReservationId        *string             `json:"reservationId,omitempty"`
+	ReservationStartDate *openapi_types.Date `json:"reservationStartDate,omitempty"`
 
-	// StandardFees Raw Airbnb standard-fees array.
-	StandardFees interface{} `json:"standard_fees,omitempty"`
+	// Status `COMPLETED`: settled in a payout. `UPCOMING`: expected, not paid out yet.
+	Status   AirbnbTransactionStatus `json:"status"`
+	SyncedAt *time.Time              `json:"syncedAt,omitempty"`
 
-	// Status Payout status signal: COMPLETED (settled) vs UPCOMING (expected).
-	Status     *AirbnbTransactionStatus `json:"status,omitempty"`
-	StatusType *string                  `json:"status_type,omitempty"`
-	SyncedAt   *time.Time               `json:"synced_at,omitempty"`
+	// TransactionId Stable id. A Payout row: Airbnb's payout id. A settled line: `<payoutId>:<type>:<confirmationCode>:<n>`. An upcoming line: `upcoming:<accountId>:<type>:<confirmationCode>:<date>:<n>`. Identical on every refresh; upsert on it.
+	//
+	// Example: M-HQLLNSWKUWK7R:reservation:HMRQ8FC4YN:1
+	TransactionId string `json:"transactionId"`
 
-	// TaxDetails Raw Airbnb tax-details object.
-	TaxDetails interface{} `json:"tax_details,omitempty"`
-	ThreadId   *string     `json:"thread_id,omitempty"`
-	TimeZone   *string     `json:"time_zone,omitempty"`
+	// Type Airbnb's line type, verbatim: `Payout`, `Reservation`, `Adjustment`, `Resolution Payout`, `Resolution Adjustment`, `Cancellation Fee`, `Pass Through Tot`, …
+	//
+	// Example: Reservation
+	Type string `json:"type"`
 
-	// TransactionId Upstream Airbnb transaction id.
-	TransactionId string `json:"transaction_id"`
-
-	// Type Transaction kind.
-	Type *AirbnbTransactionType `json:"type,omitempty"`
-
-	// UnavailableFields Fields Airbnb does not expose (never fabricated), e.g. `management_fee`, `itemized_discounts`.
-	UnavailableFields []string `json:"unavailable_fields"`
+	// UnavailableFields What Airbnb's transaction history does not carry, so it is never filled in: `taxes` (those Airbnb remits itself; pass-through tax paid to the host arrives as `Pass Through Tot` lines), `guest_paid_total`, `original_transaction_id`, `currency_conversion`, `management_fee`.
+	UnavailableFields []string `json:"unavailableFields"`
 }
 
-// AirbnbTransactionStatus Payout status signal: COMPLETED (settled) vs UPCOMING (expected).
+// AirbnbTransactionStatus `COMPLETED`: settled in a payout. `UPCOMING`: expected, not paid out yet.
 type AirbnbTransactionStatus string
-
-// AirbnbTransactionType Transaction kind.
-type AirbnbTransactionType string
 
 // AlterationChange A single requested field delta on an alteration: prior value (`from`) vs proposed value (`to`).
 type AlterationChange struct {
@@ -7012,7 +7176,7 @@ type ChannelMarketStateItem struct {
 	// `unchanged` never means "it was already like that": it means we did not put it there, and it is still in whatever state it was in before the call.
 	State ChannelMarketStateItemState `json:"state"`
 
-	// Verified Airbnb only, and only when going offline: the listing was READ BACK after the deactivation and confirmed down. Airbnb accepts a deactivation and leaves some listings live, so "we sent the request" is a weaker claim than this one and is never reported as success.
+	// Verified Airbnb only: the listing was READ BACK afterwards and is in the state asked for — down after `offline`, live after `online`. Airbnb can accept a deactivation and leave a listing live, or accept an activation and keep it offline; either is returned as a failure, never as success. `false` means the read-back could not run — an unknown, not a success.
 	Verified *bool `json:"verified,omitempty"`
 }
 
@@ -7154,7 +7318,7 @@ type ConnectStatus struct {
 
 	// ExternalAccountId Provider-side account ID (e.g. the Airbnb host ID).
 	//
-	// Example: 23998907
+	// Example: 10000001
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
 	// Host Host metadata, populated for Airbnb when the host row exists. Null for other providers (per-provider enrichment is incremental).
@@ -7200,6 +7364,9 @@ type ConnectionListResponse struct {
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
+
+	// PlanNotice Added to the body of EVERY JSON response (success or error, except bare arrays and 5xx) while the workspace is connected to more listings than its plan lets it use — so a developer reading any payload, or an AI assistant relaying it, sees it. Connect keeps every listing it finds, but on a capped plan only as many as the plan allows are active; the rest are held back inactive and keep syncing. The same responses also carry the `X-Repull-Listings-Held-Back` and `X-Repull-Active-Listing-Limit` headers. Using a held-back listing answers `403 listing_inactive` with `reason: "plan_limit"`. Tell the user: they can see the held-back listings with `GET /v1/listings?status=all`, choose which are active with `POST /v1/listings/status`, or upgrade.
+	PlanNotice *PlanNotice `json:"planNotice,omitempty"`
 }
 
 // Conversation Channel-agnostic message thread between the host workspace and a guest. Returned by `GET /v1/conversations`. The `id` is the internal Repull thread id (integer) — pass it back as the `{id}` path param on detail / messages calls.
@@ -7639,7 +7806,7 @@ type GuestCreateResponse struct {
 // GuestCreateResponseContactsType defines model for GuestCreateResponse.Contacts.Type.
 type GuestCreateResponseContactsType string
 
-// GuestFlag A risk/operational flag attached to a guest profile (e.g. blacklist, do-not-host, VIP). Severity comes from main vanio's flag taxonomy.
+// GuestFlag A risk/operational flag attached to a guest profile (e.g. blacklist, do-not-host, VIP).
 type GuestFlag struct {
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	IsActive  *bool      `json:"isActive,omitempty"`
@@ -7689,7 +7856,7 @@ type GuestProfile struct {
 	// ReservationsSummary Aggregate counts of reservations attached to the guest. `future` is derived from `total - past - cancelled`.
 	ReservationsSummary *GuestReservationsSummary `json:"reservationsSummary,omitempty"`
 
-	// RiskLevel Main-vanio risk score (e.g. `low`, `medium`, `high`).
+	// RiskLevel Risk score (e.g. `low`, `medium`, `high`).
 	RiskLevel         *string `json:"riskLevel,omitempty"`
 	TotalReservations *int    `json:"totalReservations,omitempty"`
 
@@ -7863,8 +8030,19 @@ type Listing struct {
 	Status *ListingStatus `json:"status,omitempty"`
 
 	// ThumbnailUrl Cover photo URL. Always present on an active listing. On an **inactive** one it is present only when the caller passes `?include=thumbnail`; `null` means the listing has no cover photo stored, absent means the expansion was not requested.
-	ThumbnailUrl *string    `json:"thumbnailUrl,omitempty"`
-	UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
+	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
+
+	// Units `GET /v1/listings/{id}` only. The physical rooms under a hotel-model listing (a Mews or Cloudbeds room type); empty for a single home. Same items as `GET /v1/listings/{id}/units`.
+	Units *[]struct {
+		Active             *bool   `json:"active,omitempty"`
+		Floor              *string `json:"floor,omitempty"`
+		HousekeepingStatus *string `json:"housekeepingStatus,omitempty"`
+		Id                 *string `json:"id,omitempty"`
+		Name               *string `json:"name,omitempty"`
+		ParentId           *string `json:"parentId,omitempty"`
+		Source             *string `json:"source,omitempty"`
+	} `json:"units,omitempty"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
 // ListingStatus defines model for Listing.Status.
@@ -8563,6 +8741,9 @@ type ListingListResponse struct {
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
+
+	// PlanNotice Added to the body of EVERY JSON response (success or error, except bare arrays and 5xx) while the workspace is connected to more listings than its plan lets it use — so a developer reading any payload, or an AI assistant relaying it, sees it. Connect keeps every listing it finds, but on a capped plan only as many as the plan allows are active; the rest are held back inactive and keep syncing. The same responses also carry the `X-Repull-Listings-Held-Back` and `X-Repull-Active-Listing-Limit` headers. Using a held-back listing answers `403 listing_inactive` with `reason: "plan_limit"`. Tell the user: they can see the held-back listings with `GET /v1/listings?status=all`, choose which are active with `POST /v1/listings/status`, or upgrade.
+	PlanNotice *PlanNotice `json:"planNotice,omitempty"`
 }
 
 // ListingMarketStateRequest Optional. Send no body at all unless this listing is mapped to more than one Booking.com property.
@@ -8619,8 +8800,10 @@ type ListingPhotoUploadUrlRequest struct {
 	// Example: living-room.jpg
 	FileName string `json:"fileName"`
 
-	// FileSize File size in bytes, when known. Must be positive if provided.
-	FileSize *int `json:"fileSize,omitempty"`
+	// FileSize File size in bytes. Required: the signed upload is issued for this size.
+	//
+	// Example: 453631
+	FileSize int `json:"fileSize"`
 
 	// FileType Image MIME type. Must start with "image/".
 	//
@@ -8634,6 +8817,9 @@ type ListingPhotoUploadUrlResponse struct {
 	ExpiresIn *int    `json:"expiresIn,omitempty"`
 	ListingId *string `json:"listingId,omitempty"`
 
+	// NextStep What to do after uploading. Uploading does NOT attach the photo to the listing: send `publicUrl` in `photos` on `PUT /v1/listings/{id}/content` (with `photosMode: "append"` to keep existing photos).
+	NextStep *string `json:"nextStep,omitempty"`
+
 	// Path Storage path the photo will live at once uploaded. Pass this to `DELETE /v1/listings/{id}/photos` to remove it later.
 	Path *string `json:"path,omitempty"`
 
@@ -8643,7 +8829,7 @@ type ListingPhotoUploadUrlResponse struct {
 	// Token Opaque upload token bound to this signed URL.
 	Token *string `json:"token,omitempty"`
 
-	// UploadUrl PUT the raw file bytes here directly from the client. Not a Repull or vanio API endpoint — a signed storage URL.
+	// UploadUrl PUT the raw file bytes here directly from the client. Not a Repull API endpoint — a signed storage URL.
 	UploadUrl *string `json:"uploadUrl,omitempty"`
 }
 
@@ -8717,7 +8903,7 @@ type ListingPricingRecommendation struct {
 	// Currency Example: USD
 	Currency *string `json:"currency,omitempty"`
 
-	// CurrentPrice Current calendar price (from Vanio listings_calendar_days) before applying the recommendation.
+	// CurrentPrice Current calendar price before applying the recommendation.
 	CurrentPrice *float32 `json:"currentPrice,omitempty"`
 
 	// Date Example: 2026-05-14
@@ -9303,6 +9489,9 @@ type MapBookingRoomResponse struct {
 	// PreviousListingId The listing the room pointed at before this call; null when it was unmapped. Omitted on a no-op.
 	PreviousListingId *string `json:"previousListingId,omitempty"`
 
+	// ReservationsFound How many reservations Booking.com returned for the property. Equal to `reservationsImported` unless some could not be attached — so `0` here means Booking.com had none. Same `null` / absent rules as `reservationsImported`.
+	ReservationsFound *int `json:"reservationsFound,omitempty"`
+
 	// ReservationsImported Reservations Booking.com returned for the property and ran through the import after the room was mapped — the property's active bookings, which would otherwise never reach the listing. A reservation already present is left as it is, so this counts what was processed, not what was new, and re-sending never duplicates. Runs on every successful map, including a re-map to the same listing, so re-sending retries an import that did not run. `null` means the mapping succeeded but the import could not run; the room is still mapped. Absent after an unmap, when there is nothing to pull.
 	ReservationsImported *int `json:"reservationsImported,omitempty"`
 
@@ -9327,15 +9516,21 @@ type MapConnectBookingRoomsRequest struct {
 type MapConnectBookingRoomsResponse struct {
 	ConnectionId string `json:"connectionId"`
 
-	// Mapped Number of rooms processed (mapped + unmapped).
+	// Mapped Rooms now linked to a listing.
 	Mapped int `json:"mapped"`
 
-	// ReservationsImported Reservations pulled from Booking.com once the rooms were mapped. Mapping triggers the same full property sync the dashboard's Sync button runs, because a reservation can only be resolved to a listing through a mapped room. `null` means the sync could not be run — the connection and mapping are still good, and the property can be synced from the dashboard.
+	// ReservationsFound How many reservations Booking.com returned for the property. Equal to `reservationsImported` unless some could not be attached to a listing — so `0` here means Booking.com had none. `null` when the sync could not run.
+	ReservationsFound *int `json:"reservationsFound,omitempty"`
+
+	// ReservationsImported Reservations pulled from Booking.com once the rooms were mapped. Mapping triggers the same full property sync the dashboard's Sync button runs, because a reservation can only be resolved to a listing through a mapped room. `0` without a sync when no room was mapped. `null` means the sync could not be run — the connection and mapping are still good, and the property can be synced from the dashboard.
 	ReservationsImported *int   `json:"reservationsImported,omitempty"`
 	SessionId            string `json:"sessionId"`
 
 	// Success Example: true
 	Success bool `json:"success"`
+
+	// Unmapped Rooms submitted with `listingId: null` ("don't map"), which are left without a listing.
+	Unmapped *int `json:"unmapped,omitempty"`
 }
 
 // MarketBrowseCategory defines model for MarketBrowseCategory.
@@ -9579,7 +9774,7 @@ type MarketsOverviewResponse struct {
 
 // Message A single message inside a conversation thread. Returned by `GET /v1/conversations/{id}/messages`. `direction` is normalized to `inbound` (from the guest) / `outbound` (from the host or an automation).
 type Message struct {
-	// AiGenerated `true` when the body was authored by Vanio AI (autopilot, draft).
+	// AiGenerated `true` when the body was written by AI (autopilot, draft).
 	AiGenerated *bool `json:"aiGenerated,omitempty"`
 
 	// Attachments Files on this message, inbound or outbound. Empty array when there are none. A file-only message has an empty `body`.
@@ -9597,7 +9792,7 @@ type Message struct {
 	ExternalMessageId *string `json:"externalMessageId,omitempty"`
 	Id                *string `json:"id,omitempty"`
 
-	// IsAutomated `true` when the message was sent by a Vanio automation (template, schedule, etc.).
+	// IsAutomated `true` when the message was sent by an automation (template, schedule, etc.).
 	IsAutomated  *bool      `json:"isAutomated,omitempty"`
 	ReadAt       *time.Time `json:"readAt,omitempty"`
 	SenderAvatar *string    `json:"senderAvatar,omitempty"`
@@ -9982,6 +10177,73 @@ type PaymentWebhookObject struct {
 // Example: payout
 type PaymentWebhookObjectTransactionType string
 
+// PayoutCompletedEvent defines model for PayoutCompletedEvent.
+type PayoutCompletedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `payout.completed`: one Airbnb payout and every line it paid. `payout` and each of `lines` are `AirbnbTransaction` objects, identical — ids included — to what `GET /v1/channels/airbnb/transactions?payout_id=` returns, so you can deduplicate on `transactionId` across webhooks and reads. The lines' signed `amount`s sum to `payout.payout.paidOutAmount`.
+	Data PayoutCompletedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event PayoutCompletedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// PayoutCompletedEventEvent The event name. This field is `event`, not `type`.
+type PayoutCompletedEventEvent string
+
+// PayoutCompletedPayload Payload for `payout.completed`: one Airbnb payout and every line it paid. `payout` and each of `lines` are `AirbnbTransaction` objects, identical — ids included — to what `GET /v1/channels/airbnb/transactions?payout_id=` returns, so you can deduplicate on `transactionId` across webhooks and reads. The lines' signed `amount`s sum to `payout.payout.paidOutAmount`.
+type PayoutCompletedPayload struct {
+	// AccountId The Airbnb account (host id) that was paid.
+	//
+	// Example: 10000001
+	AccountId   string                        `json:"accountId"`
+	AccountName *string                       `json:"accountName,omitempty"`
+	Channel     PayoutCompletedPayloadChannel `json:"channel"`
+
+	// Lines In payout order (`payout.lineIndex`).
+	Lines []AirbnbTransaction `json:"lines"`
+
+	// Payout One line of the Airbnb settlement ledger: a Payout row (`isPayout: true`) or a line it paid. Money is in the payout currency; `amount` is signed (negative = taken back, e.g. an adjustment offset against this payout). A payout's lines sum to its `payout.paidOutAmount`.
+	Payout AirbnbTransaction `json:"payout"`
+}
+
+// PayoutCompletedPayloadChannel defines model for PayoutCompletedPayload.Channel.
+type PayoutCompletedPayloadChannel string
+
+// PlanNotice Added to the body of EVERY JSON response (success or error, except bare arrays and 5xx) while the workspace is connected to more listings than its plan lets it use — so a developer reading any payload, or an AI assistant relaying it, sees it. Connect keeps every listing it finds, but on a capped plan only as many as the plan allows are active; the rest are held back inactive and keep syncing. The same responses also carry the `X-Repull-Listings-Held-Back` and `X-Repull-Active-Listing-Limit` headers. Using a held-back listing answers `403 listing_inactive` with `reason: "plan_limit"`. Tell the user: they can see the held-back listings with `GET /v1/listings?status=all`, choose which are active with `POST /v1/listings/status`, or upgrade.
+type PlanNotice struct {
+	// ActiveListingLimit The plan's cap on active listings.
+	//
+	// Example: 3
+	ActiveListingLimit *int `json:"activeListingLimit"`
+
+	// BillingUrl Example: https://repull.dev/dashboard/billing
+	BillingUrl string         `json:"billingUrl"`
+	Code       PlanNoticeCode `json:"code"`
+	Fix        string         `json:"fix"`
+
+	// ListingsHeldBack Connected listings kept inactive because of the plan.
+	//
+	// Example: 40
+	ListingsHeldBack int `json:"listingsHeldBack"`
+
+	// Message Example: 40 more connected listings are held inactive because your plan allows 3 active listings. They stay connected and keep syncing.
+	Message string `json:"message"`
+}
+
+// PlanNoticeCode defines model for PlanNotice.Code.
+type PlanNoticeCode string
+
 // PlumguideListing A Plumguide listing.
 type PlumguideListing struct {
 	Id     *string `json:"id,omitempty"`
@@ -10100,6 +10362,11 @@ type PropertyAvailabilityDay struct {
 	// Available Whether the property is bookable on this date. `false` when the calendar marks the date booked or blocked. Only dates we actually hold a calendar row for appear in `days`, so this is never a guess — a date with no data is listed in `coverage.missingDates` instead.
 	Available bool `json:"available"`
 
+	// AvailableUnits Units still sellable that night. 1 or 0 for a single home. For a hotel-model listing (a Mews or Cloudbeds room type) the rooms of that type left, e.g. 3 of 5 — see `GET /v1/listings/{id}/units`. `available` is false whenever this is 0.
+	//
+	// Example: 1
+	AvailableUnits int `json:"availableUnits"`
+
 	// Date The calendar date, ISO `YYYY-MM-DD`.
 	//
 	// Example: 2026-09-01
@@ -10122,6 +10389,9 @@ type PropertyListResponse struct {
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
+
+	// PlanNotice Added to the body of EVERY JSON response (success or error, except bare arrays and 5xx) while the workspace is connected to more listings than its plan lets it use — so a developer reading any payload, or an AI assistant relaying it, sees it. Connect keeps every listing it finds, but on a capped plan only as many as the plan allows are active; the rest are held back inactive and keep syncing. The same responses also carry the `X-Repull-Listings-Held-Back` and `X-Repull-Active-Listing-Limit` headers. Using a held-back listing answers `403 listing_inactive` with `reason: "plan_limit"`. Tell the user: they can see the held-back listings with `GET /v1/listings?status=all`, choose which are active with `POST /v1/listings/status`, or upgrade.
+	PlanNotice *PlanNotice `json:"planNotice,omitempty"`
 }
 
 // PublishSectionError One section of a publish that did not reach Airbnb.
@@ -10301,6 +10571,15 @@ type Reservation struct {
 	// Example: 1250.00
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	TotalPrice *string `json:"totalPrice,omitempty"`
+
+	// Unit The physical room the stay was assigned, for a hotel-model PMS (Mews, Cloudbeds) where the listing is a room type. `null` when no room is assigned yet, and for every listing that is a single home.
+	Unit *struct {
+		// Id The room id, as listed by `GET /v1/listings/{id}/units`.
+		Id *string `json:"id,omitempty"`
+
+		// Name Example: 101
+		Name *string `json:"name,omitempty"`
+	} `json:"unit,omitempty"`
 
 	// UpdatedAt Last time this reservation was modified (dates, status, price, or guest details). Advances on every amendment or cancellation — poll or compare this value to reconcile changes instead of fingerprinting individual fields.
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -10523,11 +10802,35 @@ type ReservationCreateResponse struct {
 	// Platform Example: direct
 	Platform *string `json:"platform,omitempty"`
 
-	// Status Example: accept
+	// Pms Mews or Cloudbeds listings only: the booking was made in the PMS first, and this is what it applied.
+	Pms *struct {
+		Applied *[]string `json:"applied,omitempty"`
+		Errors  *[]struct {
+			Code    *string `json:"code,omitempty"`
+			Message *string `json:"message,omitempty"`
+			Section *string `json:"section,omitempty"`
+		} `json:"errors,omitempty"`
+
+		// Provider Example: mews
+		Provider *string `json:"provider,omitempty"`
+
+		// ReservationId The PMS's own id for the booking.
+		ReservationId *string `json:"reservationId,omitempty"`
+	} `json:"pms,omitempty"`
+
+	// Status Same vocabulary as `GET /v1/reservations/{id}`.
+	//
+	// Example: confirmed
 	Status *string `json:"status,omitempty"`
 
-	// TotalPrice The price the pricing engine derived for the stay. Reservations created through this endpoint are NOT priced from the request — see the operation description.
+	// TotalPrice The price the pricing engine derived for the stay. Reservations created through this endpoint are NOT priced from the request — see the operation description. On a Mews or Cloudbeds listing, the PMS prices it from its own rate.
 	TotalPrice *float32 `json:"totalPrice,omitempty"`
+
+	// Unit Mews or Cloudbeds listings only: the room the PMS assigned. Absent for every other listing.
+	Unit *struct {
+		Id   *string `json:"id,omitempty"`
+		Name *string `json:"name,omitempty"`
+	} `json:"unit,omitempty"`
 }
 
 // ReservationCreatedEvent defines model for ReservationCreatedEvent.
@@ -10715,6 +11018,140 @@ type ReservationMessageReceivedPayload struct {
 	// ThreadId Example: thr_01HX5XPQ2K
 	ThreadId *string `json:"threadId,omitempty"`
 }
+
+// ReservationMessageSentEvent defines model for ReservationMessageSentEvent.
+type ReservationMessageSentEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `reservation.message.sent`: a host-side message was sent on a reservation thread. Same fields as `reservation.message.received`, plus `source`.
+	Data ReservationMessageSentPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationMessageSentEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ReservationMessageSentEventEvent The event name. This field is `event`, not `type`.
+type ReservationMessageSentEventEvent string
+
+// ReservationMessageSentPayload Payload for `reservation.message.sent`: a host-side message was sent on a reservation thread. Same fields as `reservation.message.received`, plus `source`.
+type ReservationMessageSentPayload struct {
+	AiGenerated *bool                            `json:"aiGenerated,omitempty"`
+	Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
+	Body        *string                          `json:"body,omitempty"`
+
+	// Channel Example: airbnb
+	Channel   *string                                 `json:"channel,omitempty"`
+	Direction *ReservationMessageSentPayloadDirection `json:"direction,omitempty"`
+
+	// ExternalMessageId The channel's own message id. Dedupe on it.
+	//
+	// Example: 32877308873
+	ExternalMessageId *string `json:"externalMessageId,omitempty"`
+	From              *struct {
+		Name *string `json:"name,omitempty"`
+
+		// Type `host` or `co-host`.
+		//
+		// Example: host
+		Type *string `json:"type,omitempty"`
+	} `json:"from,omitempty"`
+	IsAutomated *bool `json:"isAutomated,omitempty"`
+
+	// MessageId Repull message id, as `GET /v1/conversations/{id}/messages` returns it.
+	//
+	// Example: 1854462
+	MessageId *string `json:"messageId,omitempty"`
+
+	// ReservationId Example: 235970
+	ReservationId *int       `json:"reservationId,omitempty"`
+	SentAt        *time.Time `json:"sentAt,omitempty"`
+
+	// Source `channel`: sent in the channel's own app (e.g. the Airbnb app). `repull`: sent through Repull — the API, the dashboard, an automation or AI.
+	Source *ReservationMessageSentPayloadSource `json:"source,omitempty"`
+
+	// ThreadId Example: 161347
+	ThreadId *string `json:"threadId,omitempty"`
+}
+
+// ReservationMessageSentPayloadDirection defines model for ReservationMessageSentPayload.Direction.
+type ReservationMessageSentPayloadDirection string
+
+// ReservationMessageSentPayloadSource `channel`: sent in the channel's own app (e.g. the Airbnb app). `repull`: sent through Repull — the API, the dashboard, an automation or AI.
+type ReservationMessageSentPayloadSource string
+
+// ReservationMessageUpdatedEvent defines model for ReservationMessageUpdatedEvent.
+type ReservationMessageUpdatedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `reservation.message.updated`: a message was edited on the channel. `body` is the new text; `previousBody` what it replaced. Read receipts and reactions do not fire it.
+	Data ReservationMessageUpdatedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationMessageUpdatedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ReservationMessageUpdatedEventEvent The event name. This field is `event`, not `type`.
+type ReservationMessageUpdatedEventEvent string
+
+// ReservationMessageUpdatedPayload Payload for `reservation.message.updated`: a message was edited on the channel. `body` is the new text; `previousBody` what it replaced. Read receipts and reactions do not fire it.
+type ReservationMessageUpdatedPayload struct {
+	// Body The text after the edit.
+	Body *string `json:"body,omitempty"`
+
+	// Channel Example: airbnb
+	Channel   *string                                    `json:"channel,omitempty"`
+	Direction *ReservationMessageUpdatedPayloadDirection `json:"direction,omitempty"`
+
+	// EditedAt When the edit was made, as the channel reports it. Also the event's `revision`.
+	EditedAt *time.Time `json:"editedAt,omitempty"`
+
+	// ExternalMessageId Example: 32877308873
+	ExternalMessageId *string `json:"externalMessageId,omitempty"`
+	From              *struct {
+		Name *string `json:"name,omitempty"`
+
+		// Type Example: host
+		Type *string `json:"type,omitempty"`
+	} `json:"from,omitempty"`
+
+	// MessageId Example: 1854462
+	MessageId *string `json:"messageId,omitempty"`
+
+	// PreviousBody The text before the edit.
+	PreviousBody *string `json:"previousBody,omitempty"`
+
+	// ReservationId Example: 235970
+	ReservationId *int `json:"reservationId,omitempty"`
+
+	// SentAt When the message was first sent.
+	SentAt *time.Time `json:"sentAt,omitempty"`
+
+	// ThreadId Example: 161347
+	ThreadId *string `json:"threadId,omitempty"`
+}
+
+// ReservationMessageUpdatedPayloadDirection defines model for ReservationMessageUpdatedPayload.Direction.
+type ReservationMessageUpdatedPayloadDirection string
 
 // ReservationMoneyLine One line inside a fee / tax / discount collection. `amount` is always a `number` in the reservation `currency` — the underlying channel data stores some amounts as decimal strings and the API coerces them. Every other property is passed through only when the source channel supplied it.
 type ReservationMoneyLine struct {
@@ -11036,7 +11473,7 @@ type ReservationWebhookObject struct {
 	Uid string `json:"uid"`
 }
 
-// Review A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Populated from main vanio's unified `reviews` table after the per-channel backfill cron has run.
+// Review A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Includes every channel's reviews once they have been imported.
 type Review struct {
 	Categories *[]ReviewCategory `json:"categories,omitempty"`
 
@@ -12463,16 +12900,57 @@ type ListAirbnbTransactionsParams struct {
 	//
 	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
 	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
+
+	// StartDate Inclusive lower bound on the payout's date (the line's own date for UPCOMING lines). YYYY-MM-DD.
+	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+
+	// EndDate Inclusive upper bound, as `start_date`.
+	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+
+	// Status `COMPLETED` (settled) or `UPCOMING` (expected).
+	Status *ListAirbnbTransactionsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Type Airbnb's line type, exact match ignoring case — e.g. `Payout`, `Reservation`, `Adjustment`, `Resolution Payout`.
+	Type *string `form:"type,omitempty" json:"type,omitempty"`
+
+	// PayoutId One payout: its Payout row and all its lines.
+	PayoutId *string `form:"payout_id,omitempty" json:"payout_id,omitempty"`
+
+	// ConfirmationCode Every line for one reservation — each installment, adjustment and resolution.
+	ConfirmationCode *string `form:"confirmation_code,omitempty" json:"confirmation_code,omitempty"`
+
+	// Limit Lines per page. Hard cap is 500.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque cursor returned by the previous response's `pagination.nextCursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 }
+
+// ListAirbnbTransactionsParamsStatus defines parameters for ListAirbnbTransactions.
+type ListAirbnbTransactionsParamsStatus string
 
 // SyncAirbnbTransactionsJSONBody defines parameters for SyncAirbnbTransactions.
 type SyncAirbnbTransactionsJSONBody struct {
-	// EndDate Inclusive upper bound on transaction date.
+	// EndDate Inclusive upper bound (YYYY-MM-DD).
 	EndDate *openapi_types.Date `json:"end_date,omitempty"`
 
-	// StartDate Inclusive lower bound on transaction date.
-	StartDate       *openapi_types.Date                            `json:"start_date,omitempty"`
+	// StartDate Inclusive lower bound (YYYY-MM-DD).
+	StartDate *openapi_types.Date `json:"start_date,omitempty"`
+
+	// TransactionType Refresh only settled or only upcoming lines. Both when omitted.
 	TransactionType *SyncAirbnbTransactionsJSONBodyTransactionType `json:"transaction_type,omitempty"`
+}
+
+// SyncAirbnbTransactionsParams defines parameters for SyncAirbnbTransactions.
+type SyncAirbnbTransactionsParams struct {
+	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
+	//
+	// A workspace can connect several Airbnb accounts. Omit this and you get every account's rows (the default, unchanged). Every row carries `accountId` + `accountName` either way, so you can group without a second call.
+	//
+	// An id that is not connected to THIS workspace returns `404 not_found` with your own ids in `valid_values` — we do not distinguish "no such host" from "someone else's host", because confirming the latter would leak another workspace's account.
+	//
+	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
+	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
 }
 
 // SyncAirbnbTransactionsJSONBodyTransactionType defines parameters for SyncAirbnbTransactions.
@@ -12492,7 +12970,7 @@ type GetBookingAvailabilityParams struct {
 	// RoomId Restrict to a single Booking.com room id.
 	RoomId *string `form:"room_id,omitempty" json:"room_id,omitempty"`
 
-	// RoomLevel Defaults to `true`: availability per room, which is how Booking.com keeps inventory and how Vanio reads it. Send `false` for the per-rate read — its `roomsToSell` is often 0 for rooms that are on sale.
+	// RoomLevel Defaults to `true`: availability per room, which is how Booking.com keeps inventory. Send `false` for the per-rate read — its `roomsToSell` is often 0 for rooms that are on sale.
 	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
 }
 
@@ -12570,7 +13048,7 @@ type GetBookingListingPricingParams struct {
 	NumberOfDays *int                `form:"number_of_days,omitempty" json:"number_of_days,omitempty"`
 	RoomId       *string             `form:"room_id,omitempty" json:"room_id,omitempty"`
 
-	// RoomLevel Defaults to `true`: availability per room, which is how Booking.com keeps inventory and how Vanio reads it. Send `false` for the per-rate read — its `roomsToSell` is often 0 for rooms that are on sale.
+	// RoomLevel Defaults to `true`: availability per room, which is how Booking.com keeps inventory. Send `false` for the per-rate read — its `roomsToSell` is often 0 for rooms that are on sale.
 	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
 
 	// HotelId Booking.com hotel id, when this listing is published under more than one property. Omit it and a read uses the oldest mapping (reporting the rest in `otherHotelIds`), while a write is refused with `409 ambiguous_booking_mapping` rather than guess. `GET /v1/channels/booking/properties` lists the valid ids.
@@ -12816,6 +13294,21 @@ type SubmitBookingsyncCredentialsJSONBody struct {
 	SessionId *string `json:"sessionId,omitempty"`
 }
 
+// SubmitCloudbedsCredentialsJSONBody defines parameters for SubmitCloudbedsCredentials.
+type SubmitCloudbedsCredentialsJSONBody struct {
+	// Credentials A Cloudbeds API key (starts with `cbat_`).
+	Credentials struct {
+		// ApiKey Cloudbeds API key.
+		ApiKey string `json:"apiKey"`
+
+		// PropertyIds Organization keys only: limit the connection to these properties. Omit to use every property the key can see.
+		PropertyIds *[]string `json:"propertyIds,omitempty"`
+	} `json:"credentials"`
+
+	// SessionId Connect session id from `POST /v1/connect/cloudbeds`. Omit when calling with your API key.
+	SessionId *string `json:"sessionId,omitempty"`
+}
+
 // SubmitGuestyCredentialsJSONBody defines parameters for SubmitGuestyCredentials.
 type SubmitGuestyCredentialsJSONBody struct {
 	// Credentials Client ID + secret from Guesty → Integrations → Open API.
@@ -12860,6 +13353,24 @@ type SubmitLodgifyCredentialsJSONBody struct {
 	// SessionId Connect session id from `POST /v1/connect/lodgify`.
 	SessionId *string `json:"sessionId,omitempty"`
 }
+
+// SubmitMewsCredentialsJSONBody defines parameters for SubmitMewsCredentials.
+type SubmitMewsCredentialsJSONBody struct {
+	// Credentials The property's Mews Connector API access token.
+	Credentials struct {
+		// AccessToken The property's Connector API access token.
+		AccessToken string `json:"accessToken"`
+
+		// Environment `demo` targets Mews's public demo environment.
+		Environment *SubmitMewsCredentialsJSONBodyCredentialsEnvironment `json:"environment,omitempty"`
+	} `json:"credentials"`
+
+	// SessionId Connect session id from `POST /v1/connect/mews`. Omit when calling with your API key.
+	SessionId *string `json:"sessionId,omitempty"`
+}
+
+// SubmitMewsCredentialsJSONBodyCredentialsEnvironment defines parameters for SubmitMewsCredentials.
+type SubmitMewsCredentialsJSONBodyCredentialsEnvironment string
 
 // SubmitOwnerrezCredentialsJSONBody defines parameters for SubmitOwnerrezCredentials.
 type SubmitOwnerrezCredentialsJSONBody struct {
@@ -13600,6 +14111,15 @@ type AcceptReservationRequest200JSONResponseBodyDeclineReason string
 // AcceptReservationRequest200JSONResponseBodyStatus defines parameters for AcceptReservationRequest.
 type AcceptReservationRequest200JSONResponseBodyStatus string
 
+// CancelReservationJSONBody defines parameters for CancelReservation.
+type CancelReservationJSONBody struct {
+	// Reason Why it was cancelled; recorded on the reservation (and in the PMS's notes).
+	Reason *string `json:"reason,omitempty"`
+}
+
+// CancelReservation200JSONResponseBodyStatus defines parameters for CancelReservation.
+type CancelReservation200JSONResponseBodyStatus string
+
 // DeclineReservationRequestJSONBody defines parameters for DeclineReservationRequest.
 type DeclineReservationRequestJSONBody struct {
 	// Message Sent to the guest by Airbnb with the decline.
@@ -13917,6 +14437,9 @@ type VerifyBookingHotelJSONRequestBody = BookingVerifyHotelRequest
 // SubmitBookingsyncCredentialsJSONRequestBody defines body for SubmitBookingsyncCredentials for application/json ContentType.
 type SubmitBookingsyncCredentialsJSONRequestBody SubmitBookingsyncCredentialsJSONBody
 
+// SubmitCloudbedsCredentialsJSONRequestBody defines body for SubmitCloudbedsCredentials for application/json ContentType.
+type SubmitCloudbedsCredentialsJSONRequestBody SubmitCloudbedsCredentialsJSONBody
+
 // SubmitGuestyCredentialsJSONRequestBody defines body for SubmitGuestyCredentials for application/json ContentType.
 type SubmitGuestyCredentialsJSONRequestBody SubmitGuestyCredentialsJSONBody
 
@@ -13931,6 +14454,9 @@ type SubmitIgmsCredentialsJSONRequestBody SubmitIgmsCredentialsJSONBody
 
 // SubmitLodgifyCredentialsJSONRequestBody defines body for SubmitLodgifyCredentials for application/json ContentType.
 type SubmitLodgifyCredentialsJSONRequestBody SubmitLodgifyCredentialsJSONBody
+
+// SubmitMewsCredentialsJSONRequestBody defines body for SubmitMewsCredentials for application/json ContentType.
+type SubmitMewsCredentialsJSONRequestBody SubmitMewsCredentialsJSONBody
 
 // SubmitOwnerrezCredentialsJSONRequestBody defines body for SubmitOwnerrezCredentials for application/json ContentType.
 type SubmitOwnerrezCredentialsJSONRequestBody SubmitOwnerrezCredentialsJSONBody
@@ -14021,6 +14547,9 @@ type CreateReservationJSONRequestBody = ReservationCreateRequest
 
 // UpdateReservationJSONRequestBody defines body for UpdateReservation for application/json ContentType.
 type UpdateReservationJSONRequestBody = ReservationUpdateRequest
+
+// CancelReservationJSONRequestBody defines body for CancelReservation for application/json ContentType.
+type CancelReservationJSONRequestBody CancelReservationJSONBody
 
 // DeclineReservationRequestJSONRequestBody defines body for DeclineReservationRequest for application/json ContentType.
 type DeclineReservationRequestJSONRequestBody DeclineReservationRequestJSONBody
@@ -15986,6 +16515,74 @@ func (t *WebhookEvent) MergeReservationMessageReceivedEvent(v ReservationMessage
 	return err
 }
 
+// AsReservationMessageSentEvent returns the union data inside the WebhookEvent as a ReservationMessageSentEvent
+func (t WebhookEvent) AsReservationMessageSentEvent() (ReservationMessageSentEvent, error) {
+	var body ReservationMessageSentEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationMessageSentEvent overwrites any union data inside the WebhookEvent as the provided ReservationMessageSentEvent
+func (t *WebhookEvent) FromReservationMessageSentEvent(v ReservationMessageSentEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.sent"}`))
+	t.union = b
+	return err
+}
+
+// MergeReservationMessageSentEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationMessageSentEvent
+func (t *WebhookEvent) MergeReservationMessageSentEvent(v ReservationMessageSentEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.sent"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReservationMessageUpdatedEvent returns the union data inside the WebhookEvent as a ReservationMessageUpdatedEvent
+func (t WebhookEvent) AsReservationMessageUpdatedEvent() (ReservationMessageUpdatedEvent, error) {
+	var body ReservationMessageUpdatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationMessageUpdatedEvent overwrites any union data inside the WebhookEvent as the provided ReservationMessageUpdatedEvent
+func (t *WebhookEvent) FromReservationMessageUpdatedEvent(v ReservationMessageUpdatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.updated"}`))
+	t.union = b
+	return err
+}
+
+// MergeReservationMessageUpdatedEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationMessageUpdatedEvent
+func (t *WebhookEvent) MergeReservationMessageUpdatedEvent(v ReservationMessageUpdatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.updated"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsReservationAlterationCreatedEvent returns the union data inside the WebhookEvent as a ReservationAlterationCreatedEvent
 func (t WebhookEvent) AsReservationAlterationCreatedEvent() (ReservationAlterationCreatedEvent, error) {
 	var body ReservationAlterationCreatedEvent
@@ -16666,6 +17263,40 @@ func (t *WebhookEvent) MergePaymentRefundedEvent(v PaymentRefundedEvent) error {
 	return err
 }
 
+// AsPayoutCompletedEvent returns the union data inside the WebhookEvent as a PayoutCompletedEvent
+func (t WebhookEvent) AsPayoutCompletedEvent() (PayoutCompletedEvent, error) {
+	var body PayoutCompletedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPayoutCompletedEvent overwrites any union data inside the WebhookEvent as the provided PayoutCompletedEvent
+func (t *WebhookEvent) FromPayoutCompletedEvent(v PayoutCompletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"payout.completed"}`))
+	t.union = b
+	return err
+}
+
+// MergePayoutCompletedEvent performs a merge with any union data inside the WebhookEvent, using the provided PayoutCompletedEvent
+func (t *WebhookEvent) MergePayoutCompletedEvent(v PayoutCompletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"payout.completed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsRepullPingEvent returns the union data inside the WebhookEvent as a RepullPingEvent
 func (t WebhookEvent) AsRepullPingEvent() (RepullPingEvent, error) {
 	var body RepullPingEvent
@@ -16848,6 +17479,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsPaymentCompletedEvent()
 	case "payment.refunded":
 		return t.AsPaymentRefundedEvent()
+	case "payout.completed":
+		return t.AsPayoutCompletedEvent()
 	case "repull.ping":
 		return t.AsRepullPingEvent()
 	case "reservation.alteration.created":
@@ -16860,6 +17493,10 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsReservationCreatedEvent()
 	case "reservation.message.received":
 		return t.AsReservationMessageReceivedEvent()
+	case "reservation.message.sent":
+		return t.AsReservationMessageSentEvent()
+	case "reservation.message.updated":
+		return t.AsReservationMessageUpdatedEvent()
 	case "reservation.request.created":
 		return t.AsReservationRequestCreatedEvent()
 	case "reservation.request.updated":
