@@ -1354,26 +1354,44 @@ type ClientInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	RespondAirbnbReviewLegacy(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// EditAirbnbReviewWithBody Edit Airbnb host review
+	// EditAirbnbReviewWithBody Submit your review of a guest (publishes, final)
 	//
-	// Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
+	// Submit your review of a guest — the review with `reviewerRole: "host"`. **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`).
 	//
-	// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
 	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// ```json
+	// {
+	//   "publicReview": "Joanne was a great guest.",
+	//   "rating": 5,
+	//   "privateFeedback": "Thanks for leaving the place so tidy!",
+	//   "isRevieweeRecommended": true
+	// }
+	// ```
+	//
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
 	EditAirbnbReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// EditAirbnbReview Edit Airbnb host review
+	// EditAirbnbReview Submit your review of a guest (publishes, final)
 	//
-	// Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
+	// Submit your review of a guest — the review with `reviewerRole: "host"`. **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`).
 	//
-	// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
 	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// ```json
+	// {
+	//   "publicReview": "Joanne was a great guest.",
+	//   "rating": 5,
+	//   "privateFeedback": "Thanks for leaving the place so tidy!",
+	//   "isRevieweeRecommended": true
+	// }
+	// ```
+	//
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6515,13 +6533,24 @@ func (c *Client) RespondAirbnbReviewLegacy(ctx context.Context, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-// EditAirbnbReviewWithBody Edit Airbnb host review
+// EditAirbnbReviewWithBody Submit your review of a guest (publishes, final)
 //
-// Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
+// Submit your review of a guest — the review with `reviewerRole: "host"`. **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`).
 //
-// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
 //
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// ```json
+//
+//	{
+//	  "publicReview": "Joanne was a great guest.",
+//	  "rating": 5,
+//	  "privateFeedback": "Thanks for leaving the place so tidy!",
+//	  "isRevieweeRecommended": true
+//	}
+//
+// ```
+//
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
 //
 // Takes any type of body and a specified content type.
 //
@@ -6538,13 +6567,24 @@ func (c *Client) EditAirbnbReviewWithBody(ctx context.Context, id string, conten
 	return c.Client.Do(req)
 }
 
-// EditAirbnbReview Edit Airbnb host review
+// EditAirbnbReview Submit your review of a guest (publishes, final)
 //
-// Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
+// Submit your review of a guest — the review with `reviewerRole: "host"`. **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`).
 //
-// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
 //
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// ```json
+//
+//	{
+//	  "publicReview": "Joanne was a great guest.",
+//	  "rating": 5,
+//	  "privateFeedback": "Thanks for leaving the place so tidy!",
+//	  "isRevieweeRecommended": true
+//	}
+//
+// ```
+//
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
 //
 // Takes a body of the `application/json` content type.
 //
@@ -24815,26 +24855,44 @@ type ClientWithResponsesInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	RespondAirbnbReviewLegacyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewLegacyClientResponse, error)
 
-	// EditAirbnbReviewWithBodyWithResponse Edit Airbnb host review
+	// EditAirbnbReviewWithBodyWithResponse Submit your review of a guest (publishes, final)
 	//
-	// Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
+	// Submit your review of a guest — the review with `reviewerRole: "host"`. **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`).
 	//
-	// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
 	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// ```json
+	// {
+	//   "publicReview": "Joanne was a great guest.",
+	//   "rating": 5,
+	//   "privateFeedback": "Thanks for leaving the place so tidy!",
+	//   "isRevieweeRecommended": true
+	// }
+	// ```
+	//
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/airbnb/reviews/{id} (the `EditAirbnbReview` operationId).
 	EditAirbnbReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EditAirbnbReviewClientResponse, error)
 
-	// EditAirbnbReviewWithResponse Edit Airbnb host review
+	// EditAirbnbReviewWithResponse Submit your review of a guest (publishes, final)
 	//
-	// Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
+	// Submit your review of a guest — the review with `reviewerRole: "host"`. **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`).
 	//
-	// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
 	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// ```json
+	// {
+	//   "publicReview": "Joanne was a great guest.",
+	//   "rating": 5,
+	//   "privateFeedback": "Thanks for leaving the place so tidy!",
+	//   "isRevieweeRecommended": true
+	// }
+	// ```
+	//
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -46143,13 +46201,24 @@ func (c *ClientWithResponses) RespondAirbnbReviewLegacyWithResponse(ctx context.
 	return ParseRespondAirbnbReviewLegacyClientResponse(rsp)
 }
 
-// EditAirbnbReviewWithBodyWithResponse Edit Airbnb host review
+// EditAirbnbReviewWithBodyWithResponse Submit your review of a guest (publishes, final)
 //
-// Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
+// Submit your review of a guest — the review with `reviewerRole: "host"`. **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`).
 //
-// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
 //
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// ```json
+//
+//	{
+//	  "publicReview": "Joanne was a great guest.",
+//	  "rating": 5,
+//	  "privateFeedback": "Thanks for leaving the place so tidy!",
+//	  "isRevieweeRecommended": true
+//	}
+//
+// ```
+//
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -46162,13 +46231,24 @@ func (c *ClientWithResponses) EditAirbnbReviewWithBodyWithResponse(ctx context.C
 	return ParseEditAirbnbReviewClientResponse(rsp)
 }
 
-// EditAirbnbReviewWithResponse Edit Airbnb host review
+// EditAirbnbReviewWithResponse Submit your review of a guest (publishes, final)
 //
-// Edit a host-side review for an Airbnb stay. Airbnb collapses POST + PUT into the same upstream call (`PUT /v2/listing_reviews/{id}`), so this endpoint covers both initial submit and subsequent edits while the review window is open.
+// Submit your review of a guest — the review with `reviewerRole: "host"`. **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`).
 //
-// Body is a partial `AirbnbReview` — pass the fields you want to change (rating, public review, private feedback, category ratings).
+// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
 //
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// ```json
+//
+//	{
+//	  "publicReview": "Joanne was a great guest.",
+//	  "rating": 5,
+//	  "privateFeedback": "Thanks for leaving the place so tidy!",
+//	  "isRevieweeRecommended": true
+//	}
+//
+// ```
+//
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //

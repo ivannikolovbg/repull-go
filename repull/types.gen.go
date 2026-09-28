@@ -226,6 +226,27 @@ func (e AirbnbConnectionSummaryStatus) Valid() bool {
 	}
 }
 
+// Defines values for AirbnbHostReviewSubmitCategoryRatingsCategory.
+const (
+	Cleanliness       AirbnbHostReviewSubmitCategoryRatingsCategory = "cleanliness"
+	Communication     AirbnbHostReviewSubmitCategoryRatingsCategory = "communication"
+	RespectHouseRules AirbnbHostReviewSubmitCategoryRatingsCategory = "respect_house_rules"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbHostReviewSubmitCategoryRatingsCategory enum.
+func (e AirbnbHostReviewSubmitCategoryRatingsCategory) Valid() bool {
+	switch e {
+	case Cleanliness:
+		return true
+	case Communication:
+		return true
+	case RespectHouseRules:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AirbnbListingActionRequestAction.
 const (
 	AirbnbListingActionRequestActionDelete  AirbnbListingActionRequestAction = "delete"
@@ -5675,6 +5696,39 @@ type AirbnbDescriptionWriteRequest struct {
 	// Example: it
 	Locale string `json:"locale"`
 }
+
+// AirbnbHostReviewSubmit Your review of a guest. Airbnb requires `publicReview`, `isRevieweeRecommended`, and a rating for each of cleanliness, communication and respect_house_rules — through `rating`, `categoryRatings`, or both. Submitting publishes it and is final.
+//
+// Example: {"categoryRatings":[{"category":"cleanliness","comment":"Left it spotless","rating":5}],"isRevieweeRecommended":true,"privateFeedback":"Thanks for being such a considerate guest!","publicReview":"Joanne was a great guest. The space was kept clean and communication was clear.","rating":5}
+type AirbnbHostReviewSubmit struct {
+	// CategoryRatings Per-category scores. Categories not listed take `rating`; without `rating`, all three must be listed.
+	CategoryRatings *[]struct {
+		Category AirbnbHostReviewSubmitCategoryRatingsCategory `json:"category"`
+
+		// Comment Optional note for this category (Airbnb caps it at 50 characters).
+		Comment *string `json:"comment,omitempty"`
+		Rating  int     `json:"rating"`
+	} `json:"categoryRatings,omitempty"`
+
+	// IsRevieweeRecommended Required. Whether you would host this guest again.
+	IsRevieweeRecommended bool `json:"isRevieweeRecommended"`
+
+	// PrivateFeedback Optional. A note to the guest that is not published.
+	PrivateFeedback *string `json:"privateFeedback,omitempty"`
+
+	// PublicReview Shown publicly on the guest's profile. `comment` is accepted as an alias.
+	//
+	// Example: Joanne was a great guest. The space was kept clean and communication was clear.
+	PublicReview string `json:"publicReview"`
+
+	// Rating Used for every category not rated in `categoryRatings`.
+	//
+	// Example: 5
+	Rating *int `json:"rating,omitempty"`
+}
+
+// AirbnbHostReviewSubmitCategoryRatingsCategory defines model for AirbnbHostReviewSubmit.CategoryRatings.Category.
+type AirbnbHostReviewSubmitCategoryRatingsCategory string
 
 // AirbnbListing A listing paired with its Airbnb connections. The list endpoint groups every Airbnb connection of the same `listingId` under a single `connections[]` array.
 type AirbnbListing struct {
@@ -14373,7 +14427,7 @@ type CreateAirbnbOfferJSONRequestBody CreateAirbnbOfferJSONBody
 type AirbnbReservationActionJSONRequestBody AirbnbReservationActionJSONBody
 
 // EditAirbnbReviewJSONRequestBody defines body for EditAirbnbReview for application/json ContentType.
-type EditAirbnbReviewJSONRequestBody = AirbnbReview
+type EditAirbnbReviewJSONRequestBody = AirbnbHostReviewSubmit
 
 // RespondAirbnbReviewJSONRequestBody defines body for RespondAirbnbReview for application/json ContentType.
 type RespondAirbnbReviewJSONRequestBody RespondAirbnbReviewJSONBody
