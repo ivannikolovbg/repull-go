@@ -14430,6 +14430,8 @@ type AirbnbReservationActionJSONRequestBody AirbnbReservationActionJSONBody
 type EditAirbnbReviewJSONRequestBody = AirbnbHostReviewSubmit
 
 // RespondAirbnbReviewJSONRequestBody defines body for RespondAirbnbReview for application/json ContentType.
+//
+// Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type RespondAirbnbReviewJSONRequestBody RespondAirbnbReviewJSONBody
 
 // SyncAirbnbTransactionsJSONRequestBody defines body for SyncAirbnbTransactions for application/json ContentType.
@@ -14607,6 +14609,9 @@ type CancelReservationJSONRequestBody CancelReservationJSONBody
 
 // DeclineReservationRequestJSONRequestBody defines body for DeclineReservationRequest for application/json ContentType.
 type DeclineReservationRequestJSONRequestBody DeclineReservationRequestJSONBody
+
+// SubmitGuestReviewJSONRequestBody defines body for SubmitGuestReview for application/json ContentType.
+type SubmitGuestReviewJSONRequestBody = AirbnbHostReviewSubmit
 
 // ReplyToReviewJSONRequestBody defines body for ReplyToReview for application/json ContentType.
 type ReplyToReviewJSONRequestBody ReplyToReviewJSONBody

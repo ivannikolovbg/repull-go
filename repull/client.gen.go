@@ -1345,7 +1345,7 @@ type ClientInterface interface {
 
 	// RespondAirbnbReviewLegacy Respond to / submit Airbnb review (legacy)
 	//
-	// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `PUT /v1/channels/airbnb/reviews/{id}` (edit) and `POST /v1/channels/airbnb/reviews/{id}/respond` (reply) for new integrations.
+	// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `POST /v1/reviews/{id}/guest-review` (review a guest) and `POST /v1/reviews/{id}/reply` (reply) for new integrations.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -1369,7 +1369,9 @@ type ClientInterface interface {
 	// }
 	// ```
 	//
-	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/reviews/{id}/reply`. After the window closes: `409 review_window_closed`.
+	//
+	// The same submission is available channel-neutrally as `POST /v1/reviews/{id}/guest-review`. Guide: https://repull.dev/docs/reviews#review-a-guest
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -1391,7 +1393,9 @@ type ClientInterface interface {
 	// }
 	// ```
 	//
-	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/reviews/{id}/reply`. After the window closes: `409 review_window_closed`.
+	//
+	// The same submission is available channel-neutrally as `POST /v1/reviews/{id}/guest-review`. Guide: https://repull.dev/docs/reviews#review-a-guest
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -1400,6 +1404,8 @@ type ClientInterface interface {
 
 	// RespondAirbnbReviewWithBody Respond to Airbnb review
 	//
+	// **Deprecated — use `POST /v1/reviews/{id}/reply`**, which replies to a review from any channel. This route keeps working unchanged.
+	//
 	// Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
@@ -1407,9 +1413,13 @@ type ClientInterface interface {
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	RespondAirbnbReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RespondAirbnbReview Respond to Airbnb review
+	//
+	// **Deprecated — use `POST /v1/reviews/{id}/reply`**, which replies to a review from any channel. This route keeps working unchanged.
 	//
 	// Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 	//
@@ -1418,6 +1428,8 @@ type ClientInterface interface {
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	RespondAirbnbReview(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbTransactions List Airbnb transactions (settlement ledger)
@@ -4152,11 +4164,61 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/reviews/{id} (the `GetReview` operationId).
 	GetReview(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SubmitGuestReviewWithBody Review a guest (publishes, final)
+	//
+	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+	//
+	// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
+	//
+	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+	//
+	// ```json
+	// {
+	//   "publicReview": "Joanne was a great guest.",
+	//   "rating": 5,
+	//   "privateFeedback": "Thanks for leaving the place so tidy!",
+	//   "isRevieweeRecommended": true
+	// }
+	// ```
+	//
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
+	SubmitGuestReviewWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitGuestReview Review a guest (publishes, final)
+	//
+	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+	//
+	// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
+	//
+	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+	//
+	// ```json
+	// {
+	//   "publicReview": "Joanne was a great guest.",
+	//   "rating": 5,
+	//   "privateFeedback": "Thanks for leaving the place so tidy!",
+	//   "isRevieweeRecommended": true
+	// }
+	// ```
+	//
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
+	SubmitGuestReview(ctx context.Context, id int, body SubmitGuestReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ReplyToReviewWithBody Reply to a review on any channel
 	//
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
-	// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
@@ -4169,7 +4231,9 @@ type ClientInterface interface {
 	//
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
-	// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
@@ -6515,7 +6579,7 @@ func (c *Client) ListAirbnbReviews(ctx context.Context, params *ListAirbnbReview
 
 // RespondAirbnbReviewLegacy Respond to / submit Airbnb review (legacy)
 //
-// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `PUT /v1/channels/airbnb/reviews/{id}` (edit) and `POST /v1/channels/airbnb/reviews/{id}/respond` (reply) for new integrations.
+// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `POST /v1/reviews/{id}/guest-review` (review a guest) and `POST /v1/reviews/{id}/reply` (reply) for new integrations.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -6550,7 +6614,9 @@ func (c *Client) RespondAirbnbReviewLegacy(ctx context.Context, reqEditors ...Re
 //
 // ```
 //
-// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/reviews/{id}/reply`. After the window closes: `409 review_window_closed`.
+//
+// The same submission is available channel-neutrally as `POST /v1/reviews/{id}/guest-review`. Guide: https://repull.dev/docs/reviews#review-a-guest
 //
 // Takes any type of body and a specified content type.
 //
@@ -6584,7 +6650,9 @@ func (c *Client) EditAirbnbReviewWithBody(ctx context.Context, id string, conten
 //
 // ```
 //
-// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/reviews/{id}/reply`. After the window closes: `409 review_window_closed`.
+//
+// The same submission is available channel-neutrally as `POST /v1/reviews/{id}/guest-review`. Guide: https://repull.dev/docs/reviews#review-a-guest
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6603,6 +6671,8 @@ func (c *Client) EditAirbnbReview(ctx context.Context, id string, body EditAirbn
 
 // RespondAirbnbReviewWithBody Respond to Airbnb review
 //
+// **Deprecated — use `POST /v1/reviews/{id}/reply`**, which replies to a review from any channel. This route keeps working unchanged.
+//
 // Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
@@ -6610,6 +6680,7 @@ func (c *Client) EditAirbnbReview(ctx context.Context, id string, body EditAirbn
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *Client) RespondAirbnbReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRespondAirbnbReviewRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
@@ -6624,6 +6695,8 @@ func (c *Client) RespondAirbnbReviewWithBody(ctx context.Context, id string, con
 
 // RespondAirbnbReview Respond to Airbnb review
 //
+// **Deprecated — use `POST /v1/reviews/{id}/reply`**, which replies to a review from any channel. This route keeps working unchanged.
+//
 // Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
@@ -6631,6 +6704,7 @@ func (c *Client) RespondAirbnbReviewWithBody(ctx context.Context, id string, con
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *Client) RespondAirbnbReview(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRespondAirbnbReviewRequest(c.Server, id, body)
 	if err != nil {
@@ -11281,11 +11355,85 @@ func (c *Client) GetReview(ctx context.Context, id int, params *GetReviewParams,
 	return c.Client.Do(req)
 }
 
+// SubmitGuestReviewWithBody Review a guest (publishes, final)
+//
+// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+//
+// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
+//
+// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+//
+// ```json
+//
+//	{
+//	  "publicReview": "Joanne was a great guest.",
+//	  "rating": 5,
+//	  "privateFeedback": "Thanks for leaving the place so tidy!",
+//	  "isRevieweeRecommended": true
+//	}
+//
+// ```
+//
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
+func (c *Client) SubmitGuestReviewWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitGuestReviewRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitGuestReview Review a guest (publishes, final)
+//
+// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+//
+// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
+//
+// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+//
+// ```json
+//
+//	{
+//	  "publicReview": "Joanne was a great guest.",
+//	  "rating": 5,
+//	  "privateFeedback": "Thanks for leaving the place so tidy!",
+//	  "isRevieweeRecommended": true
+//	}
+//
+// ```
+//
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
+func (c *Client) SubmitGuestReview(ctx context.Context, id int, body SubmitGuestReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitGuestReviewRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ReplyToReviewWithBody Reply to a review on any channel
 //
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
-// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
@@ -11308,7 +11456,9 @@ func (c *Client) ReplyToReviewWithBody(ctx context.Context, id int, contentType 
 //
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
-// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
@@ -22487,6 +22637,53 @@ func NewGetReviewRequest(server string, id int, params *GetReviewParams) (*http.
 	return req, nil
 }
 
+// NewSubmitGuestReviewRequest calls the generic SubmitGuestReview builder with application/json body
+func NewSubmitGuestReviewRequest(server string, id int, body SubmitGuestReviewJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSubmitGuestReviewRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewSubmitGuestReviewRequestWithBody constructs an http.Request for the SubmitGuestReview method, with any body, and a specified content type
+func NewSubmitGuestReviewRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reviews/%s/guest-review", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewReplyToReviewRequest calls the generic ReplyToReview builder with application/json body
 func NewReplyToReviewRequest(server string, id int, body ReplyToReviewJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -24844,7 +25041,7 @@ type ClientWithResponsesInterface interface {
 
 	// RespondAirbnbReviewLegacyWithResponse Respond to / submit Airbnb review (legacy)
 	//
-	// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `PUT /v1/channels/airbnb/reviews/{id}` (edit) and `POST /v1/channels/airbnb/reviews/{id}/respond` (reply) for new integrations.
+	// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `POST /v1/reviews/{id}/guest-review` (review a guest) and `POST /v1/reviews/{id}/reply` (reply) for new integrations.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -24870,7 +25067,9 @@ type ClientWithResponsesInterface interface {
 	// }
 	// ```
 	//
-	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/reviews/{id}/reply`. After the window closes: `409 review_window_closed`.
+	//
+	// The same submission is available channel-neutrally as `POST /v1/reviews/{id}/guest-review`. Guide: https://repull.dev/docs/reviews#review-a-guest
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -24892,7 +25091,9 @@ type ClientWithResponsesInterface interface {
 	// }
 	// ```
 	//
-	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/reviews/{id}/reply`. After the window closes: `409 review_window_closed`.
+	//
+	// The same submission is available channel-neutrally as `POST /v1/reviews/{id}/guest-review`. Guide: https://repull.dev/docs/reviews#review-a-guest
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -24901,6 +25102,8 @@ type ClientWithResponsesInterface interface {
 
 	// RespondAirbnbReviewWithBodyWithResponse Respond to Airbnb review
 	//
+	// **Deprecated — use `POST /v1/reviews/{id}/reply`**, which replies to a review from any channel. This route keeps working unchanged.
+	//
 	// Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 	//
 	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
@@ -24908,9 +25111,13 @@ type ClientWithResponsesInterface interface {
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	RespondAirbnbReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error)
 
 	// RespondAirbnbReviewWithResponse Respond to Airbnb review
+	//
+	// **Deprecated — use `POST /v1/reviews/{id}/reply`**, which replies to a review from any channel. This route keeps working unchanged.
 	//
 	// Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 	//
@@ -24919,6 +25126,8 @@ type ClientWithResponsesInterface interface {
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
+	//
+	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	RespondAirbnbReviewWithResponse(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error)
 
 	// ListAirbnbTransactionsWithResponse List Airbnb transactions (settlement ledger)
@@ -27803,11 +28012,61 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/reviews/{id} (the `GetReview` operationId).
 	GetReviewWithResponse(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*GetReviewClientResponse, error)
 
+	// SubmitGuestReviewWithBodyWithResponse Review a guest (publishes, final)
+	//
+	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+	//
+	// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
+	//
+	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+	//
+	// ```json
+	// {
+	//   "publicReview": "Joanne was a great guest.",
+	//   "rating": 5,
+	//   "privateFeedback": "Thanks for leaving the place so tidy!",
+	//   "isRevieweeRecommended": true
+	// }
+	// ```
+	//
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
+	SubmitGuestReviewWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitGuestReviewClientResponse, error)
+
+	// SubmitGuestReviewWithResponse Review a guest (publishes, final)
+	//
+	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+	//
+	// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
+	//
+	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+	//
+	// ```json
+	// {
+	//   "publicReview": "Joanne was a great guest.",
+	//   "rating": 5,
+	//   "privateFeedback": "Thanks for leaving the place so tidy!",
+	//   "isRevieweeRecommended": true
+	// }
+	// ```
+	//
+	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
+	SubmitGuestReviewWithResponse(ctx context.Context, id int, body SubmitGuestReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitGuestReviewClientResponse, error)
+
 	// ReplyToReviewWithBodyWithResponse Reply to a review on any channel
 	//
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
-	// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
@@ -27820,7 +28079,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
-	// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
@@ -43065,6 +43326,104 @@ func (r GetReviewClientResponse) ContentType() string {
 	return ""
 }
 
+type SubmitGuestReviewClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		ExternalReviewId *string `json:"externalReviewId,omitempty"`
+		Id               *string `json:"id,omitempty"`
+		Submitted        *bool   `json:"submitted,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SubmitGuestReviewClientResponse) GetJSON200() *struct {
+	ExternalReviewId *string `json:"externalReviewId,omitempty"`
+	Id               *string `json:"id,omitempty"`
+	Submitted        *bool   `json:"submitted,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SubmitGuestReviewClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SubmitGuestReviewClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SubmitGuestReviewClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r SubmitGuestReviewClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SubmitGuestReviewClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r SubmitGuestReviewClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r SubmitGuestReviewClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r SubmitGuestReviewClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SubmitGuestReviewClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SubmitGuestReviewClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SubmitGuestReviewClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ReplyToReviewClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -46184,7 +46543,7 @@ func (c *ClientWithResponses) ListAirbnbReviewsWithResponse(ctx context.Context,
 
 // RespondAirbnbReviewLegacyWithResponse Respond to / submit Airbnb review (legacy)
 //
-// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `PUT /v1/channels/airbnb/reviews/{id}` (edit) and `POST /v1/channels/airbnb/reviews/{id}/respond` (reply) for new integrations.
+// Legacy action-based shape. Body `{ action: "respond"|"submit", reviewId, response?, review? }`. Kept for backwards compatibility — prefer `POST /v1/reviews/{id}/guest-review` (review a guest) and `POST /v1/reviews/{id}/reply` (reply) for new integrations.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -46218,7 +46577,9 @@ func (c *ClientWithResponses) RespondAirbnbReviewLegacyWithResponse(ctx context.
 //
 // ```
 //
-// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/reviews/{id}/reply`. After the window closes: `409 review_window_closed`.
+//
+// The same submission is available channel-neutrally as `POST /v1/reviews/{id}/guest-review`. Guide: https://repull.dev/docs/reviews#review-a-guest
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -46248,7 +46609,9 @@ func (c *ClientWithResponses) EditAirbnbReviewWithBodyWithResponse(ctx context.C
 //
 // ```
 //
-// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/channels/airbnb/reviews/{id}/respond`. After the window closes: `409 review_window_closed`. Full guide: https://repull.dev/docs/channels/airbnb/reviews
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; reply to it with `POST /v1/reviews/{id}/reply`. After the window closes: `409 review_window_closed`.
+//
+// The same submission is available channel-neutrally as `POST /v1/reviews/{id}/guest-review`. Guide: https://repull.dev/docs/reviews#review-a-guest
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -46263,6 +46626,8 @@ func (c *ClientWithResponses) EditAirbnbReviewWithResponse(ctx context.Context, 
 
 // RespondAirbnbReviewWithBodyWithResponse Respond to Airbnb review
 //
+// **Deprecated — use `POST /v1/reviews/{id}/reply`**, which replies to a review from any channel. This route keeps working unchanged.
+//
 // Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
@@ -46270,6 +46635,8 @@ func (c *ClientWithResponses) EditAirbnbReviewWithResponse(ctx context.Context, 
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
+//
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *ClientWithResponses) RespondAirbnbReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error) {
 	rsp, err := c.RespondAirbnbReviewWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
@@ -46280,6 +46647,8 @@ func (c *ClientWithResponses) RespondAirbnbReviewWithBodyWithResponse(ctx contex
 
 // RespondAirbnbReviewWithResponse Respond to Airbnb review
 //
+// **Deprecated — use `POST /v1/reviews/{id}/reply`**, which replies to a review from any channel. This route keeps working unchanged.
+//
 // Post a public host response to a guest review. Airbnb allows one response per review — repeated POSTs return 409. Response text is capped at 1000 characters.
 //
 // Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
@@ -46287,6 +46656,7 @@ func (c *ClientWithResponses) RespondAirbnbReviewWithBodyWithResponse(ctx contex
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/channels/airbnb/reviews/{id}/respond (the `RespondAirbnbReview` operationId).
+// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 func (c *ClientWithResponses) RespondAirbnbReviewWithResponse(ctx context.Context, id string, body RespondAirbnbReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*RespondAirbnbReviewClientResponse, error) {
 	rsp, err := c.RespondAirbnbReview(ctx, id, body, reqEditors...)
 	if err != nil {
@@ -50322,11 +50692,77 @@ func (c *ClientWithResponses) GetReviewWithResponse(ctx context.Context, id int,
 	return ParseGetReviewClientResponse(rsp)
 }
 
+// SubmitGuestReviewWithBodyWithResponse Review a guest (publishes, final)
+//
+// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+//
+// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
+//
+// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+//
+// ```json
+//
+//	{
+//	  "publicReview": "Joanne was a great guest.",
+//	  "rating": 5,
+//	  "privateFeedback": "Thanks for leaving the place so tidy!",
+//	  "isRevieweeRecommended": true
+//	}
+//
+// ```
+//
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
+func (c *ClientWithResponses) SubmitGuestReviewWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitGuestReviewClientResponse, error) {
+	rsp, err := c.SubmitGuestReviewWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitGuestReviewClientResponse(rsp)
+}
+
+// SubmitGuestReviewWithResponse Review a guest (publishes, final)
+//
+// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+//
+// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
+//
+// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+//
+// ```json
+//
+//	{
+//	  "publicReview": "Joanne was a great guest.",
+//	  "rating": 5,
+//	  "privateFeedback": "Thanks for leaving the place so tidy!",
+//	  "isRevieweeRecommended": true
+//	}
+//
+// ```
+//
+// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
+func (c *ClientWithResponses) SubmitGuestReviewWithResponse(ctx context.Context, id int, body SubmitGuestReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitGuestReviewClientResponse, error) {
+	rsp, err := c.SubmitGuestReview(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitGuestReviewClientResponse(rsp)
+}
+
 // ReplyToReviewWithBodyWithResponse Reply to a review on any channel
 //
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
-// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
@@ -50345,7 +50781,9 @@ func (c *ClientWithResponses) ReplyToReviewWithBodyWithResponse(ctx context.Cont
 //
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
-// Replies are available on Airbnb today; a review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
@@ -62144,6 +62582,85 @@ func ParseGetReviewClientResponse(rsp *http.Response) (*GetReviewClientResponse,
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSubmitGuestReviewClientResponse parses an HTTP response from a SubmitGuestReviewWithResponse call
+func ParseSubmitGuestReviewClientResponse(rsp *http.Response) (*SubmitGuestReviewClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SubmitGuestReviewClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			ExternalReviewId *string `json:"externalReviewId,omitempty"`
+			Id               *string `json:"id,omitempty"`
+			Submitted        *bool   `json:"submitted,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
