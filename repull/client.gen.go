@@ -2297,6 +2297,68 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connect/beds24/credentials (the `SubmitBeds24Credentials` operationId).
 	SubmitBeds24Credentials(ctx context.Context, body SubmitBeds24CredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// InviteBookingExtranetUserWithBody Connect Booking.com by inviting a user
+	//
+	// Generates the user the host invites in their Extranet; progress is read from the status route.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
+	InviteBookingExtranetUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// InviteBookingExtranetUser Connect Booking.com by inviting a user
+	//
+	// Generates the user the host invites in their Extranet; progress is read from the status route.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
+	InviteBookingExtranetUser(ctx context.Context, body InviteBookingExtranetUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetBookingExtranetLoginConfig Booking.com direct-login config
+	//
+	// Returns the 2FA number the host adds to their Extranet user.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Corresponds with GET /v1/connect/booking-extranet-login/session (the `GetBookingExtranetLoginConfig` operationId).
+	GetBookingExtranetLoginConfig(ctx context.Context, params *GetBookingExtranetLoginConfigParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// StartBookingExtranetLoginWithBody Sign in with a Booking.com Extranet user
+	//
+	// Starts the sign-in with the host's Extranet credentials.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/session (the `StartBookingExtranetLogin` operationId).
+	StartBookingExtranetLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// StartBookingExtranetLogin Sign in with a Booking.com Extranet user
+	//
+	// Starts the sign-in with the host's Extranet credentials.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/session (the `StartBookingExtranetLogin` operationId).
+	StartBookingExtranetLogin(ctx context.Context, body StartBookingExtranetLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetBookingExtranetLoginStatus Booking.com direct-login status
+	//
+	// Live sign-in status, polled by the hosted page.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Corresponds with GET /v1/connect/booking-extranet-login/status (the `GetBookingExtranetLoginStatus` operationId).
+	GetBookingExtranetLoginStatus(ctx context.Context, params *GetBookingExtranetLoginStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// BookingConnectCallbackWithBody Booking.com connectivity callback
 	//
 	// Receives Booking.com's asynchronous confirmation that a property has designated Repull as its connectivity provider, and advances the Connect session. Called by Booking.com, not by integrators.
@@ -2633,6 +2695,15 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/connect/providers (the `ListConnectProviders` operationId).
 	ListConnectProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SearchConnectSessionListingOptions Search listings for a Connect mapping picker
+	//
+	// The hosted Connect pages' listing search for their mapping pickers: the session workspace's active listings by name, city or id, `limit` at a time.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Corresponds with GET /v1/connect/sessions/{sessionId}/listing-options (the `SearchConnectSessionListingOptions` operationId).
+	SearchConnectSessionListingOptions(ctx context.Context, sessionId string, params *SearchConnectSessionListingOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SelectConnectProviderWithBody Bind a picker session to a provider
 	//
 	// Called by the hosted picker page once the user clicks a channel card. Validates the provider exists and is permitted by the session's `allowedProviders` whitelist (if any), then returns the next-step URL the picker should navigate to.
@@ -2680,6 +2751,41 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /v1/connect/smoobu/credentials (the `SubmitSmoobuCredentials` operationId).
 	SubmitSmoobuCredentials(ctx context.Context, body SubmitSmoobuCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVrboConnectImport Import progress of the session's Vrbo account
+	//
+	// After the mapping is confirmed: `importing` (upcoming bookings and the last 30 days of messages) → `importing_history` (the rest of the account, in the background) → `imported`.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Corresponds with GET /v1/connect/vrbo-login/session (the `GetVrboConnectImport` operationId).
+	GetVrboConnectImport(ctx context.Context, params *GetVrboConnectImportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VrboLoginWithBody Sign in with a Vrbo host account
+	//
+	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`.
+	//
+	// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/vrbo-login/session (the `VrboLogin` operationId).
+	VrboLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VrboLogin Sign in with a Vrbo host account
+	//
+	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`.
+	//
+	// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/vrbo-login/session (the `VrboLogin` operationId).
+	VrboLogin(ctx context.Context, body VrboLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SubmitVrboCredentialsWithBody Submit Vrbo credentials for a Connect session
 	//
@@ -2759,6 +2865,105 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connect/{provider} (the `CreateConnection` operationId).
 	CreateConnection(ctx context.Context, provider Provider, body CreateConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetConnectWritePolicy Get what the app may change in a PMS
+	//
+	// Returns the connection's write policy: whether the app may open and close nights, change prices and minimum stay in the PMS, and whether bookings may be created or changed there from the booking website, the dashboard or the reservations API.
+	//
+	// Hotel PMSs (Cloudbeds, Mews) start with every calendar switch off — the PMS owns its room inventory. Every other PMS starts with everything on. PMS connections only.
+	//
+	// Corresponds with GET /v1/connect/{provider}/write-policy (the `GetConnectWritePolicy` operationId).
+	GetConnectWritePolicy(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateConnectWritePolicyWithBody Change what the app may change in a PMS
+	//
+	// Turns individual write switches on or off for the connection. Only the switches you send change. Takes effect on the next write — nothing already sent to the PMS is undone. The policy is kept when the PMS is reconnected.
+	//
+	// With `reservations.api` off, the reservations API returns `409 pms_writes_off` for bookings on this PMS. With `reservations.website` off, booking sites stop taking bookings for it before the guest is charged.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
+	UpdateConnectWritePolicyWithBody(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateConnectWritePolicy Change what the app may change in a PMS
+	//
+	// Turns individual write switches on or off for the connection. Only the switches you send change. Takes effect on the next write — nothing already sent to the PMS is undone. The policy is kept when the PMS is reconnected.
+	//
+	// With `reservations.api` off, the reservations API returns `409 pms_writes_off` for bookings on this PMS. With `reservations.website` off, booking sites stop taking bookings for it before the guest is charged.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
+	UpdateConnectWritePolicy(ctx context.Context, provider Provider, body UpdateConnectWritePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SearchConnectionListingOptions Search listings a unit can be mapped to
+	//
+	// Search the workspace's active listings by name, city or id, for a mapping picker. A workspace can hold tens of thousands of listings, so pickers search here as the user types rather than loading them all. Empty `q` returns the first `limit` listings by name.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Corresponds with GET /v1/connections/{id}/listing-options (the `SearchConnectionListingOptions` operationId).
+	SearchConnectionListingOptions(ctx context.Context, id string, params *SearchConnectionListingOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ApplyConnectionMappingsWithBody Map, unmap or create listings for units
+	//
+	// One instruction per unit: `{unitId, listingId}` maps, `{unitId, listingId: null}` unmaps, `{unitId, create: true}` creates a listing. Answers per unit.
+	//
+	// Vrbo: nothing is imported when the account is signed in. Applying a mapping that maps at least one unit starts the import: upcoming bookings and the last 30 days of messages first, then the whole account history. Follow it on `GET /v1/connect/vrbo-login` (`accounts[].import`).
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connections/{id}/mappings (the `ApplyConnectionMappings` operationId).
+	ApplyConnectionMappingsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ApplyConnectionMappings Map, unmap or create listings for units
+	//
+	// One instruction per unit: `{unitId, listingId}` maps, `{unitId, listingId: null}` unmaps, `{unitId, create: true}` creates a listing. Answers per unit.
+	//
+	// Vrbo: nothing is imported when the account is signed in. Applying a mapping that maps at least one unit starts the import: upcoming bookings and the last 30 days of messages first, then the whole account history. Follow it on `GET /v1/connect/vrbo-login` (`accounts[].import`).
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connections/{id}/mappings (the `ApplyConnectionMappings` operationId).
+	ApplyConnectionMappings(ctx context.Context, id string, body ApplyConnectionMappingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AutoMapConnectionUnitsWithBody Auto-map units by exact name
+	//
+	// Proposes (or with `apply: true` applies) mappings where a unit's name exactly matches one listing. Never guesses on ambiguity.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connections/{id}/mappings/automap (the `AutoMapConnectionUnits` operationId).
+	AutoMapConnectionUnitsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AutoMapConnectionUnits Auto-map units by exact name
+	//
+	// Proposes (or with `apply: true` applies) mappings where a unit's name exactly matches one listing. Never guesses on ambiguity.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connections/{id}/mappings/automap (the `AutoMapConnectionUnits` operationId).
+	AutoMapConnectionUnits(ctx context.Context, id string, body AutoMapConnectionUnitsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListConnectionUnits List a connection's mappable units
+	//
+	// The units of a connected account with their current listing, a safe suggestion, and the workspace's listing options. `status: ready` with no units means the account has no properties.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// `listing_options` carries only the listings the units already point at (mapped or suggested); `listing_options_total` says how many the workspace has. Search the rest with `GET /v1/connections/{id}/listing-options?q=`.
+	//
+	// Corresponds with GET /v1/connections/{id}/units (the `ListConnectionUnits` operationId).
+	ListConnectionUnits(ctx context.Context, id string, params *ListConnectionUnitsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListConversations List conversations
 	//
 	// Cursor-paginated list of message threads owned by the workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
@@ -2796,7 +3001,7 @@ type ClientInterface interface {
 	//
 	// Sends a message to the guest on this conversation and records it in the thread.
 	//
-	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, VRBO, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 	//
 	// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 	//
@@ -2816,7 +3021,7 @@ type ClientInterface interface {
 	// |---|---|---|---|
 	// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
 	// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
-	// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+	// | VRBO, SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
 	//
 	// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
 	//
@@ -2833,7 +3038,7 @@ type ClientInterface interface {
 	//
 	// Sends a message to the guest on this conversation and records it in the thread.
 	//
-	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, VRBO, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 	//
 	// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 	//
@@ -2853,7 +3058,7 @@ type ClientInterface interface {
 	// |---|---|---|---|
 	// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
 	// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
-	// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+	// | VRBO, SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
 	//
 	// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
 	//
@@ -2866,17 +3071,28 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
 	SendConversationMessage(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PreapproveConversationWithBody Pre-approve an inquiry
+	// WithdrawConversationPreapproval Withdraw a pre-approval
 	//
-	// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+	// Withdraw the live pre-approval (or offer) on this conversation: the guest can no longer book on it, and the inquiry is open again. **VRBO**. On Airbnb a pre-approval is a special offer — withdraw it with `DELETE /v1/conversations/{id}/special-offers/{offerId}`; here it is `422 channel_not_supported`.
+	//
+	// `GET /v1/conversations/{id}` → `capabilities.canWithdraw` says whether there is something to withdraw.
+	//
+	// Corresponds with DELETE /v1/conversations/{id}/pre-approval (the `WithdrawConversationPreapproval` operationId).
+	WithdrawConversationPreapproval(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PreapproveConversationWithBody Pre-approve an inquiry (Airbnb, VRBO)
+	//
+	// Pre-approve the inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
 	//
 	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
 	//
-	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
+	// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 	//
-	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving on the channel. Withdraw it with `DELETE /v1/conversations/{id}/pre-approval` (VRBO).
+	//
+	// A channel’s refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
@@ -2885,17 +3101,19 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
 	PreapproveConversationWithBody(ctx context.Context, id int, params *PreapproveConversationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PreapproveConversation Pre-approve an inquiry
+	// PreapproveConversation Pre-approve an inquiry (Airbnb, VRBO)
 	//
-	// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+	// Pre-approve the inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
 	//
 	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
 	//
-	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
+	// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 	//
-	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving on the channel. Withdraw it with `DELETE /v1/conversations/{id}/pre-approval` (VRBO).
+	//
+	// A channel’s refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
@@ -2904,58 +3122,88 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
 	PreapproveConversation(ctx context.Context, id int, params *PreapproveConversationParams, body PreapproveConversationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateConversationSpecialOfferWithBody Send a special offer
+	// CreateConversationSpecialOfferWithBody Send a special offer (Airbnb, VRBO)
 	//
-	// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+	// Send the guest on this conversation a special offer: your own dates, guest count and price. One endpoint for every channel that has offers — **Airbnb** (connected directly) and **VRBO** (its “Edit quote”). Use it to answer an inquiry with different terms. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
 	//
-	// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+	// **How the price is set depends on the channel** — `GET /v1/conversations/{id}` → `capabilities.offerPrice` says which:
+	// - `total` (Airbnb): send `totalPrice`, the whole stay in the listing’s Airbnb currency, with `checkIn`, `checkOut` and `guests`.
+	// - `breakdown` (VRBO): send the price’s parts — `rentalAmount` (rent, excluding fees), `fees` by VRBO fee type, `damageDeposit` — and VRBO computes the guest total, adding its taxes and service fee. Dates and party are optional (omitted → the inquiry’s own). Only what you send is changed. Preview the result first with `POST /v1/conversations/{id}/special-offers/preview`.
 	//
-	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+	// Sending the other kind is `422 offer_price_total_required` / `offer_price_breakdown_required` naming the field; nothing is sent. A channel without offers (Booking.com, direct, an Airbnb inquiry relayed by a PMS) is `422 channel_not_supported`.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
+	// `listingId` (Airbnb) is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id. `message` (VRBO) is sent to the guest with the offer.
 	//
-	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+	// An offer the channel refuses is never a `201`: dates that are taken, a price below the channel’s minimum and the like are `422` with the channel’s own reason in `message`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
 	//
-	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}` (VRBO: `offerId` = `current`).
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
 	CreateConversationSpecialOfferWithBody(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateConversationSpecialOffer Send a special offer
+	// CreateConversationSpecialOffer Send a special offer (Airbnb, VRBO)
 	//
-	// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+	// Send the guest on this conversation a special offer: your own dates, guest count and price. One endpoint for every channel that has offers — **Airbnb** (connected directly) and **VRBO** (its “Edit quote”). Use it to answer an inquiry with different terms. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
 	//
-	// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+	// **How the price is set depends on the channel** — `GET /v1/conversations/{id}` → `capabilities.offerPrice` says which:
+	// - `total` (Airbnb): send `totalPrice`, the whole stay in the listing’s Airbnb currency, with `checkIn`, `checkOut` and `guests`.
+	// - `breakdown` (VRBO): send the price’s parts — `rentalAmount` (rent, excluding fees), `fees` by VRBO fee type, `damageDeposit` — and VRBO computes the guest total, adding its taxes and service fee. Dates and party are optional (omitted → the inquiry’s own). Only what you send is changed. Preview the result first with `POST /v1/conversations/{id}/special-offers/preview`.
 	//
-	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+	// Sending the other kind is `422 offer_price_total_required` / `offer_price_breakdown_required` naming the field; nothing is sent. A channel without offers (Booking.com, direct, an Airbnb inquiry relayed by a PMS) is `422 channel_not_supported`.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
+	// `listingId` (Airbnb) is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id. `message` (VRBO) is sent to the guest with the offer.
 	//
-	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+	// An offer the channel refuses is never a `201`: dates that are taken, a price below the channel’s minimum and the like are `422` with the channel’s own reason in `message`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
 	//
-	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}` (VRBO: `offerId` = `current`).
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
 	CreateConversationSpecialOffer(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, body CreateConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PreviewConversationSpecialOfferWithBody Preview a special offer
+	//
+	// See what a special offer would be — as the channel itself recalculates it, with its taxes, service fee and guest total — **without sending anything** to the guest. Same body as `POST /v1/conversations/{id}/special-offers`; the price may be omitted to see only a date or party change, and `{}` shows the current offer recalculated.
+	//
+	// **VRBO** (its “Edit quote” recalculation). A channel without a preview — Airbnb takes your total as it is — returns `422 preview_not_supported`; `GET /v1/conversations/{id}` → `capabilities.canPreviewOffer` says which.
+	//
+	// Read-only: safe to call as often as you need while a user edits an offer.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/conversations/{id}/special-offers/preview (the `PreviewConversationSpecialOffer` operationId).
+	PreviewConversationSpecialOfferWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PreviewConversationSpecialOffer Preview a special offer
+	//
+	// See what a special offer would be — as the channel itself recalculates it, with its taxes, service fee and guest total — **without sending anything** to the guest. Same body as `POST /v1/conversations/{id}/special-offers`; the price may be omitted to see only a date or party change, and `{}` shows the current offer recalculated.
+	//
+	// **VRBO** (its “Edit quote” recalculation). A channel without a preview — Airbnb takes your total as it is — returns `422 preview_not_supported`; `GET /v1/conversations/{id}` → `capabilities.canPreviewOffer` says which.
+	//
+	// Read-only: safe to call as often as you need while a user edits an offer.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/conversations/{id}/special-offers/preview (the `PreviewConversationSpecialOffer` operationId).
+	PreviewConversationSpecialOffer(ctx context.Context, id int, body PreviewConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// WithdrawConversationSpecialOffer Withdraw a special offer
 	//
-	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked (VRBO: `offerId` = `current`, the same as `DELETE /v1/conversations/{id}/pre-approval`). An offer the guest already booked cannot be withdrawn — the channel refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
 	//
 	// Corresponds with DELETE /v1/conversations/{id}/special-offers/{offerId} (the `WithdrawConversationSpecialOffer` operationId).
 	WithdrawConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetConversationSpecialOffer Get a special offer
 	//
-	// Read a special offer on this conversation back from Airbnb — typically to check its `status` (`active` until the guest books it, it expires, or you withdraw it). Read live from Airbnb with the conversation’s own Airbnb account.
+	// Read a special offer on this conversation — typically to check its `status`. Airbnb: read live with the conversation’s own Airbnb account (`active` until the guest books it, it expires, or you withdraw it). VRBO (`offerId` = `current`): the live offer as last synced from VRBO, priced by its parts with VRBO’s total.
 	//
 	// Corresponds with GET /v1/conversations/{id}/special-offers/{offerId} (the `GetConversationSpecialOffer` operationId).
 	GetConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3028,7 +3276,9 @@ type ClientInterface interface {
 
 	// GetChannelHealth Per-channel connectivity health
 	//
-	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired".
+	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
+	//
+	// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is failed calendar pushes over finished ones in the last 3 hours (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 	//
 	// Corresponds with GET /v1/health/channels/{channel} (the `GetChannelHealth` operationId).
 	GetChannelHealth(ctx context.Context, channel GetChannelHealthParamsChannel, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3269,6 +3519,21 @@ type ClientInterface interface {
 	// Corresponds with PATCH /v1/listings/{id} (the `UpdateListingActive` operationId).
 	UpdateListingActive(ctx context.Context, id int, body UpdateListingActiveJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetListingCalendarSync Calendar sync status per channel
+	//
+	// Is this listing's calendar — prices, minimum stays, availability — actually on every channel it is connected to, and if not, which nights and why. One shape for every channel.
+	//
+	// Every push records each night's outcome per channel; a night the channel does not show as sent is listed in `problems` with the channel's own reason (a price the channel still shows differently, a block it refused, a unit that is not live, a night held by a booking or an imported calendar). A later successful push clears it.
+	//
+	// **VRBO** pushes run through a paced queue — VRBO accepts about 90 calendar writes a minute per account, and only what differs on VRBO is sent — so the `vrbo` entry adds `queue`: whether a push is waiting or running now, and what the last one did (prices and minimum stays changed, blocks, calls, nights still differing).
+	//
+	// Future nights only. `problems` lists up to 100 nights per channel; `nightsWithProblems` is always the full count.
+	//
+	// Returns `403 listing_inactive` for an inactive listing.
+	//
+	// Corresponds with GET /v1/listings/{id}/calendar-sync (the `GetListingCalendarSync` operationId).
+	GetListingCalendarSync(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListListingComps Comp set for a listing (with daily nightly pricing)
 	//
 	// Returns the actual comp set for a listing — the underlying competitor listings (with daily nightly pricing), not just the aggregated `compSummary` from `/pricing`. Each comp comes back with distance, bedrooms, ratings, lat/lng, platform link, and a per-day rate/availability series for the requested window.
@@ -3402,7 +3667,7 @@ type ClientInterface interface {
 	//
 	// Stop this listing being sold, on every channel it is connected to, in one call.
 	//
-	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens. On **VRBO** each mapped unit is hidden (VRBO's own "Hide listing") and read back — a hidden unit is out of VRBO search and cannot be booked; its item carries the VRBO listing number as `platformId`.
 	//
 	// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
 	//
@@ -3431,7 +3696,7 @@ type ClientInterface interface {
 	//
 	// Stop this listing being sold, on every channel it is connected to, in one call.
 	//
-	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens. On **VRBO** each mapped unit is hidden (VRBO's own "Hide listing") and read back — a hidden unit is out of VRBO search and cannot be booked; its item carries the VRBO listing number as `platformId`.
 	//
 	// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
 	//
@@ -3460,7 +3725,7 @@ type ClientInterface interface {
 	//
 	// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
 	//
-	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. On **VRBO** each hidden unit is reactivated (VRBO's own "Reactivate") and read back; VRBO can refuse a reactivation (e.g. while it is verifying the property), which comes back as that item's `message`. The two directions are not mirror images, and that is deliberate.
 	//
 	// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
 	//
@@ -3475,7 +3740,7 @@ type ClientInterface interface {
 	//
 	// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
 	//
-	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. On **VRBO** each hidden unit is reactivated (VRBO's own "Reactivate") and read back; VRBO can refuse a reactivation (e.g. while it is verifying the property), which comes back as that item's `message`. The two directions are not mirror images, and that is deliberate.
 	//
 	// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
 	//
@@ -4216,7 +4481,7 @@ type ClientInterface interface {
 	//
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
-	// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 	//
 	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
@@ -4231,7 +4496,7 @@ type ClientInterface interface {
 	//
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
-	// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 	//
 	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
@@ -8118,6 +8383,128 @@ func (c *Client) SubmitBeds24Credentials(ctx context.Context, body SubmitBeds24C
 	return c.Client.Do(req)
 }
 
+// InviteBookingExtranetUserWithBody Connect Booking.com by inviting a user
+//
+// Generates the user the host invites in their Extranet; progress is read from the status route.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
+func (c *Client) InviteBookingExtranetUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInviteBookingExtranetUserRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// InviteBookingExtranetUser Connect Booking.com by inviting a user
+//
+// Generates the user the host invites in their Extranet; progress is read from the status route.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
+func (c *Client) InviteBookingExtranetUser(ctx context.Context, body InviteBookingExtranetUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInviteBookingExtranetUserRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetBookingExtranetLoginConfig Booking.com direct-login config
+//
+// Returns the 2FA number the host adds to their Extranet user.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Corresponds with GET /v1/connect/booking-extranet-login/session (the `GetBookingExtranetLoginConfig` operationId).
+func (c *Client) GetBookingExtranetLoginConfig(ctx context.Context, params *GetBookingExtranetLoginConfigParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBookingExtranetLoginConfigRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// StartBookingExtranetLoginWithBody Sign in with a Booking.com Extranet user
+//
+// Starts the sign-in with the host's Extranet credentials.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/session (the `StartBookingExtranetLogin` operationId).
+func (c *Client) StartBookingExtranetLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartBookingExtranetLoginRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// StartBookingExtranetLogin Sign in with a Booking.com Extranet user
+//
+// Starts the sign-in with the host's Extranet credentials.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/session (the `StartBookingExtranetLogin` operationId).
+func (c *Client) StartBookingExtranetLogin(ctx context.Context, body StartBookingExtranetLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartBookingExtranetLoginRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetBookingExtranetLoginStatus Booking.com direct-login status
+//
+// Live sign-in status, polled by the hosted page.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Corresponds with GET /v1/connect/booking-extranet-login/status (the `GetBookingExtranetLoginStatus` operationId).
+func (c *Client) GetBookingExtranetLoginStatus(ctx context.Context, params *GetBookingExtranetLoginStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBookingExtranetLoginStatusRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // BookingConnectCallbackWithBody Booking.com connectivity callback
 //
 // Receives Booking.com's asynchronous confirmation that a property has designated Repull as its connectivity provider, and advances the Connect session. Called by Booking.com, not by integrators.
@@ -8714,6 +9101,25 @@ func (c *Client) ListConnectProviders(ctx context.Context, reqEditors ...Request
 	return c.Client.Do(req)
 }
 
+// SearchConnectSessionListingOptions Search listings for a Connect mapping picker
+//
+// The hosted Connect pages' listing search for their mapping pickers: the session workspace's active listings by name, city or id, `limit` at a time.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Corresponds with GET /v1/connect/sessions/{sessionId}/listing-options (the `SearchConnectSessionListingOptions` operationId).
+func (c *Client) SearchConnectSessionListingOptions(ctx context.Context, sessionId string, params *SearchConnectSessionListingOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSearchConnectSessionListingOptionsRequest(c.Server, sessionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // SelectConnectProviderWithBody Bind a picker session to a provider
 //
 // Called by the hosted picker page once the user clicks a channel card. Validates the provider exists and is permitted by the session's `allowedProviders` whitelist (if any), then returns the next-step URL the picker should navigate to.
@@ -8792,6 +9198,71 @@ func (c *Client) SubmitSmoobuCredentialsWithBody(ctx context.Context, contentTyp
 // Corresponds with POST /v1/connect/smoobu/credentials (the `SubmitSmoobuCredentials` operationId).
 func (c *Client) SubmitSmoobuCredentials(ctx context.Context, body SubmitSmoobuCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSubmitSmoobuCredentialsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetVrboConnectImport Import progress of the session's Vrbo account
+//
+// After the mapping is confirmed: `importing` (upcoming bookings and the last 30 days of messages) → `importing_history` (the rest of the account, in the background) → `imported`.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Corresponds with GET /v1/connect/vrbo-login/session (the `GetVrboConnectImport` operationId).
+func (c *Client) GetVrboConnectImport(ctx context.Context, params *GetVrboConnectImportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVrboConnectImportRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VrboLoginWithBody Sign in with a Vrbo host account
+//
+// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`.
+//
+// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/vrbo-login/session (the `VrboLogin` operationId).
+func (c *Client) VrboLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVrboLoginRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VrboLogin Sign in with a Vrbo host account
+//
+// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`.
+//
+// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/vrbo-login/session (the `VrboLogin` operationId).
+func (c *Client) VrboLogin(ctx context.Context, body VrboLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVrboLoginRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8940,6 +9411,195 @@ func (c *Client) CreateConnection(ctx context.Context, provider Provider, body C
 	return c.Client.Do(req)
 }
 
+// GetConnectWritePolicy Get what the app may change in a PMS
+//
+// Returns the connection's write policy: whether the app may open and close nights, change prices and minimum stay in the PMS, and whether bookings may be created or changed there from the booking website, the dashboard or the reservations API.
+//
+// Hotel PMSs (Cloudbeds, Mews) start with every calendar switch off — the PMS owns its room inventory. Every other PMS starts with everything on. PMS connections only.
+//
+// Corresponds with GET /v1/connect/{provider}/write-policy (the `GetConnectWritePolicy` operationId).
+func (c *Client) GetConnectWritePolicy(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetConnectWritePolicyRequest(c.Server, provider)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateConnectWritePolicyWithBody Change what the app may change in a PMS
+//
+// Turns individual write switches on or off for the connection. Only the switches you send change. Takes effect on the next write — nothing already sent to the PMS is undone. The policy is kept when the PMS is reconnected.
+//
+// With `reservations.api` off, the reservations API returns `409 pms_writes_off` for bookings on this PMS. With `reservations.website` off, booking sites stop taking bookings for it before the guest is charged.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
+func (c *Client) UpdateConnectWritePolicyWithBody(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateConnectWritePolicyRequestWithBody(c.Server, provider, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateConnectWritePolicy Change what the app may change in a PMS
+//
+// Turns individual write switches on or off for the connection. Only the switches you send change. Takes effect on the next write — nothing already sent to the PMS is undone. The policy is kept when the PMS is reconnected.
+//
+// With `reservations.api` off, the reservations API returns `409 pms_writes_off` for bookings on this PMS. With `reservations.website` off, booking sites stop taking bookings for it before the guest is charged.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
+func (c *Client) UpdateConnectWritePolicy(ctx context.Context, provider Provider, body UpdateConnectWritePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateConnectWritePolicyRequest(c.Server, provider, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SearchConnectionListingOptions Search listings a unit can be mapped to
+//
+// Search the workspace's active listings by name, city or id, for a mapping picker. A workspace can hold tens of thousands of listings, so pickers search here as the user types rather than loading them all. Empty `q` returns the first `limit` listings by name.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Corresponds with GET /v1/connections/{id}/listing-options (the `SearchConnectionListingOptions` operationId).
+func (c *Client) SearchConnectionListingOptions(ctx context.Context, id string, params *SearchConnectionListingOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSearchConnectionListingOptionsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ApplyConnectionMappingsWithBody Map, unmap or create listings for units
+//
+// One instruction per unit: `{unitId, listingId}` maps, `{unitId, listingId: null}` unmaps, `{unitId, create: true}` creates a listing. Answers per unit.
+//
+// Vrbo: nothing is imported when the account is signed in. Applying a mapping that maps at least one unit starts the import: upcoming bookings and the last 30 days of messages first, then the whole account history. Follow it on `GET /v1/connect/vrbo-login` (`accounts[].import`).
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connections/{id}/mappings (the `ApplyConnectionMappings` operationId).
+func (c *Client) ApplyConnectionMappingsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewApplyConnectionMappingsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ApplyConnectionMappings Map, unmap or create listings for units
+//
+// One instruction per unit: `{unitId, listingId}` maps, `{unitId, listingId: null}` unmaps, `{unitId, create: true}` creates a listing. Answers per unit.
+//
+// Vrbo: nothing is imported when the account is signed in. Applying a mapping that maps at least one unit starts the import: upcoming bookings and the last 30 days of messages first, then the whole account history. Follow it on `GET /v1/connect/vrbo-login` (`accounts[].import`).
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connections/{id}/mappings (the `ApplyConnectionMappings` operationId).
+func (c *Client) ApplyConnectionMappings(ctx context.Context, id string, body ApplyConnectionMappingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewApplyConnectionMappingsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// AutoMapConnectionUnitsWithBody Auto-map units by exact name
+//
+// Proposes (or with `apply: true` applies) mappings where a unit's name exactly matches one listing. Never guesses on ambiguity.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connections/{id}/mappings/automap (the `AutoMapConnectionUnits` operationId).
+func (c *Client) AutoMapConnectionUnitsWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAutoMapConnectionUnitsRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// AutoMapConnectionUnits Auto-map units by exact name
+//
+// Proposes (or with `apply: true` applies) mappings where a unit's name exactly matches one listing. Never guesses on ambiguity.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connections/{id}/mappings/automap (the `AutoMapConnectionUnits` operationId).
+func (c *Client) AutoMapConnectionUnits(ctx context.Context, id string, body AutoMapConnectionUnitsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAutoMapConnectionUnitsRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListConnectionUnits List a connection's mappable units
+//
+// The units of a connected account with their current listing, a safe suggestion, and the workspace's listing options. `status: ready` with no units means the account has no properties.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// `listing_options` carries only the listings the units already point at (mapped or suggested); `listing_options_total` says how many the workspace has. Search the rest with `GET /v1/connections/{id}/listing-options?q=`.
+//
+// Corresponds with GET /v1/connections/{id}/units (the `ListConnectionUnits` operationId).
+func (c *Client) ListConnectionUnits(ctx context.Context, id string, params *ListConnectionUnitsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListConnectionUnitsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListConversations List conversations
 //
 // Cursor-paginated list of message threads owned by the workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
@@ -9007,7 +9667,7 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 //
 // Sends a message to the guest on this conversation and records it in the thread.
 //
-// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, VRBO, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 //
 // The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 //
@@ -9027,7 +9687,7 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 // |---|---|---|---|
 // | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
 // | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
-// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+// | VRBO, SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
 //
 // Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
 //
@@ -9054,7 +9714,7 @@ func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, pa
 //
 // Sends a message to the guest on this conversation and records it in the thread.
 //
-// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, VRBO, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 //
 // The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 //
@@ -9074,7 +9734,7 @@ func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, pa
 // |---|---|---|---|
 // | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
 // | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
-// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+// | VRBO, SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
 //
 // Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
 //
@@ -9097,17 +9757,38 @@ func (c *Client) SendConversationMessage(ctx context.Context, id int, params *Se
 	return c.Client.Do(req)
 }
 
-// PreapproveConversationWithBody Pre-approve an inquiry
+// WithdrawConversationPreapproval Withdraw a pre-approval
 //
-// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+// Withdraw the live pre-approval (or offer) on this conversation: the guest can no longer book on it, and the inquiry is open again. **VRBO**. On Airbnb a pre-approval is a special offer — withdraw it with `DELETE /v1/conversations/{id}/special-offers/{offerId}`; here it is `422 channel_not_supported`.
+//
+// `GET /v1/conversations/{id}` → `capabilities.canWithdraw` says whether there is something to withdraw.
+//
+// Corresponds with DELETE /v1/conversations/{id}/pre-approval (the `WithdrawConversationPreapproval` operationId).
+func (c *Client) WithdrawConversationPreapproval(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewWithdrawConversationPreapprovalRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PreapproveConversationWithBody Pre-approve an inquiry (Airbnb, VRBO)
+//
+// Pre-approve the inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
 //
 // Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
 //
-// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
+// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 //
-// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+// The inquiry is marked `pre_approved` everywhere, the same as pre-approving on the channel. Withdraw it with `DELETE /v1/conversations/{id}/pre-approval` (VRBO).
+//
+// A channel’s refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
@@ -9126,17 +9807,19 @@ func (c *Client) PreapproveConversationWithBody(ctx context.Context, id int, par
 	return c.Client.Do(req)
 }
 
-// PreapproveConversation Pre-approve an inquiry
+// PreapproveConversation Pre-approve an inquiry (Airbnb, VRBO)
 //
-// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+// Pre-approve the inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
 //
 // Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
 //
-// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
+// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 //
-// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+// The inquiry is marked `pre_approved` everywhere, the same as pre-approving on the channel. Withdraw it with `DELETE /v1/conversations/{id}/pre-approval` (VRBO).
+//
+// A channel’s refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
@@ -9155,21 +9838,23 @@ func (c *Client) PreapproveConversation(ctx context.Context, id int, params *Pre
 	return c.Client.Do(req)
 }
 
-// CreateConversationSpecialOfferWithBody Send a special offer
+// CreateConversationSpecialOfferWithBody Send a special offer (Airbnb, VRBO)
 //
-// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+// Send the guest on this conversation a special offer: your own dates, guest count and price. One endpoint for every channel that has offers — **Airbnb** (connected directly) and **VRBO** (its “Edit quote”). Use it to answer an inquiry with different terms. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
 //
-// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+// **How the price is set depends on the channel** — `GET /v1/conversations/{id}` → `capabilities.offerPrice` says which:
+// - `total` (Airbnb): send `totalPrice`, the whole stay in the listing’s Airbnb currency, with `checkIn`, `checkOut` and `guests`.
+// - `breakdown` (VRBO): send the price’s parts — `rentalAmount` (rent, excluding fees), `fees` by VRBO fee type, `damageDeposit` — and VRBO computes the guest total, adding its taxes and service fee. Dates and party are optional (omitted → the inquiry’s own). Only what you send is changed. Preview the result first with `POST /v1/conversations/{id}/special-offers/preview`.
 //
-// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+// Sending the other kind is `422 offer_price_total_required` / `offer_price_breakdown_required` naming the field; nothing is sent. A channel without offers (Booking.com, direct, an Airbnb inquiry relayed by a PMS) is `422 channel_not_supported`.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
+// `listingId` (Airbnb) is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id. `message` (VRBO) is sent to the guest with the offer.
 //
-// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+// An offer the channel refuses is never a `201`: dates that are taken, a price below the channel’s minimum and the like are `422` with the channel’s own reason in `message`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
 //
-// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}` (VRBO: `offerId` = `current`).
 //
 // Takes any type of body and a specified content type.
 //
@@ -9186,21 +9871,23 @@ func (c *Client) CreateConversationSpecialOfferWithBody(ctx context.Context, id 
 	return c.Client.Do(req)
 }
 
-// CreateConversationSpecialOffer Send a special offer
+// CreateConversationSpecialOffer Send a special offer (Airbnb, VRBO)
 //
-// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+// Send the guest on this conversation a special offer: your own dates, guest count and price. One endpoint for every channel that has offers — **Airbnb** (connected directly) and **VRBO** (its “Edit quote”). Use it to answer an inquiry with different terms. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
 //
-// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+// **How the price is set depends on the channel** — `GET /v1/conversations/{id}` → `capabilities.offerPrice` says which:
+// - `total` (Airbnb): send `totalPrice`, the whole stay in the listing’s Airbnb currency, with `checkIn`, `checkOut` and `guests`.
+// - `breakdown` (VRBO): send the price’s parts — `rentalAmount` (rent, excluding fees), `fees` by VRBO fee type, `damageDeposit` — and VRBO computes the guest total, adding its taxes and service fee. Dates and party are optional (omitted → the inquiry’s own). Only what you send is changed. Preview the result first with `POST /v1/conversations/{id}/special-offers/preview`.
 //
-// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+// Sending the other kind is `422 offer_price_total_required` / `offer_price_breakdown_required` naming the field; nothing is sent. A channel without offers (Booking.com, direct, an Airbnb inquiry relayed by a PMS) is `422 channel_not_supported`.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
+// `listingId` (Airbnb) is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id. `message` (VRBO) is sent to the guest with the offer.
 //
-// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+// An offer the channel refuses is never a `201`: dates that are taken, a price below the channel’s minimum and the like are `422` with the channel’s own reason in `message`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
 //
-// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}` (VRBO: `offerId` = `current`).
 //
 // Takes a body of the `application/json` content type.
 //
@@ -9217,9 +9904,55 @@ func (c *Client) CreateConversationSpecialOffer(ctx context.Context, id int, par
 	return c.Client.Do(req)
 }
 
+// PreviewConversationSpecialOfferWithBody Preview a special offer
+//
+// See what a special offer would be — as the channel itself recalculates it, with its taxes, service fee and guest total — **without sending anything** to the guest. Same body as `POST /v1/conversations/{id}/special-offers`; the price may be omitted to see only a date or party change, and `{}` shows the current offer recalculated.
+//
+// **VRBO** (its “Edit quote” recalculation). A channel without a preview — Airbnb takes your total as it is — returns `422 preview_not_supported`; `GET /v1/conversations/{id}` → `capabilities.canPreviewOffer` says which.
+//
+// Read-only: safe to call as often as you need while a user edits an offer.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/conversations/{id}/special-offers/preview (the `PreviewConversationSpecialOffer` operationId).
+func (c *Client) PreviewConversationSpecialOfferWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreviewConversationSpecialOfferRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PreviewConversationSpecialOffer Preview a special offer
+//
+// See what a special offer would be — as the channel itself recalculates it, with its taxes, service fee and guest total — **without sending anything** to the guest. Same body as `POST /v1/conversations/{id}/special-offers`; the price may be omitted to see only a date or party change, and `{}` shows the current offer recalculated.
+//
+// **VRBO** (its “Edit quote” recalculation). A channel without a preview — Airbnb takes your total as it is — returns `422 preview_not_supported`; `GET /v1/conversations/{id}` → `capabilities.canPreviewOffer` says which.
+//
+// Read-only: safe to call as often as you need while a user edits an offer.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/conversations/{id}/special-offers/preview (the `PreviewConversationSpecialOffer` operationId).
+func (c *Client) PreviewConversationSpecialOffer(ctx context.Context, id int, body PreviewConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreviewConversationSpecialOfferRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // WithdrawConversationSpecialOffer Withdraw a special offer
 //
-// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+// Withdraw a special offer the guest has not booked yet, so it can no longer be booked (VRBO: `offerId` = `current`, the same as `DELETE /v1/conversations/{id}/pre-approval`). An offer the guest already booked cannot be withdrawn — the channel refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
 //
 // Corresponds with DELETE /v1/conversations/{id}/special-offers/{offerId} (the `WithdrawConversationSpecialOffer` operationId).
 func (c *Client) WithdrawConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9236,7 +9969,7 @@ func (c *Client) WithdrawConversationSpecialOffer(ctx context.Context, id int, o
 
 // GetConversationSpecialOffer Get a special offer
 //
-// Read a special offer on this conversation back from Airbnb — typically to check its `status` (`active` until the guest books it, it expires, or you withdraw it). Read live from Airbnb with the conversation’s own Airbnb account.
+// Read a special offer on this conversation — typically to check its `status`. Airbnb: read live with the conversation’s own Airbnb account (`active` until the guest books it, it expires, or you withdraw it). VRBO (`offerId` = `current`): the live offer as last synced from VRBO, priced by its parts with VRBO’s total.
 //
 // Corresponds with GET /v1/conversations/{id}/special-offers/{offerId} (the `GetConversationSpecialOffer` operationId).
 func (c *Client) GetConversationSpecialOffer(ctx context.Context, id int, offerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9379,7 +10112,9 @@ func (c *Client) GetAuthHealth(ctx context.Context, reqEditors ...RequestEditorF
 
 // GetChannelHealth Per-channel connectivity health
 //
-// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired".
+// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
+//
+// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is failed calendar pushes over finished ones in the last 3 hours (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 //
 // Corresponds with GET /v1/health/channels/{channel} (the `GetChannelHealth` operationId).
 func (c *Client) GetChannelHealth(ctx context.Context, channel GetChannelHealthParamsChannel, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9830,6 +10565,31 @@ func (c *Client) UpdateListingActive(ctx context.Context, id int, body UpdateLis
 	return c.Client.Do(req)
 }
 
+// GetListingCalendarSync Calendar sync status per channel
+//
+// Is this listing's calendar — prices, minimum stays, availability — actually on every channel it is connected to, and if not, which nights and why. One shape for every channel.
+//
+// Every push records each night's outcome per channel; a night the channel does not show as sent is listed in `problems` with the channel's own reason (a price the channel still shows differently, a block it refused, a unit that is not live, a night held by a booking or an imported calendar). A later successful push clears it.
+//
+// **VRBO** pushes run through a paced queue — VRBO accepts about 90 calendar writes a minute per account, and only what differs on VRBO is sent — so the `vrbo` entry adds `queue`: whether a push is waiting or running now, and what the last one did (prices and minimum stays changed, blocks, calls, nights still differing).
+//
+// Future nights only. `problems` lists up to 100 nights per channel; `nightsWithProblems` is always the full count.
+//
+// Returns `403 listing_inactive` for an inactive listing.
+//
+// Corresponds with GET /v1/listings/{id}/calendar-sync (the `GetListingCalendarSync` operationId).
+func (c *Client) GetListingCalendarSync(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingCalendarSyncRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListListingComps Comp set for a listing (with daily nightly pricing)
 //
 // Returns the actual comp set for a listing — the underlying competitor listings (with daily nightly pricing), not just the aggregated `compSummary` from `/pricing`. Each comp comes back with distance, bedrooms, ratings, lat/lng, platform link, and a per-day rate/availability series for the requested window.
@@ -10043,7 +10803,7 @@ func (c *Client) SetListingMarkup(ctx context.Context, id string, body SetListin
 //
 // Stop this listing being sold, on every channel it is connected to, in one call.
 //
-// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens. On **VRBO** each mapped unit is hidden (VRBO's own "Hide listing") and read back — a hidden unit is out of VRBO search and cannot be booked; its item carries the VRBO listing number as `platformId`.
 //
 // **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
 //
@@ -10082,7 +10842,7 @@ func (c *Client) TakeListingOfflineWithBody(ctx context.Context, id int, params 
 //
 // Stop this listing being sold, on every channel it is connected to, in one call.
 //
-// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens. On **VRBO** each mapped unit is hidden (VRBO's own "Hide listing") and read back — a hidden unit is out of VRBO search and cannot be booked; its item carries the VRBO listing number as `platformId`.
 //
 // **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
 //
@@ -10121,7 +10881,7 @@ func (c *Client) TakeListingOffline(ctx context.Context, id int, params *TakeLis
 //
 // Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
 //
-// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. On **VRBO** each hidden unit is reactivated (VRBO's own "Reactivate") and read back; VRBO can refuse a reactivation (e.g. while it is verifying the property), which comes back as that item's `message`. The two directions are not mirror images, and that is deliberate.
 //
 // **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
 //
@@ -10146,7 +10906,7 @@ func (c *Client) TakeListingOnlineWithBody(ctx context.Context, id int, params *
 //
 // Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
 //
-// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. On **VRBO** each hidden unit is reactivated (VRBO's own "Reactivate") and read back; VRBO can refuse a reactivation (e.g. while it is verifying the property), which comes back as that item's `message`. The two directions are not mirror images, and that is deliberate.
 //
 // **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
 //
@@ -11431,7 +12191,7 @@ func (c *Client) SubmitGuestReview(ctx context.Context, id int, body SubmitGuest
 //
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
-// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 //
 // To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
@@ -11456,7 +12216,7 @@ func (c *Client) ReplyToReviewWithBody(ctx context.Context, id int, contentType 
 //
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
-// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 //
 // To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
@@ -17042,6 +17802,194 @@ func NewSubmitBeds24CredentialsRequestWithBody(server string, contentType string
 	return req, nil
 }
 
+// NewInviteBookingExtranetUserRequest calls the generic InviteBookingExtranetUser builder with application/json body
+func NewInviteBookingExtranetUserRequest(server string, body InviteBookingExtranetUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewInviteBookingExtranetUserRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewInviteBookingExtranetUserRequestWithBody constructs an http.Request for the InviteBookingExtranetUser method, with any body, and a specified content type
+func NewInviteBookingExtranetUserRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/booking-extranet-login/invite")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetBookingExtranetLoginConfigRequest constructs an http.Request for the GetBookingExtranetLoginConfig method
+func NewGetBookingExtranetLoginConfigRequest(server string, params *GetBookingExtranetLoginConfigParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/booking-extranet-login/session")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewStartBookingExtranetLoginRequest calls the generic StartBookingExtranetLogin builder with application/json body
+func NewStartBookingExtranetLoginRequest(server string, body StartBookingExtranetLoginJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewStartBookingExtranetLoginRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewStartBookingExtranetLoginRequestWithBody constructs an http.Request for the StartBookingExtranetLogin method, with any body, and a specified content type
+func NewStartBookingExtranetLoginRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/booking-extranet-login/session")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetBookingExtranetLoginStatusRequest constructs an http.Request for the GetBookingExtranetLoginStatus method
+func NewGetBookingExtranetLoginStatusRequest(server string, params *GetBookingExtranetLoginStatusParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/booking-extranet-login/status")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "accountId", params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewBookingConnectCallbackRequest calls the generic BookingConnectCallback builder with application/json body
 func NewBookingConnectCallbackRequest(server string, body BookingConnectCallbackJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -17599,6 +18547,79 @@ func NewListConnectProvidersRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewSearchConnectSessionListingOptionsRequest constructs an http.Request for the SearchConnectSessionListingOptions method
+func NewSearchConnectSessionListingOptionsRequest(server string, sessionId string, params *SearchConnectSessionListingOptionsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "sessionId", sessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/sessions/%s/listing-options", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Q != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "q", *params.Q, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewSelectConnectProviderRequest calls the generic SelectConnectProvider builder with application/json body
 func NewSelectConnectProviderRequest(server string, sessionId string, body SelectConnectProviderJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -17667,6 +18688,96 @@ func NewSubmitSmoobuCredentialsRequestWithBody(server string, contentType string
 	}
 
 	operationPath := fmt.Sprintf("/v1/connect/smoobu/credentials")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetVrboConnectImportRequest constructs an http.Request for the GetVrboConnectImport method
+func NewGetVrboConnectImportRequest(server string, params *GetVrboConnectImportParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/vrbo-login/session")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewVrboLoginRequest calls the generic VrboLogin builder with application/json body
+func NewVrboLoginRequest(server string, body VrboLoginJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewVrboLoginRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewVrboLoginRequestWithBody constructs an http.Request for the VrboLogin method, with any body, and a specified content type
+func NewVrboLoginRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/vrbo-login/session")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -17864,6 +18975,327 @@ func NewCreateConnectionRequestWithBody(server string, provider Provider, conten
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetConnectWritePolicyRequest constructs an http.Request for the GetConnectWritePolicy method
+func NewGetConnectWritePolicyRequest(server string, provider Provider) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "provider", provider, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/%s/write-policy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateConnectWritePolicyRequest calls the generic UpdateConnectWritePolicy builder with application/json body
+func NewUpdateConnectWritePolicyRequest(server string, provider Provider, body UpdateConnectWritePolicyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateConnectWritePolicyRequestWithBody(server, provider, "application/json", bodyReader)
+}
+
+// NewUpdateConnectWritePolicyRequestWithBody constructs an http.Request for the UpdateConnectWritePolicy method, with any body, and a specified content type
+func NewUpdateConnectWritePolicyRequestWithBody(server string, provider Provider, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "provider", provider, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/%s/write-policy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSearchConnectionListingOptionsRequest constructs an http.Request for the SearchConnectionListingOptions method
+func NewSearchConnectionListingOptionsRequest(server string, id string, params *SearchConnectionListingOptionsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connections/%s/listing-options", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Q != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "q", *params.Q, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.SessionId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", *params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewApplyConnectionMappingsRequest calls the generic ApplyConnectionMappings builder with application/json body
+func NewApplyConnectionMappingsRequest(server string, id string, body ApplyConnectionMappingsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewApplyConnectionMappingsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewApplyConnectionMappingsRequestWithBody constructs an http.Request for the ApplyConnectionMappings method, with any body, and a specified content type
+func NewApplyConnectionMappingsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connections/%s/mappings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAutoMapConnectionUnitsRequest calls the generic AutoMapConnectionUnits builder with application/json body
+func NewAutoMapConnectionUnitsRequest(server string, id string, body AutoMapConnectionUnitsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAutoMapConnectionUnitsRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewAutoMapConnectionUnitsRequestWithBody constructs an http.Request for the AutoMapConnectionUnits method, with any body, and a specified content type
+func NewAutoMapConnectionUnitsRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connections/%s/mappings/automap", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListConnectionUnitsRequest constructs an http.Request for the ListConnectionUnits method
+func NewListConnectionUnitsRequest(server string, id string, params *ListConnectionUnitsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connections/%s/units", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.SessionId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", *params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -18208,6 +19640,40 @@ func NewSendConversationMessageRequestWithBody(server string, id int, params *Se
 	return req, nil
 }
 
+// NewWithdrawConversationPreapprovalRequest constructs an http.Request for the WithdrawConversationPreapproval method
+func NewWithdrawConversationPreapprovalRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s/pre-approval", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewPreapproveConversationRequest calls the generic PreapproveConversation builder with application/json body
 func NewPreapproveConversationRequest(server string, id int, params *PreapproveConversationParams, body PreapproveConversationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -18328,6 +19794,53 @@ func NewCreateConversationSpecialOfferRequestWithBody(server string, id int, par
 		}
 
 	}
+
+	return req, nil
+}
+
+// NewPreviewConversationSpecialOfferRequest calls the generic PreviewConversationSpecialOffer builder with application/json body
+func NewPreviewConversationSpecialOfferRequest(server string, id int, body PreviewConversationSpecialOfferJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPreviewConversationSpecialOfferRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPreviewConversationSpecialOfferRequestWithBody constructs an http.Request for the PreviewConversationSpecialOffer method, with any body, and a specified content type
+func NewPreviewConversationSpecialOfferRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/conversations/%s/special-offers/preview", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -19653,6 +21166,40 @@ func NewUpdateListingActiveRequestWithBody(server string, id int, contentType st
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetListingCalendarSyncRequest constructs an http.Request for the GetListingCalendarSync method
+func NewGetListingCalendarSyncRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/calendar-sync", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -26043,6 +27590,72 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connect/beds24/credentials (the `SubmitBeds24Credentials` operationId).
 	SubmitBeds24CredentialsWithResponse(ctx context.Context, body SubmitBeds24CredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitBeds24CredentialsClientResponse, error)
 
+	// InviteBookingExtranetUserWithBodyWithResponse Connect Booking.com by inviting a user
+	//
+	// Generates the user the host invites in their Extranet; progress is read from the status route.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
+	InviteBookingExtranetUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteBookingExtranetUserClientResponse, error)
+
+	// InviteBookingExtranetUserWithResponse Connect Booking.com by inviting a user
+	//
+	// Generates the user the host invites in their Extranet; progress is read from the status route.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
+	InviteBookingExtranetUserWithResponse(ctx context.Context, body InviteBookingExtranetUserJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteBookingExtranetUserClientResponse, error)
+
+	// GetBookingExtranetLoginConfigWithResponse Booking.com direct-login config
+	//
+	// Returns the 2FA number the host adds to their Extranet user.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/booking-extranet-login/session (the `GetBookingExtranetLoginConfig` operationId).
+	GetBookingExtranetLoginConfigWithResponse(ctx context.Context, params *GetBookingExtranetLoginConfigParams, reqEditors ...RequestEditorFn) (*GetBookingExtranetLoginConfigClientResponse, error)
+
+	// StartBookingExtranetLoginWithBodyWithResponse Sign in with a Booking.com Extranet user
+	//
+	// Starts the sign-in with the host's Extranet credentials.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/session (the `StartBookingExtranetLogin` operationId).
+	StartBookingExtranetLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*StartBookingExtranetLoginClientResponse, error)
+
+	// StartBookingExtranetLoginWithResponse Sign in with a Booking.com Extranet user
+	//
+	// Starts the sign-in with the host's Extranet credentials.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/session (the `StartBookingExtranetLogin` operationId).
+	StartBookingExtranetLoginWithResponse(ctx context.Context, body StartBookingExtranetLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*StartBookingExtranetLoginClientResponse, error)
+
+	// GetBookingExtranetLoginStatusWithResponse Booking.com direct-login status
+	//
+	// Live sign-in status, polled by the hosted page.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/booking-extranet-login/status (the `GetBookingExtranetLoginStatus` operationId).
+	GetBookingExtranetLoginStatusWithResponse(ctx context.Context, params *GetBookingExtranetLoginStatusParams, reqEditors ...RequestEditorFn) (*GetBookingExtranetLoginStatusClientResponse, error)
+
 	// BookingConnectCallbackWithBodyWithResponse Booking.com connectivity callback
 	//
 	// Receives Booking.com's asynchronous confirmation that a property has designated Repull as its connectivity provider, and advances the Connect session. Called by Booking.com, not by integrators.
@@ -26383,6 +27996,17 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/connect/providers (the `ListConnectProviders` operationId).
 	ListConnectProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectProvidersClientResponse, error)
 
+	// SearchConnectSessionListingOptionsWithResponse Search listings for a Connect mapping picker
+	//
+	// The hosted Connect pages' listing search for their mapping pickers: the session workspace's active listings by name, city or id, `limit` at a time.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/sessions/{sessionId}/listing-options (the `SearchConnectSessionListingOptions` operationId).
+	SearchConnectSessionListingOptionsWithResponse(ctx context.Context, sessionId string, params *SearchConnectSessionListingOptionsParams, reqEditors ...RequestEditorFn) (*SearchConnectSessionListingOptionsClientResponse, error)
+
 	// SelectConnectProviderWithBodyWithResponse Bind a picker session to a provider
 	//
 	// Called by the hosted picker page once the user clicks a channel card. Validates the provider exists and is permitted by the session's `allowedProviders` whitelist (if any), then returns the next-step URL the picker should navigate to.
@@ -26430,6 +28054,43 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/connect/smoobu/credentials (the `SubmitSmoobuCredentials` operationId).
 	SubmitSmoobuCredentialsWithResponse(ctx context.Context, body SubmitSmoobuCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitSmoobuCredentialsClientResponse, error)
+
+	// GetVrboConnectImportWithResponse Import progress of the session's Vrbo account
+	//
+	// After the mapping is confirmed: `importing` (upcoming bookings and the last 30 days of messages) → `importing_history` (the rest of the account, in the background) → `imported`.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/vrbo-login/session (the `GetVrboConnectImport` operationId).
+	GetVrboConnectImportWithResponse(ctx context.Context, params *GetVrboConnectImportParams, reqEditors ...RequestEditorFn) (*GetVrboConnectImportClientResponse, error)
+
+	// VrboLoginWithBodyWithResponse Sign in with a Vrbo host account
+	//
+	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`.
+	//
+	// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/vrbo-login/session (the `VrboLogin` operationId).
+	VrboLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VrboLoginClientResponse, error)
+
+	// VrboLoginWithResponse Sign in with a Vrbo host account
+	//
+	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`.
+	//
+	// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/vrbo-login/session (the `VrboLogin` operationId).
+	VrboLoginWithResponse(ctx context.Context, body VrboLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*VrboLoginClientResponse, error)
 
 	// SubmitVrboCredentialsWithBodyWithResponse Submit Vrbo credentials for a Connect session
 	//
@@ -26513,6 +28174,111 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connect/{provider} (the `CreateConnection` operationId).
 	CreateConnectionWithResponse(ctx context.Context, provider Provider, body CreateConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConnectionClientResponse, error)
 
+	// GetConnectWritePolicyWithResponse Get what the app may change in a PMS
+	//
+	// Returns the connection's write policy: whether the app may open and close nights, change prices and minimum stay in the PMS, and whether bookings may be created or changed there from the booking website, the dashboard or the reservations API.
+	//
+	// Hotel PMSs (Cloudbeds, Mews) start with every calendar switch off — the PMS owns its room inventory. Every other PMS starts with everything on. PMS connections only.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/{provider}/write-policy (the `GetConnectWritePolicy` operationId).
+	GetConnectWritePolicyWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*GetConnectWritePolicyClientResponse, error)
+
+	// UpdateConnectWritePolicyWithBodyWithResponse Change what the app may change in a PMS
+	//
+	// Turns individual write switches on or off for the connection. Only the switches you send change. Takes effect on the next write — nothing already sent to the PMS is undone. The policy is kept when the PMS is reconnected.
+	//
+	// With `reservations.api` off, the reservations API returns `409 pms_writes_off` for bookings on this PMS. With `reservations.website` off, booking sites stop taking bookings for it before the guest is charged.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
+	UpdateConnectWritePolicyWithBodyWithResponse(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateConnectWritePolicyClientResponse, error)
+
+	// UpdateConnectWritePolicyWithResponse Change what the app may change in a PMS
+	//
+	// Turns individual write switches on or off for the connection. Only the switches you send change. Takes effect on the next write — nothing already sent to the PMS is undone. The policy is kept when the PMS is reconnected.
+	//
+	// With `reservations.api` off, the reservations API returns `409 pms_writes_off` for bookings on this PMS. With `reservations.website` off, booking sites stop taking bookings for it before the guest is charged.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
+	UpdateConnectWritePolicyWithResponse(ctx context.Context, provider Provider, body UpdateConnectWritePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateConnectWritePolicyClientResponse, error)
+
+	// SearchConnectionListingOptionsWithResponse Search listings a unit can be mapped to
+	//
+	// Search the workspace's active listings by name, city or id, for a mapping picker. A workspace can hold tens of thousands of listings, so pickers search here as the user types rather than loading them all. Empty `q` returns the first `limit` listings by name.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connections/{id}/listing-options (the `SearchConnectionListingOptions` operationId).
+	SearchConnectionListingOptionsWithResponse(ctx context.Context, id string, params *SearchConnectionListingOptionsParams, reqEditors ...RequestEditorFn) (*SearchConnectionListingOptionsClientResponse, error)
+
+	// ApplyConnectionMappingsWithBodyWithResponse Map, unmap or create listings for units
+	//
+	// One instruction per unit: `{unitId, listingId}` maps, `{unitId, listingId: null}` unmaps, `{unitId, create: true}` creates a listing. Answers per unit.
+	//
+	// Vrbo: nothing is imported when the account is signed in. Applying a mapping that maps at least one unit starts the import: upcoming bookings and the last 30 days of messages first, then the whole account history. Follow it on `GET /v1/connect/vrbo-login` (`accounts[].import`).
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connections/{id}/mappings (the `ApplyConnectionMappings` operationId).
+	ApplyConnectionMappingsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ApplyConnectionMappingsClientResponse, error)
+
+	// ApplyConnectionMappingsWithResponse Map, unmap or create listings for units
+	//
+	// One instruction per unit: `{unitId, listingId}` maps, `{unitId, listingId: null}` unmaps, `{unitId, create: true}` creates a listing. Answers per unit.
+	//
+	// Vrbo: nothing is imported when the account is signed in. Applying a mapping that maps at least one unit starts the import: upcoming bookings and the last 30 days of messages first, then the whole account history. Follow it on `GET /v1/connect/vrbo-login` (`accounts[].import`).
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connections/{id}/mappings (the `ApplyConnectionMappings` operationId).
+	ApplyConnectionMappingsWithResponse(ctx context.Context, id string, body ApplyConnectionMappingsJSONRequestBody, reqEditors ...RequestEditorFn) (*ApplyConnectionMappingsClientResponse, error)
+
+	// AutoMapConnectionUnitsWithBodyWithResponse Auto-map units by exact name
+	//
+	// Proposes (or with `apply: true` applies) mappings where a unit's name exactly matches one listing. Never guesses on ambiguity.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connections/{id}/mappings/automap (the `AutoMapConnectionUnits` operationId).
+	AutoMapConnectionUnitsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AutoMapConnectionUnitsClientResponse, error)
+
+	// AutoMapConnectionUnitsWithResponse Auto-map units by exact name
+	//
+	// Proposes (or with `apply: true` applies) mappings where a unit's name exactly matches one listing. Never guesses on ambiguity.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connections/{id}/mappings/automap (the `AutoMapConnectionUnits` operationId).
+	AutoMapConnectionUnitsWithResponse(ctx context.Context, id string, body AutoMapConnectionUnitsJSONRequestBody, reqEditors ...RequestEditorFn) (*AutoMapConnectionUnitsClientResponse, error)
+
+	// ListConnectionUnitsWithResponse List a connection's mappable units
+	//
+	// The units of a connected account with their current listing, a safe suggestion, and the workspace's listing options. `status: ready` with no units means the account has no properties.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+	//
+	// `listing_options` carries only the listings the units already point at (mapped or suggested); `listing_options_total` says how many the workspace has. Search the rest with `GET /v1/connections/{id}/listing-options?q=`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connections/{id}/units (the `ListConnectionUnits` operationId).
+	ListConnectionUnitsWithResponse(ctx context.Context, id string, params *ListConnectionUnitsParams, reqEditors ...RequestEditorFn) (*ListConnectionUnitsClientResponse, error)
+
 	// ListConversationsWithResponse List conversations
 	//
 	// Cursor-paginated list of message threads owned by the workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
@@ -26556,7 +28322,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Sends a message to the guest on this conversation and records it in the thread.
 	//
-	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, VRBO, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 	//
 	// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 	//
@@ -26576,7 +28342,7 @@ type ClientWithResponsesInterface interface {
 	// |---|---|---|---|
 	// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
 	// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
-	// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+	// | VRBO, SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
 	//
 	// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
 	//
@@ -26593,7 +28359,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Sends a message to the guest on this conversation and records it in the thread.
 	//
-	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+	// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, VRBO, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 	//
 	// The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 	//
@@ -26613,7 +28379,7 @@ type ClientWithResponsesInterface interface {
 	// |---|---|---|---|
 	// | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
 	// | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
-	// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+	// | VRBO, SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
 	//
 	// Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
 	//
@@ -26626,17 +28392,30 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/conversations/{id}/messages (the `SendConversationMessage` operationId).
 	SendConversationMessageWithResponse(ctx context.Context, id int, params *SendConversationMessageParams, body SendConversationMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*SendConversationMessageClientResponse, error)
 
-	// PreapproveConversationWithBodyWithResponse Pre-approve an inquiry
+	// WithdrawConversationPreapprovalWithResponse Withdraw a pre-approval
 	//
-	// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+	// Withdraw the live pre-approval (or offer) on this conversation: the guest can no longer book on it, and the inquiry is open again. **VRBO**. On Airbnb a pre-approval is a special offer — withdraw it with `DELETE /v1/conversations/{id}/special-offers/{offerId}`; here it is `422 channel_not_supported`.
+	//
+	// `GET /v1/conversations/{id}` → `capabilities.canWithdraw` says whether there is something to withdraw.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/conversations/{id}/pre-approval (the `WithdrawConversationPreapproval` operationId).
+	WithdrawConversationPreapprovalWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*WithdrawConversationPreapprovalClientResponse, error)
+
+	// PreapproveConversationWithBodyWithResponse Pre-approve an inquiry (Airbnb, VRBO)
+	//
+	// Pre-approve the inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
 	//
 	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
 	//
-	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
+	// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 	//
-	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving on the channel. Withdraw it with `DELETE /v1/conversations/{id}/pre-approval` (VRBO).
+	//
+	// A channel’s refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
@@ -26645,17 +28424,19 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
 	PreapproveConversationWithBodyWithResponse(ctx context.Context, id int, params *PreapproveConversationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreapproveConversationClientResponse, error)
 
-	// PreapproveConversationWithResponse Pre-approve an inquiry
+	// PreapproveConversationWithResponse Pre-approve an inquiry (Airbnb, VRBO)
 	//
-	// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+	// Pre-approve the inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
 	//
 	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
 	//
-	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
+	// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 	//
-	// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+	// The inquiry is marked `pre_approved` everywhere, the same as pre-approving on the channel. Withdraw it with `DELETE /v1/conversations/{id}/pre-approval` (VRBO).
+	//
+	// A channel’s refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 	//
@@ -26664,51 +28445,81 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/conversations/{id}/pre-approval (the `PreapproveConversation` operationId).
 	PreapproveConversationWithResponse(ctx context.Context, id int, params *PreapproveConversationParams, body PreapproveConversationJSONRequestBody, reqEditors ...RequestEditorFn) (*PreapproveConversationClientResponse, error)
 
-	// CreateConversationSpecialOfferWithBodyWithResponse Send a special offer
+	// CreateConversationSpecialOfferWithBodyWithResponse Send a special offer (Airbnb, VRBO)
 	//
-	// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+	// Send the guest on this conversation a special offer: your own dates, guest count and price. One endpoint for every channel that has offers — **Airbnb** (connected directly) and **VRBO** (its “Edit quote”). Use it to answer an inquiry with different terms. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
 	//
-	// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+	// **How the price is set depends on the channel** — `GET /v1/conversations/{id}` → `capabilities.offerPrice` says which:
+	// - `total` (Airbnb): send `totalPrice`, the whole stay in the listing’s Airbnb currency, with `checkIn`, `checkOut` and `guests`.
+	// - `breakdown` (VRBO): send the price’s parts — `rentalAmount` (rent, excluding fees), `fees` by VRBO fee type, `damageDeposit` — and VRBO computes the guest total, adding its taxes and service fee. Dates and party are optional (omitted → the inquiry’s own). Only what you send is changed. Preview the result first with `POST /v1/conversations/{id}/special-offers/preview`.
 	//
-	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+	// Sending the other kind is `422 offer_price_total_required` / `offer_price_breakdown_required` naming the field; nothing is sent. A channel without offers (Booking.com, direct, an Airbnb inquiry relayed by a PMS) is `422 channel_not_supported`.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
+	// `listingId` (Airbnb) is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id. `message` (VRBO) is sent to the guest with the offer.
 	//
-	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+	// An offer the channel refuses is never a `201`: dates that are taken, a price below the channel’s minimum and the like are `422` with the channel’s own reason in `message`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
 	//
-	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}` (VRBO: `offerId` = `current`).
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
 	CreateConversationSpecialOfferWithBodyWithResponse(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateConversationSpecialOfferClientResponse, error)
 
-	// CreateConversationSpecialOfferWithResponse Send a special offer
+	// CreateConversationSpecialOfferWithResponse Send a special offer (Airbnb, VRBO)
 	//
-	// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+	// Send the guest on this conversation a special offer: your own dates, guest count and price. One endpoint for every channel that has offers — **Airbnb** (connected directly) and **VRBO** (its “Edit quote”). Use it to answer an inquiry with different terms. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
 	//
-	// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+	// **How the price is set depends on the channel** — `GET /v1/conversations/{id}` → `capabilities.offerPrice` says which:
+	// - `total` (Airbnb): send `totalPrice`, the whole stay in the listing’s Airbnb currency, with `checkIn`, `checkOut` and `guests`.
+	// - `breakdown` (VRBO): send the price’s parts — `rentalAmount` (rent, excluding fees), `fees` by VRBO fee type, `damageDeposit` — and VRBO computes the guest total, adding its taxes and service fee. Dates and party are optional (omitted → the inquiry’s own). Only what you send is changed. Preview the result first with `POST /v1/conversations/{id}/special-offers/preview`.
 	//
-	// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+	// Sending the other kind is `422 offer_price_total_required` / `offer_price_breakdown_required` naming the field; nothing is sent. A channel without offers (Booking.com, direct, an Airbnb inquiry relayed by a PMS) is `422 channel_not_supported`.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
+	// `listingId` (Airbnb) is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id. `message` (VRBO) is sent to the guest with the offer.
 	//
-	// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+	// An offer the channel refuses is never a `201`: dates that are taken, a price below the channel’s minimum and the like are `422` with the channel’s own reason in `message`.
 	//
 	// Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
 	//
-	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+	// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}` (VRBO: `offerId` = `current`).
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/conversations/{id}/special-offers (the `CreateConversationSpecialOffer` operationId).
 	CreateConversationSpecialOfferWithResponse(ctx context.Context, id int, params *CreateConversationSpecialOfferParams, body CreateConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateConversationSpecialOfferClientResponse, error)
 
+	// PreviewConversationSpecialOfferWithBodyWithResponse Preview a special offer
+	//
+	// See what a special offer would be — as the channel itself recalculates it, with its taxes, service fee and guest total — **without sending anything** to the guest. Same body as `POST /v1/conversations/{id}/special-offers`; the price may be omitted to see only a date or party change, and `{}` shows the current offer recalculated.
+	//
+	// **VRBO** (its “Edit quote” recalculation). A channel without a preview — Airbnb takes your total as it is — returns `422 preview_not_supported`; `GET /v1/conversations/{id}` → `capabilities.canPreviewOffer` says which.
+	//
+	// Read-only: safe to call as often as you need while a user edits an offer.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/conversations/{id}/special-offers/preview (the `PreviewConversationSpecialOffer` operationId).
+	PreviewConversationSpecialOfferWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreviewConversationSpecialOfferClientResponse, error)
+
+	// PreviewConversationSpecialOfferWithResponse Preview a special offer
+	//
+	// See what a special offer would be — as the channel itself recalculates it, with its taxes, service fee and guest total — **without sending anything** to the guest. Same body as `POST /v1/conversations/{id}/special-offers`; the price may be omitted to see only a date or party change, and `{}` shows the current offer recalculated.
+	//
+	// **VRBO** (its “Edit quote” recalculation). A channel without a preview — Airbnb takes your total as it is — returns `422 preview_not_supported`; `GET /v1/conversations/{id}` → `capabilities.canPreviewOffer` says which.
+	//
+	// Read-only: safe to call as often as you need while a user edits an offer.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/conversations/{id}/special-offers/preview (the `PreviewConversationSpecialOffer` operationId).
+	PreviewConversationSpecialOfferWithResponse(ctx context.Context, id int, body PreviewConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*PreviewConversationSpecialOfferClientResponse, error)
+
 	// WithdrawConversationSpecialOfferWithResponse Withdraw a special offer
 	//
-	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+	// Withdraw a special offer the guest has not booked yet, so it can no longer be booked (VRBO: `offerId` = `current`, the same as `DELETE /v1/conversations/{id}/pre-approval`). An offer the guest already booked cannot be withdrawn — the channel refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -26717,7 +28528,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetConversationSpecialOfferWithResponse Get a special offer
 	//
-	// Read a special offer on this conversation back from Airbnb — typically to check its `status` (`active` until the guest books it, it expires, or you withdraw it). Read live from Airbnb with the conversation’s own Airbnb account.
+	// Read a special offer on this conversation — typically to check its `status`. Airbnb: read live with the conversation’s own Airbnb account (`active` until the guest books it, it expires, or you withdraw it). VRBO (`offerId` = `current`): the live offer as last synced from VRBO, priced by its parts with VRBO’s total.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -26800,7 +28611,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetChannelHealthWithResponse Per-channel connectivity health
 	//
-	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired".
+	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
+	//
+	// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is failed calendar pushes over finished ones in the last 3 hours (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -27063,6 +28876,23 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PATCH /v1/listings/{id} (the `UpdateListingActive` operationId).
 	UpdateListingActiveWithResponse(ctx context.Context, id int, body UpdateListingActiveJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListingActiveClientResponse, error)
 
+	// GetListingCalendarSyncWithResponse Calendar sync status per channel
+	//
+	// Is this listing's calendar — prices, minimum stays, availability — actually on every channel it is connected to, and if not, which nights and why. One shape for every channel.
+	//
+	// Every push records each night's outcome per channel; a night the channel does not show as sent is listed in `problems` with the channel's own reason (a price the channel still shows differently, a block it refused, a unit that is not live, a night held by a booking or an imported calendar). A later successful push clears it.
+	//
+	// **VRBO** pushes run through a paced queue — VRBO accepts about 90 calendar writes a minute per account, and only what differs on VRBO is sent — so the `vrbo` entry adds `queue`: whether a push is waiting or running now, and what the last one did (prices and minimum stays changed, blocks, calls, nights still differing).
+	//
+	// Future nights only. `problems` lists up to 100 nights per channel; `nightsWithProblems` is always the full count.
+	//
+	// Returns `403 listing_inactive` for an inactive listing.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/listings/{id}/calendar-sync (the `GetListingCalendarSync` operationId).
+	GetListingCalendarSyncWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingCalendarSyncClientResponse, error)
+
 	// ListListingCompsWithResponse Comp set for a listing (with daily nightly pricing)
 	//
 	// Returns the actual comp set for a listing — the underlying competitor listings (with daily nightly pricing), not just the aggregated `compSummary` from `/pricing`. Each comp comes back with distance, bedrooms, ratings, lat/lng, platform link, and a per-day rate/availability series for the requested window.
@@ -27200,7 +29030,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Stop this listing being sold, on every channel it is connected to, in one call.
 	//
-	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens. On **VRBO** each mapped unit is hidden (VRBO's own "Hide listing") and read back — a hidden unit is out of VRBO search and cannot be booked; its item carries the VRBO listing number as `platformId`.
 	//
 	// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
 	//
@@ -27229,7 +29059,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Stop this listing being sold, on every channel it is connected to, in one call.
 	//
-	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+	// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens. On **VRBO** each mapped unit is hidden (VRBO's own "Hide listing") and read back — a hidden unit is out of VRBO search and cannot be booked; its item carries the VRBO listing number as `platformId`.
 	//
 	// **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
 	//
@@ -27258,7 +29088,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
 	//
-	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. On **VRBO** each hidden unit is reactivated (VRBO's own "Reactivate") and read back; VRBO can refuse a reactivation (e.g. while it is verifying the property), which comes back as that item's `message`. The two directions are not mirror images, and that is deliberate.
 	//
 	// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
 	//
@@ -27273,7 +29103,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
 	//
-	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+	// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. On **VRBO** each hidden unit is reactivated (VRBO's own "Reactivate") and read back; VRBO can refuse a reactivation (e.g. while it is verifying the property), which comes back as that item's `message`. The two directions are not mirror images, and that is deliberate.
 	//
 	// **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
 	//
@@ -28064,7 +29894,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
-	// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 	//
 	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
@@ -28079,7 +29909,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
-	// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 	//
 	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
@@ -36150,6 +37980,208 @@ func (r SubmitBeds24CredentialsClientResponse) ContentType() string {
 	return ""
 }
 
+type InviteBookingExtranetUserClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AccountId       *int    `json:"accountId,omitempty"`
+		InviteEmail     *string `json:"inviteEmail,omitempty"`
+		InviteName      *string `json:"inviteName,omitempty"`
+		TwoFactorNumber *string `json:"twoFactorNumber,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r InviteBookingExtranetUserClientResponse) GetJSON200() *struct {
+	AccountId       *int    `json:"accountId,omitempty"`
+	InviteEmail     *string `json:"inviteEmail,omitempty"`
+	InviteName      *string `json:"inviteName,omitempty"`
+	TwoFactorNumber *string `json:"twoFactorNumber,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r InviteBookingExtranetUserClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r InviteBookingExtranetUserClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r InviteBookingExtranetUserClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r InviteBookingExtranetUserClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetBookingExtranetLoginConfigClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		TwoFactorNumber *string `json:"twoFactorNumber,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetBookingExtranetLoginConfigClientResponse) GetJSON200() *struct {
+	TwoFactorNumber *string `json:"twoFactorNumber,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r GetBookingExtranetLoginConfigClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBookingExtranetLoginConfigClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBookingExtranetLoginConfigClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetBookingExtranetLoginConfigClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type StartBookingExtranetLoginClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AccountId         *int    `json:"accountId,omitempty"`
+		NotificationEmail *string `json:"notificationEmail,omitempty"`
+		Status            *string `json:"status,omitempty"`
+		TwoFactorNumber   *string `json:"twoFactorNumber,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r StartBookingExtranetLoginClientResponse) GetJSON200() *struct {
+	AccountId         *int    `json:"accountId,omitempty"`
+	NotificationEmail *string `json:"notificationEmail,omitempty"`
+	Status            *string `json:"status,omitempty"`
+	TwoFactorNumber   *string `json:"twoFactorNumber,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r StartBookingExtranetLoginClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r StartBookingExtranetLoginClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartBookingExtranetLoginClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r StartBookingExtranetLoginClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetBookingExtranetLoginStatusClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AccountId       *int    `json:"accountId,omitempty"`
+		AwaitingMapping *bool   `json:"awaitingMapping,omitempty"`
+		Completed       *bool   `json:"completed,omitempty"`
+		ErrorMessage    *string `json:"errorMessage,omitempty"`
+		FriendlyError   *string `json:"friendlyError,omitempty"`
+		Status          *string `json:"status,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetBookingExtranetLoginStatusClientResponse) GetJSON200() *struct {
+	AccountId       *int    `json:"accountId,omitempty"`
+	AwaitingMapping *bool   `json:"awaitingMapping,omitempty"`
+	Completed       *bool   `json:"completed,omitempty"`
+	ErrorMessage    *string `json:"errorMessage,omitempty"`
+	FriendlyError   *string `json:"friendlyError,omitempty"`
+	Status          *string `json:"status,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r GetBookingExtranetLoginStatusClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBookingExtranetLoginStatusClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBookingExtranetLoginStatusClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetBookingExtranetLoginStatusClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type BookingConnectCallbackClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -36547,6 +38579,11 @@ type SubmitCloudbedsCredentialsClientResponse struct {
 			// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
 			Registered *int `json:"registered,omitempty"`
 		} `json:"webhooks,omitempty"`
+
+		// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+		//
+		// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+		WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 	}
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
@@ -36587,6 +38624,11 @@ func (r SubmitCloudbedsCredentialsClientResponse) GetJSON200() *struct {
 		// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
 		Registered *int `json:"registered,omitempty"`
 	} `json:"webhooks,omitempty"`
+
+	// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+	//
+	// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 } {
 	return r.JSON200
 }
@@ -37047,6 +39089,11 @@ type SubmitMewsCredentialsClientResponse struct {
 			// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
 			Registered *int `json:"registered,omitempty"`
 		} `json:"webhooks,omitempty"`
+
+		// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+		//
+		// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+		WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 	}
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
@@ -37087,6 +39134,11 @@ func (r SubmitMewsCredentialsClientResponse) GetJSON200() *struct {
 		// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
 		Registered *int `json:"registered,omitempty"`
 	} `json:"webhooks,omitempty"`
+
+	// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+	//
+	// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 } {
 	return r.JSON200
 }
@@ -37256,6 +39308,61 @@ func (r ListConnectProvidersClientResponse) ContentType() string {
 	return ""
 }
 
+type SearchConnectSessionListingOptionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]struct {
+			City *string `json:"city,omitempty"`
+			Id   *int    `json:"id,omitempty"`
+			Name *string `json:"name,omitempty"`
+		} `json:"data,omitempty"`
+		Total *int `json:"total,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SearchConnectSessionListingOptionsClientResponse) GetJSON200() *struct {
+	Data *[]struct {
+		City *string `json:"city,omitempty"`
+		Id   *int    `json:"id,omitempty"`
+		Name *string `json:"name,omitempty"`
+	} `json:"data,omitempty"`
+	Total *int `json:"total,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r SearchConnectSessionListingOptionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SearchConnectSessionListingOptionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SearchConnectSessionListingOptionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SearchConnectSessionListingOptionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SelectConnectProviderClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -37366,6 +39473,104 @@ func (r SubmitSmoobuCredentialsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r SubmitSmoobuCredentialsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetVrboConnectImportClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *VrboImportStatus
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetVrboConnectImportClientResponse) GetJSON200() *VrboImportStatus {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r GetVrboConnectImportClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVrboConnectImportClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVrboConnectImportClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVrboConnectImportClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type VrboLoginClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AccountId         *int                                `json:"accountId,omitempty"`
+		AwaitingMapping   *bool                               `json:"awaitingMapping,omitempty"`
+		Destination       *string                             `json:"destination,omitempty"`
+		Error             *string                             `json:"error,omitempty"`
+		NotificationEmail *string                             `json:"notificationEmail,omitempty"`
+		Reason            *string                             `json:"reason,omitempty"`
+		Status            *VrboLogin200JSONResponseBodyStatus `json:"status,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r VrboLoginClientResponse) GetJSON200() *struct {
+	AccountId         *int                                `json:"accountId,omitempty"`
+	AwaitingMapping   *bool                               `json:"awaitingMapping,omitempty"`
+	Destination       *string                             `json:"destination,omitempty"`
+	Error             *string                             `json:"error,omitempty"`
+	NotificationEmail *string                             `json:"notificationEmail,omitempty"`
+	Reason            *string                             `json:"reason,omitempty"`
+	Status            *VrboLogin200JSONResponseBodyStatus `json:"status,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r VrboLoginClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r VrboLoginClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VrboLoginClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r VrboLoginClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -37616,6 +39821,426 @@ func (r CreateConnectionClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r CreateConnectionClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetConnectWritePolicyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// Defaults What this provider starts with.
+		Defaults *PmsWritePolicy `json:"defaults,omitempty"`
+
+		// Provider Example: cloudbeds
+		Provider *string `json:"provider,omitempty"`
+
+		// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+		//
+		// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+		WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetConnectWritePolicyClientResponse) GetJSON200() *struct {
+	// Defaults What this provider starts with.
+	Defaults *PmsWritePolicy `json:"defaults,omitempty"`
+
+	// Provider Example: cloudbeds
+	Provider *string `json:"provider,omitempty"`
+
+	// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+	//
+	// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetConnectWritePolicyClientResponse) GetJSON400() *Error {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetConnectWritePolicyClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r GetConnectWritePolicyClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetConnectWritePolicyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetConnectWritePolicyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetConnectWritePolicyClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateConnectWritePolicyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// Defaults What this provider starts with.
+		Defaults *PmsWritePolicy `json:"defaults,omitempty"`
+
+		// Provider Example: cloudbeds
+		Provider *string `json:"provider,omitempty"`
+
+		// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+		//
+		// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+		WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateConnectWritePolicyClientResponse) GetJSON200() *struct {
+	// Defaults What this provider starts with.
+	Defaults *PmsWritePolicy `json:"defaults,omitempty"`
+
+	// Provider Example: cloudbeds
+	Provider *string `json:"provider,omitempty"`
+
+	// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+	//
+	// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r UpdateConnectWritePolicyClientResponse) GetJSON400() *Error {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateConnectWritePolicyClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateConnectWritePolicyClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateConnectWritePolicyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateConnectWritePolicyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateConnectWritePolicyClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SearchConnectionListingOptionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]struct {
+			City *string `json:"city,omitempty"`
+			Id   *int    `json:"id,omitempty"`
+			Name *string `json:"name,omitempty"`
+		} `json:"data,omitempty"`
+
+		// Total How many listings match `q` in total.
+		Total *int `json:"total,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SearchConnectionListingOptionsClientResponse) GetJSON200() *struct {
+	Data *[]struct {
+		City *string `json:"city,omitempty"`
+		Id   *int    `json:"id,omitempty"`
+		Name *string `json:"name,omitempty"`
+	} `json:"data,omitempty"`
+
+	// Total How many listings match `q` in total.
+	Total *int `json:"total,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r SearchConnectionListingOptionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SearchConnectionListingOptionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SearchConnectionListingOptionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SearchConnectionListingOptionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ApplyConnectionMappingsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Channel      *string `json:"channel,omitempty"`
+		ConnectionId *string `json:"connection_id,omitempty"`
+		Results      *[]struct {
+			Created   *bool   `json:"created,omitempty"`
+			Error     *string `json:"error,omitempty"`
+			ListingId *int    `json:"listing_id,omitempty"`
+			Ok        *bool   `json:"ok,omitempty"`
+			UnitId    *string `json:"unit_id,omitempty"`
+		} `json:"results,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ApplyConnectionMappingsClientResponse) GetJSON200() *struct {
+	Channel      *string `json:"channel,omitempty"`
+	ConnectionId *string `json:"connection_id,omitempty"`
+	Results      *[]struct {
+		Created   *bool   `json:"created,omitempty"`
+		Error     *string `json:"error,omitempty"`
+		ListingId *int    `json:"listing_id,omitempty"`
+		Ok        *bool   `json:"ok,omitempty"`
+		UnitId    *string `json:"unit_id,omitempty"`
+	} `json:"results,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ApplyConnectionMappingsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ApplyConnectionMappingsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ApplyConnectionMappingsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ApplyConnectionMappingsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type AutoMapConnectionUnitsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Applied      *bool   `json:"applied,omitempty"`
+		Channel      *string `json:"channel,omitempty"`
+		ConnectionId *string `json:"connection_id,omitempty"`
+		Results      *[]struct {
+			Created   *bool   `json:"created,omitempty"`
+			Error     *string `json:"error,omitempty"`
+			ListingId *int    `json:"listing_id,omitempty"`
+			Ok        *bool   `json:"ok,omitempty"`
+			UnitId    *string `json:"unit_id,omitempty"`
+		} `json:"results,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r AutoMapConnectionUnitsClientResponse) GetJSON200() *struct {
+	Applied      *bool   `json:"applied,omitempty"`
+	Channel      *string `json:"channel,omitempty"`
+	ConnectionId *string `json:"connection_id,omitempty"`
+	Results      *[]struct {
+		Created   *bool   `json:"created,omitempty"`
+		Error     *string `json:"error,omitempty"`
+		ListingId *int    `json:"listing_id,omitempty"`
+		Ok        *bool   `json:"ok,omitempty"`
+		UnitId    *string `json:"unit_id,omitempty"`
+	} `json:"results,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r AutoMapConnectionUnitsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r AutoMapConnectionUnitsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AutoMapConnectionUnitsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r AutoMapConnectionUnitsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListConnectionUnitsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Channel        *string `json:"channel,omitempty"`
+		ConnectionId   *string `json:"connection_id,omitempty"`
+		ListingOptions *[]struct {
+			City *string `json:"city,omitempty"`
+			Id   *int    `json:"id,omitempty"`
+			Name *string `json:"name,omitempty"`
+		} `json:"listing_options,omitempty"`
+
+		// ListingOptionsTotal How many listings the workspace has to map to.
+		ListingOptionsTotal *int                                          `json:"listing_options_total,omitempty"`
+		MissingCapabilities *[]string                                     `json:"missing_capabilities,omitempty"`
+		Status              *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
+		Units               *[]struct {
+			CurrentListingId   *int                    `json:"current_listing_id,omitempty"`
+			Grain              *string                 `json:"grain,omitempty"`
+			Meta               *map[string]interface{} `json:"meta,omitempty"`
+			SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
+			UnitId             *string                 `json:"unit_id,omitempty"`
+			UnitName           *string                 `json:"unit_name,omitempty"`
+		} `json:"units,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListConnectionUnitsClientResponse) GetJSON200() *struct {
+	Channel        *string `json:"channel,omitempty"`
+	ConnectionId   *string `json:"connection_id,omitempty"`
+	ListingOptions *[]struct {
+		City *string `json:"city,omitempty"`
+		Id   *int    `json:"id,omitempty"`
+		Name *string `json:"name,omitempty"`
+	} `json:"listing_options,omitempty"`
+
+	// ListingOptionsTotal How many listings the workspace has to map to.
+	ListingOptionsTotal *int                                          `json:"listing_options_total,omitempty"`
+	MissingCapabilities *[]string                                     `json:"missing_capabilities,omitempty"`
+	Status              *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
+	Units               *[]struct {
+		CurrentListingId   *int                    `json:"current_listing_id,omitempty"`
+		Grain              *string                 `json:"grain,omitempty"`
+		Meta               *map[string]interface{} `json:"meta,omitempty"`
+		SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
+		UnitId             *string                 `json:"unit_id,omitempty"`
+		UnitName           *string                 `json:"unit_name,omitempty"`
+	} `json:"units,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ListConnectionUnitsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListConnectionUnitsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListConnectionUnitsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListConnectionUnitsClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -37933,6 +40558,110 @@ func (r SendConversationMessageClientResponse) ContentType() string {
 	return ""
 }
 
+type WithdrawConversationPreapprovalClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// Channel Example: vrbo
+		Channel *string `json:"channel"`
+
+		// ConversationId Example: 166599
+		ConversationId string                                                   `json:"conversationId"`
+		Status         WithdrawConversationPreapproval200JSONResponseBodyStatus `json:"status"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r WithdrawConversationPreapprovalClientResponse) GetJSON200() *struct {
+	// Channel Example: vrbo
+	Channel *string `json:"channel"`
+
+	// ConversationId Example: 166599
+	ConversationId string                                                   `json:"conversationId"`
+	Status         WithdrawConversationPreapproval200JSONResponseBodyStatus `json:"status"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r WithdrawConversationPreapprovalClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r WithdrawConversationPreapprovalClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r WithdrawConversationPreapprovalClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r WithdrawConversationPreapprovalClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r WithdrawConversationPreapprovalClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r WithdrawConversationPreapprovalClientResponse) GetJSON500() *Error {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r WithdrawConversationPreapprovalClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r WithdrawConversationPreapprovalClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r WithdrawConversationPreapprovalClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r WithdrawConversationPreapprovalClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r WithdrawConversationPreapprovalClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type PreapproveConversationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -37941,12 +40670,18 @@ type PreapproveConversationClientResponse struct {
 		// BlockInstantBooking Example: false
 		BlockInstantBooking bool `json:"blockInstantBooking"`
 
+		// Channel Example: airbnb
+		Channel PreapproveConversation201JSONResponseBodyChannel `json:"channel"`
+
 		// ConversationId Example: 164743
 		ConversationId string `json:"conversationId"`
 
-		// ExpiresAt When the guest can no longer book on the pre-approval, if Airbnb reported it.
-		ExpiresAt *time.Time                                      `json:"expiresAt"`
-		Status    PreapproveConversation201JSONResponseBodyStatus `json:"status"`
+		// ExpiresAt When the guest can no longer book on the pre-approval, if the channel reported it.
+		ExpiresAt *time.Time `json:"expiresAt"`
+
+		// Message The message sent to the guest with the pre-approval (VRBO).
+		Message *string                                         `json:"message"`
+		Status  PreapproveConversation201JSONResponseBodyStatus `json:"status"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -37971,12 +40706,18 @@ func (r PreapproveConversationClientResponse) GetJSON201() *struct {
 	// BlockInstantBooking Example: false
 	BlockInstantBooking bool `json:"blockInstantBooking"`
 
+	// Channel Example: airbnb
+	Channel PreapproveConversation201JSONResponseBodyChannel `json:"channel"`
+
 	// ConversationId Example: 164743
 	ConversationId string `json:"conversationId"`
 
-	// ExpiresAt When the guest can no longer book on the pre-approval, if Airbnb reported it.
-	ExpiresAt *time.Time                                      `json:"expiresAt"`
-	Status    PreapproveConversation201JSONResponseBodyStatus `json:"status"`
+	// ExpiresAt When the guest can no longer book on the pre-approval, if the channel reported it.
+	ExpiresAt *time.Time `json:"expiresAt"`
+
+	// Message The message sent to the guest with the pre-approval (VRBO).
+	Message *string                                         `json:"message"`
+	Status  PreapproveConversation201JSONResponseBodyStatus `json:"status"`
 } {
 	return r.JSON201
 }
@@ -38060,6 +40801,11 @@ type CreateConversationSpecialOfferClientResponse struct {
 		// Example: 955656266214757921
 		AirbnbListingId *string `json:"airbnbListingId,omitempty"`
 
+		// Channel The channel the offer is on.
+		//
+		// Example: airbnb
+		Channel *CreateConversationSpecialOffer201JSONResponseBodyChannel `json:"channel,omitempty"`
+
 		// CheckIn Example: 2026-10-01
 		CheckIn *openapi_types.Date `json:"checkIn"`
 
@@ -38072,8 +40818,33 @@ type CreateConversationSpecialOfferClientResponse struct {
 		ConversationId string     `json:"conversationId"`
 		CreatedAt      *time.Time `json:"createdAt,omitempty"`
 
+		// Currency Currency of the amounts, when the channel states it (VRBO).
+		//
+		// Example: CAD
+		Currency *string `json:"currency,omitempty"`
+
+		// DamageDeposit VRBO: refundable damage deposit; null for none.
+		//
+		// Example: 500
+		DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+		// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+		Discount *float32 `json:"discount,omitempty"`
+
 		// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
 		ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+		// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+		Fees *[]struct {
+			// Label Example: Cleaning Fee
+			Label *string `json:"label,omitempty"`
+
+			// Type Example: CLEANING
+			Type *string `json:"type,omitempty"`
+
+			// Value Example: 400
+			Value *float32 `json:"value,omitempty"`
+		} `json:"fees,omitempty"`
 
 		// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
 		Guests *struct {
@@ -38093,25 +40864,39 @@ type CreateConversationSpecialOfferClientResponse struct {
 			Total *int `json:"total,omitempty"`
 		} `json:"guests,omitempty"`
 
-		// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+		// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
 		//
 		// Example: 1459920384
 		Id *string `json:"id"`
+
+		// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+		Lines *[]struct {
+			Label *string `json:"label,omitempty"`
+			Value *string `json:"value,omitempty"`
+		} `json:"lines,omitempty"`
 
 		// ListingId Repull listing id, when known.
 		//
 		// Example: 23892
 		ListingId *string `json:"listingId,omitempty"`
 
+		// Message The message sent to the guest with the offer (VRBO).
+		Message *string `json:"message,omitempty"`
+
 		// Nights Example: 4
 		Nights *int `json:"nights"`
 
-		// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+		// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+		//
+		// Example: 4041.9
+		RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+		// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
 		//
 		// Example: active
 		Status *string `json:"status"`
 
-		// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+		// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
 		//
 		// Example: 880
 		TotalPrice *float32 `json:"totalPrice"`
@@ -38141,6 +40926,11 @@ func (r CreateConversationSpecialOfferClientResponse) GetJSON201() *struct {
 	// Example: 955656266214757921
 	AirbnbListingId *string `json:"airbnbListingId,omitempty"`
 
+	// Channel The channel the offer is on.
+	//
+	// Example: airbnb
+	Channel *CreateConversationSpecialOffer201JSONResponseBodyChannel `json:"channel,omitempty"`
+
 	// CheckIn Example: 2026-10-01
 	CheckIn *openapi_types.Date `json:"checkIn"`
 
@@ -38153,8 +40943,33 @@ func (r CreateConversationSpecialOfferClientResponse) GetJSON201() *struct {
 	ConversationId string     `json:"conversationId"`
 	CreatedAt      *time.Time `json:"createdAt,omitempty"`
 
+	// Currency Currency of the amounts, when the channel states it (VRBO).
+	//
+	// Example: CAD
+	Currency *string `json:"currency,omitempty"`
+
+	// DamageDeposit VRBO: refundable damage deposit; null for none.
+	//
+	// Example: 500
+	DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+	// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+	Discount *float32 `json:"discount,omitempty"`
+
 	// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+	// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+	Fees *[]struct {
+		// Label Example: Cleaning Fee
+		Label *string `json:"label,omitempty"`
+
+		// Type Example: CLEANING
+		Type *string `json:"type,omitempty"`
+
+		// Value Example: 400
+		Value *float32 `json:"value,omitempty"`
+	} `json:"fees,omitempty"`
 
 	// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
 	Guests *struct {
@@ -38174,25 +40989,39 @@ func (r CreateConversationSpecialOfferClientResponse) GetJSON201() *struct {
 		Total *int `json:"total,omitempty"`
 	} `json:"guests,omitempty"`
 
-	// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+	// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
 	//
 	// Example: 1459920384
 	Id *string `json:"id"`
+
+	// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+	Lines *[]struct {
+		Label *string `json:"label,omitempty"`
+		Value *string `json:"value,omitempty"`
+	} `json:"lines,omitempty"`
 
 	// ListingId Repull listing id, when known.
 	//
 	// Example: 23892
 	ListingId *string `json:"listingId,omitempty"`
 
+	// Message The message sent to the guest with the offer (VRBO).
+	Message *string `json:"message,omitempty"`
+
 	// Nights Example: 4
 	Nights *int `json:"nights"`
 
-	// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+	// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+	//
+	// Example: 4041.9
+	RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+	// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
 	//
 	// Example: active
 	Status *string `json:"status"`
 
-	// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+	// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
 	//
 	// Example: 880
 	TotalPrice *float32 `json:"totalPrice"`
@@ -38269,11 +41098,314 @@ func (r CreateConversationSpecialOfferClientResponse) ContentType() string {
 	return ""
 }
 
+type PreviewConversationSpecialOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+		//
+		// Example: 955656266214757921
+		AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+		// Channel The channel the offer is on.
+		//
+		// Example: airbnb
+		Channel *PreviewConversationSpecialOffer200JSONResponseBodyChannel `json:"channel,omitempty"`
+
+		// CheckIn Example: 2026-10-01
+		CheckIn *openapi_types.Date `json:"checkIn"`
+
+		// CheckOut Example: 2026-10-05
+		CheckOut *openapi_types.Date `json:"checkOut"`
+
+		// ConversationId Repull conversation id the offer was sent on.
+		//
+		// Example: 164743
+		ConversationId string     `json:"conversationId"`
+		CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+		// Currency Currency of the amounts, when the channel states it (VRBO).
+		//
+		// Example: CAD
+		Currency *string `json:"currency,omitempty"`
+
+		// DamageDeposit VRBO: refundable damage deposit; null for none.
+		//
+		// Example: 500
+		DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+		// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+		Discount *float32 `json:"discount,omitempty"`
+
+		// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+		ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+		// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+		Fees *[]struct {
+			// Label Example: Cleaning Fee
+			Label *string `json:"label,omitempty"`
+
+			// Type Example: CLEANING
+			Type *string `json:"type,omitempty"`
+
+			// Value Example: 400
+			Value *float32 `json:"value,omitempty"`
+		} `json:"fees,omitempty"`
+
+		// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+		Guests *struct {
+			// Adults Example: 2
+			Adults *int `json:"adults,omitempty"`
+
+			// Children Example: 1
+			Children *int `json:"children,omitempty"`
+
+			// Infants Example: 0
+			Infants *int `json:"infants,omitempty"`
+
+			// Pets Example: 0
+			Pets *int `json:"pets,omitempty"`
+
+			// Total Example: 3
+			Total *int `json:"total,omitempty"`
+		} `json:"guests,omitempty"`
+
+		// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
+		//
+		// Example: 1459920384
+		Id *string `json:"id"`
+
+		// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+		Lines *[]struct {
+			Label *string `json:"label,omitempty"`
+			Value *string `json:"value,omitempty"`
+		} `json:"lines,omitempty"`
+
+		// ListingId Repull listing id, when known.
+		//
+		// Example: 23892
+		ListingId *string `json:"listingId,omitempty"`
+
+		// Message The message sent to the guest with the offer (VRBO).
+		Message *string `json:"message,omitempty"`
+
+		// Nights Example: 4
+		Nights *int `json:"nights"`
+
+		// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+		//
+		// Example: 4041.9
+		RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+		// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
+		//
+		// Example: active
+		Status *string `json:"status"`
+
+		// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
+		//
+		// Example: 880
+		TotalPrice *float32 `json:"totalPrice"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r PreviewConversationSpecialOfferClientResponse) GetJSON200() *struct {
+	// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+	//
+	// Example: 955656266214757921
+	AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+	// Channel The channel the offer is on.
+	//
+	// Example: airbnb
+	Channel *PreviewConversationSpecialOffer200JSONResponseBodyChannel `json:"channel,omitempty"`
+
+	// CheckIn Example: 2026-10-01
+	CheckIn *openapi_types.Date `json:"checkIn"`
+
+	// CheckOut Example: 2026-10-05
+	CheckOut *openapi_types.Date `json:"checkOut"`
+
+	// ConversationId Repull conversation id the offer was sent on.
+	//
+	// Example: 164743
+	ConversationId string     `json:"conversationId"`
+	CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+	// Currency Currency of the amounts, when the channel states it (VRBO).
+	//
+	// Example: CAD
+	Currency *string `json:"currency,omitempty"`
+
+	// DamageDeposit VRBO: refundable damage deposit; null for none.
+	//
+	// Example: 500
+	DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+	// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+	Discount *float32 `json:"discount,omitempty"`
+
+	// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+	// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+	Fees *[]struct {
+		// Label Example: Cleaning Fee
+		Label *string `json:"label,omitempty"`
+
+		// Type Example: CLEANING
+		Type *string `json:"type,omitempty"`
+
+		// Value Example: 400
+		Value *float32 `json:"value,omitempty"`
+	} `json:"fees,omitempty"`
+
+	// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+	Guests *struct {
+		// Adults Example: 2
+		Adults *int `json:"adults,omitempty"`
+
+		// Children Example: 1
+		Children *int `json:"children,omitempty"`
+
+		// Infants Example: 0
+		Infants *int `json:"infants,omitempty"`
+
+		// Pets Example: 0
+		Pets *int `json:"pets,omitempty"`
+
+		// Total Example: 3
+		Total *int `json:"total,omitempty"`
+	} `json:"guests,omitempty"`
+
+	// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
+	//
+	// Example: 1459920384
+	Id *string `json:"id"`
+
+	// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+	Lines *[]struct {
+		Label *string `json:"label,omitempty"`
+		Value *string `json:"value,omitempty"`
+	} `json:"lines,omitempty"`
+
+	// ListingId Repull listing id, when known.
+	//
+	// Example: 23892
+	ListingId *string `json:"listingId,omitempty"`
+
+	// Message The message sent to the guest with the offer (VRBO).
+	Message *string `json:"message,omitempty"`
+
+	// Nights Example: 4
+	Nights *int `json:"nights"`
+
+	// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+	//
+	// Example: 4041.9
+	RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+	// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
+	//
+	// Example: active
+	Status *string `json:"status"`
+
+	// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
+	//
+	// Example: 880
+	TotalPrice *float32 `json:"totalPrice"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r PreviewConversationSpecialOfferClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r PreviewConversationSpecialOfferClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r PreviewConversationSpecialOfferClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r PreviewConversationSpecialOfferClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r PreviewConversationSpecialOfferClientResponse) GetJSON429() *Error {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r PreviewConversationSpecialOfferClientResponse) GetJSON500() *Error {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r PreviewConversationSpecialOfferClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r PreviewConversationSpecialOfferClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r PreviewConversationSpecialOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PreviewConversationSpecialOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PreviewConversationSpecialOfferClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type WithdrawConversationSpecialOfferClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
+		// Channel Example: airbnb
+		Channel WithdrawConversationSpecialOffer200JSONResponseBodyChannel `json:"channel"`
+
 		// ConversationId Example: 164743
 		ConversationId string `json:"conversationId"`
 
@@ -38301,6 +41433,9 @@ type WithdrawConversationSpecialOfferClientResponse struct {
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r WithdrawConversationSpecialOfferClientResponse) GetJSON200() *struct {
+	// Channel Example: airbnb
+	Channel WithdrawConversationSpecialOffer200JSONResponseBodyChannel `json:"channel"`
+
 	// ConversationId Example: 164743
 	ConversationId string `json:"conversationId"`
 
@@ -38390,6 +41525,11 @@ type GetConversationSpecialOfferClientResponse struct {
 		// Example: 955656266214757921
 		AirbnbListingId *string `json:"airbnbListingId,omitempty"`
 
+		// Channel The channel the offer is on.
+		//
+		// Example: airbnb
+		Channel *GetConversationSpecialOffer200JSONResponseBodyChannel `json:"channel,omitempty"`
+
 		// CheckIn Example: 2026-10-01
 		CheckIn *openapi_types.Date `json:"checkIn"`
 
@@ -38402,8 +41542,33 @@ type GetConversationSpecialOfferClientResponse struct {
 		ConversationId string     `json:"conversationId"`
 		CreatedAt      *time.Time `json:"createdAt,omitempty"`
 
+		// Currency Currency of the amounts, when the channel states it (VRBO).
+		//
+		// Example: CAD
+		Currency *string `json:"currency,omitempty"`
+
+		// DamageDeposit VRBO: refundable damage deposit; null for none.
+		//
+		// Example: 500
+		DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+		// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+		Discount *float32 `json:"discount,omitempty"`
+
 		// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
 		ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+		// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+		Fees *[]struct {
+			// Label Example: Cleaning Fee
+			Label *string `json:"label,omitempty"`
+
+			// Type Example: CLEANING
+			Type *string `json:"type,omitempty"`
+
+			// Value Example: 400
+			Value *float32 `json:"value,omitempty"`
+		} `json:"fees,omitempty"`
 
 		// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
 		Guests *struct {
@@ -38423,25 +41588,39 @@ type GetConversationSpecialOfferClientResponse struct {
 			Total *int `json:"total,omitempty"`
 		} `json:"guests,omitempty"`
 
-		// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+		// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
 		//
 		// Example: 1459920384
 		Id *string `json:"id"`
+
+		// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+		Lines *[]struct {
+			Label *string `json:"label,omitempty"`
+			Value *string `json:"value,omitempty"`
+		} `json:"lines,omitempty"`
 
 		// ListingId Repull listing id, when known.
 		//
 		// Example: 23892
 		ListingId *string `json:"listingId,omitempty"`
 
+		// Message The message sent to the guest with the offer (VRBO).
+		Message *string `json:"message,omitempty"`
+
 		// Nights Example: 4
 		Nights *int `json:"nights"`
 
-		// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+		// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+		//
+		// Example: 4041.9
+		RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+		// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
 		//
 		// Example: active
 		Status *string `json:"status"`
 
-		// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+		// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
 		//
 		// Example: 880
 		TotalPrice *float32 `json:"totalPrice"`
@@ -38469,6 +41648,11 @@ func (r GetConversationSpecialOfferClientResponse) GetJSON200() *struct {
 	// Example: 955656266214757921
 	AirbnbListingId *string `json:"airbnbListingId,omitempty"`
 
+	// Channel The channel the offer is on.
+	//
+	// Example: airbnb
+	Channel *GetConversationSpecialOffer200JSONResponseBodyChannel `json:"channel,omitempty"`
+
 	// CheckIn Example: 2026-10-01
 	CheckIn *openapi_types.Date `json:"checkIn"`
 
@@ -38481,8 +41665,33 @@ func (r GetConversationSpecialOfferClientResponse) GetJSON200() *struct {
 	ConversationId string     `json:"conversationId"`
 	CreatedAt      *time.Time `json:"createdAt,omitempty"`
 
+	// Currency Currency of the amounts, when the channel states it (VRBO).
+	//
+	// Example: CAD
+	Currency *string `json:"currency,omitempty"`
+
+	// DamageDeposit VRBO: refundable damage deposit; null for none.
+	//
+	// Example: 500
+	DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+	// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+	Discount *float32 `json:"discount,omitempty"`
+
 	// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+	// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+	Fees *[]struct {
+		// Label Example: Cleaning Fee
+		Label *string `json:"label,omitempty"`
+
+		// Type Example: CLEANING
+		Type *string `json:"type,omitempty"`
+
+		// Value Example: 400
+		Value *float32 `json:"value,omitempty"`
+	} `json:"fees,omitempty"`
 
 	// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
 	Guests *struct {
@@ -38502,25 +41711,39 @@ func (r GetConversationSpecialOfferClientResponse) GetJSON200() *struct {
 		Total *int `json:"total,omitempty"`
 	} `json:"guests,omitempty"`
 
-	// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+	// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
 	//
 	// Example: 1459920384
 	Id *string `json:"id"`
+
+	// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+	Lines *[]struct {
+		Label *string `json:"label,omitempty"`
+		Value *string `json:"value,omitempty"`
+	} `json:"lines,omitempty"`
 
 	// ListingId Repull listing id, when known.
 	//
 	// Example: 23892
 	ListingId *string `json:"listingId,omitempty"`
 
+	// Message The message sent to the guest with the offer (VRBO).
+	Message *string `json:"message,omitempty"`
+
 	// Nights Example: 4
 	Nights *int `json:"nights"`
 
-	// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+	// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+	//
+	// Example: 4041.9
+	RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+	// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
 	//
 	// Example: active
 	Status *string `json:"status"`
 
-	// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+	// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
 	//
 	// Example: 880
 	TotalPrice *float32 `json:"totalPrice"`
@@ -38911,11 +42134,11 @@ type GetChannelHealthClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *map[string]interface{}
+	JSON200 *GetChannelHealth200JSONResponseBody
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r GetChannelHealthClientResponse) GetJSON200() *map[string]interface{} {
+func (r GetChannelHealthClientResponse) GetJSON200() *GetChannelHealth200JSONResponseBody {
 	return r.JSON200
 }
 
@@ -40007,6 +43230,201 @@ func (r UpdateListingActiveClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateListingActiveClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetListingCalendarSyncClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Channels []struct {
+			// Channel Example: vrbo
+			Channel string `json:"channel"`
+
+			// LastSyncAt When a push last wrote to this listing's calendar.
+			LastSyncAt *time.Time `json:"lastSyncAt"`
+
+			// NightsWithProblems Example: 0
+			NightsWithProblems int `json:"nightsWithProblems"`
+
+			// PlatformId The listing's id on the channel.
+			//
+			// Example: 5121372
+			PlatformId *string `json:"platformId"`
+			Problems   []struct {
+				// Date Example: 2026-12-18
+				Date *openapi_types.Date `json:"date,omitempty"`
+
+				// Error The channel's reason, in words — render it next to the night.
+				//
+				// Example: VRBO shows 305 instead of 293
+				Error *string `json:"error,omitempty"`
+			} `json:"problems"`
+
+			// Queue VRBO only — the paced push queue.
+			Queue *struct {
+				LastPush *struct {
+					BlocksCreated *int `json:"blocksCreated,omitempty"`
+					BlocksRemoved *int `json:"blocksRemoved,omitempty"`
+
+					// Calls VRBO calls made — only what differed was sent.
+					Calls           *int       `json:"calls,omitempty"`
+					FinishedAt      *time.Time `json:"finishedAt,omitempty"`
+					MinStaysChanged *int       `json:"minStaysChanged,omitempty"`
+
+					// Nights Nights the push covered.
+					Nights *int `json:"nights,omitempty"`
+
+					// NightsDiffering Nights VRBO still showed differently after the push (they are retried).
+					NightsDiffering *int    `json:"nightsDiffering,omitempty"`
+					PricesChanged   *int    `json:"pricesChanged,omitempty"`
+					Reason          *string `json:"reason,omitempty"`
+
+					// Result `skipped` — not sent because the unit is not live on VRBO (`reason`).
+					Result *GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult `json:"result,omitempty"`
+				} `json:"lastPush,omitempty"`
+				QueuedAt *time.Time `json:"queuedAt,omitempty"`
+
+				// QueuedNights Nights waiting to be pushed.
+				QueuedNights *int                                                         `json:"queuedNights,omitempty"`
+				State        *GetListingCalendarSync200JSONResponseBodyChannelsQueueState `json:"state,omitempty"`
+			} `json:"queue,omitempty"`
+
+			// Status `in_sync` — no future night has a problem; `problems` — see `problems`; `off` — calendar sync is off for this channel.
+			Status GetListingCalendarSync200JSONResponseBodyChannelsStatus `json:"status"`
+
+			// SyncEnabled Calendar pushes to this channel are on.
+			SyncEnabled bool `json:"syncEnabled"`
+		} `json:"channels"`
+
+		// ListingId Example: 6199
+		ListingId string `json:"listingId"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetListingCalendarSyncClientResponse) GetJSON200() *struct {
+	Channels []struct {
+		// Channel Example: vrbo
+		Channel string `json:"channel"`
+
+		// LastSyncAt When a push last wrote to this listing's calendar.
+		LastSyncAt *time.Time `json:"lastSyncAt"`
+
+		// NightsWithProblems Example: 0
+		NightsWithProblems int `json:"nightsWithProblems"`
+
+		// PlatformId The listing's id on the channel.
+		//
+		// Example: 5121372
+		PlatformId *string `json:"platformId"`
+		Problems   []struct {
+			// Date Example: 2026-12-18
+			Date *openapi_types.Date `json:"date,omitempty"`
+
+			// Error The channel's reason, in words — render it next to the night.
+			//
+			// Example: VRBO shows 305 instead of 293
+			Error *string `json:"error,omitempty"`
+		} `json:"problems"`
+
+		// Queue VRBO only — the paced push queue.
+		Queue *struct {
+			LastPush *struct {
+				BlocksCreated *int `json:"blocksCreated,omitempty"`
+				BlocksRemoved *int `json:"blocksRemoved,omitempty"`
+
+				// Calls VRBO calls made — only what differed was sent.
+				Calls           *int       `json:"calls,omitempty"`
+				FinishedAt      *time.Time `json:"finishedAt,omitempty"`
+				MinStaysChanged *int       `json:"minStaysChanged,omitempty"`
+
+				// Nights Nights the push covered.
+				Nights *int `json:"nights,omitempty"`
+
+				// NightsDiffering Nights VRBO still showed differently after the push (they are retried).
+				NightsDiffering *int    `json:"nightsDiffering,omitempty"`
+				PricesChanged   *int    `json:"pricesChanged,omitempty"`
+				Reason          *string `json:"reason,omitempty"`
+
+				// Result `skipped` — not sent because the unit is not live on VRBO (`reason`).
+				Result *GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult `json:"result,omitempty"`
+			} `json:"lastPush,omitempty"`
+			QueuedAt *time.Time `json:"queuedAt,omitempty"`
+
+			// QueuedNights Nights waiting to be pushed.
+			QueuedNights *int                                                         `json:"queuedNights,omitempty"`
+			State        *GetListingCalendarSync200JSONResponseBodyChannelsQueueState `json:"state,omitempty"`
+		} `json:"queue,omitempty"`
+
+		// Status `in_sync` — no future night has a problem; `problems` — see `problems`; `off` — calendar sync is off for this channel.
+		Status GetListingCalendarSync200JSONResponseBodyChannelsStatus `json:"status"`
+
+		// SyncEnabled Calendar pushes to this channel are on.
+		SyncEnabled bool `json:"syncEnabled"`
+	} `json:"channels"`
+
+	// ListingId Example: 6199
+	ListingId string `json:"listingId"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetListingCalendarSyncClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingCalendarSyncClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetListingCalendarSyncClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetListingCalendarSyncClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetListingCalendarSyncClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingCalendarSyncClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingCalendarSyncClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetListingCalendarSyncClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -47901,6 +51319,108 @@ func (c *ClientWithResponses) SubmitBeds24CredentialsWithResponse(ctx context.Co
 	return ParseSubmitBeds24CredentialsClientResponse(rsp)
 }
 
+// InviteBookingExtranetUserWithBodyWithResponse Connect Booking.com by inviting a user
+//
+// Generates the user the host invites in their Extranet; progress is read from the status route.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
+func (c *ClientWithResponses) InviteBookingExtranetUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteBookingExtranetUserClientResponse, error) {
+	rsp, err := c.InviteBookingExtranetUserWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInviteBookingExtranetUserClientResponse(rsp)
+}
+
+// InviteBookingExtranetUserWithResponse Connect Booking.com by inviting a user
+//
+// Generates the user the host invites in their Extranet; progress is read from the status route.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
+func (c *ClientWithResponses) InviteBookingExtranetUserWithResponse(ctx context.Context, body InviteBookingExtranetUserJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteBookingExtranetUserClientResponse, error) {
+	rsp, err := c.InviteBookingExtranetUser(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInviteBookingExtranetUserClientResponse(rsp)
+}
+
+// GetBookingExtranetLoginConfigWithResponse Booking.com direct-login config
+//
+// Returns the 2FA number the host adds to their Extranet user.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/booking-extranet-login/session (the `GetBookingExtranetLoginConfig` operationId).
+func (c *ClientWithResponses) GetBookingExtranetLoginConfigWithResponse(ctx context.Context, params *GetBookingExtranetLoginConfigParams, reqEditors ...RequestEditorFn) (*GetBookingExtranetLoginConfigClientResponse, error) {
+	rsp, err := c.GetBookingExtranetLoginConfig(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBookingExtranetLoginConfigClientResponse(rsp)
+}
+
+// StartBookingExtranetLoginWithBodyWithResponse Sign in with a Booking.com Extranet user
+//
+// Starts the sign-in with the host's Extranet credentials.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/session (the `StartBookingExtranetLogin` operationId).
+func (c *ClientWithResponses) StartBookingExtranetLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*StartBookingExtranetLoginClientResponse, error) {
+	rsp, err := c.StartBookingExtranetLoginWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartBookingExtranetLoginClientResponse(rsp)
+}
+
+// StartBookingExtranetLoginWithResponse Sign in with a Booking.com Extranet user
+//
+// Starts the sign-in with the host's Extranet credentials.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/session (the `StartBookingExtranetLogin` operationId).
+func (c *ClientWithResponses) StartBookingExtranetLoginWithResponse(ctx context.Context, body StartBookingExtranetLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*StartBookingExtranetLoginClientResponse, error) {
+	rsp, err := c.StartBookingExtranetLogin(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartBookingExtranetLoginClientResponse(rsp)
+}
+
+// GetBookingExtranetLoginStatusWithResponse Booking.com direct-login status
+//
+// Live sign-in status, polled by the hosted page.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/booking-extranet-login/status (the `GetBookingExtranetLoginStatus` operationId).
+func (c *ClientWithResponses) GetBookingExtranetLoginStatusWithResponse(ctx context.Context, params *GetBookingExtranetLoginStatusParams, reqEditors ...RequestEditorFn) (*GetBookingExtranetLoginStatusClientResponse, error) {
+	rsp, err := c.GetBookingExtranetLoginStatus(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBookingExtranetLoginStatusClientResponse(rsp)
+}
+
 // BookingConnectCallbackWithBodyWithResponse Booking.com connectivity callback
 //
 // Receives Booking.com's asynchronous confirmation that a property has designated Repull as its connectivity provider, and advances the Connect session. Called by Booking.com, not by integrators.
@@ -48397,6 +51917,23 @@ func (c *ClientWithResponses) ListConnectProvidersWithResponse(ctx context.Conte
 	return ParseListConnectProvidersClientResponse(rsp)
 }
 
+// SearchConnectSessionListingOptionsWithResponse Search listings for a Connect mapping picker
+//
+// The hosted Connect pages' listing search for their mapping pickers: the session workspace's active listings by name, city or id, `limit` at a time.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/sessions/{sessionId}/listing-options (the `SearchConnectSessionListingOptions` operationId).
+func (c *ClientWithResponses) SearchConnectSessionListingOptionsWithResponse(ctx context.Context, sessionId string, params *SearchConnectSessionListingOptionsParams, reqEditors ...RequestEditorFn) (*SearchConnectSessionListingOptionsClientResponse, error) {
+	rsp, err := c.SearchConnectSessionListingOptions(ctx, sessionId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSearchConnectSessionListingOptionsClientResponse(rsp)
+}
+
 // SelectConnectProviderWithBodyWithResponse Bind a picker session to a provider
 //
 // Called by the hosted picker page once the user clicks a channel card. Validates the provider exists and is permitted by the session's `allowedProviders` whitelist (if any), then returns the next-step URL the picker should navigate to.
@@ -48467,6 +52004,61 @@ func (c *ClientWithResponses) SubmitSmoobuCredentialsWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParseSubmitSmoobuCredentialsClientResponse(rsp)
+}
+
+// GetVrboConnectImportWithResponse Import progress of the session's Vrbo account
+//
+// After the mapping is confirmed: `importing` (upcoming bookings and the last 30 days of messages) → `importing_history` (the rest of the account, in the background) → `imported`.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/vrbo-login/session (the `GetVrboConnectImport` operationId).
+func (c *ClientWithResponses) GetVrboConnectImportWithResponse(ctx context.Context, params *GetVrboConnectImportParams, reqEditors ...RequestEditorFn) (*GetVrboConnectImportClientResponse, error) {
+	rsp, err := c.GetVrboConnectImport(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVrboConnectImportClientResponse(rsp)
+}
+
+// VrboLoginWithBodyWithResponse Sign in with a Vrbo host account
+//
+// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`.
+//
+// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/vrbo-login/session (the `VrboLogin` operationId).
+func (c *ClientWithResponses) VrboLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VrboLoginClientResponse, error) {
+	rsp, err := c.VrboLoginWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVrboLoginClientResponse(rsp)
+}
+
+// VrboLoginWithResponse Sign in with a Vrbo host account
+//
+// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`.
+//
+// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/vrbo-login/session (the `VrboLogin` operationId).
+func (c *ClientWithResponses) VrboLoginWithResponse(ctx context.Context, body VrboLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*VrboLoginClientResponse, error) {
+	rsp, err := c.VrboLogin(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVrboLoginClientResponse(rsp)
 }
 
 // SubmitVrboCredentialsWithBodyWithResponse Submit Vrbo credentials for a Connect session
@@ -48587,6 +52179,165 @@ func (c *ClientWithResponses) CreateConnectionWithResponse(ctx context.Context, 
 	return ParseCreateConnectionClientResponse(rsp)
 }
 
+// GetConnectWritePolicyWithResponse Get what the app may change in a PMS
+//
+// Returns the connection's write policy: whether the app may open and close nights, change prices and minimum stay in the PMS, and whether bookings may be created or changed there from the booking website, the dashboard or the reservations API.
+//
+// Hotel PMSs (Cloudbeds, Mews) start with every calendar switch off — the PMS owns its room inventory. Every other PMS starts with everything on. PMS connections only.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/{provider}/write-policy (the `GetConnectWritePolicy` operationId).
+func (c *ClientWithResponses) GetConnectWritePolicyWithResponse(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*GetConnectWritePolicyClientResponse, error) {
+	rsp, err := c.GetConnectWritePolicy(ctx, provider, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetConnectWritePolicyClientResponse(rsp)
+}
+
+// UpdateConnectWritePolicyWithBodyWithResponse Change what the app may change in a PMS
+//
+// Turns individual write switches on or off for the connection. Only the switches you send change. Takes effect on the next write — nothing already sent to the PMS is undone. The policy is kept when the PMS is reconnected.
+//
+// With `reservations.api` off, the reservations API returns `409 pms_writes_off` for bookings on this PMS. With `reservations.website` off, booking sites stop taking bookings for it before the guest is charged.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
+func (c *ClientWithResponses) UpdateConnectWritePolicyWithBodyWithResponse(ctx context.Context, provider Provider, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateConnectWritePolicyClientResponse, error) {
+	rsp, err := c.UpdateConnectWritePolicyWithBody(ctx, provider, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateConnectWritePolicyClientResponse(rsp)
+}
+
+// UpdateConnectWritePolicyWithResponse Change what the app may change in a PMS
+//
+// Turns individual write switches on or off for the connection. Only the switches you send change. Takes effect on the next write — nothing already sent to the PMS is undone. The policy is kept when the PMS is reconnected.
+//
+// With `reservations.api` off, the reservations API returns `409 pms_writes_off` for bookings on this PMS. With `reservations.website` off, booking sites stop taking bookings for it before the guest is charged.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
+func (c *ClientWithResponses) UpdateConnectWritePolicyWithResponse(ctx context.Context, provider Provider, body UpdateConnectWritePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateConnectWritePolicyClientResponse, error) {
+	rsp, err := c.UpdateConnectWritePolicy(ctx, provider, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateConnectWritePolicyClientResponse(rsp)
+}
+
+// SearchConnectionListingOptionsWithResponse Search listings a unit can be mapped to
+//
+// Search the workspace's active listings by name, city or id, for a mapping picker. A workspace can hold tens of thousands of listings, so pickers search here as the user types rather than loading them all. Empty `q` returns the first `limit` listings by name.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connections/{id}/listing-options (the `SearchConnectionListingOptions` operationId).
+func (c *ClientWithResponses) SearchConnectionListingOptionsWithResponse(ctx context.Context, id string, params *SearchConnectionListingOptionsParams, reqEditors ...RequestEditorFn) (*SearchConnectionListingOptionsClientResponse, error) {
+	rsp, err := c.SearchConnectionListingOptions(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSearchConnectionListingOptionsClientResponse(rsp)
+}
+
+// ApplyConnectionMappingsWithBodyWithResponse Map, unmap or create listings for units
+//
+// One instruction per unit: `{unitId, listingId}` maps, `{unitId, listingId: null}` unmaps, `{unitId, create: true}` creates a listing. Answers per unit.
+//
+// Vrbo: nothing is imported when the account is signed in. Applying a mapping that maps at least one unit starts the import: upcoming bookings and the last 30 days of messages first, then the whole account history. Follow it on `GET /v1/connect/vrbo-login` (`accounts[].import`).
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connections/{id}/mappings (the `ApplyConnectionMappings` operationId).
+func (c *ClientWithResponses) ApplyConnectionMappingsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ApplyConnectionMappingsClientResponse, error) {
+	rsp, err := c.ApplyConnectionMappingsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseApplyConnectionMappingsClientResponse(rsp)
+}
+
+// ApplyConnectionMappingsWithResponse Map, unmap or create listings for units
+//
+// One instruction per unit: `{unitId, listingId}` maps, `{unitId, listingId: null}` unmaps, `{unitId, create: true}` creates a listing. Answers per unit.
+//
+// Vrbo: nothing is imported when the account is signed in. Applying a mapping that maps at least one unit starts the import: upcoming bookings and the last 30 days of messages first, then the whole account history. Follow it on `GET /v1/connect/vrbo-login` (`accounts[].import`).
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connections/{id}/mappings (the `ApplyConnectionMappings` operationId).
+func (c *ClientWithResponses) ApplyConnectionMappingsWithResponse(ctx context.Context, id string, body ApplyConnectionMappingsJSONRequestBody, reqEditors ...RequestEditorFn) (*ApplyConnectionMappingsClientResponse, error) {
+	rsp, err := c.ApplyConnectionMappings(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseApplyConnectionMappingsClientResponse(rsp)
+}
+
+// AutoMapConnectionUnitsWithBodyWithResponse Auto-map units by exact name
+//
+// Proposes (or with `apply: true` applies) mappings where a unit's name exactly matches one listing. Never guesses on ambiguity.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connections/{id}/mappings/automap (the `AutoMapConnectionUnits` operationId).
+func (c *ClientWithResponses) AutoMapConnectionUnitsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AutoMapConnectionUnitsClientResponse, error) {
+	rsp, err := c.AutoMapConnectionUnitsWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAutoMapConnectionUnitsClientResponse(rsp)
+}
+
+// AutoMapConnectionUnitsWithResponse Auto-map units by exact name
+//
+// Proposes (or with `apply: true` applies) mappings where a unit's name exactly matches one listing. Never guesses on ambiguity.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connections/{id}/mappings/automap (the `AutoMapConnectionUnits` operationId).
+func (c *ClientWithResponses) AutoMapConnectionUnitsWithResponse(ctx context.Context, id string, body AutoMapConnectionUnitsJSONRequestBody, reqEditors ...RequestEditorFn) (*AutoMapConnectionUnitsClientResponse, error) {
+	rsp, err := c.AutoMapConnectionUnits(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAutoMapConnectionUnitsClientResponse(rsp)
+}
+
+// ListConnectionUnitsWithResponse List a connection's mappable units
+//
+// The units of a connected account with their current listing, a safe suggestion, and the workspace's listing options. `status: ready` with no units means the account has no properties.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`) while the hosted flow is mapping.
+//
+// `listing_options` carries only the listings the units already point at (mapped or suggested); `listing_options_total` says how many the workspace has. Search the rest with `GET /v1/connections/{id}/listing-options?q=`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connections/{id}/units (the `ListConnectionUnits` operationId).
+func (c *ClientWithResponses) ListConnectionUnitsWithResponse(ctx context.Context, id string, params *ListConnectionUnitsParams, reqEditors ...RequestEditorFn) (*ListConnectionUnitsClientResponse, error) {
+	rsp, err := c.ListConnectionUnits(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListConnectionUnitsClientResponse(rsp)
+}
+
 // ListConversationsWithResponse List conversations
 //
 // Cursor-paginated list of message threads owned by the workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request.
@@ -48648,7 +52399,7 @@ func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.C
 //
 // Sends a message to the guest on this conversation and records it in the thread.
 //
-// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, VRBO, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 //
 // The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 //
@@ -48668,7 +52419,7 @@ func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.C
 // |---|---|---|---|
 // | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
 // | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
-// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+// | VRBO, SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
 //
 // Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
 //
@@ -48691,7 +52442,7 @@ func (c *ClientWithResponses) SendConversationMessageWithBodyWithResponse(ctx co
 //
 // Sends a message to the guest on this conversation and records it in the thread.
 //
-// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
+// Omit `channel` and the message goes out on whichever channel the conversation already uses (Airbnb, Booking.com, VRBO, SMS, email or the direct-booking site) — that is the right default. Pass `channel` only to force a specific one.
 //
 // The message is attributed to the API: it is recorded with `aiGenerated` false so an API send is never counted as an automated reply.
 //
@@ -48711,7 +52462,7 @@ func (c *ClientWithResponses) SendConversationMessageWithBodyWithResponse(ctx co
 // |---|---|---|---|
 // | Airbnb | JPEG, PNG, GIF, WebP (converted to JPEG), MP4, QuickTime | optional | each file as its own message, then the text as a separate message |
 // | Booking.com | JPEG, PNG | **required** | one message carrying the text and every file |
-// | SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
+// | VRBO, SMS, email, direct-booking site chat | — | — | `422 attachments_not_supported`, nothing sent |
 //
 // Airbnb does not allow files in pre-booking (inquiry) conversations; that refusal comes back as `422 message_not_sent`. Because Airbnb delivers files one message at a time, a later file can be refused after earlier ones arrived — that returns `422 message_partially_sent` with `parts` saying exactly which messages reached the guest; resend only the rest.
 //
@@ -48730,17 +52481,36 @@ func (c *ClientWithResponses) SendConversationMessageWithResponse(ctx context.Co
 	return ParseSendConversationMessageClientResponse(rsp)
 }
 
-// PreapproveConversationWithBodyWithResponse Pre-approve an inquiry
+// WithdrawConversationPreapprovalWithResponse Withdraw a pre-approval
 //
-// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+// Withdraw the live pre-approval (or offer) on this conversation: the guest can no longer book on it, and the inquiry is open again. **VRBO**. On Airbnb a pre-approval is a special offer — withdraw it with `DELETE /v1/conversations/{id}/special-offers/{offerId}`; here it is `422 channel_not_supported`.
+//
+// `GET /v1/conversations/{id}` → `capabilities.canWithdraw` says whether there is something to withdraw.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/conversations/{id}/pre-approval (the `WithdrawConversationPreapproval` operationId).
+func (c *ClientWithResponses) WithdrawConversationPreapprovalWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*WithdrawConversationPreapprovalClientResponse, error) {
+	rsp, err := c.WithdrawConversationPreapproval(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseWithdrawConversationPreapprovalClientResponse(rsp)
+}
+
+// PreapproveConversationWithBodyWithResponse Pre-approve an inquiry (Airbnb, VRBO)
+//
+// Pre-approve the inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
 //
 // Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
 //
-// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
+// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 //
-// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+// The inquiry is marked `pre_approved` everywhere, the same as pre-approving on the channel. Withdraw it with `DELETE /v1/conversations/{id}/pre-approval` (VRBO).
+//
+// A channel’s refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
@@ -48755,17 +52525,19 @@ func (c *ClientWithResponses) PreapproveConversationWithBodyWithResponse(ctx con
 	return ParsePreapproveConversationClientResponse(rsp)
 }
 
-// PreapproveConversationWithResponse Pre-approve an inquiry
+// PreapproveConversationWithResponse Pre-approve an inquiry (Airbnb, VRBO)
 //
-// Pre-approve the Airbnb inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
+// Pre-approve the inquiry on this conversation: the guest who asked about dates may now book them at the listed price, without waiting on you. To change the dates, guests or price, send a special offer instead (`POST /v1/conversations/{id}/special-offers`).
 //
 // Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly. A Booking.com, VRBO or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent.
+// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
 //
-// The inquiry is marked `pre_approved` everywhere, the same as pre-approving in Airbnb.
+// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 //
-// An Airbnb refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
+// The inquiry is marked `pre_approved` everywhere, the same as pre-approving on the channel. Withdraw it with `DELETE /v1/conversations/{id}/pre-approval` (VRBO).
+//
+// A channel’s refusal is never reported as a success: an inquiry that already moved on is `409 inquiry_no_longer_open`, an expired one `409 inquiry_expired`, a conversation that already has a booking `409 conversation_already_booked`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again.
 //
@@ -48780,21 +52552,23 @@ func (c *ClientWithResponses) PreapproveConversationWithResponse(ctx context.Con
 	return ParsePreapproveConversationClientResponse(rsp)
 }
 
-// CreateConversationSpecialOfferWithBodyWithResponse Send a special offer
+// CreateConversationSpecialOfferWithBodyWithResponse Send a special offer (Airbnb, VRBO)
 //
-// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+// Send the guest on this conversation a special offer: your own dates, guest count and price. One endpoint for every channel that has offers — **Airbnb** (connected directly) and **VRBO** (its “Edit quote”). Use it to answer an inquiry with different terms. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
 //
-// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+// **How the price is set depends on the channel** — `GET /v1/conversations/{id}` → `capabilities.offerPrice` says which:
+// - `total` (Airbnb): send `totalPrice`, the whole stay in the listing’s Airbnb currency, with `checkIn`, `checkOut` and `guests`.
+// - `breakdown` (VRBO): send the price’s parts — `rentalAmount` (rent, excluding fees), `fees` by VRBO fee type, `damageDeposit` — and VRBO computes the guest total, adding its taxes and service fee. Dates and party are optional (omitted → the inquiry’s own). Only what you send is changed. Preview the result first with `POST /v1/conversations/{id}/special-offers/preview`.
 //
-// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+// Sending the other kind is `422 offer_price_total_required` / `offer_price_breakdown_required` naming the field; nothing is sent. A channel without offers (Booking.com, direct, an Airbnb inquiry relayed by a PMS) is `422 channel_not_supported`.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
+// `listingId` (Airbnb) is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id. `message` (VRBO) is sent to the guest with the offer.
 //
-// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+// An offer the channel refuses is never a `201`: dates that are taken, a price below the channel’s minimum and the like are `422` with the channel’s own reason in `message`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
 //
-// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}` (VRBO: `offerId` = `current`).
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -48807,21 +52581,23 @@ func (c *ClientWithResponses) CreateConversationSpecialOfferWithBodyWithResponse
 	return ParseCreateConversationSpecialOfferClientResponse(rsp)
 }
 
-// CreateConversationSpecialOfferWithResponse Send a special offer
+// CreateConversationSpecialOfferWithResponse Send a special offer (Airbnb, VRBO)
 //
-// Send the guest on this conversation an Airbnb special offer: your own dates, guest count and total price. The guest has 24 hours to book it. Use it to answer an inquiry with different terms, or to make a returning guest a custom price. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
+// Send the guest on this conversation a special offer: your own dates, guest count and price. One endpoint for every channel that has offers — **Airbnb** (connected directly) and **VRBO** (its “Edit quote”). Use it to answer an inquiry with different terms. To accept the guest’s own dates and price as they asked, pre-approve instead (`POST /v1/conversations/{id}/pre-approval`).
 //
-// `listingId` is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id; Repull sends Airbnb its own listing id, using the link that belongs to this conversation’s Airbnb account.
+// **How the price is set depends on the channel** — `GET /v1/conversations/{id}` → `capabilities.offerPrice` says which:
+// - `total` (Airbnb): send `totalPrice`, the whole stay in the listing’s Airbnb currency, with `checkIn`, `checkOut` and `guests`.
+// - `breakdown` (VRBO): send the price’s parts — `rentalAmount` (rent, excluding fees), `fees` by VRBO fee type, `damageDeposit` — and VRBO computes the guest total, adding its taxes and service fee. Dates and party are optional (omitted → the inquiry’s own). Only what you send is changed. Preview the result first with `POST /v1/conversations/{id}/special-offers/preview`.
 //
-// `totalPrice` is the whole stay, in the listing’s Airbnb currency — Airbnb does not take a currency on an offer.
+// Sending the other kind is `422 offer_price_total_required` / `offer_price_breakdown_required` naming the field; nothing is sent. A channel without offers (Booking.com, direct, an Airbnb inquiry relayed by a PMS) is `422 channel_not_supported`.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly; anything else is `422 channel_not_supported` and nothing is sent. The inquiry is marked `special_offer_sent`.
+// `listingId` (Airbnb) is optional: omit it to offer the listing the guest asked about. It is a **Repull** listing id. `message` (VRBO) is sent to the guest with the offer.
 //
-// An offer Airbnb refuses is never a `201`: dates that are taken, a price below Airbnb’s minimum, too many guests and the like are `422 airbnb_rejected` with Airbnb’s own reason in `message`.
+// An offer the channel refuses is never a `201`: dates that are taken, a price below the channel’s minimum and the like are `422` with the channel’s own reason in `message`.
 //
 // Send `Idempotency-Key`: a repeat with the same key replays the first response instead of acting twice (a `409 idempotency_key_in_use` while the first is still running). A 5xx, a `429 airbnb_rate_limited` or a `403 connection_reauth_required` is not stored — nothing was done — so retrying with the same key reaches Airbnb again. Without it, a retry after a timeout can send the guest two offers.
 //
-// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}`.
+// Read or withdraw the offer with `GET` / `DELETE /v1/conversations/{id}/special-offers/{offerId}` (VRBO: `offerId` = `current`).
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -48834,9 +52610,47 @@ func (c *ClientWithResponses) CreateConversationSpecialOfferWithResponse(ctx con
 	return ParseCreateConversationSpecialOfferClientResponse(rsp)
 }
 
+// PreviewConversationSpecialOfferWithBodyWithResponse Preview a special offer
+//
+// See what a special offer would be — as the channel itself recalculates it, with its taxes, service fee and guest total — **without sending anything** to the guest. Same body as `POST /v1/conversations/{id}/special-offers`; the price may be omitted to see only a date or party change, and `{}` shows the current offer recalculated.
+//
+// **VRBO** (its “Edit quote” recalculation). A channel without a preview — Airbnb takes your total as it is — returns `422 preview_not_supported`; `GET /v1/conversations/{id}` → `capabilities.canPreviewOffer` says which.
+//
+// Read-only: safe to call as often as you need while a user edits an offer.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/conversations/{id}/special-offers/preview (the `PreviewConversationSpecialOffer` operationId).
+func (c *ClientWithResponses) PreviewConversationSpecialOfferWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreviewConversationSpecialOfferClientResponse, error) {
+	rsp, err := c.PreviewConversationSpecialOfferWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreviewConversationSpecialOfferClientResponse(rsp)
+}
+
+// PreviewConversationSpecialOfferWithResponse Preview a special offer
+//
+// See what a special offer would be — as the channel itself recalculates it, with its taxes, service fee and guest total — **without sending anything** to the guest. Same body as `POST /v1/conversations/{id}/special-offers`; the price may be omitted to see only a date or party change, and `{}` shows the current offer recalculated.
+//
+// **VRBO** (its “Edit quote” recalculation). A channel without a preview — Airbnb takes your total as it is — returns `422 preview_not_supported`; `GET /v1/conversations/{id}` → `capabilities.canPreviewOffer` says which.
+//
+// Read-only: safe to call as often as you need while a user edits an offer.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/conversations/{id}/special-offers/preview (the `PreviewConversationSpecialOffer` operationId).
+func (c *ClientWithResponses) PreviewConversationSpecialOfferWithResponse(ctx context.Context, id int, body PreviewConversationSpecialOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*PreviewConversationSpecialOfferClientResponse, error) {
+	rsp, err := c.PreviewConversationSpecialOffer(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreviewConversationSpecialOfferClientResponse(rsp)
+}
+
 // WithdrawConversationSpecialOfferWithResponse Withdraw a special offer
 //
-// Withdraw a special offer the guest has not booked yet, so it can no longer be booked. An offer the guest already booked cannot be withdrawn — Airbnb refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
+// Withdraw a special offer the guest has not booked yet, so it can no longer be booked (VRBO: `offerId` = `current`, the same as `DELETE /v1/conversations/{id}/pre-approval`). An offer the guest already booked cannot be withdrawn — the channel refuses with `409 inquiry_no_longer_open`; cancel the booking instead.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -48851,7 +52665,7 @@ func (c *ClientWithResponses) WithdrawConversationSpecialOfferWithResponse(ctx c
 
 // GetConversationSpecialOfferWithResponse Get a special offer
 //
-// Read a special offer on this conversation back from Airbnb — typically to check its `status` (`active` until the guest books it, it expires, or you withdraw it). Read live from Airbnb with the conversation’s own Airbnb account.
+// Read a special offer on this conversation — typically to check its `status`. Airbnb: read live with the conversation’s own Airbnb account (`active` until the guest books it, it expires, or you withdraw it). VRBO (`offerId` = `current`): the live offer as last synced from VRBO, priced by its parts with VRBO’s total.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -48976,7 +52790,9 @@ func (c *ClientWithResponses) GetAuthHealthWithResponse(ctx context.Context, req
 
 // GetChannelHealthWithResponse Per-channel connectivity health
 //
-// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired".
+// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
+//
+// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is failed calendar pushes over finished ones in the last 3 hours (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -49365,6 +53181,29 @@ func (c *ClientWithResponses) UpdateListingActiveWithResponse(ctx context.Contex
 	return ParseUpdateListingActiveClientResponse(rsp)
 }
 
+// GetListingCalendarSyncWithResponse Calendar sync status per channel
+//
+// Is this listing's calendar — prices, minimum stays, availability — actually on every channel it is connected to, and if not, which nights and why. One shape for every channel.
+//
+// Every push records each night's outcome per channel; a night the channel does not show as sent is listed in `problems` with the channel's own reason (a price the channel still shows differently, a block it refused, a unit that is not live, a night held by a booking or an imported calendar). A later successful push clears it.
+//
+// **VRBO** pushes run through a paced queue — VRBO accepts about 90 calendar writes a minute per account, and only what differs on VRBO is sent — so the `vrbo` entry adds `queue`: whether a push is waiting or running now, and what the last one did (prices and minimum stays changed, blocks, calls, nights still differing).
+//
+// Future nights only. `problems` lists up to 100 nights per channel; `nightsWithProblems` is always the full count.
+//
+// Returns `403 listing_inactive` for an inactive listing.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/listings/{id}/calendar-sync (the `GetListingCalendarSync` operationId).
+func (c *ClientWithResponses) GetListingCalendarSyncWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingCalendarSyncClientResponse, error) {
+	rsp, err := c.GetListingCalendarSync(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetListingCalendarSyncClientResponse(rsp)
+}
+
 // ListListingCompsWithResponse Comp set for a listing (with daily nightly pricing)
 //
 // Returns the actual comp set for a listing — the underlying competitor listings (with daily nightly pricing), not just the aggregated `compSummary` from `/pricing`. Each comp comes back with distance, bedrooms, ratings, lat/lng, platform link, and a per-day rate/availability series for the requested window.
@@ -49550,7 +53389,7 @@ func (c *ClientWithResponses) SetListingMarkupWithResponse(ctx context.Context, 
 //
 // Stop this listing being sold, on every channel it is connected to, in one call.
 //
-// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens. On **VRBO** each mapped unit is hidden (VRBO's own "Hide listing") and read back — a hidden unit is out of VRBO search and cannot be booked; its item carries the VRBO listing number as `platformId`.
 //
 // **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
 //
@@ -49585,7 +53424,7 @@ func (c *ClientWithResponses) TakeListingOfflineWithBodyWithResponse(ctx context
 //
 // Stop this listing being sold, on every channel it is connected to, in one call.
 //
-// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens.
+// What that means differs per channel and you do not have to know which is which. On **Airbnb** the live listing is deactivated with a valid deactivation reason and then READ BACK — Airbnb accepts some deactivations and leaves the listing up, so "we sent the request" is never reported as success. On **Booking.com** there is no unlist at all; the equivalent is closing the room's availability across the whole forward window, which is what happens. On **VRBO** each mapped unit is hidden (VRBO's own "Hide listing") and read back — a hidden unit is out of VRBO search and cannot be booked; its item carries the VRBO listing number as `platformId`.
 //
 // **This is not the same as deactivating the listing in Repull.** The two get confused because both sound like removal, and they have opposite consequences:
 //
@@ -49620,7 +53459,7 @@ func (c *ClientWithResponses) TakeListingOfflineWithResponse(ctx context.Context
 //
 // Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
 //
-// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. On **VRBO** each hidden unit is reactivated (VRBO's own "Reactivate") and read back; VRBO can refuse a reactivation (e.g. while it is verifying the property), which comes back as that item's `message`. The two directions are not mirror images, and that is deliberate.
 //
 // **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
 //
@@ -49641,7 +53480,7 @@ func (c *ClientWithResponses) TakeListingOnlineWithBodyWithResponse(ctx context.
 //
 // Put this listing back on sale, on every channel it is connected to. The counterpart of `POST /v1/listings/{id}/offline`, which documents the per-item response and the difference between this and deactivating a listing in Repull.
 //
-// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. The two directions are not mirror images, and that is deliberate.
+// **It does not push content.** On **Airbnb** it re-enables sync and makes the listing available again; anything that changed while the listing was down is still unpublished, so follow with `POST /v1/listings/{id}/publish/airbnb` if the content moved. On **Booking.com** it re-syncs the true calendar rather than opening everything: dates that are genuinely blocked — a reservation, an owner stay — stay blocked, and only the closure `offline` wrote lifts. On **VRBO** each hidden unit is reactivated (VRBO's own "Reactivate") and read back; VRBO can refuse a reactivation (e.g. while it is verifying the property), which comes back as that item's `message`. The two directions are not mirror images, and that is deliberate.
 //
 // **One asymmetry worth planning for.** Taking a listing down passes no billing gate; putting it back up goes through the channel-publish gate. So on a workspace whose subscription has lapsed, `offline` still works and this endpoint answers `402 payment_required` — a listing can be left off the market until billing is sorted out. That refusal is reported as a billing refusal with the action that fixes it, never as a channel error: retrying, or reconnecting the channel, does nothing for it.
 //
@@ -50760,7 +54599,7 @@ func (c *ClientWithResponses) SubmitGuestReviewWithResponse(ctx context.Context,
 //
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
-// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 //
 // To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
@@ -50781,7 +54620,7 @@ func (c *ClientWithResponses) ReplyToReviewWithBodyWithResponse(ctx context.Cont
 //
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
-// Replies work on Airbnb and Booking.com. Each channel accepts one reply per review. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 //
 // To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
@@ -57164,6 +61003,129 @@ func ParseSubmitBeds24CredentialsClientResponse(rsp *http.Response) (*SubmitBeds
 	return response, nil
 }
 
+// ParseInviteBookingExtranetUserClientResponse parses an HTTP response from a InviteBookingExtranetUserWithResponse call
+func ParseInviteBookingExtranetUserClientResponse(rsp *http.Response) (*InviteBookingExtranetUserClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &InviteBookingExtranetUserClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AccountId       *int    `json:"accountId,omitempty"`
+			InviteEmail     *string `json:"inviteEmail,omitempty"`
+			InviteName      *string `json:"inviteName,omitempty"`
+			TwoFactorNumber *string `json:"twoFactorNumber,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBookingExtranetLoginConfigClientResponse parses an HTTP response from a GetBookingExtranetLoginConfigWithResponse call
+func ParseGetBookingExtranetLoginConfigClientResponse(rsp *http.Response) (*GetBookingExtranetLoginConfigClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBookingExtranetLoginConfigClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			TwoFactorNumber *string `json:"twoFactorNumber,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseStartBookingExtranetLoginClientResponse parses an HTTP response from a StartBookingExtranetLoginWithResponse call
+func ParseStartBookingExtranetLoginClientResponse(rsp *http.Response) (*StartBookingExtranetLoginClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartBookingExtranetLoginClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AccountId         *int    `json:"accountId,omitempty"`
+			NotificationEmail *string `json:"notificationEmail,omitempty"`
+			Status            *string `json:"status,omitempty"`
+			TwoFactorNumber   *string `json:"twoFactorNumber,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBookingExtranetLoginStatusClientResponse parses an HTTP response from a GetBookingExtranetLoginStatusWithResponse call
+func ParseGetBookingExtranetLoginStatusClientResponse(rsp *http.Response) (*GetBookingExtranetLoginStatusClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBookingExtranetLoginStatusClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AccountId       *int    `json:"accountId,omitempty"`
+			AwaitingMapping *bool   `json:"awaitingMapping,omitempty"`
+			Completed       *bool   `json:"completed,omitempty"`
+			ErrorMessage    *string `json:"errorMessage,omitempty"`
+			FriendlyError   *string `json:"friendlyError,omitempty"`
+			Status          *string `json:"status,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseBookingConnectCallbackClientResponse parses an HTTP response from a BookingConnectCallbackWithResponse call
 func ParseBookingConnectCallbackClientResponse(rsp *http.Response) (*BookingConnectCallbackClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -57497,6 +61459,11 @@ func ParseSubmitCloudbedsCredentialsClientResponse(rsp *http.Response) (*SubmitC
 				// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
 				Registered *int `json:"registered,omitempty"`
 			} `json:"webhooks,omitempty"`
+
+			// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+			//
+			// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+			WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -57864,6 +61831,11 @@ func ParseSubmitMewsCredentialsClientResponse(rsp *http.Response) (*SubmitMewsCr
 				// Registered Webhook subscriptions created at the PMS (Cloudbeds). Mews webhooks are enabled once per integration by Mews, so this is 0 there.
 				Registered *int `json:"registered,omitempty"`
 			} `json:"webhooks,omitempty"`
+
+			// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+			//
+			// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+			WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -57986,6 +61958,39 @@ func ParseListConnectProvidersClientResponse(rsp *http.Response) (*ListConnectPr
 	return response, nil
 }
 
+// ParseSearchConnectSessionListingOptionsClientResponse parses an HTTP response from a SearchConnectSessionListingOptionsWithResponse call
+func ParseSearchConnectSessionListingOptionsClientResponse(rsp *http.Response) (*SearchConnectSessionListingOptionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SearchConnectSessionListingOptionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]struct {
+				City *string `json:"city,omitempty"`
+				Id   *int    `json:"id,omitempty"`
+				Name *string `json:"name,omitempty"`
+			} `json:"data,omitempty"`
+			Total *int `json:"total,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseSelectConnectProviderClientResponse parses an HTTP response from a SelectConnectProviderWithResponse call
 func ParseSelectConnectProviderClientResponse(rsp *http.Response) (*SelectConnectProviderClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -58063,6 +62068,66 @@ func ParseSubmitSmoobuCredentialsClientResponse(rsp *http.Response) (*SubmitSmoo
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVrboConnectImportClientResponse parses an HTTP response from a GetVrboConnectImportWithResponse call
+func ParseGetVrboConnectImportClientResponse(rsp *http.Response) (*GetVrboConnectImportClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVrboConnectImportClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VrboImportStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseVrboLoginClientResponse parses an HTTP response from a VrboLoginWithResponse call
+func ParseVrboLoginClientResponse(rsp *http.Response) (*VrboLoginClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VrboLoginClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AccountId         *int                                `json:"accountId,omitempty"`
+			AwaitingMapping   *bool                               `json:"awaitingMapping,omitempty"`
+			Destination       *string                             `json:"destination,omitempty"`
+			Error             *string                             `json:"error,omitempty"`
+			NotificationEmail *string                             `json:"notificationEmail,omitempty"`
+			Reason            *string                             `json:"reason,omitempty"`
+			Status            *VrboLogin200JSONResponseBodyStatus `json:"status,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
@@ -58234,6 +62299,263 @@ func ParseCreateConnectionClientResponse(rsp *http.Response) (*CreateConnectionC
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Connection
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetConnectWritePolicyClientResponse parses an HTTP response from a GetConnectWritePolicyWithResponse call
+func ParseGetConnectWritePolicyClientResponse(rsp *http.Response) (*GetConnectWritePolicyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetConnectWritePolicyClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Defaults What this provider starts with.
+			Defaults *PmsWritePolicy `json:"defaults,omitempty"`
+
+			// Provider Example: cloudbeds
+			Provider *string `json:"provider,omitempty"`
+
+			// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+			//
+			// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+			WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateConnectWritePolicyClientResponse parses an HTTP response from a UpdateConnectWritePolicyWithResponse call
+func ParseUpdateConnectWritePolicyClientResponse(rsp *http.Response) (*UpdateConnectWritePolicyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateConnectWritePolicyClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Defaults What this provider starts with.
+			Defaults *PmsWritePolicy `json:"defaults,omitempty"`
+
+			// Provider Example: cloudbeds
+			Provider *string `json:"provider,omitempty"`
+
+			// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+			//
+			// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+			WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSearchConnectionListingOptionsClientResponse parses an HTTP response from a SearchConnectionListingOptionsWithResponse call
+func ParseSearchConnectionListingOptionsClientResponse(rsp *http.Response) (*SearchConnectionListingOptionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SearchConnectionListingOptionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]struct {
+				City *string `json:"city,omitempty"`
+				Id   *int    `json:"id,omitempty"`
+				Name *string `json:"name,omitempty"`
+			} `json:"data,omitempty"`
+
+			// Total How many listings match `q` in total.
+			Total *int `json:"total,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseApplyConnectionMappingsClientResponse parses an HTTP response from a ApplyConnectionMappingsWithResponse call
+func ParseApplyConnectionMappingsClientResponse(rsp *http.Response) (*ApplyConnectionMappingsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ApplyConnectionMappingsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Channel      *string `json:"channel,omitempty"`
+			ConnectionId *string `json:"connection_id,omitempty"`
+			Results      *[]struct {
+				Created   *bool   `json:"created,omitempty"`
+				Error     *string `json:"error,omitempty"`
+				ListingId *int    `json:"listing_id,omitempty"`
+				Ok        *bool   `json:"ok,omitempty"`
+				UnitId    *string `json:"unit_id,omitempty"`
+			} `json:"results,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAutoMapConnectionUnitsClientResponse parses an HTTP response from a AutoMapConnectionUnitsWithResponse call
+func ParseAutoMapConnectionUnitsClientResponse(rsp *http.Response) (*AutoMapConnectionUnitsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AutoMapConnectionUnitsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Applied      *bool   `json:"applied,omitempty"`
+			Channel      *string `json:"channel,omitempty"`
+			ConnectionId *string `json:"connection_id,omitempty"`
+			Results      *[]struct {
+				Created   *bool   `json:"created,omitempty"`
+				Error     *string `json:"error,omitempty"`
+				ListingId *int    `json:"listing_id,omitempty"`
+				Ok        *bool   `json:"ok,omitempty"`
+				UnitId    *string `json:"unit_id,omitempty"`
+			} `json:"results,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListConnectionUnitsClientResponse parses an HTTP response from a ListConnectionUnitsWithResponse call
+func ParseListConnectionUnitsClientResponse(rsp *http.Response) (*ListConnectionUnitsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListConnectionUnitsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Channel        *string `json:"channel,omitempty"`
+			ConnectionId   *string `json:"connection_id,omitempty"`
+			ListingOptions *[]struct {
+				City *string `json:"city,omitempty"`
+				Id   *int    `json:"id,omitempty"`
+				Name *string `json:"name,omitempty"`
+			} `json:"listing_options,omitempty"`
+
+			// ListingOptionsTotal How many listings the workspace has to map to.
+			ListingOptionsTotal *int                                          `json:"listing_options_total,omitempty"`
+			MissingCapabilities *[]string                                     `json:"missing_capabilities,omitempty"`
+			Status              *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
+			Units               *[]struct {
+				CurrentListingId   *int                    `json:"current_listing_id,omitempty"`
+				Grain              *string                 `json:"grain,omitempty"`
+				Meta               *map[string]interface{} `json:"meta,omitempty"`
+				SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
+				UnitId             *string                 `json:"unit_id,omitempty"`
+				UnitName           *string                 `json:"unit_name,omitempty"`
+			} `json:"units,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -58495,6 +62817,88 @@ func ParseSendConversationMessageClientResponse(rsp *http.Response) (*SendConver
 	return response, nil
 }
 
+// ParseWithdrawConversationPreapprovalClientResponse parses an HTTP response from a WithdrawConversationPreapprovalWithResponse call
+func ParseWithdrawConversationPreapprovalClientResponse(rsp *http.Response) (*WithdrawConversationPreapprovalClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &WithdrawConversationPreapprovalClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Channel Example: vrbo
+			Channel *string `json:"channel"`
+
+			// ConversationId Example: 166599
+			ConversationId string                                                   `json:"conversationId"`
+			Status         WithdrawConversationPreapproval200JSONResponseBodyStatus `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParsePreapproveConversationClientResponse parses an HTTP response from a PreapproveConversationWithResponse call
 func ParsePreapproveConversationClientResponse(rsp *http.Response) (*PreapproveConversationClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -58514,12 +62918,18 @@ func ParsePreapproveConversationClientResponse(rsp *http.Response) (*PreapproveC
 			// BlockInstantBooking Example: false
 			BlockInstantBooking bool `json:"blockInstantBooking"`
 
+			// Channel Example: airbnb
+			Channel PreapproveConversation201JSONResponseBodyChannel `json:"channel"`
+
 			// ConversationId Example: 164743
 			ConversationId string `json:"conversationId"`
 
-			// ExpiresAt When the guest can no longer book on the pre-approval, if Airbnb reported it.
-			ExpiresAt *time.Time                                      `json:"expiresAt"`
-			Status    PreapproveConversation201JSONResponseBodyStatus `json:"status"`
+			// ExpiresAt When the guest can no longer book on the pre-approval, if the channel reported it.
+			ExpiresAt *time.Time `json:"expiresAt"`
+
+			// Message The message sent to the guest with the pre-approval (VRBO).
+			Message *string                                         `json:"message"`
+			Status  PreapproveConversation201JSONResponseBodyStatus `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -58608,6 +63018,11 @@ func ParseCreateConversationSpecialOfferClientResponse(rsp *http.Response) (*Cre
 			// Example: 955656266214757921
 			AirbnbListingId *string `json:"airbnbListingId,omitempty"`
 
+			// Channel The channel the offer is on.
+			//
+			// Example: airbnb
+			Channel *CreateConversationSpecialOffer201JSONResponseBodyChannel `json:"channel,omitempty"`
+
 			// CheckIn Example: 2026-10-01
 			CheckIn *openapi_types.Date `json:"checkIn"`
 
@@ -58620,8 +63035,33 @@ func ParseCreateConversationSpecialOfferClientResponse(rsp *http.Response) (*Cre
 			ConversationId string     `json:"conversationId"`
 			CreatedAt      *time.Time `json:"createdAt,omitempty"`
 
+			// Currency Currency of the amounts, when the channel states it (VRBO).
+			//
+			// Example: CAD
+			Currency *string `json:"currency,omitempty"`
+
+			// DamageDeposit VRBO: refundable damage deposit; null for none.
+			//
+			// Example: 500
+			DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+			// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+			Discount *float32 `json:"discount,omitempty"`
+
 			// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
 			ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+			// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+			Fees *[]struct {
+				// Label Example: Cleaning Fee
+				Label *string `json:"label,omitempty"`
+
+				// Type Example: CLEANING
+				Type *string `json:"type,omitempty"`
+
+				// Value Example: 400
+				Value *float32 `json:"value,omitempty"`
+			} `json:"fees,omitempty"`
 
 			// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
 			Guests *struct {
@@ -58641,25 +63081,39 @@ func ParseCreateConversationSpecialOfferClientResponse(rsp *http.Response) (*Cre
 				Total *int `json:"total,omitempty"`
 			} `json:"guests,omitempty"`
 
-			// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+			// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
 			//
 			// Example: 1459920384
 			Id *string `json:"id"`
+
+			// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+			Lines *[]struct {
+				Label *string `json:"label,omitempty"`
+				Value *string `json:"value,omitempty"`
+			} `json:"lines,omitempty"`
 
 			// ListingId Repull listing id, when known.
 			//
 			// Example: 23892
 			ListingId *string `json:"listingId,omitempty"`
 
+			// Message The message sent to the guest with the offer (VRBO).
+			Message *string `json:"message,omitempty"`
+
 			// Nights Example: 4
 			Nights *int `json:"nights"`
 
-			// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+			// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+			//
+			// Example: 4041.9
+			RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+			// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
 			//
 			// Example: active
 			Status *string `json:"status"`
 
-			// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+			// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
 			//
 			// Example: 880
 			TotalPrice *float32 `json:"totalPrice"`
@@ -58730,6 +63184,186 @@ func ParseCreateConversationSpecialOfferClientResponse(rsp *http.Response) (*Cre
 	return response, nil
 }
 
+// ParsePreviewConversationSpecialOfferClientResponse parses an HTTP response from a PreviewConversationSpecialOfferWithResponse call
+func ParsePreviewConversationSpecialOfferClientResponse(rsp *http.Response) (*PreviewConversationSpecialOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PreviewConversationSpecialOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// AirbnbListingId Airbnb listing id the offer is for (a string — it exceeds 2^53).
+			//
+			// Example: 955656266214757921
+			AirbnbListingId *string `json:"airbnbListingId,omitempty"`
+
+			// Channel The channel the offer is on.
+			//
+			// Example: airbnb
+			Channel *PreviewConversationSpecialOffer200JSONResponseBodyChannel `json:"channel,omitempty"`
+
+			// CheckIn Example: 2026-10-01
+			CheckIn *openapi_types.Date `json:"checkIn"`
+
+			// CheckOut Example: 2026-10-05
+			CheckOut *openapi_types.Date `json:"checkOut"`
+
+			// ConversationId Repull conversation id the offer was sent on.
+			//
+			// Example: 164743
+			ConversationId string     `json:"conversationId"`
+			CreatedAt      *time.Time `json:"createdAt,omitempty"`
+
+			// Currency Currency of the amounts, when the channel states it (VRBO).
+			//
+			// Example: CAD
+			Currency *string `json:"currency,omitempty"`
+
+			// DamageDeposit VRBO: refundable damage deposit; null for none.
+			//
+			// Example: 500
+			DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+			// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+			Discount *float32 `json:"discount,omitempty"`
+
+			// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
+			ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+			// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+			Fees *[]struct {
+				// Label Example: Cleaning Fee
+				Label *string `json:"label,omitempty"`
+
+				// Type Example: CLEANING
+				Type *string `json:"type,omitempty"`
+
+				// Value Example: 400
+				Value *float32 `json:"value,omitempty"`
+			} `json:"fees,omitempty"`
+
+			// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
+			Guests *struct {
+				// Adults Example: 2
+				Adults *int `json:"adults,omitempty"`
+
+				// Children Example: 1
+				Children *int `json:"children,omitempty"`
+
+				// Infants Example: 0
+				Infants *int `json:"infants,omitempty"`
+
+				// Pets Example: 0
+				Pets *int `json:"pets,omitempty"`
+
+				// Total Example: 3
+				Total *int `json:"total,omitempty"`
+			} `json:"guests,omitempty"`
+
+			// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
+			//
+			// Example: 1459920384
+			Id *string `json:"id"`
+
+			// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+			Lines *[]struct {
+				Label *string `json:"label,omitempty"`
+				Value *string `json:"value,omitempty"`
+			} `json:"lines,omitempty"`
+
+			// ListingId Repull listing id, when known.
+			//
+			// Example: 23892
+			ListingId *string `json:"listingId,omitempty"`
+
+			// Message The message sent to the guest with the offer (VRBO).
+			Message *string `json:"message,omitempty"`
+
+			// Nights Example: 4
+			Nights *int `json:"nights"`
+
+			// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+			//
+			// Example: 4041.9
+			RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+			// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
+			//
+			// Example: active
+			Status *string `json:"status"`
+
+			// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
+			//
+			// Example: 880
+			TotalPrice *float32 `json:"totalPrice"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseWithdrawConversationSpecialOfferClientResponse parses an HTTP response from a WithdrawConversationSpecialOfferWithResponse call
 func ParseWithdrawConversationSpecialOfferClientResponse(rsp *http.Response) (*WithdrawConversationSpecialOfferClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -58746,6 +63380,9 @@ func ParseWithdrawConversationSpecialOfferClientResponse(rsp *http.Response) (*W
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
+			// Channel Example: airbnb
+			Channel WithdrawConversationSpecialOffer200JSONResponseBodyChannel `json:"channel"`
+
 			// ConversationId Example: 164743
 			ConversationId string `json:"conversationId"`
 
@@ -58840,6 +63477,11 @@ func ParseGetConversationSpecialOfferClientResponse(rsp *http.Response) (*GetCon
 			// Example: 955656266214757921
 			AirbnbListingId *string `json:"airbnbListingId,omitempty"`
 
+			// Channel The channel the offer is on.
+			//
+			// Example: airbnb
+			Channel *GetConversationSpecialOffer200JSONResponseBodyChannel `json:"channel,omitempty"`
+
 			// CheckIn Example: 2026-10-01
 			CheckIn *openapi_types.Date `json:"checkIn"`
 
@@ -58852,8 +63494,33 @@ func ParseGetConversationSpecialOfferClientResponse(rsp *http.Response) (*GetCon
 			ConversationId string     `json:"conversationId"`
 			CreatedAt      *time.Time `json:"createdAt,omitempty"`
 
+			// Currency Currency of the amounts, when the channel states it (VRBO).
+			//
+			// Example: CAD
+			Currency *string `json:"currency,omitempty"`
+
+			// DamageDeposit VRBO: refundable damage deposit; null for none.
+			//
+			// Example: 500
+			DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+			// Discount VRBO: its automatic stay discount on the rent, when the offer carries one.
+			Discount *float32 `json:"discount,omitempty"`
+
 			// ExpiresAt When the guest can no longer book the offer (Airbnb gives them 24 hours).
 			ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+			// Fees VRBO: the offer’s fees by type. Empty on Airbnb.
+			Fees *[]struct {
+				// Label Example: Cleaning Fee
+				Label *string `json:"label,omitempty"`
+
+				// Type Example: CLEANING
+				Type *string `json:"type,omitempty"`
+
+				// Value Example: 400
+				Value *float32 `json:"value,omitempty"`
+			} `json:"fees,omitempty"`
 
 			// Guests Guests on the offer. Airbnb counts adults + children as guests; infants and pets are extra.
 			Guests *struct {
@@ -58873,25 +63540,39 @@ func ParseGetConversationSpecialOfferClientResponse(rsp *http.Response) (*GetCon
 				Total *int `json:"total,omitempty"`
 			} `json:"guests,omitempty"`
 
-			// Id Airbnb special-offer id. Use it to read or withdraw the offer.
+			// Id The offer id — use it to read or withdraw the offer. Airbnb’s special-offer id; on VRBO, where a conversation has one live offer, `current`.
 			//
 			// Example: 1459920384
 			Id *string `json:"id"`
+
+			// Lines VRBO: its offer summary line by line, in VRBO’s words (nights, fees, taxes, total traveler payment, payout).
+			Lines *[]struct {
+				Label *string `json:"label,omitempty"`
+				Value *string `json:"value,omitempty"`
+			} `json:"lines,omitempty"`
 
 			// ListingId Repull listing id, when known.
 			//
 			// Example: 23892
 			ListingId *string `json:"listingId,omitempty"`
 
+			// Message The message sent to the guest with the offer (VRBO).
+			Message *string `json:"message,omitempty"`
+
 			// Nights Example: 4
 			Nights *int `json:"nights"`
 
-			// Status Airbnb’s status for the offer: `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn).
+			// RentalAmount VRBO: rent for the stay, excluding fees and taxes. Null on Airbnb (priced by one total).
+			//
+			// Example: 4041.9
+			RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+			// Status Airbnb: its status for the offer — `active` (the guest can book it), `accepted`, `declined`, `expired` or `voided` (withdrawn). VRBO: `sent` (just sent), `current` (the live offer) or `preview` (recalculated, not sent).
 			//
 			// Example: active
 			Status *string `json:"status"`
 
-			// TotalPrice Total for the stay, in the listing’s Airbnb currency.
+			// TotalPrice What the guest pays for the stay. Airbnb: the total you set. VRBO: VRBO’s own total, including its taxes and service fee.
 			//
 			// Example: 880
 			TotalPrice *float32 `json:"totalPrice"`
@@ -59204,7 +63885,7 @@ func ParseGetChannelHealthClientResponse(rsp *http.Response) (*GetChannelHealthC
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest map[string]interface{}
+		var dest GetChannelHealth200JSONResponseBody
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -59943,6 +64624,123 @@ func ParseUpdateListingActiveClientResponse(rsp *http.Response) (*UpdateListingA
 			return nil, err
 		}
 		response.JSON402 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingCalendarSyncClientResponse parses an HTTP response from a GetListingCalendarSyncWithResponse call
+func ParseGetListingCalendarSyncClientResponse(rsp *http.Response) (*GetListingCalendarSyncClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingCalendarSyncClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Channels []struct {
+				// Channel Example: vrbo
+				Channel string `json:"channel"`
+
+				// LastSyncAt When a push last wrote to this listing's calendar.
+				LastSyncAt *time.Time `json:"lastSyncAt"`
+
+				// NightsWithProblems Example: 0
+				NightsWithProblems int `json:"nightsWithProblems"`
+
+				// PlatformId The listing's id on the channel.
+				//
+				// Example: 5121372
+				PlatformId *string `json:"platformId"`
+				Problems   []struct {
+					// Date Example: 2026-12-18
+					Date *openapi_types.Date `json:"date,omitempty"`
+
+					// Error The channel's reason, in words — render it next to the night.
+					//
+					// Example: VRBO shows 305 instead of 293
+					Error *string `json:"error,omitempty"`
+				} `json:"problems"`
+
+				// Queue VRBO only — the paced push queue.
+				Queue *struct {
+					LastPush *struct {
+						BlocksCreated *int `json:"blocksCreated,omitempty"`
+						BlocksRemoved *int `json:"blocksRemoved,omitempty"`
+
+						// Calls VRBO calls made — only what differed was sent.
+						Calls           *int       `json:"calls,omitempty"`
+						FinishedAt      *time.Time `json:"finishedAt,omitempty"`
+						MinStaysChanged *int       `json:"minStaysChanged,omitempty"`
+
+						// Nights Nights the push covered.
+						Nights *int `json:"nights,omitempty"`
+
+						// NightsDiffering Nights VRBO still showed differently after the push (they are retried).
+						NightsDiffering *int    `json:"nightsDiffering,omitempty"`
+						PricesChanged   *int    `json:"pricesChanged,omitempty"`
+						Reason          *string `json:"reason,omitempty"`
+
+						// Result `skipped` — not sent because the unit is not live on VRBO (`reason`).
+						Result *GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult `json:"result,omitempty"`
+					} `json:"lastPush,omitempty"`
+					QueuedAt *time.Time `json:"queuedAt,omitempty"`
+
+					// QueuedNights Nights waiting to be pushed.
+					QueuedNights *int                                                         `json:"queuedNights,omitempty"`
+					State        *GetListingCalendarSync200JSONResponseBodyChannelsQueueState `json:"state,omitempty"`
+				} `json:"queue,omitempty"`
+
+				// Status `in_sync` — no future night has a problem; `problems` — see `problems`; `off` — calendar sync is off for this channel.
+				Status GetListingCalendarSync200JSONResponseBodyChannelsStatus `json:"status"`
+
+				// SyncEnabled Calendar pushes to this channel are on.
+				SyncEnabled bool `json:"syncEnabled"`
+			} `json:"channels"`
+
+			// ListingId Example: 6199
+			ListingId string `json:"listingId"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest NotFound

@@ -204,22 +204,22 @@ func (e AirbnbConnectionSyncCategory) Valid() bool {
 
 // Defines values for AirbnbConnectionSummaryStatus.
 const (
-	Connected         AirbnbConnectionSummaryStatus = "connected"
-	Disconnected      AirbnbConnectionSummaryStatus = "disconnected"
-	NeverConnected    AirbnbConnectionSummaryStatus = "never_connected"
-	ReconnectRequired AirbnbConnectionSummaryStatus = "reconnect_required"
+	AirbnbConnectionSummaryStatusConnected         AirbnbConnectionSummaryStatus = "connected"
+	AirbnbConnectionSummaryStatusDisconnected      AirbnbConnectionSummaryStatus = "disconnected"
+	AirbnbConnectionSummaryStatusNeverConnected    AirbnbConnectionSummaryStatus = "never_connected"
+	AirbnbConnectionSummaryStatusReconnectRequired AirbnbConnectionSummaryStatus = "reconnect_required"
 )
 
 // Valid indicates whether the value is a known member of the AirbnbConnectionSummaryStatus enum.
 func (e AirbnbConnectionSummaryStatus) Valid() bool {
 	switch e {
-	case Connected:
+	case AirbnbConnectionSummaryStatusConnected:
 		return true
-	case Disconnected:
+	case AirbnbConnectionSummaryStatusDisconnected:
 		return true
-	case NeverConnected:
+	case AirbnbConnectionSummaryStatusNeverConnected:
 		return true
-	case ReconnectRequired:
+	case AirbnbConnectionSummaryStatusReconnectRequired:
 		return true
 	default:
 		return false
@@ -1082,6 +1082,7 @@ func (e CalendarUpdatedEventEvent) Valid() bool {
 const (
 	ChannelMarketStateItemChannelAirbnb  ChannelMarketStateItemChannel = "airbnb"
 	ChannelMarketStateItemChannelBooking ChannelMarketStateItemChannel = "booking"
+	ChannelMarketStateItemChannelVrbo    ChannelMarketStateItemChannel = "vrbo"
 )
 
 // Valid indicates whether the value is a known member of the ChannelMarketStateItemChannel enum.
@@ -1090,6 +1091,8 @@ func (e ChannelMarketStateItemChannel) Valid() bool {
 	case ChannelMarketStateItemChannelAirbnb:
 		return true
 	case ChannelMarketStateItemChannelBooking:
+		return true
+	case ChannelMarketStateItemChannelVrbo:
 		return true
 	default:
 		return false
@@ -1195,6 +1198,24 @@ func (e ConnectSessionPurpose) Valid() bool {
 	}
 }
 
+// Defines values for ConnectStatusAccountsAccessType.
+const (
+	ConnectStatusAccountsAccessTypeFullAccess ConnectStatusAccountsAccessType = "full_access"
+	ConnectStatusAccountsAccessTypeMessaging  ConnectStatusAccountsAccessType = "messaging"
+)
+
+// Valid indicates whether the value is a known member of the ConnectStatusAccountsAccessType enum.
+func (e ConnectStatusAccountsAccessType) Valid() bool {
+	switch e {
+	case ConnectStatusAccountsAccessTypeFullAccess:
+		return true
+	case ConnectStatusAccountsAccessTypeMessaging:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectStatusStatus.
 const (
 	ConnectStatusStatusActive   ConnectStatusStatus = "active"
@@ -1276,6 +1297,27 @@ func (e ConversationStatus) Valid() bool {
 	case ConversationStatusArchived:
 		return true
 	case ConversationStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConversationCapabilitiesOfferPrice.
+const (
+	ConversationCapabilitiesOfferPriceBreakdown   ConversationCapabilitiesOfferPrice = "breakdown"
+	ConversationCapabilitiesOfferPriceLessThannil ConversationCapabilitiesOfferPrice = "<nil>"
+	ConversationCapabilitiesOfferPriceTotal       ConversationCapabilitiesOfferPrice = "total"
+)
+
+// Valid indicates whether the value is a known member of the ConversationCapabilitiesOfferPrice enum.
+func (e ConversationCapabilitiesOfferPrice) Valid() bool {
+	switch e {
+	case ConversationCapabilitiesOfferPriceBreakdown:
+		return true
+	case ConversationCapabilitiesOfferPriceLessThannil:
+		return true
+	case ConversationCapabilitiesOfferPriceTotal:
 		return true
 	default:
 		return false
@@ -1861,6 +1903,30 @@ func (e ListingPublishStatusChannelPushStatus) Valid() bool {
 	case ListingPublishStatusChannelPushStatusPushing:
 		return true
 	case ListingPublishStatusChannelPushStatusSuccess:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingPublishStatusConnectionChannelStatus.
+const (
+	ListingPublishStatusConnectionChannelStatusLessThannil ListingPublishStatusConnectionChannelStatus = "<nil>"
+	ListingPublishStatusConnectionChannelStatusNotLive     ListingPublishStatusConnectionChannelStatus = "not_live"
+	ListingPublishStatusConnectionChannelStatusOffline     ListingPublishStatusConnectionChannelStatus = "offline"
+	ListingPublishStatusConnectionChannelStatusOnline      ListingPublishStatusConnectionChannelStatus = "online"
+)
+
+// Valid indicates whether the value is a known member of the ListingPublishStatusConnectionChannelStatus enum.
+func (e ListingPublishStatusConnectionChannelStatus) Valid() bool {
+	switch e {
+	case ListingPublishStatusConnectionChannelStatusLessThannil:
+		return true
+	case ListingPublishStatusConnectionChannelStatusNotLive:
+		return true
+	case ListingPublishStatusConnectionChannelStatusOffline:
+		return true
+	case ListingPublishStatusConnectionChannelStatusOnline:
 		return true
 	default:
 		return false
@@ -2992,6 +3058,7 @@ const (
 	SendMessageRequestChannelBooking SendMessageRequestChannel = "booking"
 	SendMessageRequestChannelEmail   SendMessageRequestChannel = "email"
 	SendMessageRequestChannelSms     SendMessageRequestChannel = "sms"
+	SendMessageRequestChannelVrbo    SendMessageRequestChannel = "vrbo"
 	SendMessageRequestChannelWebsite SendMessageRequestChannel = "website"
 )
 
@@ -3005,6 +3072,8 @@ func (e SendMessageRequestChannel) Valid() bool {
 	case SendMessageRequestChannelEmail:
 		return true
 	case SendMessageRequestChannelSms:
+		return true
+	case SendMessageRequestChannelVrbo:
 		return true
 	case SendMessageRequestChannelWebsite:
 		return true
@@ -3070,6 +3139,48 @@ const (
 func (e UsageQuotaWarningPayloadScope) Valid() bool {
 	switch e {
 	case DailyRequests:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VrboImportStatusAccessType.
+const (
+	VrboImportStatusAccessTypeFullAccess VrboImportStatusAccessType = "full_access"
+	VrboImportStatusAccessTypeMessaging  VrboImportStatusAccessType = "messaging"
+)
+
+// Valid indicates whether the value is a known member of the VrboImportStatusAccessType enum.
+func (e VrboImportStatusAccessType) Valid() bool {
+	switch e {
+	case VrboImportStatusAccessTypeFullAccess:
+		return true
+	case VrboImportStatusAccessTypeMessaging:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VrboImportStatusState.
+const (
+	VrboImportStatusStateImported         VrboImportStatusState = "imported"
+	VrboImportStatusStateImporting        VrboImportStatusState = "importing"
+	VrboImportStatusStateImportingHistory VrboImportStatusState = "importing_history"
+	VrboImportStatusStateNotStarted       VrboImportStatusState = "not_started"
+)
+
+// Valid indicates whether the value is a known member of the VrboImportStatusState enum.
+func (e VrboImportStatusState) Valid() bool {
+	switch e {
+	case VrboImportStatusStateImported:
+		return true
+	case VrboImportStatusStateImporting:
+		return true
+	case VrboImportStatusStateImportingHistory:
+		return true
+	case VrboImportStatusStateNotStarted:
 		return true
 	default:
 		return false
@@ -4216,6 +4327,27 @@ func (e BookingSetupJSONBodyAction) Valid() bool {
 	}
 }
 
+// Defines values for CreateConnectSessionJSONBodyAccessType.
+const (
+	CreateConnectSessionJSONBodyAccessTypeFullAccess CreateConnectSessionJSONBodyAccessType = "full_access"
+	CreateConnectSessionJSONBodyAccessTypeMessaging  CreateConnectSessionJSONBodyAccessType = "messaging"
+	CreateConnectSessionJSONBodyAccessTypeReadOnly   CreateConnectSessionJSONBodyAccessType = "read_only"
+)
+
+// Valid indicates whether the value is a known member of the CreateConnectSessionJSONBodyAccessType enum.
+func (e CreateConnectSessionJSONBodyAccessType) Valid() bool {
+	switch e {
+	case CreateConnectSessionJSONBodyAccessTypeFullAccess:
+		return true
+	case CreateConnectSessionJSONBodyAccessTypeMessaging:
+		return true
+	case CreateConnectSessionJSONBodyAccessTypeReadOnly:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateConnectSessionJSONBodyPurpose.
 const (
 	CreateConnectSessionJSONBodyPurposeConnect CreateConnectSessionJSONBodyPurpose = "connect"
@@ -4309,6 +4441,66 @@ func (e SubmitMewsCredentialsJSONBodyCredentialsEnvironment) Valid() bool {
 	}
 }
 
+// Defines values for VrboLoginJSONBodyAccessType.
+const (
+	VrboLoginJSONBodyAccessTypeFullAccess VrboLoginJSONBodyAccessType = "full_access"
+	VrboLoginJSONBodyAccessTypeMessaging  VrboLoginJSONBodyAccessType = "messaging"
+)
+
+// Valid indicates whether the value is a known member of the VrboLoginJSONBodyAccessType enum.
+func (e VrboLoginJSONBodyAccessType) Valid() bool {
+	switch e {
+	case VrboLoginJSONBodyAccessTypeFullAccess:
+		return true
+	case VrboLoginJSONBodyAccessTypeMessaging:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VrboLoginJSONBodyAction.
+const (
+	Login VrboLoginJSONBodyAction = "login"
+	Otp   VrboLoginJSONBodyAction = "otp"
+)
+
+// Valid indicates whether the value is a known member of the VrboLoginJSONBodyAction enum.
+func (e VrboLoginJSONBodyAction) Valid() bool {
+	switch e {
+	case Login:
+		return true
+	case Otp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VrboLogin200JSONResponseBodyStatus.
+const (
+	VrboLogin200JSONResponseBodyStatusConnected   VrboLogin200JSONResponseBodyStatus = "connected"
+	VrboLogin200JSONResponseBodyStatusFailed      VrboLogin200JSONResponseBodyStatus = "failed"
+	VrboLogin200JSONResponseBodyStatusOtpRequired VrboLogin200JSONResponseBodyStatus = "otp_required"
+	VrboLogin200JSONResponseBodyStatusPending     VrboLogin200JSONResponseBodyStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the VrboLogin200JSONResponseBodyStatus enum.
+func (e VrboLogin200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case VrboLogin200JSONResponseBodyStatusConnected:
+		return true
+	case VrboLogin200JSONResponseBodyStatusFailed:
+		return true
+	case VrboLogin200JSONResponseBodyStatusOtpRequired:
+		return true
+	case VrboLogin200JSONResponseBodyStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateConnectionJSONBodyAccessType.
 const (
 	CreateConnectionJSONBodyAccessTypeFullAccess CreateConnectionJSONBodyAccessType = "full_access"
@@ -4324,6 +4516,27 @@ func (e CreateConnectionJSONBodyAccessType) Valid() bool {
 	case CreateConnectionJSONBodyAccessTypeMessaging:
 		return true
 	case CreateConnectionJSONBodyAccessTypeReadOnly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListConnectionUnits200JSONResponseBodyStatus.
+const (
+	ListConnectionUnits200JSONResponseBodyStatusCompleted ListConnectionUnits200JSONResponseBodyStatus = "completed"
+	ListConnectionUnits200JSONResponseBodyStatusImporting ListConnectionUnits200JSONResponseBodyStatus = "importing"
+	ListConnectionUnits200JSONResponseBodyStatusReady     ListConnectionUnits200JSONResponseBodyStatus = "ready"
+)
+
+// Valid indicates whether the value is a known member of the ListConnectionUnits200JSONResponseBodyStatus enum.
+func (e ListConnectionUnits200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case ListConnectionUnits200JSONResponseBodyStatusCompleted:
+		return true
+	case ListConnectionUnits200JSONResponseBodyStatusImporting:
+		return true
+	case ListConnectionUnits200JSONResponseBodyStatusReady:
 		return true
 	default:
 		return false
@@ -4393,6 +4606,39 @@ func (e ListConversationMessagesParamsOrder) Valid() bool {
 	}
 }
 
+// Defines values for WithdrawConversationPreapproval200JSONResponseBodyStatus.
+const (
+	WithdrawConversationPreapproval200JSONResponseBodyStatusWithdrawn WithdrawConversationPreapproval200JSONResponseBodyStatus = "withdrawn"
+)
+
+// Valid indicates whether the value is a known member of the WithdrawConversationPreapproval200JSONResponseBodyStatus enum.
+func (e WithdrawConversationPreapproval200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case WithdrawConversationPreapproval200JSONResponseBodyStatusWithdrawn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PreapproveConversation201JSONResponseBodyChannel.
+const (
+	PreapproveConversation201JSONResponseBodyChannelAirbnb PreapproveConversation201JSONResponseBodyChannel = "airbnb"
+	PreapproveConversation201JSONResponseBodyChannelVrbo   PreapproveConversation201JSONResponseBodyChannel = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the PreapproveConversation201JSONResponseBodyChannel enum.
+func (e PreapproveConversation201JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case PreapproveConversation201JSONResponseBodyChannelAirbnb:
+		return true
+	case PreapproveConversation201JSONResponseBodyChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PreapproveConversation201JSONResponseBodyStatus.
 const (
 	PreapproveConversation201JSONResponseBodyStatusPreApproved PreapproveConversation201JSONResponseBodyStatus = "pre_approved"
@@ -4408,15 +4654,87 @@ func (e PreapproveConversation201JSONResponseBodyStatus) Valid() bool {
 	}
 }
 
+// Defines values for CreateConversationSpecialOffer201JSONResponseBodyChannel.
+const (
+	CreateConversationSpecialOffer201JSONResponseBodyChannelAirbnb CreateConversationSpecialOffer201JSONResponseBodyChannel = "airbnb"
+	CreateConversationSpecialOffer201JSONResponseBodyChannelVrbo   CreateConversationSpecialOffer201JSONResponseBodyChannel = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the CreateConversationSpecialOffer201JSONResponseBodyChannel enum.
+func (e CreateConversationSpecialOffer201JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case CreateConversationSpecialOffer201JSONResponseBodyChannelAirbnb:
+		return true
+	case CreateConversationSpecialOffer201JSONResponseBodyChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PreviewConversationSpecialOffer200JSONResponseBodyChannel.
+const (
+	PreviewConversationSpecialOffer200JSONResponseBodyChannelAirbnb PreviewConversationSpecialOffer200JSONResponseBodyChannel = "airbnb"
+	PreviewConversationSpecialOffer200JSONResponseBodyChannelVrbo   PreviewConversationSpecialOffer200JSONResponseBodyChannel = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the PreviewConversationSpecialOffer200JSONResponseBodyChannel enum.
+func (e PreviewConversationSpecialOffer200JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case PreviewConversationSpecialOffer200JSONResponseBodyChannelAirbnb:
+		return true
+	case PreviewConversationSpecialOffer200JSONResponseBodyChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WithdrawConversationSpecialOffer200JSONResponseBodyChannel.
+const (
+	WithdrawConversationSpecialOffer200JSONResponseBodyChannelAirbnb WithdrawConversationSpecialOffer200JSONResponseBodyChannel = "airbnb"
+	WithdrawConversationSpecialOffer200JSONResponseBodyChannelVrbo   WithdrawConversationSpecialOffer200JSONResponseBodyChannel = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the WithdrawConversationSpecialOffer200JSONResponseBodyChannel enum.
+func (e WithdrawConversationSpecialOffer200JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case WithdrawConversationSpecialOffer200JSONResponseBodyChannelAirbnb:
+		return true
+	case WithdrawConversationSpecialOffer200JSONResponseBodyChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for WithdrawConversationSpecialOffer200JSONResponseBodyStatus.
 const (
-	Withdrawn WithdrawConversationSpecialOffer200JSONResponseBodyStatus = "withdrawn"
+	WithdrawConversationSpecialOffer200JSONResponseBodyStatusWithdrawn WithdrawConversationSpecialOffer200JSONResponseBodyStatus = "withdrawn"
 )
 
 // Valid indicates whether the value is a known member of the WithdrawConversationSpecialOffer200JSONResponseBodyStatus enum.
 func (e WithdrawConversationSpecialOffer200JSONResponseBodyStatus) Valid() bool {
 	switch e {
-	case Withdrawn:
+	case WithdrawConversationSpecialOffer200JSONResponseBodyStatusWithdrawn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetConversationSpecialOffer200JSONResponseBodyChannel.
+const (
+	GetConversationSpecialOffer200JSONResponseBodyChannelAirbnb GetConversationSpecialOffer200JSONResponseBodyChannel = "airbnb"
+	GetConversationSpecialOffer200JSONResponseBodyChannelVrbo   GetConversationSpecialOffer200JSONResponseBodyChannel = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the GetConversationSpecialOffer200JSONResponseBodyChannel enum.
+func (e GetConversationSpecialOffer200JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case GetConversationSpecialOffer200JSONResponseBodyChannelAirbnb:
+		return true
+	case GetConversationSpecialOffer200JSONResponseBodyChannelVrbo:
 		return true
 	default:
 		return false
@@ -4441,6 +4759,27 @@ func (e GetChannelHealthParamsChannel) Valid() bool {
 	case GetChannelHealthParamsChannelPlumguide:
 		return true
 	case GetChannelHealthParamsChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetChannelHealth200JSONResponseBodyStatus.
+const (
+	Degraded GetChannelHealth200JSONResponseBodyStatus = "degraded"
+	Down     GetChannelHealth200JSONResponseBodyStatus = "down"
+	Ok       GetChannelHealth200JSONResponseBodyStatus = "ok"
+)
+
+// Valid indicates whether the value is a known member of the GetChannelHealth200JSONResponseBodyStatus enum.
+func (e GetChannelHealth200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case Degraded:
+		return true
+	case Down:
+		return true
+	case Ok:
 		return true
 	default:
 		return false
@@ -4534,6 +4873,69 @@ func (e ListListingsParamsStatus) Valid() bool {
 	case ListListingsParamsStatusArchived:
 		return true
 	case ListListingsParamsStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult.
+const (
+	GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResultInSync   GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult = "in_sync"
+	GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResultProblems GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult = "problems"
+	GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResultSkipped  GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult = "skipped"
+)
+
+// Valid indicates whether the value is a known member of the GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult enum.
+func (e GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult) Valid() bool {
+	switch e {
+	case GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResultInSync:
+		return true
+	case GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResultProblems:
+		return true
+	case GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResultSkipped:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetListingCalendarSync200JSONResponseBodyChannelsQueueState.
+const (
+	GetListingCalendarSync200JSONResponseBodyChannelsQueueStateIdle    GetListingCalendarSync200JSONResponseBodyChannelsQueueState = "idle"
+	GetListingCalendarSync200JSONResponseBodyChannelsQueueStateQueued  GetListingCalendarSync200JSONResponseBodyChannelsQueueState = "queued"
+	GetListingCalendarSync200JSONResponseBodyChannelsQueueStateRunning GetListingCalendarSync200JSONResponseBodyChannelsQueueState = "running"
+)
+
+// Valid indicates whether the value is a known member of the GetListingCalendarSync200JSONResponseBodyChannelsQueueState enum.
+func (e GetListingCalendarSync200JSONResponseBodyChannelsQueueState) Valid() bool {
+	switch e {
+	case GetListingCalendarSync200JSONResponseBodyChannelsQueueStateIdle:
+		return true
+	case GetListingCalendarSync200JSONResponseBodyChannelsQueueStateQueued:
+		return true
+	case GetListingCalendarSync200JSONResponseBodyChannelsQueueStateRunning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetListingCalendarSync200JSONResponseBodyChannelsStatus.
+const (
+	GetListingCalendarSync200JSONResponseBodyChannelsStatusInSync   GetListingCalendarSync200JSONResponseBodyChannelsStatus = "in_sync"
+	GetListingCalendarSync200JSONResponseBodyChannelsStatusOff      GetListingCalendarSync200JSONResponseBodyChannelsStatus = "off"
+	GetListingCalendarSync200JSONResponseBodyChannelsStatusProblems GetListingCalendarSync200JSONResponseBodyChannelsStatus = "problems"
+)
+
+// Valid indicates whether the value is a known member of the GetListingCalendarSync200JSONResponseBodyChannelsStatus enum.
+func (e GetListingCalendarSync200JSONResponseBodyChannelsStatus) Valid() bool {
+	switch e {
+	case GetListingCalendarSync200JSONResponseBodyChannelsStatusInSync:
+		return true
+	case GetListingCalendarSync200JSONResponseBodyChannelsStatusOff:
+		return true
+	case GetListingCalendarSync200JSONResponseBodyChannelsStatusProblems:
 		return true
 	default:
 		return false
@@ -7186,7 +7588,7 @@ type CalendarUpdatedPayload struct {
 	} `json:"range,omitempty"`
 }
 
-// ChannelMarketStateItem What happened on ONE channel item — one Airbnb connection, or one Booking.com property. A listing can carry several Airbnb connections (a re-list, or a move between host accounts) and each gets its own entry.
+// ChannelMarketStateItem What happened on ONE channel item — one Airbnb connection, one Booking.com property, or one VRBO unit. A listing can carry several Airbnb connections (a re-list, or a move between host accounts) and each gets its own entry.
 type ChannelMarketStateItem struct {
 	Channel ChannelMarketStateItemChannel `json:"channel"`
 
@@ -7197,7 +7599,7 @@ type ChannelMarketStateItem struct {
 	// - `airbnb_rejected` / `booking_rejected` — the channel refused the request AS SENT. `message` carries its own reason. Correct it and send again; resending the same thing is refused again.
 	// - `airbnb_error` / `booking_error` — the channel did not complete the request (outage, timeout, server error). Nothing about the request needs to change: retry with backoff.
 	//
-	// Plus `ambiguous_booking_mapping` (name the property with `hotelId`) and `payment_required` (a billing refusal, which keeps its own code rather than being buried under a channel one).
+	// Plus `ambiguous_booking_mapping` (name the property with `hotelId`) and `payment_required` (a billing refusal, which keeps its own code rather than being buried under a channel one). VRBO items: `vrbo_rejected` (VRBO still shows the unit in the old state after the change), `vrbo_error` (VRBO did not complete it — retry), `vrbo_not_ready` (the unit's VRBO details have not synced yet — retry in a few minutes), `vrbo_session_expired` (reconnect the VRBO account).
 	Code *string `json:"code,omitempty"`
 
 	// ConnectionId Airbnb connection row id — the `id` from `GET /v1/channels/airbnb/listings/{id}`. Present on Airbnb items.
@@ -7215,6 +7617,9 @@ type ChannelMarketStateItem struct {
 	// Ok True only when the channel confirmed the change.
 	Ok bool `json:"ok"`
 
+	// PlatformId The VRBO listing number of the unit hidden or reactivated. Present on VRBO items.
+	PlatformId *string `json:"platformId,omitempty"`
+
 	// PreviousCode The `code` this item used to carry, for callers still branching on the old string. A migration aid with a deprecation window — **`code` is canonical.**
 	//
 	// This fan-out reaches Airbnb through an internal hop that flattens a refusal into its own 500, so an unambiguous Airbnb 400 ("Please specify a valid room type") was reported as `airbnb_error` — whose published advice is to retry with backoff, forever, for something Airbnb will never accept. It now reads Airbnb's real status and answers `airbnb_rejected`, and the classification covers the whole 4xx range rather than only `400`. Items whose code changed carry `previousCode`. **Removed in v2.**
@@ -7230,7 +7635,7 @@ type ChannelMarketStateItem struct {
 	// `unchanged` never means "it was already like that": it means we did not put it there, and it is still in whatever state it was in before the call.
 	State ChannelMarketStateItemState `json:"state"`
 
-	// Verified Airbnb only: the listing was READ BACK afterwards and is in the state asked for — down after `offline`, live after `online`. Airbnb can accept a deactivation and leave a listing live, or accept an activation and keep it offline; either is returned as a failure, never as success. `false` means the read-back could not run — an unknown, not a success.
+	// Verified Airbnb and VRBO: the listing was READ BACK afterwards and is in the state asked for — down after `offline`, live after `online`. Airbnb can accept a deactivation and leave a listing live, or accept an activation and keep it offline; either is returned as a failure, never as success. `false` means the read-back could not run — an unknown, not a success.
 	Verified *bool `json:"verified,omitempty"`
 }
 
@@ -7346,17 +7751,26 @@ type ConnectSessionPurpose string
 
 // ConnectStatus Connection status response for a single provider. When `connected` is false, all other fields except `provider` and `host` may be omitted, and `host` is null.
 type ConnectStatus struct {
-	// Accounts Airbnb only: every Airbnb account this workspace has connected, including ones since disconnected. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account.
+	// Accounts Airbnb: every Airbnb account this workspace has connected, including ones since disconnected. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account. Vrbo (`GET /v1/connect/vrbo-login`): every signed-in Vrbo account, each with `accessType` and `import` (a `VrboImportStatus`), plus a top-level `dataFreshness`.
 	Accounts *[]struct {
+		// AccessType Vrbo only.
+		AccessType *ConnectStatusAccountsAccessType `json:"accessType,omitempty"`
+
 		// Connected True while the account is active and its authorization is usable.
 		//
 		// Example: true
 		Connected *bool `json:"connected,omitempty"`
 
+		// Email Vrbo only: the account email.
+		Email *string `json:"email,omitempty"`
+
 		// ExternalAccountId Airbnb host ID, as a string (it can exceed 2^53).
 		//
 		// Example: 79730216
 		ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+		// Import Vrbo only: where the account import stands.
+		Import *VrboImportStatus `json:"import,omitempty"`
 
 		// Name Example: Raiden
 		Name       *string `json:"name,omitempty"`
@@ -7369,6 +7783,9 @@ type ConnectStatus struct {
 	// Connected Example: true
 	Connected *bool      `json:"connected,omitempty"`
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// DataFreshness Vrbo only: the same freshness envelope the Airbnb read endpoints return, per account and in aggregate. Its reason is never_synced until a mapping is confirmed and importing while upcoming bookings come in.
+	DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
 
 	// ExternalAccountId Provider-side account ID (e.g. the Airbnb host ID).
 	//
@@ -7388,7 +7805,13 @@ type ConnectStatus struct {
 
 	// Status Example: active
 	Status *ConnectStatusStatus `json:"status,omitempty"`
+
+	// WritePolicy PMS connections only: what the app may change in the PMS. Change it with `PATCH /v1/connect/{provider}/write-policy`.
+	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 }
+
+// ConnectStatusAccountsAccessType Vrbo only.
+type ConnectStatusAccountsAccessType string
 
 // ConnectStatusStatus Example: active
 type ConnectStatusStatus string
@@ -7456,9 +7879,36 @@ type ConversationPlatform string
 // ConversationStatus `archived` is reserved for a future bit on `message_threads` — currently always `open`.
 type ConversationStatus string
 
+// ConversationCapabilities What the inquiry actions can do on this conversation right now — one set of endpoints for every channel, so an app shows the right actions instead of learning from a `422`. All `false` / `null` when nothing applies (a booked or closed inquiry, Booking.com, direct, an Airbnb inquiry relayed by a PMS).
+//
+// Example: {"canPreApprove":false,"canPreviewOffer":true,"canSendOffer":true,"canWithdraw":true,"offerPrice":"breakdown"}
+type ConversationCapabilities struct {
+	// CanPreApprove `POST /v1/conversations/{id}/pre-approval` would pre-approve the open inquiry (Airbnb connected directly, VRBO).
+	CanPreApprove bool `json:"canPreApprove"`
+
+	// CanPreviewOffer `POST /v1/conversations/{id}/special-offers/preview` returns the channel’s recalculated offer (VRBO).
+	CanPreviewOffer bool `json:"canPreviewOffer"`
+
+	// CanSendOffer `POST /v1/conversations/{id}/special-offers` would send an offer.
+	CanSendOffer bool `json:"canSendOffer"`
+
+	// CanWithdraw A pre-approval or offer is live and can be withdrawn — `DELETE /v1/conversations/{id}/pre-approval` (VRBO) or `DELETE …/special-offers/{offerId}` (Airbnb).
+	CanWithdraw bool `json:"canWithdraw"`
+
+	// OfferPrice How an offer is priced here: `total` — one `totalPrice` for the stay (Airbnb); `breakdown` — `rentalAmount`, `fees`, `damageDeposit`, and the channel computes the guest total (VRBO).
+	OfferPrice *ConversationCapabilitiesOfferPrice `json:"offerPrice"`
+}
+
+// ConversationCapabilitiesOfferPrice How an offer is priced here: `total` — one `totalPrice` for the stay (Airbnb); `breakdown` — `rentalAmount`, `fees`, `damageDeposit`, and the channel computes the guest total (VRBO).
+type ConversationCapabilitiesOfferPrice string
+
 // ConversationDetail Returned by `GET /v1/conversations/{id}`. Extends the list-row `Conversation` shape with expanded `host` + `guest` blocks so SDK consumers can render thread headers without an extra round-trip.
 type ConversationDetail struct {
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	// Capabilities What the inquiry actions can do on this conversation right now — one set of endpoints for every channel, so an app shows the right actions instead of learning from a `422`. All `false` / `null` when nothing applies (a booked or closed inquiry, Booking.com, direct, an Airbnb inquiry relayed by a PMS).
+	//
+	// Example: {"canPreApprove":false,"canPreviewOffer":true,"canSendOffer":true,"canWithdraw":true,"offerPrice":"breakdown"}
+	Capabilities *ConversationCapabilities `json:"capabilities,omitempty"`
+	CreatedAt    *time.Time                `json:"createdAt,omitempty"`
 
 	// ExternalThreadId The source channel's own thread id (Airbnb thread id, Booking conversation id, …). Pass this as the `{threadId}` path param on `POST /v1/channels/airbnb/messaging/{threadId}/messages` to reply — it is the bridge from a unified conversation straight to the provider-specific send call. `null` when the thread has no external id yet (e.g. a website/email thread).
 	ExternalThreadId *string            `json:"externalThreadId,omitempty"`
@@ -9147,6 +9597,16 @@ type ListingPublishStatusConnection struct {
 	// Example: airbnb
 	Channel *string `json:"channel,omitempty"`
 
+	// ChannelStatus Where the listing stands on the channel itself, when the channel reports it (VRBO): `online` — live and bookable; `offline` — hidden by the owner (`POST /v1/listings/{id}/online` brings it back); `not_live` — expired, new, still onboarding or deactivated by the channel (see `channelStatusDetail`). Null when not reported.
+	//
+	// Example: online
+	ChannelStatus *ListingPublishStatusConnectionChannelStatus `json:"channelStatus,omitempty"`
+
+	// ChannelStatusDetail The channel's own status word behind `channelStatus` (VRBO: `LIVE`, `InactiveByOwnerRequest`, `Expired`, `New`, …).
+	//
+	// Example: LIVE
+	ChannelStatusDetail *string `json:"channelStatusDetail,omitempty"`
+
 	// Connected True when the link is active (not disconnected/suspended).
 	Connected *bool `json:"connected,omitempty"`
 
@@ -9159,12 +9619,22 @@ type ListingPublishStatusConnection struct {
 	// Example: ["name","property_type_category"]
 	LockedFields *[]string `json:"lockedFields,omitempty"`
 
+	// PlatformId The listing's id on the channel — Airbnb listing id, Booking.com room/property id, VRBO listing number.
+	//
+	// Example: 5121372
+	PlatformId *string `json:"platformId,omitempty"`
+
 	// Since ISO timestamp the connection was first established.
 	Since *time.Time `json:"since,omitempty"`
 
 	// SyncEnabled True when sync writes are enabled for this channel.
 	SyncEnabled *bool `json:"syncEnabled,omitempty"`
 }
+
+// ListingPublishStatusConnectionChannelStatus Where the listing stands on the channel itself, when the channel reports it (VRBO): `online` — live and bookable; `offline` — hidden by the owner (`POST /v1/listings/{id}/online` brings it back); `not_live` — expired, new, still onboarding or deactivated by the channel (see `channelStatusDetail`). Null when not reported.
+//
+// Example: online
+type ListingPublishStatusConnectionChannelStatus string
 
 // ListingPublishStatusResponse defines model for ListingPublishStatusResponse.
 type ListingPublishStatusResponse struct {
@@ -10311,6 +10781,32 @@ type PlumguideListingListResponse struct {
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
+}
+
+// PmsWritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+//
+// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+type PmsWritePolicy struct {
+	Calendar struct {
+		// Availability Open and close nights. Off also means the PMS's bookings never block the calendar on other channels.
+		Availability bool `json:"availability"`
+
+		// Rates Nightly prices.
+		Rates bool `json:"rates"`
+
+		// Restrictions Minimum stay and other stay restrictions.
+		Restrictions bool `json:"restrictions"`
+	} `json:"calendar"`
+	Reservations struct {
+		// Api Create, change and cancel bookings through the reservations API.
+		Api bool `json:"api"`
+
+		// Dashboard Change and cancel bookings from the dashboard.
+		Dashboard bool `json:"dashboard"`
+
+		// Website Create bookings from booking websites.
+		Website bool `json:"website"`
+	} `json:"reservations"`
 }
 
 // Property A vacation rental property in your Repull workspace. Backed by the core `listings` row — enriched per-PMS fields (bedrooms, property type, provider id, etc.) live in provider-specific detail tables and are NOT returned here.
@@ -11773,7 +12269,7 @@ type SendMessagePart struct {
 // |---|---|---|---|---|
 // | Airbnb | JPEG, PNG, GIF, WebP (sent as JPEG), MP4, QuickTime | 10 MB | 5 | optional — each file is sent as its own message, then the text |
 // | Booking.com | JPEG, PNG | 10 MB | 5 | **required** — all files ride on the one text message |
-// | SMS, email, direct-booking site chat | — | — | — | `422 attachments_not_supported`; nothing is sent |
+// | VRBO, SMS, email, direct-booking site chat | — | — | — | `422 attachments_not_supported`; nothing is sent |
 type SendMessageRequest struct {
 	// Attachments Files to send. See the per-channel table above.
 	Attachments *[]SendMessageAttachment `json:"attachments,omitempty"`
@@ -11927,6 +12423,38 @@ type UsageQuotaWarningPayload struct {
 //
 // Example: daily_requests
 type UsageQuotaWarningPayloadScope string
+
+// VrboImportStatus Where a Vrbo account import stands. Nothing is imported until its unit mapping is confirmed; then upcoming bookings and the last 30 days of messages come first, and the whole account history after.
+type VrboImportStatus struct {
+	// AccessType `messaging`: bookings and messages only, the calendar is never pushed.
+	AccessType            *VrboImportStatusAccessType `json:"accessType,omitempty"`
+	AccountId             *int                        `json:"accountId,omitempty"`
+	ConversationsImported *int                        `json:"conversationsImported,omitempty"`
+	ConversationsSeen     *int                        `json:"conversationsSeen,omitempty"`
+
+	// HistoryComplete The whole account history is imported.
+	HistoryComplete    *bool      `json:"historyComplete,omitempty"`
+	HistoryCompletedAt *time.Time `json:"historyCompletedAt,omitempty"`
+
+	// LastSyncedAt Last completed sync (Vrbo is read every few minutes and on each Vrbo notification email).
+	LastSyncedAt *time.Time `json:"lastSyncedAt,omitempty"`
+
+	// PriorityImportedAt Upcoming bookings and the last 30 days are in.
+	PriorityImportedAt *time.Time `json:"priorityImportedAt,omitempty"`
+
+	// RequestedAt When the mapping was confirmed.
+	RequestedAt *time.Time `json:"requestedAt,omitempty"`
+
+	// Reservations Bookings imported so far.
+	Reservations *int                   `json:"reservations,omitempty"`
+	State        *VrboImportStatusState `json:"state,omitempty"`
+}
+
+// VrboImportStatusAccessType `messaging`: bookings and messages only, the calendar is never pushed.
+type VrboImportStatusAccessType string
+
+// VrboImportStatusState defines model for VrboImportStatus.State.
+type VrboImportStatusState string
 
 // VrboListing A VRBO listing.
 type VrboListing struct {
@@ -13275,6 +13803,9 @@ type ListVrboReservationsParams struct {
 
 // CreateConnectSessionJSONBody defines parameters for CreateConnectSession.
 type CreateConnectSessionJSONBody struct {
+	// AccessType What the connection may do. Airbnb: the OAuth scope tier. Vrbo: `messaging` (or `read_only`) imports bookings and messages and never pushes the calendar; `full_access` also pushes prices and availability. Setting it locks the choice; omit it to let the host choose on the hosted page (default `full_access`).
+	AccessType *CreateConnectSessionJSONBodyAccessType `json:"accessType,omitempty"`
+
 	// AllowedProviders Optional whitelist of provider IDs the picker should expose. Omit to show every channel in the registry.
 	AllowedProviders *[]string `json:"allowedProviders,omitempty"`
 
@@ -13315,6 +13846,9 @@ type CreateConnectSessionJSONBody struct {
 	} `json:"workspace,omitempty"`
 }
 
+// CreateConnectSessionJSONBodyAccessType defines parameters for CreateConnectSession.
+type CreateConnectSessionJSONBodyAccessType string
+
 // CreateConnectSessionJSONBodyPurpose defines parameters for CreateConnectSession.
 type CreateConnectSessionJSONBodyPurpose string
 
@@ -13328,6 +13862,33 @@ type SubmitBeds24CredentialsJSONBody struct {
 
 	// SessionId Connect session id from `POST /v1/connect/beds24`.
 	SessionId *string `json:"sessionId,omitempty"`
+}
+
+// InviteBookingExtranetUserJSONBody defines parameters for InviteBookingExtranetUser.
+type InviteBookingExtranetUserJSONBody struct {
+	Name      *string `json:"name,omitempty"`
+	SessionId string  `json:"sessionId"`
+}
+
+// GetBookingExtranetLoginConfigParams defines parameters for GetBookingExtranetLoginConfig.
+type GetBookingExtranetLoginConfigParams struct {
+	// SessionId The Connect session ID (capability token).
+	SessionId string `form:"sessionId" json:"sessionId"`
+}
+
+// StartBookingExtranetLoginJSONBody defines parameters for StartBookingExtranetLogin.
+type StartBookingExtranetLoginJSONBody struct {
+	Email     string  `json:"email"`
+	Label     *string `json:"label,omitempty"`
+	Password  string  `json:"password"`
+	SessionId string  `json:"sessionId"`
+}
+
+// GetBookingExtranetLoginStatusParams defines parameters for GetBookingExtranetLoginStatus.
+type GetBookingExtranetLoginStatusParams struct {
+	// SessionId The Connect session ID (capability token).
+	SessionId string `form:"sessionId" json:"sessionId"`
+	AccountId int    `form:"accountId" json:"accountId"`
 }
 
 // BookingConnectCallbackJSONBody defines parameters for BookingConnectCallback.
@@ -13361,6 +13922,11 @@ type SubmitCloudbedsCredentialsJSONBody struct {
 
 	// SessionId Connect session id from `POST /v1/connect/cloudbeds`. Omit when calling with your API key.
 	SessionId *string `json:"sessionId,omitempty"`
+
+	// WritePolicy Optional: what the app may change in the PMS, set before the first sync. Same shape as `PATCH /v1/connect/{provider}/write-policy`; switches you leave out keep the provider default (calendar off for hotel PMSs, bookings on).
+	//
+	// Example: {"calendar":{"rates":true}}
+	WritePolicy *map[string]interface{} `json:"writePolicy,omitempty"`
 }
 
 // SubmitGuestyCredentialsJSONBody defines parameters for SubmitGuestyCredentials.
@@ -13421,6 +13987,11 @@ type SubmitMewsCredentialsJSONBody struct {
 
 	// SessionId Connect session id from `POST /v1/connect/mews`. Omit when calling with your API key.
 	SessionId *string `json:"sessionId,omitempty"`
+
+	// WritePolicy Optional: what the app may change in the PMS, set before the first sync. Same shape as `PATCH /v1/connect/{provider}/write-policy`; switches you leave out keep the provider default (calendar off for hotel PMSs, bookings on).
+	//
+	// Example: {"calendar":{"rates":true}}
+	WritePolicy *map[string]interface{} `json:"writePolicy,omitempty"`
 }
 
 // SubmitMewsCredentialsJSONBodyCredentialsEnvironment defines parameters for SubmitMewsCredentials.
@@ -13433,6 +14004,12 @@ type SubmitOwnerrezCredentialsJSONBody struct {
 
 	// SessionId Connect session id from `POST /v1/connect/ownerrez`.
 	SessionId *string `json:"sessionId,omitempty"`
+}
+
+// SearchConnectSessionListingOptionsParams defines parameters for SearchConnectSessionListingOptions.
+type SearchConnectSessionListingOptionsParams struct {
+	Q     *string `form:"q,omitempty" json:"q,omitempty"`
+	Limit *int    `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // SelectConnectProviderJSONBody defines parameters for SelectConnectProvider.
@@ -13451,6 +14028,31 @@ type SubmitSmoobuCredentialsJSONBody struct {
 	// SessionId Connect session id from `POST /v1/connect/smoobu`.
 	SessionId *string `json:"sessionId,omitempty"`
 }
+
+// GetVrboConnectImportParams defines parameters for GetVrboConnectImport.
+type GetVrboConnectImportParams struct {
+	SessionId string `form:"sessionId" json:"sessionId"`
+}
+
+// VrboLoginJSONBody defines parameters for VrboLogin.
+type VrboLoginJSONBody struct {
+	AccessType *VrboLoginJSONBodyAccessType `json:"accessType,omitempty"`
+	AccountId  *int                         `json:"accountId,omitempty"`
+	Action     VrboLoginJSONBodyAction      `json:"action"`
+	Code       *string                      `json:"code,omitempty"`
+	Email      *string                      `json:"email,omitempty"`
+	Password   *string                      `json:"password,omitempty"`
+	SessionId  string                       `json:"sessionId"`
+}
+
+// VrboLoginJSONBodyAccessType defines parameters for VrboLogin.
+type VrboLoginJSONBodyAccessType string
+
+// VrboLoginJSONBodyAction defines parameters for VrboLogin.
+type VrboLoginJSONBodyAction string
+
+// VrboLogin200JSONResponseBodyStatus defines parameters for VrboLogin.
+type VrboLogin200JSONResponseBodyStatus string
 
 // SubmitVrboCredentialsJSONBody defines parameters for SubmitVrboCredentials.
 type SubmitVrboCredentialsJSONBody struct {
@@ -13492,6 +14094,55 @@ type CreateConnectionJSONBody struct {
 
 // CreateConnectionJSONBodyAccessType defines parameters for CreateConnection.
 type CreateConnectionJSONBodyAccessType string
+
+// UpdateConnectWritePolicyJSONBody defines parameters for UpdateConnectWritePolicy.
+type UpdateConnectWritePolicyJSONBody struct {
+	Calendar *struct {
+		Availability *bool `json:"availability,omitempty"`
+		Rates        *bool `json:"rates,omitempty"`
+		Restrictions *bool `json:"restrictions,omitempty"`
+	} `json:"calendar,omitempty"`
+	Reservations *struct {
+		Api       *bool `json:"api,omitempty"`
+		Dashboard *bool `json:"dashboard,omitempty"`
+		Website   *bool `json:"website,omitempty"`
+	} `json:"reservations,omitempty"`
+}
+
+// SearchConnectionListingOptionsParams defines parameters for SearchConnectionListingOptions.
+type SearchConnectionListingOptionsParams struct {
+	// Q Text to match (name, city or listing id).
+	Q         *string `form:"q,omitempty" json:"q,omitempty"`
+	Limit     *int    `form:"limit,omitempty" json:"limit,omitempty"`
+	SessionId *string `form:"sessionId,omitempty" json:"sessionId,omitempty"`
+}
+
+// ApplyConnectionMappingsJSONBody defines parameters for ApplyConnectionMappings.
+type ApplyConnectionMappingsJSONBody struct {
+	Mappings []struct {
+		// CalendarSync Vrbo: push this listing's prices and availability to Vrbo. Omit to follow the connection's access type (`messaging` = off, `full_access` = on). A new listing (`create`) always follows the access type. Other channels ignore it.
+		CalendarSync *bool  `json:"calendarSync,omitempty"`
+		Create       *bool  `json:"create,omitempty"`
+		ListingId    *int   `json:"listingId,omitempty"`
+		UnitId       string `json:"unitId"`
+	} `json:"mappings"`
+	SessionId *string `json:"sessionId,omitempty"`
+}
+
+// AutoMapConnectionUnitsJSONBody defines parameters for AutoMapConnectionUnits.
+type AutoMapConnectionUnitsJSONBody struct {
+	Apply     *bool   `json:"apply,omitempty"`
+	SessionId *string `json:"sessionId,omitempty"`
+}
+
+// ListConnectionUnitsParams defines parameters for ListConnectionUnits.
+type ListConnectionUnitsParams struct {
+	// SessionId The Connect session ID (capability token).
+	SessionId *string `form:"sessionId,omitempty" json:"sessionId,omitempty"`
+}
+
+// ListConnectionUnits200JSONResponseBodyStatus defines parameters for ListConnectionUnits.
+type ListConnectionUnits200JSONResponseBodyStatus string
 
 // ListConversationsParams defines parameters for ListConversations.
 type ListConversationsParams struct {
@@ -13555,10 +14206,16 @@ type SendConversationMessageParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// WithdrawConversationPreapproval200JSONResponseBodyStatus defines parameters for WithdrawConversationPreapproval.
+type WithdrawConversationPreapproval200JSONResponseBodyStatus string
+
 // PreapproveConversationJSONBody defines parameters for PreapproveConversation.
 type PreapproveConversationJSONBody struct {
-	// BlockInstantBooking When `true`, the guest cannot Instant Book the listing and must book through this pre-approval. Leave `false` unless you need that.
+	// BlockInstantBooking Airbnb: when `true`, the guest cannot Instant Book the listing and must book through this pre-approval. Leave `false` unless you need that.
 	BlockInstantBooking *bool `json:"blockInstantBooking,omitempty"`
+
+	// Message VRBO: the message sent to the guest with the pre-approval (a friendly default otherwise).
+	Message *string `json:"message,omitempty"`
 }
 
 // PreapproveConversationParams defines parameters for PreapproveConversation.
@@ -13571,35 +14228,60 @@ type PreapproveConversationParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// PreapproveConversation201JSONResponseBodyChannel defines parameters for PreapproveConversation.
+type PreapproveConversation201JSONResponseBodyChannel string
+
 // PreapproveConversation201JSONResponseBodyStatus defines parameters for PreapproveConversation.
 type PreapproveConversation201JSONResponseBodyStatus string
 
 // CreateConversationSpecialOfferJSONBody defines parameters for CreateConversationSpecialOffer.
 type CreateConversationSpecialOfferJSONBody struct {
 	// CheckIn Example: 2026-10-01
-	CheckIn openapi_types.Date `json:"checkIn"`
+	CheckIn *openapi_types.Date `json:"checkIn,omitempty"`
 
 	// CheckOut Must be after `checkIn`.
 	//
 	// Example: 2026-10-05
-	CheckOut openapi_types.Date `json:"checkOut"`
-	Guests   struct {
+	CheckOut *openapi_types.Date `json:"checkOut,omitempty"`
+
+	// DamageDeposit VRBO: refundable damage deposit; `null` for none.
+	//
+	// Example: 500
+	DamageDeposit *float32 `json:"damageDeposit,omitempty"`
+
+	// Fees VRBO: the offer’s fees — replaces its fee list. `type` is VRBO’s fee type (`CLEANING`, `PET`, …).
+	Fees *[]struct {
+		// Type Example: CLEANING
+		Type string `json:"type"`
+
+		// Value Example: 390
+		Value float32 `json:"value"`
+	} `json:"fees,omitempty"`
+	Guests *struct {
 		// Adults Example: 2
 		Adults   int  `json:"adults"`
 		Children *int `json:"children,omitempty"`
 		Infants  *int `json:"infants,omitempty"`
 		Pets     *int `json:"pets,omitempty"`
-	} `json:"guests"`
+	} `json:"guests,omitempty"`
 
 	// ListingId Repull listing id to offer. Defaults to the listing the conversation is about.
 	//
 	// Example: 23892
 	ListingId *int `json:"listingId,omitempty"`
 
-	// TotalPrice Total the guest pays for the whole stay, in the listing’s Airbnb currency.
+	// Message VRBO: the message sent to the guest with the offer (a friendly default otherwise).
+	Message *string `json:"message,omitempty"`
+
+	// RentalAmount VRBO: rent for the whole stay, excluding fees and taxes.
+	//
+	// Example: 4636
+	RentalAmount *float32 `json:"rentalAmount,omitempty"`
+
+	// TotalPrice Airbnb: the total the guest pays for the whole stay, in the listing’s Airbnb currency.
 	//
 	// Example: 880
-	TotalPrice float32 `json:"totalPrice"`
+	TotalPrice *float32 `json:"totalPrice,omitempty"`
 }
 
 // CreateConversationSpecialOfferParams defines parameters for CreateConversationSpecialOffer.
@@ -13612,8 +14294,47 @@ type CreateConversationSpecialOfferParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// CreateConversationSpecialOffer201JSONResponseBodyChannel defines parameters for CreateConversationSpecialOffer.
+type CreateConversationSpecialOffer201JSONResponseBodyChannel string
+
+// PreviewConversationSpecialOfferJSONBody defines parameters for PreviewConversationSpecialOffer.
+type PreviewConversationSpecialOfferJSONBody struct {
+	// CheckIn Example: 2026-11-26
+	CheckIn *openapi_types.Date `json:"checkIn,omitempty"`
+
+	// CheckOut Example: 2026-12-06
+	CheckOut      *openapi_types.Date `json:"checkOut,omitempty"`
+	DamageDeposit *float32            `json:"damageDeposit,omitempty"`
+	Fees          *[]struct {
+		// Type Example: CLEANING
+		Type string `json:"type"`
+
+		// Value Example: 400
+		Value float32 `json:"value"`
+	} `json:"fees,omitempty"`
+	Guests *struct {
+		// Adults Example: 2
+		Adults   *int `json:"adults,omitempty"`
+		Children *int `json:"children,omitempty"`
+		Infants  *int `json:"infants,omitempty"`
+		Pets     *int `json:"pets,omitempty"`
+	} `json:"guests,omitempty"`
+
+	// RentalAmount Rent for the stay, excluding fees and taxes.
+	RentalAmount *float32 `json:"rentalAmount,omitempty"`
+}
+
+// PreviewConversationSpecialOffer200JSONResponseBodyChannel defines parameters for PreviewConversationSpecialOffer.
+type PreviewConversationSpecialOffer200JSONResponseBodyChannel string
+
+// WithdrawConversationSpecialOffer200JSONResponseBodyChannel defines parameters for WithdrawConversationSpecialOffer.
+type WithdrawConversationSpecialOffer200JSONResponseBodyChannel string
+
 // WithdrawConversationSpecialOffer200JSONResponseBodyStatus defines parameters for WithdrawConversationSpecialOffer.
 type WithdrawConversationSpecialOffer200JSONResponseBodyStatus string
+
+// GetConversationSpecialOffer200JSONResponseBodyChannel defines parameters for GetConversationSpecialOffer.
+type GetConversationSpecialOffer200JSONResponseBodyChannel string
 
 // ListGuestsParams defines parameters for ListGuests.
 type ListGuestsParams struct {
@@ -13657,6 +14378,33 @@ type GetGuestParams struct {
 
 // GetChannelHealthParamsChannel defines parameters for GetChannelHealth.
 type GetChannelHealthParamsChannel string
+
+// GetChannelHealth200JSONResponseBodyStatus defines parameters for GetChannelHealth.
+type GetChannelHealth200JSONResponseBodyStatus string
+
+// GetChannelHealth200JSONResponseBody defines parameters for GetChannelHealth.
+type GetChannelHealth200JSONResponseBody struct {
+	Status *GetChannelHealth200JSONResponseBodyStatus `json:"status,omitempty"`
+
+	// Vrbo VRBO only — the connector's own signals.
+	Vrbo *struct {
+		AccountsConnected *int `json:"accounts_connected,omitempty"`
+
+		// AccountsSignedOut Accounts VRBO signed out; `status` is `down` while any is.
+		AccountsSignedOut         *int `json:"accounts_signed_out,omitempty"`
+		CalendarOldestWaitMinutes *int `json:"calendar_oldest_wait_minutes,omitempty"`
+
+		// CalendarQueueBacklog Listings with a calendar push waiting.
+		CalendarQueueBacklog *int `json:"calendar_queue_backlog,omitempty"`
+
+		// InboxSyncLate Accounts whose last full inbox sync is older than 30 minutes (it runs every 5).
+		InboxSyncLate *int `json:"inbox_sync_late,omitempty"`
+
+		// WindowHours Hours the push failure rate is judged over.
+		WindowHours *int `json:"window_hours,omitempty"`
+	} `json:"vrbo,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
 
 // ListInquiriesParams defines parameters for ListInquiries.
 type ListInquiriesParams struct {
@@ -13767,6 +14515,15 @@ type GetListingParams struct {
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
+
+// GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult defines parameters for GetListingCalendarSync.
+type GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult string
+
+// GetListingCalendarSync200JSONResponseBodyChannelsQueueState defines parameters for GetListingCalendarSync.
+type GetListingCalendarSync200JSONResponseBodyChannelsQueueState string
+
+// GetListingCalendarSync200JSONResponseBodyChannelsStatus defines parameters for GetListingCalendarSync.
+type GetListingCalendarSync200JSONResponseBodyChannelsStatus string
 
 // ListListingCompsParams defines parameters for ListListingComps.
 type ListListingCompsParams struct {
@@ -14254,6 +15011,9 @@ type GetReviewParams struct {
 type ReplyToReviewJSONBody struct {
 	// Message Reply text. `response` is accepted as an alias.
 	Message string `json:"message"`
+
+	// Name VRBO: the name the response is signed with (the connected account's host name otherwise). Ignored on other channels.
+	Name *string `json:"name,omitempty"`
 }
 
 // GetUsageLogsParams defines parameters for GetUsageLogs.
@@ -14481,6 +15241,12 @@ type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
 // SubmitBeds24CredentialsJSONRequestBody defines body for SubmitBeds24Credentials for application/json ContentType.
 type SubmitBeds24CredentialsJSONRequestBody SubmitBeds24CredentialsJSONBody
 
+// InviteBookingExtranetUserJSONRequestBody defines body for InviteBookingExtranetUser for application/json ContentType.
+type InviteBookingExtranetUserJSONRequestBody InviteBookingExtranetUserJSONBody
+
+// StartBookingExtranetLoginJSONRequestBody defines body for StartBookingExtranetLogin for application/json ContentType.
+type StartBookingExtranetLoginJSONRequestBody StartBookingExtranetLoginJSONBody
+
 // BookingConnectCallbackJSONRequestBody defines body for BookingConnectCallback for application/json ContentType.
 type BookingConnectCallbackJSONRequestBody BookingConnectCallbackJSONBody
 
@@ -14523,11 +15289,23 @@ type SelectConnectProviderJSONRequestBody SelectConnectProviderJSONBody
 // SubmitSmoobuCredentialsJSONRequestBody defines body for SubmitSmoobuCredentials for application/json ContentType.
 type SubmitSmoobuCredentialsJSONRequestBody SubmitSmoobuCredentialsJSONBody
 
+// VrboLoginJSONRequestBody defines body for VrboLogin for application/json ContentType.
+type VrboLoginJSONRequestBody VrboLoginJSONBody
+
 // SubmitVrboCredentialsJSONRequestBody defines body for SubmitVrboCredentials for application/json ContentType.
 type SubmitVrboCredentialsJSONRequestBody SubmitVrboCredentialsJSONBody
 
 // CreateConnectionJSONRequestBody defines body for CreateConnection for application/json ContentType.
 type CreateConnectionJSONRequestBody CreateConnectionJSONBody
+
+// UpdateConnectWritePolicyJSONRequestBody defines body for UpdateConnectWritePolicy for application/json ContentType.
+type UpdateConnectWritePolicyJSONRequestBody UpdateConnectWritePolicyJSONBody
+
+// ApplyConnectionMappingsJSONRequestBody defines body for ApplyConnectionMappings for application/json ContentType.
+type ApplyConnectionMappingsJSONRequestBody ApplyConnectionMappingsJSONBody
+
+// AutoMapConnectionUnitsJSONRequestBody defines body for AutoMapConnectionUnits for application/json ContentType.
+type AutoMapConnectionUnitsJSONRequestBody AutoMapConnectionUnitsJSONBody
 
 // SendConversationMessageJSONRequestBody defines body for SendConversationMessage for application/json ContentType.
 type SendConversationMessageJSONRequestBody = SendMessageRequest
@@ -14537,6 +15315,9 @@ type PreapproveConversationJSONRequestBody PreapproveConversationJSONBody
 
 // CreateConversationSpecialOfferJSONRequestBody defines body for CreateConversationSpecialOffer for application/json ContentType.
 type CreateConversationSpecialOfferJSONRequestBody CreateConversationSpecialOfferJSONBody
+
+// PreviewConversationSpecialOfferJSONRequestBody defines body for PreviewConversationSpecialOffer for application/json ContentType.
+type PreviewConversationSpecialOfferJSONRequestBody PreviewConversationSpecialOfferJSONBody
 
 // CreateGuestJSONRequestBody defines body for CreateGuest for application/json ContentType.
 type CreateGuestJSONRequestBody = GuestCreateRequest
@@ -16055,6 +16836,89 @@ func (a BookingSetupJSONBody_LegalEntity) MarshalJSON() ([]byte, error) {
 	object["legal_contact_name"], err = json.Marshal(a.LegalContactName)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling 'legal_contact_name': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GetChannelHealth200JSONResponseBody. Returns the specified
+// element and whether it was found
+func (a GetChannelHealth200JSONResponseBody) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GetChannelHealth200JSONResponseBody
+func (a *GetChannelHealth200JSONResponseBody) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GetChannelHealth200JSONResponseBody to handle AdditionalProperties
+func (a *GetChannelHealth200JSONResponseBody) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["status"]; found {
+		err = json.Unmarshal(raw, &a.Status)
+		if err != nil {
+			return fmt.Errorf("error reading 'status': %w", err)
+		}
+		delete(object, "status")
+	}
+
+	if raw, found := object["vrbo"]; found {
+		err = json.Unmarshal(raw, &a.Vrbo)
+		if err != nil {
+			return fmt.Errorf("error reading 'vrbo': %w", err)
+		}
+		delete(object, "vrbo")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GetChannelHealth200JSONResponseBody to handle AdditionalProperties
+func (a GetChannelHealth200JSONResponseBody) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Status != nil {
+		object["status"], err = json.Marshal(a.Status)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'status': %w", err)
+		}
+	}
+
+	if a.Vrbo != nil {
+		object["vrbo"], err = json.Marshal(a.Vrbo)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'vrbo': %w", err)
+		}
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
