@@ -1198,6 +1198,39 @@ func (e ConnectSessionPurpose) Valid() bool {
 	}
 }
 
+// Defines values for ConnectSessionCompletedEventEvent.
+const (
+	ConnectSessionCompletedEventEventConnectSessionCompleted ConnectSessionCompletedEventEvent = "connect.session.completed"
+)
+
+// Valid indicates whether the value is a known member of the ConnectSessionCompletedEventEvent enum.
+func (e ConnectSessionCompletedEventEvent) Valid() bool {
+	switch e {
+	case ConnectSessionCompletedEventEventConnectSessionCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectSessionCompletedPayloadPurpose.
+const (
+	ConnectSessionCompletedPayloadPurposeConnect ConnectSessionCompletedPayloadPurpose = "connect"
+	ConnectSessionCompletedPayloadPurposeMigrate ConnectSessionCompletedPayloadPurpose = "migrate"
+)
+
+// Valid indicates whether the value is a known member of the ConnectSessionCompletedPayloadPurpose enum.
+func (e ConnectSessionCompletedPayloadPurpose) Valid() bool {
+	switch e {
+	case ConnectSessionCompletedPayloadPurposeConnect:
+		return true
+	case ConnectSessionCompletedPayloadPurposeMigrate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectStatusAccountsAccessType.
 const (
 	ConnectStatusAccountsAccessTypeFullAccess ConnectStatusAccountsAccessType = "full_access"
@@ -3230,6 +3263,7 @@ const (
 	WebhookEventTypeAiOperationCompleted           WebhookEventType = "ai.operation.completed"
 	WebhookEventTypeAiOperationFailed              WebhookEventType = "ai.operation.failed"
 	WebhookEventTypeCalendarUpdated                WebhookEventType = "calendar.updated"
+	WebhookEventTypeConnectSessionCompleted        WebhookEventType = "connect.session.completed"
 	WebhookEventTypeInquiryCreated                 WebhookEventType = "inquiry.created"
 	WebhookEventTypeInquiryUpdated                 WebhookEventType = "inquiry.updated"
 	WebhookEventTypeListingCreated                 WebhookEventType = "listing.created"
@@ -3270,6 +3304,8 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeAiOperationFailed:
 		return true
 	case WebhookEventTypeCalendarUpdated:
+		return true
+	case WebhookEventTypeConnectSessionCompleted:
 		return true
 	case WebhookEventTypeInquiryCreated:
 		return true
@@ -7749,6 +7785,60 @@ type ConnectSession struct {
 // ConnectSessionPurpose Present only on a Repull Migrate session.
 type ConnectSessionPurpose string
 
+// ConnectSessionCompletedEvent defines model for ConnectSessionCompletedEvent.
+type ConnectSessionCompletedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `connect.session.completed`. A user finished a Connect session, on any channel or PMS. Use `state` (your token from session creation) or `sessionId` to tie the connection to your own user; the account it names is keyed the same way as every other event's `account` block.
+	Data ConnectSessionCompletedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ConnectSessionCompletedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ConnectSessionCompletedEventEvent The event name. This field is `event`, not `type`.
+type ConnectSessionCompletedEventEvent string
+
+// ConnectSessionCompletedPayload Payload for `connect.session.completed`. A user finished a Connect session, on any channel or PMS. Use `state` (your token from session creation) or `sessionId` to tie the connection to your own user; the account it names is keyed the same way as every other event's `account` block.
+type ConnectSessionCompletedPayload struct {
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+
+	// ConnectionId Repull connection id, when the account has one (the `X-Account-Id` value).
+	ConnectionId *int `json:"connectionId,omitempty"`
+
+	// ExternalAccountId The provider's own account id — Airbnb host id, Booking.com hotel id, Vrbo account id, or the PMS account.
+	//
+	// Example: 36
+	ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+	// Provider Channel or PMS: airbnb, booking, booking_extranet, vrbo, plumguide, hostaway, …
+	//
+	// Example: vrbo
+	Provider *string                                `json:"provider,omitempty"`
+	Purpose  *ConnectSessionCompletedPayloadPurpose `json:"purpose,omitempty"`
+
+	// SessionId Example: cs_abc123
+	SessionId *string `json:"sessionId,omitempty"`
+
+	// State The `state` you passed when creating the session.
+	//
+	// Example: user_8421
+	State *string `json:"state,omitempty"`
+}
+
+// ConnectSessionCompletedPayloadPurpose defines model for ConnectSessionCompletedPayload.Purpose.
+type ConnectSessionCompletedPayloadPurpose string
+
 // ConnectStatus Connection status response for a single provider. When `connected` is false, all other fields except `provider` and `host` may be omitted, and `host` is null.
 type ConnectStatus struct {
 	// Accounts Airbnb: every Airbnb account this workspace has connected, including ones since disconnected. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account. Vrbo (`GET /v1/connect/vrbo-login`): every signed-in Vrbo account, each with `accessType` and `import` (a `VrboImportStatus`), plus a top-level `dataFreshness`.
@@ -7848,7 +7938,9 @@ type ConnectionListResponse struct {
 
 // Conversation Channel-agnostic message thread between the host workspace and a guest. Returned by `GET /v1/conversations`. The `id` is the internal Repull thread id (integer) — pass it back as the `{id}` path param on detail / messages calls.
 type Conversation struct {
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	// Account The connected account this conversation belongs to. List endpoint.
+	Account   *RecordAccount `json:"account,omitempty"`
+	CreatedAt *time.Time     `json:"createdAt,omitempty"`
 
 	// ExternalThreadId The source channel's own thread id (Airbnb thread id, Booking conversation id, …). Pass this as the `{threadId}` path param on `POST /v1/channels/airbnb/messaging/{threadId}/messages` to reply — it is the bridge from a unified conversation straight to the provider-specific send call. `null` when the thread has no external id yet (e.g. a website/email thread).
 	ExternalThreadId *string    `json:"externalThreadId,omitempty"`
@@ -7904,6 +7996,9 @@ type ConversationCapabilitiesOfferPrice string
 
 // ConversationDetail Returned by `GET /v1/conversations/{id}`. Extends the list-row `Conversation` shape with expanded `host` + `guest` blocks so SDK consumers can render thread headers without an extra round-trip.
 type ConversationDetail struct {
+	// Account The connected account this conversation belongs to. List endpoint.
+	Account *RecordAccount `json:"account,omitempty"`
+
 	// Capabilities What the inquiry actions can do on this conversation right now — one set of endpoints for every channel, so an app shows the right actions instead of learning from a `422`. All `false` / `null` when nothing applies (a booked or closed inquiry, Booking.com, direct, an Airbnb inquiry relayed by a PMS).
 	//
 	// Example: {"canPreApprove":false,"canPreviewOffer":true,"canSendOffer":true,"canWithdraw":true,"offerPrice":"breakdown"}
@@ -10815,8 +10910,11 @@ type PmsWritePolicy struct {
 // - `channels` is returned by the list endpoint (`GET /v1/properties`) only.
 // - `latitude`, `longitude`, `createdAt`, and `amenities` are returned by the detail endpoint (`GET /v1/properties/{id}`) only. `amenities` requires `?include=amenities`.
 //
-// An **inactive** property (`status: inactive`) appears only in the list endpoint, and only when `?status=inactive|all` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `lifecycleStatus`, `channels`, `updatedAt` — so every other field is absent until the property is activated. Every other endpoint answers `403 listing_inactive` for it.
+// An **inactive** property (`status: inactive`) appears only in the list endpoint, and only when `?status=inactive|all` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `lifecycleStatus`, `channels`, `accounts`, `updatedAt` — so every other field is absent until the property is activated. Every other endpoint answers `403 listing_inactive` for it.
 type Property struct {
+	// Accounts The connected account the property belongs to on each channel it is on. List endpoint.
+	Accounts *[]*RecordAccount `json:"accounts,omitempty"`
+
 	// Address Street address (from the listing's `street` field).
 	Address *string `json:"address,omitempty"`
 
@@ -10992,6 +11090,24 @@ type Quote struct {
 	WebsiteId *string `json:"websiteId,omitempty"`
 }
 
+// RecordAccount The connected account a record belongs to — keyed exactly like the webhook `account` block and `connect.session.completed`, so one `provider:externalAccountId` key routes reads and events to the same user. `null` when it cannot be resolved (never guessed).
+type RecordAccount struct {
+	// ConnectionId Repull connection id (`X-Account-Id`), when the account has one. A string, like every id in API responses.
+	//
+	// Example: 126
+	ConnectionId *string `json:"connectionId,omitempty"`
+
+	// ExternalAccountId The provider's own account id — Airbnb host id, Booking.com hotel id, Extranet login, Vrbo account, or the PMS account.
+	//
+	// Example: 79730216
+	ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+	// Provider airbnb, booking, booking_extranet, vrbo, or the PMS id (hostaway, cloudbeds, …).
+	//
+	// Example: airbnb
+	Provider *string `json:"provider,omitempty"`
+}
+
 // RepullPingEvent defines model for RepullPingEvent.
 type RepullPingEvent struct {
 	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
@@ -11026,6 +11142,9 @@ type RepullPingPayload struct {
 //
 // The canonical (post-2026-05) shape uses nested `primaryGuest`, `occupancy`, `financials` blocks. The legacy flat fields (`guestId`, `totalPrice`, `currency`, `guestDetails`) remain populated for back-compat and are marked `deprecated` here. New consumers should read from the nested blocks; existing consumers continue to work unchanged.
 type Reservation struct {
+	// Account The connected account this reservation belongs to. List endpoint.
+	Account *RecordAccount `json:"account,omitempty"`
+
 	// BookedAt When the booking was made on the source channel (when reported by the channel).
 	BookedAt *time.Time `json:"bookedAt,omitempty"`
 
@@ -12025,6 +12144,8 @@ type ReservationWebhookObject struct {
 
 // Review A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Includes every channel's reviews once they have been imported.
 type Review struct {
+	// Account The connected account this review belongs to. List endpoint.
+	Account    *RecordAccount    `json:"account,omitempty"`
 	Categories *[]ReviewCategory `json:"categories,omitempty"`
 
 	// ExpiresAt When the review window closes (Airbnb has a 14-day window after checkout).
@@ -12618,6 +12739,9 @@ type WebhookSubscription struct {
 
 // WebhookSubscriptionStatus defines model for WebhookSubscription.Status.
 type WebhookSubscriptionStatus string
+
+// Account Example: airbnb:79730216
+type Account = string
 
 // AirbnbAccountId Example: 1772489413932732258
 type AirbnbAccountId = string
@@ -13831,7 +13955,7 @@ type CreateConnectSessionJSONBody struct {
 	// Scope Migrate only — what you want brought across, listed to the property manager before they connect.
 	Scope *[]CreateConnectSessionJSONBodyScope `json:"scope,omitempty"`
 
-	// State Opaque pass-through correlation token. Echoed back in the response.
+	// State Your own correlation token, e.g. your user id (at most 500 characters). Echoed in this response, on the redirect back (`&state=`), in the popup message, and in the `connect.session.completed` webhook.
 	State *string `json:"state,omitempty"`
 
 	// Workspace Migrate only — the property manager being moved. Required unless you send `X-Workspace-Id` to reconnect an existing migration.
@@ -14074,9 +14198,6 @@ type CreateConnectionJSONBody struct {
 	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants read-only scopes; 'messaging' grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; 'full_access' (default) grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The hosted consent screen normally lets the host pick a tier; passing `accessType` explicitly fixes the tier and hides that choice, so the host can only continue with the tier you requested. Omit it to let the host choose.
 	AccessType *CreateConnectionJSONBodyAccessType `json:"accessType,omitempty"`
 
-	// ApiKey PMS providers — API key.
-	ApiKey *string `json:"apiKey,omitempty"`
-
 	// ClientId Plumguide — client ID.
 	ClientId *string `json:"clientId,omitempty"`
 
@@ -14090,6 +14211,9 @@ type CreateConnectionJSONBody struct {
 
 	// RedirectUrl Airbnb + Booking.com — where to redirect the user after they finish the hosted connect flow.
 	RedirectUrl *string `json:"redirectUrl,omitempty"`
+
+	// State Airbnb + Booking.com — your own correlation token, e.g. your user id (at most 500 characters). Echoed on the redirect back (`&state=`) and in the `connect.session.completed` webhook.
+	State *string `json:"state,omitempty"`
 }
 
 // CreateConnectionJSONBodyAccessType defines parameters for CreateConnection.
@@ -14146,6 +14270,9 @@ type ListConnectionUnits200JSONResponseBodyStatus string
 
 // ListConversationsParams defines parameters for ListConversations.
 type ListConversationsParams struct {
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	Account *Account `form:"account,omitempty" json:"account,omitempty"`
+
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
@@ -14715,6 +14842,9 @@ type RunMigrationImportJSONBodyEntities string
 
 // ListPropertiesParams defines parameters for ListProperties.
 type ListPropertiesParams struct {
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	Account *Account `form:"account,omitempty" json:"account,omitempty"`
+
 	// Limit Page size (max 100). Requests over the cap return 422.
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -14790,6 +14920,9 @@ type GetQuoteParams struct {
 
 // ListReservationsParams defines parameters for ListReservations.
 type ListReservationsParams struct {
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	Account *Account `form:"account,omitempty" json:"account,omitempty"`
+
 	// Limit Page size (max 100). Requests over the cap return 422.
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -14969,6 +15102,9 @@ type DeclineReservationRequest200JSONResponseBodyStatus string
 
 // ListReviewsParams defines parameters for ListReviews.
 type ListReviewsParams struct {
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	Account *Account `form:"account,omitempty" json:"account,omitempty"`
+
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 
@@ -17948,6 +18084,40 @@ func (t *WebhookEvent) MergeAccountCreatedEvent(v AccountCreatedEvent) error {
 	return err
 }
 
+// AsConnectSessionCompletedEvent returns the union data inside the WebhookEvent as a ConnectSessionCompletedEvent
+func (t WebhookEvent) AsConnectSessionCompletedEvent() (ConnectSessionCompletedEvent, error) {
+	var body ConnectSessionCompletedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectSessionCompletedEvent overwrites any union data inside the WebhookEvent as the provided ConnectSessionCompletedEvent
+func (t *WebhookEvent) FromConnectSessionCompletedEvent(v ConnectSessionCompletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"connect.session.completed"}`))
+	t.union = b
+	return err
+}
+
+// MergeConnectSessionCompletedEvent performs a merge with any union data inside the WebhookEvent, using the provided ConnectSessionCompletedEvent
+func (t *WebhookEvent) MergeConnectSessionCompletedEvent(v ConnectSessionCompletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"connect.session.completed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsAccountDisconnectedEvent returns the union data inside the WebhookEvent as a AccountDisconnectedEvent
 func (t WebhookEvent) AsAccountDisconnectedEvent() (AccountDisconnectedEvent, error) {
 	var body AccountDisconnectedEvent
@@ -18380,6 +18550,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsAiOperationFailedEvent()
 	case "calendar.updated":
 		return t.AsCalendarUpdatedEvent()
+	case "connect.session.completed":
+		return t.AsConnectSessionCompletedEvent()
 	case "inquiry.created":
 		return t.AsInquiryCreatedEvent()
 	case "inquiry.updated":

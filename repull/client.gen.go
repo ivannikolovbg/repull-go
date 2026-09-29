@@ -2226,7 +2226,7 @@ type ClientInterface interface {
 
 	// ListVrboListings List VRBO listings
 	//
-	// List VRBO listings this workspace owns. VRBO is agency-model — Repull reads listings via the public iCal/HTTP feeds.
+	// List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
 	//
 	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
 	//
@@ -2235,7 +2235,7 @@ type ClientInterface interface {
 
 	// ListVrboReservations List VRBO reservations
 	//
-	// Cursor-paginated list of VRBO reservations sourced from the public booking feed. Lag is typically 5-10 minutes vs. Airbnb / Booking.com. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
+	// Cursor-paginated list of Vrbo reservations imported from the host's connected Vrbo account (host sign-in, beta). The full normalised record — guest, price breakdown, policy — is on `GET /v1/reservations?platform=vrbo`. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
 	//
 	// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated.
 	//
@@ -2843,7 +2843,7 @@ type ClientInterface interface {
 	//
 	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
-	// PMS providers (api-key based) pass `apiKey` instead; Plumguide passes `clientId`/`clientSecret`.
+	// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -2858,7 +2858,7 @@ type ClientInterface interface {
 	//
 	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
-	// PMS providers (api-key based) pass `apiKey` instead; Plumguide passes `clientId`/`clientSecret`.
+	// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -8242,7 +8242,7 @@ func (c *Client) UpdatePlumguideWebhooks(ctx context.Context, body UpdatePlumgui
 
 // ListVrboListings List VRBO listings
 //
-// List VRBO listings this workspace owns. VRBO is agency-model — Repull reads listings via the public iCal/HTTP feeds.
+// List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
 //
 // Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
 //
@@ -8261,7 +8261,7 @@ func (c *Client) ListVrboListings(ctx context.Context, reqEditors ...RequestEdit
 
 // ListVrboReservations List VRBO reservations
 //
-// Cursor-paginated list of VRBO reservations sourced from the public booking feed. Lag is typically 5-10 minutes vs. Airbnb / Booking.com. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
+// Cursor-paginated list of Vrbo reservations imported from the host's connected Vrbo account (host sign-in, beta). The full normalised record — guest, price breakdown, policy — is on `GET /v1/reservations?platform=vrbo`. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
 //
 // Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated.
 //
@@ -9369,7 +9369,7 @@ func (c *Client) GetConnectStatus(ctx context.Context, provider Provider, reqEdi
 //
 // Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
-// PMS providers (api-key based) pass `apiKey` instead; Plumguide passes `clientId`/`clientSecret`.
+// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -9394,7 +9394,7 @@ func (c *Client) CreateConnectionWithBody(ctx context.Context, provider Provider
 //
 // Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
-// PMS providers (api-key based) pass `apiKey` instead; Plumguide passes `clientId`/`clientSecret`.
+// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -19328,6 +19328,18 @@ func NewListConversationsRequest(server string, params *ListConversationsParams)
 		// per the OpenAPI spec (e.g. "color=blue,black,brown").
 		var rawQueryFragments []string
 
+		if params.Account != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account", *params.Account, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.Cursor != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -23088,6 +23100,18 @@ func NewListPropertiesRequest(server string, params *ListPropertiesParams) (*htt
 		// per the OpenAPI spec (e.g. "color=blue,black,brown").
 		var rawQueryFragments []string
 
+		if params.Account != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account", *params.Account, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
@@ -23400,6 +23424,18 @@ func NewListReservationsRequest(server string, params *ListReservationsParams) (
 		// styled parameters, preserving literal commas as delimiters
 		// per the OpenAPI spec (e.g. "color=blue,black,brown").
 		var rawQueryFragments []string
+
+		if params.Account != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account", *params.Account, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
 
 		if params.Limit != nil {
 
@@ -23997,6 +24033,18 @@ func NewListReviewsRequest(server string, params *ListReviewsParams) (*http.Requ
 		// styled parameters, preserving literal commas as delimiters
 		// per the OpenAPI spec (e.g. "color=blue,black,brown").
 		var rawQueryFragments []string
+
+		if params.Account != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account", *params.Account, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
 
 		if params.Cursor != nil {
 
@@ -27513,7 +27561,7 @@ type ClientWithResponsesInterface interface {
 
 	// ListVrboListingsWithResponse List VRBO listings
 	//
-	// List VRBO listings this workspace owns. VRBO is agency-model — Repull reads listings via the public iCal/HTTP feeds.
+	// List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
 	//
 	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
 	//
@@ -27524,7 +27572,7 @@ type ClientWithResponsesInterface interface {
 
 	// ListVrboReservationsWithResponse List VRBO reservations
 	//
-	// Cursor-paginated list of VRBO reservations sourced from the public booking feed. Lag is typically 5-10 minutes vs. Airbnb / Booking.com. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
+	// Cursor-paginated list of Vrbo reservations imported from the host's connected Vrbo account (host sign-in, beta). The full normalised record — guest, price breakdown, policy — is on `GET /v1/reservations?platform=vrbo`. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
 	//
 	// Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated.
 	//
@@ -28152,7 +28200,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
-	// PMS providers (api-key based) pass `apiKey` instead; Plumguide passes `clientId`/`clientSecret`.
+	// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -28167,7 +28215,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
-	// PMS providers (api-key based) pass `apiKey` instead; Plumguide passes `clientId`/`clientSecret`.
+	// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -51200,7 +51248,7 @@ func (c *ClientWithResponses) UpdatePlumguideWebhooksWithResponse(ctx context.Co
 
 // ListVrboListingsWithResponse List VRBO listings
 //
-// List VRBO listings this workspace owns. VRBO is agency-model — Repull reads listings via the public iCal/HTTP feeds.
+// List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
 //
 // Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
 //
@@ -51217,7 +51265,7 @@ func (c *ClientWithResponses) ListVrboListingsWithResponse(ctx context.Context, 
 
 // ListVrboReservationsWithResponse List VRBO reservations
 //
-// Cursor-paginated list of VRBO reservations sourced from the public booking feed. Lag is typically 5-10 minutes vs. Airbnb / Booking.com. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
+// Cursor-paginated list of Vrbo reservations imported from the host's connected Vrbo account (host sign-in, beta). The full normalised record — guest, price breakdown, policy — is on `GET /v1/reservations?platform=vrbo`. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
 //
 // Reservations on inactive listings are left out (counts and cursors included); they keep syncing and reappear once the listing is activated.
 //
@@ -52145,7 +52193,7 @@ func (c *ClientWithResponses) GetConnectStatusWithResponse(ctx context.Context, 
 //
 // Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
-// PMS providers (api-key based) pass `apiKey` instead; Plumguide passes `clientId`/`clientSecret`.
+// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -52166,7 +52214,7 @@ func (c *ClientWithResponses) CreateConnectionWithBodyWithResponse(ctx context.C
 //
 // Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
-// PMS providers (api-key based) pass `apiKey` instead; Plumguide passes `clientId`/`clientSecret`.
+// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
