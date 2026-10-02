@@ -328,7 +328,7 @@ type ClientInterface interface {
 	//
 	// **Can this listing be written to?** Every connection carries `syncCategory` — Airbnb's own per-listing API sync decision (`sync_all`, `sync_rates_and_availability`, or `none`) — and `writable`, which is `false` exactly when that category is `none`. Airbnb authorises sync one listing at a time, so a connected account can still hold listings Airbnb refuses every write to; a write to one of those returns `403 listing_not_api_connected` before anything is sent, and reconnecting the account does not change it (the host must switch the listing on in Airbnb). Check `writable` here before a portfolio-wide push instead of discovering it one 403 at a time.
 	//
-	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	// Inactive listings are left out unless `?status=inactive|all` asks for them; they then come back with identity fields only — `listingId`, `name`, `city`, `status`, `inactiveReason` (`plan_limit`, `unlisted_on_airbnb` or `deactivated`) and each connection's ids and account — so you can show the user what to activate. They keep syncing and are complete again once activated.
 	//
 	// **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
 	//
@@ -596,14 +596,39 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/checkin-guide (the `GetAirbnbCheckinGuide` operationId).
 	GetAirbnbCheckinGuide(ctx context.Context, id string, params *GetAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateAirbnbCheckinGuide Upsert Airbnb check-in guide
+	// UpdateAirbnbCheckinGuideWithBody Replace the steps of an Airbnb check-in guide
 	//
-	// Upsert the check-in guide for one locale on an Airbnb listing. **Write-side** — calls Airbnb upstream; the DB mirror is reconciled by the sync worker once the upstream call returns. Target the locale with `?locale=en` (defaults to `en`). Requires a connected Airbnb host, else `404 no_connection`.
+	// Write the check-in guide guests see before arrival: an ordered list of text steps. **Replaces** every existing step, so send the whole guide; `{"steps": []}` removes them all. The response is the guide re-read from Airbnb after the write.
+	//
+	// If the listing has no guide yet, one is created in `locale` (default: the existing guide's, else `en`).
+	//
+	// Safe on failure: the new steps are created before the old ones are removed, and if a create fails the steps this call added are removed again, so the guide is never left emptier than it was.
+	//
+	// Text steps only. Steps with photos need Airbnb's media upload and are not supported here yet. For the other arrival details use `PUT /v1/channels/airbnb/listings/{id}/details`: `check_in_option.instruction` (arrival instructions), `house_manual`, `directions`, `wifi_network`, `wifi_password`.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
+	// Takes any type of body and a specified content type.
+	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
-	UpdateAirbnbCheckinGuide(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateAirbnbCheckinGuideWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbCheckinGuide Replace the steps of an Airbnb check-in guide
+	//
+	// Write the check-in guide guests see before arrival: an ordered list of text steps. **Replaces** every existing step, so send the whole guide; `{"steps": []}` removes them all. The response is the guide re-read from Airbnb after the write.
+	//
+	// If the listing has no guide yet, one is created in `locale` (default: the existing guide's, else `en`).
+	//
+	// Safe on failure: the new steps are created before the old ones are removed, and if a create fails the steps this call added are removed again, so the guide is never left emptier than it was.
+	//
+	// Text steps only. Steps with photos need Airbnb's media upload and are not supported here yet. For the other arrival details use `PUT /v1/channels/airbnb/listings/{id}/details`: `check_in_option.instruction` (arrival instructions), `house_manual`, `directions`, `wifi_network`, `wifi_password`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
+	UpdateAirbnbCheckinGuide(ctx context.Context, id string, body UpdateAirbnbCheckinGuideJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAirbnbCheckoutGuide Get Airbnb checkout guide
 	//
@@ -678,13 +703,13 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/details (the `GetAirbnbListingDetails` operationId).
 	GetAirbnbListingDetails(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateAirbnbListingDetailsWithBody Update property type, room type, quiet hours or check-in method
+	// UpdateAirbnbListingDetailsWithBody Update property type, quiet hours, check-in method, house manual, directions or Wi-Fi
 	//
-	// Change what kind of property the Airbnb listing is, when its quiet hours are, or how the guest gets in. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
+	// Change what kind of property the Airbnb listing is, when its quiet hours are, how the guest gets in (`check_in_option.instruction` is the arrival instructions), the house manual, directions to the property, or the Wi-Fi network and password. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
 	//
 	// This is the UPDATE path for fields that previously had none. `POST /v1/listings` accepts a `propertyType` when a listing is CREATED and nothing could change it afterwards, so a listing mis-typed at import stayed mis-typed; the check-in method was mirrored and never exposed at all.
 	//
-	// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group` and `check_in_option` are among the attributes Airbnb locks on established listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
+	// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group`, `check_in_option`, `house_manual`, `directions`, `wifi_network` and `wifi_password` are among the attributes Airbnb locks on some listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
 	//
 	// Canonical property type (the value Repull keeps and republishes) is set with `PUT /v1/listings/{id}/content` under `details`; this endpoint writes straight to Airbnb.
 	//
@@ -695,13 +720,13 @@ type ClientInterface interface {
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/details (the `UpdateAirbnbListingDetails` operationId).
 	UpdateAirbnbListingDetailsWithBody(ctx context.Context, id string, params *UpdateAirbnbListingDetailsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateAirbnbListingDetails Update property type, room type, quiet hours or check-in method
+	// UpdateAirbnbListingDetails Update property type, quiet hours, check-in method, house manual, directions or Wi-Fi
 	//
-	// Change what kind of property the Airbnb listing is, when its quiet hours are, or how the guest gets in. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
+	// Change what kind of property the Airbnb listing is, when its quiet hours are, how the guest gets in (`check_in_option.instruction` is the arrival instructions), the house manual, directions to the property, or the Wi-Fi network and password. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
 	//
 	// This is the UPDATE path for fields that previously had none. `POST /v1/listings` accepts a `propertyType` when a listing is CREATED and nothing could change it afterwards, so a listing mis-typed at import stayed mis-typed; the check-in method was mirrored and never exposed at all.
 	//
-	// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group` and `check_in_option` are among the attributes Airbnb locks on established listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
+	// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group`, `check_in_option`, `house_manual`, `directions`, `wifi_network` and `wifi_password` are among the attributes Airbnb locks on some listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
 	//
 	// Canonical property type (the value Repull keeps and republishes) is set with `PUT /v1/listings/{id}/content` under `details`; this endpoint writes straight to Airbnb.
 	//
@@ -729,11 +754,13 @@ type ClientInterface interface {
 	//
 	// Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 	//
-	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field — `<type>_value`: `text_value`, `attestation_value`, `radio_value`, `dropdown_value`, `email_value`, `future_date_value`, `file_upload_value`, and so on. Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 	//
 	// Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 	//
 	// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+	//
+	// **Changing and removing answers.** Airbnb has no call that deletes or withdraws a submitted registration, so neither does Repull, and at least one permit is required. To change an answer Airbnb marks `answer_editable`, submit the flow again with the new answers — the latest submission replaces the previous one. When a submission fails with status `failed_recoverable`, fix it and submit again; `failed` cannot be resubmitted. Hosts can also manage this at airbnb.com/verify-listing/{listing_id}.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -744,11 +771,13 @@ type ClientInterface interface {
 	//
 	// Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 	//
-	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field — `<type>_value`: `text_value`, `attestation_value`, `radio_value`, `dropdown_value`, `email_value`, `future_date_value`, `file_upload_value`, and so on. Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 	//
 	// Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 	//
 	// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+	//
+	// **Changing and removing answers.** Airbnb has no call that deletes or withdraws a submitted registration, so neither does Repull, and at least one permit is required. To change an answer Airbnb marks `answer_editable`, submit the flow again with the new answers — the latest submission replaces the previous one. When a submission fails with status `failed_recoverable`, fix it and submit again; `failed` cannot be resubmitted. Hosts can also manage this at airbnb.com/verify-listing/{listing_id}.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -1829,10 +1858,10 @@ type ClientInterface interface {
 	//
 	// A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"` and an empty `listings` array. That is a real mid-onboarding state, not an error: finish `POST /v1/connect/booking/map-rooms` and the listings appear. Such a property used to be dropped silently, which made a mapped-but-unreadable workspace indistinguishable from one with no Booking connection at all.
 	//
-	// Inactive listings are left out of `listings`; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	// Inactive listings are left out of `listings` unless `?status=inactive|all` asks for them; they then appear with identity fields only (`listingId`, `name`, `city`, `status`, `inactiveReason`, room). `mappingStatus` counts every mapped listing, inactive ones included, so a property whose listings are all inactive is still `mapped`.
 	//
 	// Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
-	ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListBookingProperties(ctx context.Context, params *ListBookingPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetBookingProperty Get Booking.com connection for a listing
 	//
@@ -2228,10 +2257,10 @@ type ClientInterface interface {
 	//
 	// List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
 	//
-	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	// Inactive listings are left out unless `?status=inactive|all` asks for them; they then come back with identity fields only (ids, `listingName`, `listingCity`, `status`, `inactiveReason`). They keep syncing and are complete again once activated.
 	//
 	// Corresponds with GET /v1/channels/vrbo/listings (the `ListVrboListings` operationId).
-	ListVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListVrboListings(ctx context.Context, params *ListVrboListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVrboReservations List VRBO reservations
 	//
@@ -2244,7 +2273,14 @@ type ClientInterface interface {
 
 	// ListConnections List PMS/OTA connections
 	//
-	// Returns all active connections to PMS and OTA platforms.
+	// Returns every PMS and OTA connection in the workspace, each with its `status`.
+	//
+	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
+	//
+	// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
+	// - `fixUrl` — a durable link that reopens the hosted Connect flow **bound to that account, on the fix screen** (e.g. "grant full access" + a Re-check button). It is safe to store and show in your own dashboard.
+	//
+	// **Self-serve repair:** when `action.required` is true, surface a "Fix" button that opens `fixUrl` in a new tab (or embed it). The host resolves the issue (e.g. grants the user full access in Booking.com) and clicks Re-check; the import finishes on its own and the connection flips back to `active` — no re-invite, no support ticket. Poll this endpoint (or read it after the host returns) to confirm `action` has cleared.
 	//
 	// Corresponds with GET /v1/connect (the `ListConnections` operationId).
 	ListConnections(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2728,7 +2764,9 @@ type ClientInterface interface {
 
 	// SubmitSmoobuCredentialsWithBody Submit Smoobu credentials for a Connect session
 	//
-	// Completes a credentials-pattern connection for Smoobu. API key from Smoobu → Settings → For developers.
+	// Completes a credentials-pattern connection for Smoobu with an HMAC API key + API secret, created in Smoobu → Settings → Advanced → API Keys (Create API Key, then Generate Secret — the secret is shown only once). Smoobu retires single legacy API keys on October 31, 2026, so `apiSecret` is required; a request with only `apiKey` returns `invalid_params`.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing Smoobu connection — the `pmsConnectionId` stays the same.
 	//
 	// The credentials are validated against Smoobu before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 	//
@@ -2741,7 +2779,9 @@ type ClientInterface interface {
 
 	// SubmitSmoobuCredentials Submit Smoobu credentials for a Connect session
 	//
-	// Completes a credentials-pattern connection for Smoobu. API key from Smoobu → Settings → For developers.
+	// Completes a credentials-pattern connection for Smoobu with an HMAC API key + API secret, created in Smoobu → Settings → Advanced → API Keys (Create API Key, then Generate Secret — the secret is shown only once). Smoobu retires single legacy API keys on October 31, 2026, so `apiSecret` is required; a request with only `apiKey` returns `invalid_params`.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing Smoobu connection — the `pmsConnectionId` stays the same.
 	//
 	// The credentials are validated against Smoobu before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 	//
@@ -4221,19 +4261,57 @@ type ClientInterface interface {
 
 	// CreateReservationWithBody Create a reservation
 	//
-	// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+	// Creates a reservation — in the listing's PMS when it has one, otherwise as a direct booking in Repull.
 	//
-	// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+	// ### Where the booking is made
 	//
-	// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
-	// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
 	//
-	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+	// ### Fields by listing kind
 	//
-	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	// | Field | PMS listing | Direct-booking listing |
+	// |---|---|---|
+	// | `listingId`, `checkIn`, `checkOut`, `guest`, `guestCount`, `adults`, `children` | ✓ | ✓ |
+	// | `status` | `confirmed` (default) or `tentative` | ✓ |
+	// | `totalPrice` | ✓ where `capabilities.reservations.customPrice`; otherwise the PMS prices the stay | `422 unsupported_field` (priced from the listing's rates) |
+	// | `notes`, `unitId`, `sendConfirmationEmail` | ✓ | `422 unsupported_field` |
+	// | `checkInTime`, `checkOutTime`, `currency`, `guestId` | `422 unsupported_field` (the PMS's own settings apply) | ✓ |
+	// | `platform` | `direct` or `website` (`owner` → `422 pms_write_unsupported`; block owner stays in the PMS) | `direct`, `website` or `owner` |
 	//
-	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// A field a listing cannot take is refused by name, never silently dropped. `platform` never accepts `airbnb` / `booking` / `vrbo`: those reservations are owned by the channel and arrive through sync.
+	//
+	// ### Per-PMS limits
+	//
+	// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+	// |---|---|---|---|---|---|---|
+	// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+	// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+	// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+	// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+	// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+	// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+	// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+	// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	//
+	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+	//
+	// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+	//
+	// ### Idempotency
+	//
+	// **Send `Idempotency-Key`.** A network timeout here is exactly the case it exists for. The key is also sent to the PMS as the booking's reference, so even a retry that reaches the PMS again finds the booking instead of making a second one (`409 pms_duplicate` with `existing`, or the existing booking returned). A completed answer is replayed with `Idempotency-Status: cached` and the PMS is not called again. `502 pms_error` (the PMS could not be reached) is NOT stored — retry with the same key. `502 reservation_created_in_pms_only` IS stored, unlike every other 5xx: the booking exists in the PMS and arrives with the next sync, so a retry replays that answer rather than booking twice.
+	//
+	// ### Partial success
+	//
+	// When the PMS created the booking but a follow-up step did not apply (for example the notes, or a tentative state), the response is still `201`, with `pms.partial: true` and the steps in `pms.failedSections`. The booking exists — do not create it again.
+	//
+	// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4242,24 +4320,138 @@ type ClientInterface interface {
 
 	// CreateReservation Create a reservation
 	//
-	// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+	// Creates a reservation — in the listing's PMS when it has one, otherwise as a direct booking in Repull.
 	//
-	// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+	// ### Where the booking is made
 	//
-	// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
-	// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
 	//
-	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+	// ### Fields by listing kind
 	//
-	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	// | Field | PMS listing | Direct-booking listing |
+	// |---|---|---|
+	// | `listingId`, `checkIn`, `checkOut`, `guest`, `guestCount`, `adults`, `children` | ✓ | ✓ |
+	// | `status` | `confirmed` (default) or `tentative` | ✓ |
+	// | `totalPrice` | ✓ where `capabilities.reservations.customPrice`; otherwise the PMS prices the stay | `422 unsupported_field` (priced from the listing's rates) |
+	// | `notes`, `unitId`, `sendConfirmationEmail` | ✓ | `422 unsupported_field` |
+	// | `checkInTime`, `checkOutTime`, `currency`, `guestId` | `422 unsupported_field` (the PMS's own settings apply) | ✓ |
+	// | `platform` | `direct` or `website` (`owner` → `422 pms_write_unsupported`; block owner stays in the PMS) | `direct`, `website` or `owner` |
 	//
-	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// A field a listing cannot take is refused by name, never silently dropped. `platform` never accepts `airbnb` / `booking` / `vrbo`: those reservations are owned by the channel and arrive through sync.
+	//
+	// ### Per-PMS limits
+	//
+	// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+	// |---|---|---|---|---|---|---|
+	// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+	// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+	// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+	// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+	// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+	// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+	// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+	// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	//
+	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+	//
+	// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+	//
+	// ### Idempotency
+	//
+	// **Send `Idempotency-Key`.** A network timeout here is exactly the case it exists for. The key is also sent to the PMS as the booking's reference, so even a retry that reaches the PMS again finds the booking instead of making a second one (`409 pms_duplicate` with `existing`, or the existing booking returned). A completed answer is replayed with `Idempotency-Status: cached` and the PMS is not called again. `502 pms_error` (the PMS could not be reached) is NOT stored — retry with the same key. `502 reservation_created_in_pms_only` IS stored, unlike every other 5xx: the booking exists in the PMS and arrives with the next sync, so a retry replays that answer rather than booking twice.
+	//
+	// ### Partial success
+	//
+	// When the PMS created the booking but a follow-up step did not apply (for example the notes, or a tentative state), the response is still `201`, with `pms.partial: true` and the steps in `pms.failedSections`. The booking exists — do not create it again.
+	//
+	// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
 	CreateReservation(ctx context.Context, params *CreateReservationParams, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// QuoteReservationWithBody Quote a reservation in the PMS
+	//
+	// Prices a stay and checks its availability **in the PMS that manages the listing**, without booking anything. It is the same check `POST /v1/reservations` makes before booking when no `totalPrice` is sent, so `available: true` with a `total` is what that create would be priced at (dates can still be taken in between).
+	//
+	// `available: false` is an answer, not an error: the PMS's reasons are in `restrictions` (minimum stay, closed to arrival, taken dates…).
+	//
+	// - A listing **not managed in a PMS** answers `422 pms_not_linked`. Book it directly with `POST /v1/reservations`, or price it with `GET /v1/quotes`.
+	// - A PMS **without a quote API** (Mews, Cloudbeds, iGMS) answers `422 pms_write_unsupported`. You can still create the booking; on iGMS a `totalPrice` is required.
+	//
+	// `GET /v1/listings/{id}` → `capabilities.reservations.quote` says whether a listing can be quoted.
+	//
+	// ### Per-PMS limits
+	//
+	// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+	// |---|---|---|---|---|---|---|
+	// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+	// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+	// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+	// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+	// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+	// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+	// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+	// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	//
+	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+	//
+	// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+	//
+	// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
+	QuoteReservationWithBody(ctx context.Context, params *QuoteReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// QuoteReservation Quote a reservation in the PMS
+	//
+	// Prices a stay and checks its availability **in the PMS that manages the listing**, without booking anything. It is the same check `POST /v1/reservations` makes before booking when no `totalPrice` is sent, so `available: true` with a `total` is what that create would be priced at (dates can still be taken in between).
+	//
+	// `available: false` is an answer, not an error: the PMS's reasons are in `restrictions` (minimum stay, closed to arrival, taken dates…).
+	//
+	// - A listing **not managed in a PMS** answers `422 pms_not_linked`. Book it directly with `POST /v1/reservations`, or price it with `GET /v1/quotes`.
+	// - A PMS **without a quote API** (Mews, Cloudbeds, iGMS) answers `422 pms_write_unsupported`. You can still create the booking; on iGMS a `totalPrice` is required.
+	//
+	// `GET /v1/listings/{id}` → `capabilities.reservations.quote` says whether a listing can be quoted.
+	//
+	// ### Per-PMS limits
+	//
+	// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+	// |---|---|---|---|---|---|---|
+	// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+	// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+	// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+	// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+	// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+	// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+	// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+	// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	//
+	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+	//
+	// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+	//
+	// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
+	QuoteReservation(ctx context.Context, params *QuoteReservationParams, body QuoteReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetReservation Get reservation details
 	//
@@ -4272,7 +4464,11 @@ type ClientInterface interface {
 
 	// UpdateReservationWithBody Update a reservation
 	//
-	// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+	// Changes the dates, the occupancy, or the unit.
+	//
+	// **A stay managed in a connected PMS is changed in the PMS first**, then Repull's copy is refreshed from the PMS's record — changing only Repull's copy would be reverted by the next sync. On such a stay, `checkIn`, `checkOut` and `guestCount` are changed; moving it to another listing and changing its check-in/check-out times are done in the PMS (`422 pms_write_unsupported`), as is anything the PMS's API cannot change (for example dates on Smoobu). A channel booking that came in through the PMS (Airbnb, Booking.com, …) is changed on the channel (`409 reservation_owned_by_channel`). The PMS checks availability: taken dates answer `409 pms_unavailable`. The PMS's outcome comes back as `pms`. `GET /v1/listings/{id}` → `capabilities.reservations.modify` says whether a listing's PMS supports changes.
+	//
+	// **Any other stay** drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
 	//
 	// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
 	//
@@ -4290,9 +4486,9 @@ type ClientInterface interface {
 	// | `platform` | Immutable: it records where the booking actually originated. |
 	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 	//
-	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	// **Availability is NOT checked for stays outside a PMS.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 	//
-	// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+	// `X-Account-Id` restricts the reservation (and a listing it is moved to) to one connected account. Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4301,7 +4497,11 @@ type ClientInterface interface {
 
 	// UpdateReservation Update a reservation
 	//
-	// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+	// Changes the dates, the occupancy, or the unit.
+	//
+	// **A stay managed in a connected PMS is changed in the PMS first**, then Repull's copy is refreshed from the PMS's record — changing only Repull's copy would be reverted by the next sync. On such a stay, `checkIn`, `checkOut` and `guestCount` are changed; moving it to another listing and changing its check-in/check-out times are done in the PMS (`422 pms_write_unsupported`), as is anything the PMS's API cannot change (for example dates on Smoobu). A channel booking that came in through the PMS (Airbnb, Booking.com, …) is changed on the channel (`409 reservation_owned_by_channel`). The PMS checks availability: taken dates answer `409 pms_unavailable`. The PMS's outcome comes back as `pms`. `GET /v1/listings/{id}` → `capabilities.reservations.modify` says whether a listing's PMS supports changes.
+	//
+	// **Any other stay** drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
 	//
 	// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
 	//
@@ -4319,9 +4519,9 @@ type ClientInterface interface {
 	// | `platform` | Immutable: it records where the booking actually originated. |
 	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 	//
-	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	// **Availability is NOT checked for stays outside a PMS.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 	//
-	// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+	// `X-Account-Id` restricts the reservation (and a listing it is moved to) to one connected account. Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4347,35 +4547,39 @@ type ClientInterface interface {
 	//
 	// Cancels a reservation where it lives.
 	//
-	// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+	// - **A booking managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged. Lodgify *declines* the booking rather than deleting it. **OwnerRez's API cannot cancel** — `422 pms_write_unsupported`; cancel it in OwnerRez. `GET /v1/listings/{id}` → `capabilities.reservations.cancel` says which applies.
 	// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
-	// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+	// - **A channel booking** (Airbnb, Booking.com, VRBO), including one that came in through a PMS: `409 reservation_owned_by_channel`. Cancel it on the channel; the cancellation reaches Repull with the next sync.
 	//
 	// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
 	//
-	// Returns `403 listing_inactive` when the listing is inactive.
+	// PMS integrations other than Mews and Cloudbeds are verified against the vendor's API documentation only.
+	//
+	// `X-Account-Id` restricts the reservation to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
-	CancelReservationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CancelReservationWithBody(ctx context.Context, id int, params *CancelReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CancelReservation Cancel a reservation
 	//
 	// Cancels a reservation where it lives.
 	//
-	// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+	// - **A booking managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged. Lodgify *declines* the booking rather than deleting it. **OwnerRez's API cannot cancel** — `422 pms_write_unsupported`; cancel it in OwnerRez. `GET /v1/listings/{id}` → `capabilities.reservations.cancel` says which applies.
 	// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
-	// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+	// - **A channel booking** (Airbnb, Booking.com, VRBO), including one that came in through a PMS: `409 reservation_owned_by_channel`. Cancel it on the channel; the cancellation reaches Repull with the next sync.
 	//
 	// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
 	//
-	// Returns `403 listing_inactive` when the listing is inactive.
+	// PMS integrations other than Mews and Cloudbeds are verified against the vendor's API documentation only.
+	//
+	// `X-Account-Id` restricts the reservation to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 	//
 	// Takes a body of the `application/json` content type.
 	//
 	// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
-	CancelReservation(ctx context.Context, id int, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CancelReservation(ctx context.Context, id int, params *CancelReservationParams, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeclineReservationRequestWithBody Decline a booking request
 	//
@@ -5157,7 +5361,7 @@ func (c *Client) GetAirbnbConnection(ctx context.Context, reqEditors ...RequestE
 //
 // **Can this listing be written to?** Every connection carries `syncCategory` — Airbnb's own per-listing API sync decision (`sync_all`, `sync_rates_and_availability`, or `none`) — and `writable`, which is `false` exactly when that category is `none`. Airbnb authorises sync one listing at a time, so a connected account can still hold listings Airbnb refuses every write to; a write to one of those returns `403 listing_not_api_connected` before anything is sent, and reconnecting the account does not change it (the host must switch the listing on in Airbnb). Check `writable` here before a portfolio-wide push instead of discovering it one 403 at a time.
 //
-// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+// Inactive listings are left out unless `?status=inactive|all` asks for them; they then come back with identity fields only — `listingId`, `name`, `city`, `status`, `inactiveReason` (`plan_limit`, `unlisted_on_airbnb` or `deactivated`) and each connection's ids and account — so you can show the user what to activate. They keep syncing and are complete again once activated.
 //
 // **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
 //
@@ -5585,15 +5789,50 @@ func (c *Client) GetAirbnbCheckinGuide(ctx context.Context, id string, params *G
 	return c.Client.Do(req)
 }
 
-// UpdateAirbnbCheckinGuide Upsert Airbnb check-in guide
+// UpdateAirbnbCheckinGuideWithBody Replace the steps of an Airbnb check-in guide
 //
-// Upsert the check-in guide for one locale on an Airbnb listing. **Write-side** — calls Airbnb upstream; the DB mirror is reconciled by the sync worker once the upstream call returns. Target the locale with `?locale=en` (defaults to `en`). Requires a connected Airbnb host, else `404 no_connection`.
+// Write the check-in guide guests see before arrival: an ordered list of text steps. **Replaces** every existing step, so send the whole guide; `{"steps": []}` removes them all. The response is the guide re-read from Airbnb after the write.
+//
+// If the listing has no guide yet, one is created in `locale` (default: the existing guide's, else `en`).
+//
+// Safe on failure: the new steps are created before the old ones are removed, and if a create fails the steps this call added are removed again, so the guide is never left emptier than it was.
+//
+// Text steps only. Steps with photos need Airbnb's media upload and are not supported here yet. For the other arrival details use `PUT /v1/channels/airbnb/listings/{id}/details`: `check_in_option.instruction` (arrival instructions), `house_manual`, `directions`, `wifi_network`, `wifi_password`.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
+// Takes any type of body and a specified content type.
+//
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
-func (c *Client) UpdateAirbnbCheckinGuide(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateAirbnbCheckinGuideRequest(c.Server, id, params)
+func (c *Client) UpdateAirbnbCheckinGuideWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbCheckinGuideRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateAirbnbCheckinGuide Replace the steps of an Airbnb check-in guide
+//
+// Write the check-in guide guests see before arrival: an ordered list of text steps. **Replaces** every existing step, so send the whole guide; `{"steps": []}` removes them all. The response is the guide re-read from Airbnb after the write.
+//
+// If the listing has no guide yet, one is created in `locale` (default: the existing guide's, else `en`).
+//
+// Safe on failure: the new steps are created before the old ones are removed, and if a create fails the steps this call added are removed again, so the guide is never left emptier than it was.
+//
+// Text steps only. Steps with photos need Airbnb's media upload and are not supported here yet. For the other arrival details use `PUT /v1/channels/airbnb/listings/{id}/details`: `check_in_option.instruction` (arrival instructions), `house_manual`, `directions`, `wifi_network`, `wifi_password`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
+func (c *Client) UpdateAirbnbCheckinGuide(ctx context.Context, id string, body UpdateAirbnbCheckinGuideJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbCheckinGuideRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5727,13 +5966,13 @@ func (c *Client) GetAirbnbListingDetails(ctx context.Context, id string, reqEdit
 	return c.Client.Do(req)
 }
 
-// UpdateAirbnbListingDetailsWithBody Update property type, room type, quiet hours or check-in method
+// UpdateAirbnbListingDetailsWithBody Update property type, quiet hours, check-in method, house manual, directions or Wi-Fi
 //
-// Change what kind of property the Airbnb listing is, when its quiet hours are, or how the guest gets in. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
+// Change what kind of property the Airbnb listing is, when its quiet hours are, how the guest gets in (`check_in_option.instruction` is the arrival instructions), the house manual, directions to the property, or the Wi-Fi network and password. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
 //
 // This is the UPDATE path for fields that previously had none. `POST /v1/listings` accepts a `propertyType` when a listing is CREATED and nothing could change it afterwards, so a listing mis-typed at import stayed mis-typed; the check-in method was mirrored and never exposed at all.
 //
-// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group` and `check_in_option` are among the attributes Airbnb locks on established listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
+// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group`, `check_in_option`, `house_manual`, `directions`, `wifi_network` and `wifi_password` are among the attributes Airbnb locks on some listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
 //
 // Canonical property type (the value Repull keeps and republishes) is set with `PUT /v1/listings/{id}/content` under `details`; this endpoint writes straight to Airbnb.
 //
@@ -5754,13 +5993,13 @@ func (c *Client) UpdateAirbnbListingDetailsWithBody(ctx context.Context, id stri
 	return c.Client.Do(req)
 }
 
-// UpdateAirbnbListingDetails Update property type, room type, quiet hours or check-in method
+// UpdateAirbnbListingDetails Update property type, quiet hours, check-in method, house manual, directions or Wi-Fi
 //
-// Change what kind of property the Airbnb listing is, when its quiet hours are, or how the guest gets in. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
+// Change what kind of property the Airbnb listing is, when its quiet hours are, how the guest gets in (`check_in_option.instruction` is the arrival instructions), the house manual, directions to the property, or the Wi-Fi network and password. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
 //
 // This is the UPDATE path for fields that previously had none. `POST /v1/listings` accepts a `propertyType` when a listing is CREATED and nothing could change it afterwards, so a listing mis-typed at import stayed mis-typed; the check-in method was mirrored and never exposed at all.
 //
-// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group` and `check_in_option` are among the attributes Airbnb locks on established listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
+// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group`, `check_in_option`, `house_manual`, `directions`, `wifi_network` and `wifi_password` are among the attributes Airbnb locks on some listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
 //
 // Canonical property type (the value Repull keeps and republishes) is set with `PUT /v1/listings/{id}/content` under `details`; this endpoint writes straight to Airbnb.
 //
@@ -5808,11 +6047,13 @@ func (c *Client) ListAirbnbListingPermits(ctx context.Context, id string, params
 //
 // Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 //
-// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field — `<type>_value`: `text_value`, `attestation_value`, `radio_value`, `dropdown_value`, `email_value`, `future_date_value`, `file_upload_value`, and so on. Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 //
 // Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 //
 // Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+//
+// **Changing and removing answers.** Airbnb has no call that deletes or withdraws a submitted registration, so neither does Repull, and at least one permit is required. To change an answer Airbnb marks `answer_editable`, submit the flow again with the new answers — the latest submission replaces the previous one. When a submission fails with status `failed_recoverable`, fix it and submit again; `failed` cannot be resubmitted. Hosts can also manage this at airbnb.com/verify-listing/{listing_id}.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5833,11 +6074,13 @@ func (c *Client) UpdateAirbnbListingPermitsWithBody(ctx context.Context, id stri
 //
 // Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 //
-// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field — `<type>_value`: `text_value`, `attestation_value`, `radio_value`, `dropdown_value`, `email_value`, `future_date_value`, `file_upload_value`, and so on. Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 //
 // Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 //
 // Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+//
+// **Changing and removing answers.** Airbnb has no call that deletes or withdraws a submitted registration, so neither does Repull, and at least one permit is required. To change an answer Airbnb marks `answer_editable`, submit the flow again with the new answers — the latest submission replaces the previous one. When a submission fails with status `failed_recoverable`, fix it and submit again; `failed` cannot be resubmitted. Hosts can also manage this at airbnb.com/verify-listing/{listing_id}.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -7579,11 +7822,11 @@ func (c *Client) SendBookingMessage(ctx context.Context, body SendBookingMessage
 //
 // A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"` and an empty `listings` array. That is a real mid-onboarding state, not an error: finish `POST /v1/connect/booking/map-rooms` and the listings appear. Such a property used to be dropped silently, which made a mapped-but-unreadable workspace indistinguishable from one with no Booking connection at all.
 //
-// Inactive listings are left out of `listings`; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+// Inactive listings are left out of `listings` unless `?status=inactive|all` asks for them; they then appear with identity fields only (`listingId`, `name`, `city`, `status`, `inactiveReason`, room). `mappingStatus` counts every mapped listing, inactive ones included, so a property whose listings are all inactive is still `mapped`.
 //
 // Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
-func (c *Client) ListBookingProperties(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListBookingPropertiesRequest(c.Server)
+func (c *Client) ListBookingProperties(ctx context.Context, params *ListBookingPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBookingPropertiesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -8244,11 +8487,11 @@ func (c *Client) UpdatePlumguideWebhooks(ctx context.Context, body UpdatePlumgui
 //
 // List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
 //
-// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+// Inactive listings are left out unless `?status=inactive|all` asks for them; they then come back with identity fields only (ids, `listingName`, `listingCity`, `status`, `inactiveReason`). They keep syncing and are complete again once activated.
 //
 // Corresponds with GET /v1/channels/vrbo/listings (the `ListVrboListings` operationId).
-func (c *Client) ListVrboListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListVrboListingsRequest(c.Server)
+func (c *Client) ListVrboListings(ctx context.Context, params *ListVrboListingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVrboListingsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -8280,7 +8523,14 @@ func (c *Client) ListVrboReservations(ctx context.Context, params *ListVrboReser
 
 // ListConnections List PMS/OTA connections
 //
-// Returns all active connections to PMS and OTA platforms.
+// Returns every PMS and OTA connection in the workspace, each with its `status`.
+//
+// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
+//
+// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
+// - `fixUrl` — a durable link that reopens the hosted Connect flow **bound to that account, on the fix screen** (e.g. "grant full access" + a Re-check button). It is safe to store and show in your own dashboard.
+//
+// **Self-serve repair:** when `action.required` is true, surface a "Fix" button that opens `fixUrl` in a new tab (or embed it). The host resolves the issue (e.g. grants the user full access in Booking.com) and clicks Re-check; the import finishes on its own and the connection flips back to `active` — no re-invite, no support ticket. Poll this endpoint (or read it after the host returns) to confirm `action` has cleared.
 //
 // Corresponds with GET /v1/connect (the `ListConnections` operationId).
 func (c *Client) ListConnections(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -9164,7 +9414,9 @@ func (c *Client) SelectConnectProvider(ctx context.Context, sessionId string, bo
 
 // SubmitSmoobuCredentialsWithBody Submit Smoobu credentials for a Connect session
 //
-// Completes a credentials-pattern connection for Smoobu. API key from Smoobu → Settings → For developers.
+// Completes a credentials-pattern connection for Smoobu with an HMAC API key + API secret, created in Smoobu → Settings → Advanced → API Keys (Create API Key, then Generate Secret — the secret is shown only once). Smoobu retires single legacy API keys on October 31, 2026, so `apiSecret` is required; a request with only `apiKey` returns `invalid_params`.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing Smoobu connection — the `pmsConnectionId` stays the same.
 //
 // The credentials are validated against Smoobu before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 //
@@ -9187,7 +9439,9 @@ func (c *Client) SubmitSmoobuCredentialsWithBody(ctx context.Context, contentTyp
 
 // SubmitSmoobuCredentials Submit Smoobu credentials for a Connect session
 //
-// Completes a credentials-pattern connection for Smoobu. API key from Smoobu → Settings → For developers.
+// Completes a credentials-pattern connection for Smoobu with an HMAC API key + API secret, created in Smoobu → Settings → Advanced → API Keys (Create API Key, then Generate Secret — the secret is shown only once). Smoobu retires single legacy API keys on October 31, 2026, so `apiSecret` is required; a request with only `apiKey` returns `invalid_params`.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing Smoobu connection — the `pmsConnectionId` stays the same.
 //
 // The credentials are validated against Smoobu before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 //
@@ -11787,19 +12041,57 @@ func (c *Client) ListReservations(ctx context.Context, params *ListReservationsP
 
 // CreateReservationWithBody Create a reservation
 //
-// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+// Creates a reservation — in the listing's PMS when it has one, otherwise as a direct booking in Repull.
 //
-// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+// ### Where the booking is made
 //
-// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
-// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
 //
-// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+// ### Fields by listing kind
 //
-// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+// | Field | PMS listing | Direct-booking listing |
+// |---|---|---|
+// | `listingId`, `checkIn`, `checkOut`, `guest`, `guestCount`, `adults`, `children` | ✓ | ✓ |
+// | `status` | `confirmed` (default) or `tentative` | ✓ |
+// | `totalPrice` | ✓ where `capabilities.reservations.customPrice`; otherwise the PMS prices the stay | `422 unsupported_field` (priced from the listing's rates) |
+// | `notes`, `unitId`, `sendConfirmationEmail` | ✓ | `422 unsupported_field` |
+// | `checkInTime`, `checkOutTime`, `currency`, `guestId` | `422 unsupported_field` (the PMS's own settings apply) | ✓ |
+// | `platform` | `direct` or `website` (`owner` → `422 pms_write_unsupported`; block owner stays in the PMS) | `direct`, `website` or `owner` |
 //
-// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// A field a listing cannot take is refused by name, never silently dropped. `platform` never accepts `airbnb` / `booking` / `vrbo`: those reservations are owned by the channel and arrive through sync.
+//
+// ### Per-PMS limits
+//
+// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+// |---|---|---|---|---|---|---|
+// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+//
+// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+//
+// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+//
+// ### Idempotency
+//
+// **Send `Idempotency-Key`.** A network timeout here is exactly the case it exists for. The key is also sent to the PMS as the booking's reference, so even a retry that reaches the PMS again finds the booking instead of making a second one (`409 pms_duplicate` with `existing`, or the existing booking returned). A completed answer is replayed with `Idempotency-Status: cached` and the PMS is not called again. `502 pms_error` (the PMS could not be reached) is NOT stored — retry with the same key. `502 reservation_created_in_pms_only` IS stored, unlike every other 5xx: the booking exists in the PMS and arrives with the next sync, so a retry replays that answer rather than booking twice.
+//
+// ### Partial success
+//
+// When the PMS created the booking but a follow-up step did not apply (for example the notes, or a tentative state), the response is still `201`, with `pms.partial: true` and the steps in `pms.failedSections`. The booking exists — do not create it again.
+//
+// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 //
 // Takes any type of body and a specified content type.
 //
@@ -11818,25 +12110,159 @@ func (c *Client) CreateReservationWithBody(ctx context.Context, params *CreateRe
 
 // CreateReservation Create a reservation
 //
-// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+// Creates a reservation — in the listing's PMS when it has one, otherwise as a direct booking in Repull.
 //
-// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+// ### Where the booking is made
 //
-// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
-// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
 //
-// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+// ### Fields by listing kind
 //
-// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+// | Field | PMS listing | Direct-booking listing |
+// |---|---|---|
+// | `listingId`, `checkIn`, `checkOut`, `guest`, `guestCount`, `adults`, `children` | ✓ | ✓ |
+// | `status` | `confirmed` (default) or `tentative` | ✓ |
+// | `totalPrice` | ✓ where `capabilities.reservations.customPrice`; otherwise the PMS prices the stay | `422 unsupported_field` (priced from the listing's rates) |
+// | `notes`, `unitId`, `sendConfirmationEmail` | ✓ | `422 unsupported_field` |
+// | `checkInTime`, `checkOutTime`, `currency`, `guestId` | `422 unsupported_field` (the PMS's own settings apply) | ✓ |
+// | `platform` | `direct` or `website` (`owner` → `422 pms_write_unsupported`; block owner stays in the PMS) | `direct`, `website` or `owner` |
 //
-// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// A field a listing cannot take is refused by name, never silently dropped. `platform` never accepts `airbnb` / `booking` / `vrbo`: those reservations are owned by the channel and arrive through sync.
+//
+// ### Per-PMS limits
+//
+// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+// |---|---|---|---|---|---|---|
+// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+//
+// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+//
+// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+//
+// ### Idempotency
+//
+// **Send `Idempotency-Key`.** A network timeout here is exactly the case it exists for. The key is also sent to the PMS as the booking's reference, so even a retry that reaches the PMS again finds the booking instead of making a second one (`409 pms_duplicate` with `existing`, or the existing booking returned). A completed answer is replayed with `Idempotency-Status: cached` and the PMS is not called again. `502 pms_error` (the PMS could not be reached) is NOT stored — retry with the same key. `502 reservation_created_in_pms_only` IS stored, unlike every other 5xx: the booking exists in the PMS and arrives with the next sync, so a retry replays that answer rather than booking twice.
+//
+// ### Partial success
+//
+// When the PMS created the booking but a follow-up step did not apply (for example the notes, or a tentative state), the response is still `201`, with `pms.partial: true` and the steps in `pms.failedSections`. The booking exists — do not create it again.
+//
+// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 //
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
 func (c *Client) CreateReservation(ctx context.Context, params *CreateReservationParams, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateReservationRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// QuoteReservationWithBody Quote a reservation in the PMS
+//
+// Prices a stay and checks its availability **in the PMS that manages the listing**, without booking anything. It is the same check `POST /v1/reservations` makes before booking when no `totalPrice` is sent, so `available: true` with a `total` is what that create would be priced at (dates can still be taken in between).
+//
+// `available: false` is an answer, not an error: the PMS's reasons are in `restrictions` (minimum stay, closed to arrival, taken dates…).
+//
+// - A listing **not managed in a PMS** answers `422 pms_not_linked`. Book it directly with `POST /v1/reservations`, or price it with `GET /v1/quotes`.
+// - A PMS **without a quote API** (Mews, Cloudbeds, iGMS) answers `422 pms_write_unsupported`. You can still create the booking; on iGMS a `totalPrice` is required.
+//
+// `GET /v1/listings/{id}` → `capabilities.reservations.quote` says whether a listing can be quoted.
+//
+// ### Per-PMS limits
+//
+// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+// |---|---|---|---|---|---|---|
+// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+//
+// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+//
+// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+//
+// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
+func (c *Client) QuoteReservationWithBody(ctx context.Context, params *QuoteReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewQuoteReservationRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// QuoteReservation Quote a reservation in the PMS
+//
+// Prices a stay and checks its availability **in the PMS that manages the listing**, without booking anything. It is the same check `POST /v1/reservations` makes before booking when no `totalPrice` is sent, so `available: true` with a `total` is what that create would be priced at (dates can still be taken in between).
+//
+// `available: false` is an answer, not an error: the PMS's reasons are in `restrictions` (minimum stay, closed to arrival, taken dates…).
+//
+// - A listing **not managed in a PMS** answers `422 pms_not_linked`. Book it directly with `POST /v1/reservations`, or price it with `GET /v1/quotes`.
+// - A PMS **without a quote API** (Mews, Cloudbeds, iGMS) answers `422 pms_write_unsupported`. You can still create the booking; on iGMS a `totalPrice` is required.
+//
+// `GET /v1/listings/{id}` → `capabilities.reservations.quote` says whether a listing can be quoted.
+//
+// ### Per-PMS limits
+//
+// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+// |---|---|---|---|---|---|---|
+// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+//
+// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+//
+// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+//
+// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
+func (c *Client) QuoteReservation(ctx context.Context, params *QuoteReservationParams, body QuoteReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewQuoteReservationRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -11868,7 +12294,11 @@ func (c *Client) GetReservation(ctx context.Context, id int, params *GetReservat
 
 // UpdateReservationWithBody Update a reservation
 //
-// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+// Changes the dates, the occupancy, or the unit.
+//
+// **A stay managed in a connected PMS is changed in the PMS first**, then Repull's copy is refreshed from the PMS's record — changing only Repull's copy would be reverted by the next sync. On such a stay, `checkIn`, `checkOut` and `guestCount` are changed; moving it to another listing and changing its check-in/check-out times are done in the PMS (`422 pms_write_unsupported`), as is anything the PMS's API cannot change (for example dates on Smoobu). A channel booking that came in through the PMS (Airbnb, Booking.com, …) is changed on the channel (`409 reservation_owned_by_channel`). The PMS checks availability: taken dates answer `409 pms_unavailable`. The PMS's outcome comes back as `pms`. `GET /v1/listings/{id}` → `capabilities.reservations.modify` says whether a listing's PMS supports changes.
+//
+// **Any other stay** drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
 //
 // Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
 //
@@ -11886,9 +12316,9 @@ func (c *Client) GetReservation(ctx context.Context, id int, params *GetReservat
 // | `platform` | Immutable: it records where the booking actually originated. |
 // | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 //
-// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+// **Availability is NOT checked for stays outside a PMS.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 //
-// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+// `X-Account-Id` restricts the reservation (and a listing it is moved to) to one connected account. Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 //
 // Takes any type of body and a specified content type.
 //
@@ -11907,7 +12337,11 @@ func (c *Client) UpdateReservationWithBody(ctx context.Context, id int, params *
 
 // UpdateReservation Update a reservation
 //
-// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+// Changes the dates, the occupancy, or the unit.
+//
+// **A stay managed in a connected PMS is changed in the PMS first**, then Repull's copy is refreshed from the PMS's record — changing only Repull's copy would be reverted by the next sync. On such a stay, `checkIn`, `checkOut` and `guestCount` are changed; moving it to another listing and changing its check-in/check-out times are done in the PMS (`422 pms_write_unsupported`), as is anything the PMS's API cannot change (for example dates on Smoobu). A channel booking that came in through the PMS (Airbnb, Booking.com, …) is changed on the channel (`409 reservation_owned_by_channel`). The PMS checks availability: taken dates answer `409 pms_unavailable`. The PMS's outcome comes back as `pms`. `GET /v1/listings/{id}` → `capabilities.reservations.modify` says whether a listing's PMS supports changes.
+//
+// **Any other stay** drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
 //
 // Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
 //
@@ -11925,9 +12359,9 @@ func (c *Client) UpdateReservationWithBody(ctx context.Context, id int, params *
 // | `platform` | Immutable: it records where the booking actually originated. |
 // | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 //
-// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+// **Availability is NOT checked for stays outside a PMS.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 //
-// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+// `X-Account-Id` restricts the reservation (and a listing it is moved to) to one connected account. Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -11973,19 +12407,21 @@ func (c *Client) AcceptReservationRequest(ctx context.Context, id int, params *A
 //
 // Cancels a reservation where it lives.
 //
-// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+// - **A booking managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged. Lodgify *declines* the booking rather than deleting it. **OwnerRez's API cannot cancel** — `422 pms_write_unsupported`; cancel it in OwnerRez. `GET /v1/listings/{id}` → `capabilities.reservations.cancel` says which applies.
 // - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
-// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+// - **A channel booking** (Airbnb, Booking.com, VRBO), including one that came in through a PMS: `409 reservation_owned_by_channel`. Cancel it on the channel; the cancellation reaches Repull with the next sync.
 //
 // Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
 //
-// Returns `403 listing_inactive` when the listing is inactive.
+// PMS integrations other than Mews and Cloudbeds are verified against the vendor's API documentation only.
+//
+// `X-Account-Id` restricts the reservation to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 //
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
-func (c *Client) CancelReservationWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCancelReservationRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) CancelReservationWithBody(ctx context.Context, id int, params *CancelReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelReservationRequestWithBody(c.Server, id, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -12000,19 +12436,21 @@ func (c *Client) CancelReservationWithBody(ctx context.Context, id int, contentT
 //
 // Cancels a reservation where it lives.
 //
-// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+// - **A booking managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged. Lodgify *declines* the booking rather than deleting it. **OwnerRez's API cannot cancel** — `422 pms_write_unsupported`; cancel it in OwnerRez. `GET /v1/listings/{id}` → `capabilities.reservations.cancel` says which applies.
 // - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
-// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+// - **A channel booking** (Airbnb, Booking.com, VRBO), including one that came in through a PMS: `409 reservation_owned_by_channel`. Cancel it on the channel; the cancellation reaches Repull with the next sync.
 //
 // Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
 //
-// Returns `403 listing_inactive` when the listing is inactive.
+// PMS integrations other than Mews and Cloudbeds are verified against the vendor's API documentation only.
+//
+// `X-Account-Id` restricts the reservation to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 //
 // Takes a body of the `application/json` content type.
 //
 // Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
-func (c *Client) CancelReservation(ctx context.Context, id int, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCancelReservationRequest(c.Server, id, body)
+func (c *Client) CancelReservation(ctx context.Context, id int, params *CancelReservationParams, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelReservationRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -13280,6 +13718,18 @@ func NewListAirbnbListingsRequest(server string, params *ListAirbnbListingsParam
 		// per the OpenAPI spec (e.g. "color=blue,black,brown").
 		var rawQueryFragments []string
 
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.AccountId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account_id", *params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -13785,8 +14235,19 @@ func NewGetAirbnbCheckinGuideRequest(server string, id string, params *GetAirbnb
 	return req, nil
 }
 
-// NewUpdateAirbnbCheckinGuideRequest constructs an http.Request for the UpdateAirbnbCheckinGuide method
-func NewUpdateAirbnbCheckinGuideRequest(server string, id string, params *UpdateAirbnbCheckinGuideParams) (*http.Request, error) {
+// NewUpdateAirbnbCheckinGuideRequest calls the generic UpdateAirbnbCheckinGuide builder with application/json body
+func NewUpdateAirbnbCheckinGuideRequest(server string, id string, body UpdateAirbnbCheckinGuideJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAirbnbCheckinGuideRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateAirbnbCheckinGuideRequestWithBody constructs an http.Request for the UpdateAirbnbCheckinGuide method, with any body, and a specified content type
+func NewUpdateAirbnbCheckinGuideRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -13811,37 +14272,12 @@ func NewUpdateAirbnbCheckinGuideRequest(server string, id string, params *Update
 		return nil, err
 	}
 
-	if params != nil {
-		// queryValues collects non-styled parameters (passthrough, JSON)
-		// that are safe to round-trip through url.Values.Encode().
-		queryValues := queryURL.Query()
-		// rawQueryFragments collects pre-encoded query fragments from
-		// styled parameters, preserving literal commas as delimiters
-		// per the OpenAPI spec (e.g. "color=blue,black,brown").
-		var rawQueryFragments []string
-
-		if params.Locale != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
-		if encoded := queryValues.Encode(); encoded != "" {
-			rawQueryFragments = append(rawQueryFragments, encoded)
-		}
-		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
-	}
-
-	req, err := http.NewRequest(http.MethodPut, queryURL.String(), nil)
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -16708,7 +17144,7 @@ func NewSendBookingMessageRequestWithBody(server string, contentType string, bod
 }
 
 // NewListBookingPropertiesRequest constructs an http.Request for the ListBookingProperties method
-func NewListBookingPropertiesRequest(server string) (*http.Request, error) {
+func NewListBookingPropertiesRequest(server string, params *ListBookingPropertiesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -16724,6 +17160,33 @@ func NewListBookingPropertiesRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -17579,7 +18042,7 @@ func NewUpdatePlumguideWebhooksRequestWithBody(server string, contentType string
 }
 
 // NewListVrboListingsRequest constructs an http.Request for the ListVrboListings method
-func NewListVrboListingsRequest(server string) (*http.Request, error) {
+func NewListVrboListingsRequest(server string, params *ListVrboListingsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -17595,6 +18058,33 @@ func NewListVrboListingsRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -23732,6 +24222,72 @@ func NewCreateReservationRequestWithBody(server string, params *CreateReservatio
 			req.Header.Set("Idempotency-Key", headerParam0)
 		}
 
+		if params.XAccountId != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "X-Account-Id", *params.XAccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Account-Id", headerParam1)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewQuoteReservationRequest calls the generic QuoteReservation builder with application/json body
+func NewQuoteReservationRequest(server string, params *QuoteReservationParams, body QuoteReservationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewQuoteReservationRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewQuoteReservationRequestWithBody constructs an http.Request for the QuoteReservation method, with any body, and a specified content type
+func NewQuoteReservationRequestWithBody(server string, params *QuoteReservationParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reservations/quote")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.XAccountId != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Account-Id", *params.XAccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Account-Id", headerParam0)
+		}
+
 	}
 
 	return req, nil
@@ -23843,6 +24399,17 @@ func NewUpdateReservationRequestWithBody(server string, id int, params *UpdateRe
 			req.Header.Set("Idempotency-Key", headerParam0)
 		}
 
+		if params.XAccountId != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "X-Account-Id", *params.XAccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Account-Id", headerParam1)
+		}
+
 	}
 
 	return req, nil
@@ -23898,18 +24465,18 @@ func NewAcceptReservationRequestRequest(server string, id int, params *AcceptRes
 }
 
 // NewCancelReservationRequest calls the generic CancelReservation builder with application/json body
-func NewCancelReservationRequest(server string, id int, body CancelReservationJSONRequestBody) (*http.Request, error) {
+func NewCancelReservationRequest(server string, id int, params *CancelReservationParams, body CancelReservationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCancelReservationRequestWithBody(server, id, "application/json", bodyReader)
+	return NewCancelReservationRequestWithBody(server, id, params, "application/json", bodyReader)
 }
 
 // NewCancelReservationRequestWithBody constructs an http.Request for the CancelReservation method, with any body, and a specified content type
-func NewCancelReservationRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+func NewCancelReservationRequestWithBody(server string, id int, params *CancelReservationParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -23940,6 +24507,32 @@ func NewCancelReservationRequestWithBody(server string, id int, contentType stri
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+		if params.XAccountId != nil {
+			var headerParam1 string
+
+			headerParam1, err = runtime.StyleParamWithOptions("simple", false, "X-Account-Id", *params.XAccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Account-Id", headerParam1)
+		}
+
+	}
 
 	return req, nil
 }
@@ -25565,7 +26158,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Can this listing be written to?** Every connection carries `syncCategory` — Airbnb's own per-listing API sync decision (`sync_all`, `sync_rates_and_availability`, or `none`) — and `writable`, which is `false` exactly when that category is `none`. Airbnb authorises sync one listing at a time, so a connected account can still hold listings Airbnb refuses every write to; a write to one of those returns `403 listing_not_api_connected` before anything is sent, and reconnecting the account does not change it (the host must switch the listing on in Airbnb). Check `writable` here before a portfolio-wide push instead of discovering it one 403 at a time.
 	//
-	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	// Inactive listings are left out unless `?status=inactive|all` asks for them; they then come back with identity fields only — `listingId`, `name`, `city`, `status`, `inactiveReason` (`plan_limit`, `unlisted_on_airbnb` or `deactivated`) and each connection's ids and account — so you can show the user what to activate. They keep syncing and are complete again once activated.
 	//
 	// **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
 	//
@@ -25845,16 +26438,39 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/checkin-guide (the `GetAirbnbCheckinGuide` operationId).
 	GetAirbnbCheckinGuideWithResponse(ctx context.Context, id string, params *GetAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*GetAirbnbCheckinGuideClientResponse, error)
 
-	// UpdateAirbnbCheckinGuideWithResponse Upsert Airbnb check-in guide
+	// UpdateAirbnbCheckinGuideWithBodyWithResponse Replace the steps of an Airbnb check-in guide
 	//
-	// Upsert the check-in guide for one locale on an Airbnb listing. **Write-side** — calls Airbnb upstream; the DB mirror is reconciled by the sync worker once the upstream call returns. Target the locale with `?locale=en` (defaults to `en`). Requires a connected Airbnb host, else `404 no_connection`.
+	// Write the check-in guide guests see before arrival: an ordered list of text steps. **Replaces** every existing step, so send the whole guide; `{"steps": []}` removes them all. The response is the guide re-read from Airbnb after the write.
+	//
+	// If the listing has no guide yet, one is created in `locale` (default: the existing guide's, else `en`).
+	//
+	// Safe on failure: the new steps are created before the old ones are removed, and if a create fails the steps this call added are removed again, so the guide is never left emptier than it was.
+	//
+	// Text steps only. Steps with photos need Airbnb's media upload and are not supported here yet. For the other arrival details use `PUT /v1/channels/airbnb/listings/{id}/details`: `check_in_option.instruction` (arrival instructions), `house_manual`, `directions`, `wifi_network`, `wifi_password`.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
-	// Returns a wrapper object for the known response body format(s).
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
-	UpdateAirbnbCheckinGuideWithResponse(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*UpdateAirbnbCheckinGuideClientResponse, error)
+	UpdateAirbnbCheckinGuideWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbCheckinGuideClientResponse, error)
+
+	// UpdateAirbnbCheckinGuideWithResponse Replace the steps of an Airbnb check-in guide
+	//
+	// Write the check-in guide guests see before arrival: an ordered list of text steps. **Replaces** every existing step, so send the whole guide; `{"steps": []}` removes them all. The response is the guide re-read from Airbnb after the write.
+	//
+	// If the listing has no guide yet, one is created in `locale` (default: the existing guide's, else `en`).
+	//
+	// Safe on failure: the new steps are created before the old ones are removed, and if a create fails the steps this call added are removed again, so the guide is never left emptier than it was.
+	//
+	// Text steps only. Steps with photos need Airbnb's media upload and are not supported here yet. For the other arrival details use `PUT /v1/channels/airbnb/listings/{id}/details`: `check_in_option.instruction` (arrival instructions), `house_manual`, `directions`, `wifi_network`, `wifi_password`.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
+	UpdateAirbnbCheckinGuideWithResponse(ctx context.Context, id string, body UpdateAirbnbCheckinGuideJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbCheckinGuideClientResponse, error)
 
 	// GetAirbnbCheckoutGuideWithResponse Get Airbnb checkout guide
 	//
@@ -25935,13 +26551,13 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/details (the `GetAirbnbListingDetails` operationId).
 	GetAirbnbListingDetailsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingDetailsClientResponse, error)
 
-	// UpdateAirbnbListingDetailsWithBodyWithResponse Update property type, room type, quiet hours or check-in method
+	// UpdateAirbnbListingDetailsWithBodyWithResponse Update property type, quiet hours, check-in method, house manual, directions or Wi-Fi
 	//
-	// Change what kind of property the Airbnb listing is, when its quiet hours are, or how the guest gets in. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
+	// Change what kind of property the Airbnb listing is, when its quiet hours are, how the guest gets in (`check_in_option.instruction` is the arrival instructions), the house manual, directions to the property, or the Wi-Fi network and password. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
 	//
 	// This is the UPDATE path for fields that previously had none. `POST /v1/listings` accepts a `propertyType` when a listing is CREATED and nothing could change it afterwards, so a listing mis-typed at import stayed mis-typed; the check-in method was mirrored and never exposed at all.
 	//
-	// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group` and `check_in_option` are among the attributes Airbnb locks on established listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
+	// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group`, `check_in_option`, `house_manual`, `directions`, `wifi_network` and `wifi_password` are among the attributes Airbnb locks on some listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
 	//
 	// Canonical property type (the value Repull keeps and republishes) is set with `PUT /v1/listings/{id}/content` under `details`; this endpoint writes straight to Airbnb.
 	//
@@ -25952,13 +26568,13 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/details (the `UpdateAirbnbListingDetails` operationId).
 	UpdateAirbnbListingDetailsWithBodyWithResponse(ctx context.Context, id string, params *UpdateAirbnbListingDetailsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingDetailsClientResponse, error)
 
-	// UpdateAirbnbListingDetailsWithResponse Update property type, room type, quiet hours or check-in method
+	// UpdateAirbnbListingDetailsWithResponse Update property type, quiet hours, check-in method, house manual, directions or Wi-Fi
 	//
-	// Change what kind of property the Airbnb listing is, when its quiet hours are, or how the guest gets in. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
+	// Change what kind of property the Airbnb listing is, when its quiet hours are, how the guest gets in (`check_in_option.instruction` is the arrival instructions), the house manual, directions to the property, or the Wi-Fi network and password. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
 	//
 	// This is the UPDATE path for fields that previously had none. `POST /v1/listings` accepts a `propertyType` when a listing is CREATED and nothing could change it afterwards, so a listing mis-typed at import stayed mis-typed; the check-in method was mirrored and never exposed at all.
 	//
-	// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group` and `check_in_option` are among the attributes Airbnb locks on established listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
+	// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group`, `check_in_option`, `house_manual`, `directions`, `wifi_network` and `wifi_password` are among the attributes Airbnb locks on some listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
 	//
 	// Canonical property type (the value Repull keeps and republishes) is set with `PUT /v1/listings/{id}/content` under `details`; this endpoint writes straight to Airbnb.
 	//
@@ -25988,11 +26604,13 @@ type ClientWithResponsesInterface interface {
 	//
 	// Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 	//
-	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field — `<type>_value`: `text_value`, `attestation_value`, `radio_value`, `dropdown_value`, `email_value`, `future_date_value`, `file_upload_value`, and so on. Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 	//
 	// Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 	//
 	// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+	//
+	// **Changing and removing answers.** Airbnb has no call that deletes or withdraws a submitted registration, so neither does Repull, and at least one permit is required. To change an answer Airbnb marks `answer_editable`, submit the flow again with the new answers — the latest submission replaces the previous one. When a submission fails with status `failed_recoverable`, fix it and submit again; `failed` cannot be resubmitted. Hosts can also manage this at airbnb.com/verify-listing/{listing_id}.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -26003,11 +26621,13 @@ type ClientWithResponsesInterface interface {
 	//
 	// Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 	//
-	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+	// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field — `<type>_value`: `text_value`, `attestation_value`, `radio_value`, `dropdown_value`, `email_value`, `future_date_value`, `file_upload_value`, and so on. Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 	//
 	// Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 	//
 	// Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+	//
+	// **Changing and removing answers.** Airbnb has no call that deletes or withdraws a submitted registration, so neither does Repull, and at least one permit is required. To change an answer Airbnb marks `answer_editable`, submit the flow again with the new answers — the latest submission replaces the previous one. When a submission fails with status `failed_recoverable`, fix it and submit again; `failed` cannot be resubmitted. Hosts can also manage this at airbnb.com/verify-listing/{listing_id}.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -27134,12 +27754,12 @@ type ClientWithResponsesInterface interface {
 	//
 	// A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"` and an empty `listings` array. That is a real mid-onboarding state, not an error: finish `POST /v1/connect/booking/map-rooms` and the listings appear. Such a property used to be dropped silently, which made a mapped-but-unreadable workspace indistinguishable from one with no Booking connection at all.
 	//
-	// Inactive listings are left out of `listings`; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	// Inactive listings are left out of `listings` unless `?status=inactive|all` asks for them; they then appear with identity fields only (`listingId`, `name`, `city`, `status`, `inactiveReason`, room). `mappingStatus` counts every mapped listing, inactive ones included, so a property whose listings are all inactive is still `mapped`.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
-	ListBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingPropertiesClientResponse, error)
+	ListBookingPropertiesWithResponse(ctx context.Context, params *ListBookingPropertiesParams, reqEditors ...RequestEditorFn) (*ListBookingPropertiesClientResponse, error)
 
 	// GetBookingPropertyWithResponse Get Booking.com connection for a listing
 	//
@@ -27563,12 +28183,12 @@ type ClientWithResponsesInterface interface {
 	//
 	// List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
 	//
-	// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+	// Inactive listings are left out unless `?status=inactive|all` asks for them; they then come back with identity fields only (ids, `listingName`, `listingCity`, `status`, `inactiveReason`). They keep syncing and are complete again once activated.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/channels/vrbo/listings (the `ListVrboListings` operationId).
-	ListVrboListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboListingsClientResponse, error)
+	ListVrboListingsWithResponse(ctx context.Context, params *ListVrboListingsParams, reqEditors ...RequestEditorFn) (*ListVrboListingsClientResponse, error)
 
 	// ListVrboReservationsWithResponse List VRBO reservations
 	//
@@ -27583,7 +28203,14 @@ type ClientWithResponsesInterface interface {
 
 	// ListConnectionsWithResponse List PMS/OTA connections
 	//
-	// Returns all active connections to PMS and OTA platforms.
+	// Returns every PMS and OTA connection in the workspace, each with its `status`.
+	//
+	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
+	//
+	// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
+	// - `fixUrl` — a durable link that reopens the hosted Connect flow **bound to that account, on the fix screen** (e.g. "grant full access" + a Re-check button). It is safe to store and show in your own dashboard.
+	//
+	// **Self-serve repair:** when `action.required` is true, surface a "Fix" button that opens `fixUrl` in a new tab (or embed it). The host resolves the issue (e.g. grants the user full access in Booking.com) and clicks Re-check; the import finishes on its own and the connection flips back to `active` — no re-invite, no support ticket. Poll this endpoint (or read it after the host returns) to confirm `action` has cleared.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -28079,7 +28706,9 @@ type ClientWithResponsesInterface interface {
 
 	// SubmitSmoobuCredentialsWithBodyWithResponse Submit Smoobu credentials for a Connect session
 	//
-	// Completes a credentials-pattern connection for Smoobu. API key from Smoobu → Settings → For developers.
+	// Completes a credentials-pattern connection for Smoobu with an HMAC API key + API secret, created in Smoobu → Settings → Advanced → API Keys (Create API Key, then Generate Secret — the secret is shown only once). Smoobu retires single legacy API keys on October 31, 2026, so `apiSecret` is required; a request with only `apiKey` returns `invalid_params`.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing Smoobu connection — the `pmsConnectionId` stays the same.
 	//
 	// The credentials are validated against Smoobu before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 	//
@@ -28092,7 +28721,9 @@ type ClientWithResponsesInterface interface {
 
 	// SubmitSmoobuCredentialsWithResponse Submit Smoobu credentials for a Connect session
 	//
-	// Completes a credentials-pattern connection for Smoobu. API key from Smoobu → Settings → For developers.
+	// Completes a credentials-pattern connection for Smoobu with an HMAC API key + API secret, created in Smoobu → Settings → Advanced → API Keys (Create API Key, then Generate Secret — the secret is shown only once). Smoobu retires single legacy API keys on October 31, 2026, so `apiSecret` is required; a request with only `apiKey` returns `invalid_params`.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing Smoobu connection — the `pmsConnectionId` stays the same.
 	//
 	// The credentials are validated against Smoobu before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 	//
@@ -29674,19 +30305,57 @@ type ClientWithResponsesInterface interface {
 
 	// CreateReservationWithBodyWithResponse Create a reservation
 	//
-	// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+	// Creates a reservation — in the listing's PMS when it has one, otherwise as a direct booking in Repull.
 	//
-	// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+	// ### Where the booking is made
 	//
-	// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
-	// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
 	//
-	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+	// ### Fields by listing kind
 	//
-	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	// | Field | PMS listing | Direct-booking listing |
+	// |---|---|---|
+	// | `listingId`, `checkIn`, `checkOut`, `guest`, `guestCount`, `adults`, `children` | ✓ | ✓ |
+	// | `status` | `confirmed` (default) or `tentative` | ✓ |
+	// | `totalPrice` | ✓ where `capabilities.reservations.customPrice`; otherwise the PMS prices the stay | `422 unsupported_field` (priced from the listing's rates) |
+	// | `notes`, `unitId`, `sendConfirmationEmail` | ✓ | `422 unsupported_field` |
+	// | `checkInTime`, `checkOutTime`, `currency`, `guestId` | `422 unsupported_field` (the PMS's own settings apply) | ✓ |
+	// | `platform` | `direct` or `website` (`owner` → `422 pms_write_unsupported`; block owner stays in the PMS) | `direct`, `website` or `owner` |
 	//
-	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// A field a listing cannot take is refused by name, never silently dropped. `platform` never accepts `airbnb` / `booking` / `vrbo`: those reservations are owned by the channel and arrive through sync.
+	//
+	// ### Per-PMS limits
+	//
+	// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+	// |---|---|---|---|---|---|---|
+	// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+	// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+	// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+	// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+	// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+	// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+	// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+	// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	//
+	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+	//
+	// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+	//
+	// ### Idempotency
+	//
+	// **Send `Idempotency-Key`.** A network timeout here is exactly the case it exists for. The key is also sent to the PMS as the booking's reference, so even a retry that reaches the PMS again finds the booking instead of making a second one (`409 pms_duplicate` with `existing`, or the existing booking returned). A completed answer is replayed with `Idempotency-Status: cached` and the PMS is not called again. `502 pms_error` (the PMS could not be reached) is NOT stored — retry with the same key. `502 reservation_created_in_pms_only` IS stored, unlike every other 5xx: the booking exists in the PMS and arrives with the next sync, so a retry replays that answer rather than booking twice.
+	//
+	// ### Partial success
+	//
+	// When the PMS created the booking but a follow-up step did not apply (for example the notes, or a tentative state), the response is still `201`, with `pms.partial: true` and the steps in `pms.failedSections`. The booking exists — do not create it again.
+	//
+	// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -29695,24 +30364,138 @@ type ClientWithResponsesInterface interface {
 
 	// CreateReservationWithResponse Create a reservation
 	//
-	// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+	// Creates a reservation — in the listing's PMS when it has one, otherwise as a direct booking in Repull.
 	//
-	// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+	// ### Where the booking is made
 	//
-	// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
-	// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
 	//
-	// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+	// ### Fields by listing kind
 	//
-	// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+	// | Field | PMS listing | Direct-booking listing |
+	// |---|---|---|
+	// | `listingId`, `checkIn`, `checkOut`, `guest`, `guestCount`, `adults`, `children` | ✓ | ✓ |
+	// | `status` | `confirmed` (default) or `tentative` | ✓ |
+	// | `totalPrice` | ✓ where `capabilities.reservations.customPrice`; otherwise the PMS prices the stay | `422 unsupported_field` (priced from the listing's rates) |
+	// | `notes`, `unitId`, `sendConfirmationEmail` | ✓ | `422 unsupported_field` |
+	// | `checkInTime`, `checkOutTime`, `currency`, `guestId` | `422 unsupported_field` (the PMS's own settings apply) | ✓ |
+	// | `platform` | `direct` or `website` (`owner` → `422 pms_write_unsupported`; block owner stays in the PMS) | `direct`, `website` or `owner` |
 	//
-	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	// A field a listing cannot take is refused by name, never silently dropped. `platform` never accepts `airbnb` / `booking` / `vrbo`: those reservations are owned by the channel and arrive through sync.
+	//
+	// ### Per-PMS limits
+	//
+	// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+	// |---|---|---|---|---|---|---|
+	// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+	// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+	// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+	// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+	// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+	// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+	// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+	// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	//
+	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+	//
+	// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+	//
+	// ### Idempotency
+	//
+	// **Send `Idempotency-Key`.** A network timeout here is exactly the case it exists for. The key is also sent to the PMS as the booking's reference, so even a retry that reaches the PMS again finds the booking instead of making a second one (`409 pms_duplicate` with `existing`, or the existing booking returned). A completed answer is replayed with `Idempotency-Status: cached` and the PMS is not called again. `502 pms_error` (the PMS could not be reached) is NOT stored — retry with the same key. `502 reservation_created_in_pms_only` IS stored, unlike every other 5xx: the booking exists in the PMS and arrives with the next sync, so a retry replays that answer rather than booking twice.
+	//
+	// ### Partial success
+	//
+	// When the PMS created the booking but a follow-up step did not apply (for example the notes, or a tentative state), the response is still `201`, with `pms.partial: true` and the steps in `pms.failedSections`. The booking exists — do not create it again.
+	//
+	// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/reservations (the `CreateReservation` operationId).
 	CreateReservationWithResponse(ctx context.Context, params *CreateReservationParams, body CreateReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReservationClientResponse, error)
+
+	// QuoteReservationWithBodyWithResponse Quote a reservation in the PMS
+	//
+	// Prices a stay and checks its availability **in the PMS that manages the listing**, without booking anything. It is the same check `POST /v1/reservations` makes before booking when no `totalPrice` is sent, so `available: true` with a `total` is what that create would be priced at (dates can still be taken in between).
+	//
+	// `available: false` is an answer, not an error: the PMS's reasons are in `restrictions` (minimum stay, closed to arrival, taken dates…).
+	//
+	// - A listing **not managed in a PMS** answers `422 pms_not_linked`. Book it directly with `POST /v1/reservations`, or price it with `GET /v1/quotes`.
+	// - A PMS **without a quote API** (Mews, Cloudbeds, iGMS) answers `422 pms_write_unsupported`. You can still create the booking; on iGMS a `totalPrice` is required.
+	//
+	// `GET /v1/listings/{id}` → `capabilities.reservations.quote` says whether a listing can be quoted.
+	//
+	// ### Per-PMS limits
+	//
+	// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+	// |---|---|---|---|---|---|---|
+	// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+	// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+	// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+	// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+	// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+	// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+	// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+	// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	//
+	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+	//
+	// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+	//
+	// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
+	QuoteReservationWithBodyWithResponse(ctx context.Context, params *QuoteReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QuoteReservationClientResponse, error)
+
+	// QuoteReservationWithResponse Quote a reservation in the PMS
+	//
+	// Prices a stay and checks its availability **in the PMS that manages the listing**, without booking anything. It is the same check `POST /v1/reservations` makes before booking when no `totalPrice` is sent, so `available: true` with a `total` is what that create would be priced at (dates can still be taken in between).
+	//
+	// `available: false` is an answer, not an error: the PMS's reasons are in `restrictions` (minimum stay, closed to arrival, taken dates…).
+	//
+	// - A listing **not managed in a PMS** answers `422 pms_not_linked`. Book it directly with `POST /v1/reservations`, or price it with `GET /v1/quotes`.
+	// - A PMS **without a quote API** (Mews, Cloudbeds, iGMS) answers `422 pms_write_unsupported`. You can still create the booking; on iGMS a `totalPrice` is required.
+	//
+	// `GET /v1/listings/{id}` → `capabilities.reservations.quote` says whether a listing can be quoted.
+	//
+	// ### Per-PMS limits
+	//
+	// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+	// |---|---|---|---|---|---|---|
+	// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+	// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+	// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+	// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+	// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+	// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+	// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+	// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	//
+	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+	//
+	// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+	//
+	// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
+	QuoteReservationWithResponse(ctx context.Context, params *QuoteReservationParams, body QuoteReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*QuoteReservationClientResponse, error)
 
 	// GetReservationWithResponse Get reservation details
 	//
@@ -29727,7 +30510,11 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateReservationWithBodyWithResponse Update a reservation
 	//
-	// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+	// Changes the dates, the occupancy, or the unit.
+	//
+	// **A stay managed in a connected PMS is changed in the PMS first**, then Repull's copy is refreshed from the PMS's record — changing only Repull's copy would be reverted by the next sync. On such a stay, `checkIn`, `checkOut` and `guestCount` are changed; moving it to another listing and changing its check-in/check-out times are done in the PMS (`422 pms_write_unsupported`), as is anything the PMS's API cannot change (for example dates on Smoobu). A channel booking that came in through the PMS (Airbnb, Booking.com, …) is changed on the channel (`409 reservation_owned_by_channel`). The PMS checks availability: taken dates answer `409 pms_unavailable`. The PMS's outcome comes back as `pms`. `GET /v1/listings/{id}` → `capabilities.reservations.modify` says whether a listing's PMS supports changes.
+	//
+	// **Any other stay** drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
 	//
 	// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
 	//
@@ -29745,9 +30532,9 @@ type ClientWithResponsesInterface interface {
 	// | `platform` | Immutable: it records where the booking actually originated. |
 	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 	//
-	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	// **Availability is NOT checked for stays outside a PMS.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 	//
-	// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+	// `X-Account-Id` restricts the reservation (and a listing it is moved to) to one connected account. Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -29756,7 +30543,11 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateReservationWithResponse Update a reservation
 	//
-	// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+	// Changes the dates, the occupancy, or the unit.
+	//
+	// **A stay managed in a connected PMS is changed in the PMS first**, then Repull's copy is refreshed from the PMS's record — changing only Repull's copy would be reverted by the next sync. On such a stay, `checkIn`, `checkOut` and `guestCount` are changed; moving it to another listing and changing its check-in/check-out times are done in the PMS (`422 pms_write_unsupported`), as is anything the PMS's API cannot change (for example dates on Smoobu). A channel booking that came in through the PMS (Airbnb, Booking.com, …) is changed on the channel (`409 reservation_owned_by_channel`). The PMS checks availability: taken dates answer `409 pms_unavailable`. The PMS's outcome comes back as `pms`. `GET /v1/listings/{id}` → `capabilities.reservations.modify` says whether a listing's PMS supports changes.
+	//
+	// **Any other stay** drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
 	//
 	// Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
 	//
@@ -29774,9 +30565,9 @@ type ClientWithResponsesInterface interface {
 	// | `platform` | Immutable: it records where the booking actually originated. |
 	// | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 	//
-	// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+	// **Availability is NOT checked for stays outside a PMS.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 	//
-	// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+	// `X-Account-Id` restricts the reservation (and a listing it is moved to) to one connected account. Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -29804,35 +30595,39 @@ type ClientWithResponsesInterface interface {
 	//
 	// Cancels a reservation where it lives.
 	//
-	// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+	// - **A booking managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged. Lodgify *declines* the booking rather than deleting it. **OwnerRez's API cannot cancel** — `422 pms_write_unsupported`; cancel it in OwnerRez. `GET /v1/listings/{id}` → `capabilities.reservations.cancel` says which applies.
 	// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
-	// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+	// - **A channel booking** (Airbnb, Booking.com, VRBO), including one that came in through a PMS: `409 reservation_owned_by_channel`. Cancel it on the channel; the cancellation reaches Repull with the next sync.
 	//
 	// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
 	//
-	// Returns `403 listing_inactive` when the listing is inactive.
+	// PMS integrations other than Mews and Cloudbeds are verified against the vendor's API documentation only.
+	//
+	// `X-Account-Id` restricts the reservation to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
-	CancelReservationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error)
+	CancelReservationWithBodyWithResponse(ctx context.Context, id int, params *CancelReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error)
 
 	// CancelReservationWithResponse Cancel a reservation
 	//
 	// Cancels a reservation where it lives.
 	//
-	// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+	// - **A booking managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged. Lodgify *declines* the booking rather than deleting it. **OwnerRez's API cannot cancel** — `422 pms_write_unsupported`; cancel it in OwnerRez. `GET /v1/listings/{id}` → `capabilities.reservations.cancel` says which applies.
 	// - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
-	// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+	// - **A channel booking** (Airbnb, Booking.com, VRBO), including one that came in through a PMS: `409 reservation_owned_by_channel`. Cancel it on the channel; the cancellation reaches Repull with the next sync.
 	//
 	// Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
 	//
-	// Returns `403 listing_inactive` when the listing is inactive.
+	// PMS integrations other than Mews and Cloudbeds are verified against the vendor's API documentation only.
+	//
+	// `X-Account-Id` restricts the reservation to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
-	CancelReservationWithResponse(ctx context.Context, id int, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error)
+	CancelReservationWithResponse(ctx context.Context, id int, params *CancelReservationParams, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error)
 
 	// DeclineReservationRequestWithBodyWithResponse Decline a booking request
 	//
@@ -32124,6 +32919,19 @@ func (r GetAirbnbCheckinGuideClientResponse) ContentType() string {
 type UpdateAirbnbCheckinGuideClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *struct {
+			ListingId *int    `json:"listingId,omitempty"`
+			Locale    *string `json:"locale,omitempty"`
+			Published *bool   `json:"published,omitempty"`
+			Steps     *[]struct {
+				Id       *int    `json:"id,omitempty"`
+				MediaUrl *string `json:"mediaUrl,omitempty"`
+				Notes    *string `json:"notes,omitempty"`
+			} `json:"steps,omitempty"`
+		} `json:"data,omitempty"`
+	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
@@ -32138,6 +32946,22 @@ type UpdateAirbnbCheckinGuideClientResponse struct {
 	JSON500 *InternalError
 	// JSON502 the response for an HTTP 502 `application/json` response
 	JSON502 *AirbnbUpstreamError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateAirbnbCheckinGuideClientResponse) GetJSON200() *struct {
+	Data *struct {
+		ListingId *int    `json:"listingId,omitempty"`
+		Locale    *string `json:"locale,omitempty"`
+		Published *bool   `json:"published,omitempty"`
+		Steps     *[]struct {
+			Id       *int    `json:"id,omitempty"`
+			MediaUrl *string `json:"mediaUrl,omitempty"`
+			Notes    *string `json:"notes,omitempty"`
+		} `json:"steps,omitempty"`
+	} `json:"data,omitempty"`
+} {
+	return r.JSON200
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -38180,7 +39004,8 @@ type GetBookingExtranetLoginStatusClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
-		AccountId       *int    `json:"accountId,omitempty"`
+		// AccountId The connection id (numeric string, like every `*Id` on the wire).
+		AccountId       *string `json:"accountId,omitempty"`
 		AwaitingMapping *bool   `json:"awaitingMapping,omitempty"`
 		Completed       *bool   `json:"completed,omitempty"`
 		ErrorMessage    *string `json:"errorMessage,omitempty"`
@@ -38191,7 +39016,8 @@ type GetBookingExtranetLoginStatusClientResponse struct {
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetBookingExtranetLoginStatusClientResponse) GetJSON200() *struct {
-	AccountId       *int    `json:"accountId,omitempty"`
+	// AccountId The connection id (numeric string, like every `*Id` on the wire).
+	AccountId       *string `json:"accountId,omitempty"`
 	AwaitingMapping *bool   `json:"awaitingMapping,omitempty"`
 	Completed       *bool   `json:"completed,omitempty"`
 	ErrorMessage    *string `json:"errorMessage,omitempty"`
@@ -44949,8 +45775,10 @@ type ListListingUnitsClientResponse struct {
 			// Source Example: mews
 			Source *string `json:"source,omitempty"`
 		} `json:"data,omitempty"`
-		ListingId *int `json:"listingId,omitempty"`
-		Total     *int `json:"total,omitempty"`
+
+		// ListingId Repull listing id (numeric string, like every `*Id` on the wire).
+		ListingId *string `json:"listingId,omitempty"`
+		Total     *int    `json:"total,omitempty"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -44981,8 +45809,10 @@ func (r ListListingUnitsClientResponse) GetJSON200() *struct {
 		// Source Example: mews
 		Source *string `json:"source,omitempty"`
 	} `json:"data,omitempty"`
-	ListingId *int `json:"listingId,omitempty"`
-	Total     *int `json:"total,omitempty"`
+
+	// ListingId Repull listing id (numeric string, like every `*Id` on the wire).
+	ListingId *string `json:"listingId,omitempty"`
+	Total     *int    `json:"total,omitempty"`
 } {
 	return r.JSON200
 }
@@ -46063,21 +46893,32 @@ type CreateReservationClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON201 the response for an HTTP 201 `application/json` response
 	JSON201 *ReservationCreateResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *Error
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
+	JSON422 *Error
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
 func (r CreateReservationClientResponse) GetJSON201() *ReservationCreateResponse {
 	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateReservationClientResponse) GetJSON400() *Error {
+	return r.JSON400
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -46086,7 +46927,7 @@ func (r CreateReservationClientResponse) GetJSON401() *Unauthorized {
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r CreateReservationClientResponse) GetJSON403() *ListingInactive {
+func (r CreateReservationClientResponse) GetJSON403() *Error {
 	return r.JSON403
 }
 
@@ -46095,14 +46936,24 @@ func (r CreateReservationClientResponse) GetJSON404() *Error {
 	return r.JSON404
 }
 
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateReservationClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r CreateReservationClientResponse) GetJSON422() *UnprocessableEntity {
+func (r CreateReservationClientResponse) GetJSON422() *Error {
 	return r.JSON422
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r CreateReservationClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateReservationClientResponse) GetJSON502() *Error {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -46128,6 +46979,96 @@ func (r CreateReservationClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r CreateReservationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type QuoteReservationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ReservationQuoteResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *Error
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r QuoteReservationClientResponse) GetJSON200() *ReservationQuoteResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r QuoteReservationClientResponse) GetJSON400() *Error {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r QuoteReservationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r QuoteReservationClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r QuoteReservationClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r QuoteReservationClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r QuoteReservationClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r QuoteReservationClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r QuoteReservationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r QuoteReservationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r QuoteReservationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r QuoteReservationClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -46218,13 +47159,17 @@ type UpdateReservationClientResponse struct {
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
+	JSON422 *Error
 	// JSON500 the response for an HTTP 500 `application/json` response
 	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -46238,7 +47183,7 @@ func (r UpdateReservationClientResponse) GetJSON401() *Unauthorized {
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r UpdateReservationClientResponse) GetJSON403() *ListingInactive {
+func (r UpdateReservationClientResponse) GetJSON403() *Error {
 	return r.JSON403
 }
 
@@ -46247,14 +47192,24 @@ func (r UpdateReservationClientResponse) GetJSON404() *Error {
 	return r.JSON404
 }
 
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r UpdateReservationClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r UpdateReservationClientResponse) GetJSON422() *UnprocessableEntity {
+func (r UpdateReservationClientResponse) GetJSON422() *Error {
 	return r.JSON422
 }
 
 // GetJSON500 returns the response for an HTTP 500 `application/json` response
 func (r UpdateReservationClientResponse) GetJSON500() *InternalError {
 	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateReservationClientResponse) GetJSON502() *Error {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -46422,27 +47377,25 @@ type CancelReservationClientResponse struct {
 		Id               *string             `json:"id,omitempty"`
 		ListingId        *string             `json:"listingId,omitempty"`
 
-		// Pms Present when the cancellation was made in a PMS.
-		Pms *struct {
-			Applied *[]string `json:"applied,omitempty"`
-			Errors  *[]struct {
-				Code    *string `json:"code,omitempty"`
-				Message *string `json:"message,omitempty"`
-				Section *string `json:"section,omitempty"`
-			} `json:"errors,omitempty"`
-
-			// Provider Example: mews
-			Provider *string `json:"provider,omitempty"`
-		} `json:"pms,omitempty"`
+		// Pms Present when the write was made in a PMS: what the PMS applied. `partial: true` means the booking exists in the PMS but the steps in `failedSections` (e.g. notes, a tentative state) did not apply — do not create it again.
+		Pms       *ReservationPmsOutcome                      `json:"pms,omitempty"`
 		Status    *CancelReservation200JSONResponseBodyStatus `json:"status,omitempty"`
 		UpdatedAt *string                                     `json:"updatedAt,omitempty"`
 	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *Error
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
 	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
-	JSON422 *UnprocessableEntity
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -46455,22 +47408,17 @@ func (r CancelReservationClientResponse) GetJSON200() *struct {
 	Id               *string             `json:"id,omitempty"`
 	ListingId        *string             `json:"listingId,omitempty"`
 
-	// Pms Present when the cancellation was made in a PMS.
-	Pms *struct {
-		Applied *[]string `json:"applied,omitempty"`
-		Errors  *[]struct {
-			Code    *string `json:"code,omitempty"`
-			Message *string `json:"message,omitempty"`
-			Section *string `json:"section,omitempty"`
-		} `json:"errors,omitempty"`
-
-		// Provider Example: mews
-		Provider *string `json:"provider,omitempty"`
-	} `json:"pms,omitempty"`
+	// Pms Present when the write was made in a PMS: what the PMS applied. `partial: true` means the booking exists in the PMS but the steps in `failedSections` (e.g. notes, a tentative state) did not apply — do not create it again.
+	Pms       *ReservationPmsOutcome                      `json:"pms,omitempty"`
 	Status    *CancelReservation200JSONResponseBodyStatus `json:"status,omitempty"`
 	UpdatedAt *string                                     `json:"updatedAt,omitempty"`
 } {
 	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CancelReservationClientResponse) GetJSON400() *Error {
+	return r.JSON400
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -46478,14 +47426,29 @@ func (r CancelReservationClientResponse) GetJSON401() *Unauthorized {
 	return r.JSON401
 }
 
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CancelReservationClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r CancelReservationClientResponse) GetJSON404() *NotFound {
+func (r CancelReservationClientResponse) GetJSON404() *Error {
 	return r.JSON404
 }
 
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CancelReservationClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
-func (r CancelReservationClientResponse) GetJSON422() *UnprocessableEntity {
+func (r CancelReservationClientResponse) GetJSON422() *Error {
 	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CancelReservationClientResponse) GetJSON502() *Error {
+	return r.JSON502
 }
 
 // GetBody returns the raw response body bytes
@@ -48536,7 +49499,7 @@ func (c *ClientWithResponses) GetAirbnbConnectionWithResponse(ctx context.Contex
 //
 // **Can this listing be written to?** Every connection carries `syncCategory` — Airbnb's own per-listing API sync decision (`sync_all`, `sync_rates_and_availability`, or `none`) — and `writable`, which is `false` exactly when that category is `none`. Airbnb authorises sync one listing at a time, so a connected account can still hold listings Airbnb refuses every write to; a write to one of those returns `403 listing_not_api_connected` before anything is sent, and reconnecting the account does not change it (the host must switch the listing on in Airbnb). Check `writable` here before a portfolio-wide push instead of discovering it one 403 at a time.
 //
-// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+// Inactive listings are left out unless `?status=inactive|all` asks for them; they then come back with identity fields only — `listingId`, `name`, `city`, `status`, `inactiveReason` (`plan_limit`, `unlisted_on_airbnb` or `deactivated`) and each connection's ids and account — so you can show the user what to activate. They keep syncing and are complete again once activated.
 //
 // **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
 //
@@ -48912,17 +49875,46 @@ func (c *ClientWithResponses) GetAirbnbCheckinGuideWithResponse(ctx context.Cont
 	return ParseGetAirbnbCheckinGuideClientResponse(rsp)
 }
 
-// UpdateAirbnbCheckinGuideWithResponse Upsert Airbnb check-in guide
+// UpdateAirbnbCheckinGuideWithBodyWithResponse Replace the steps of an Airbnb check-in guide
 //
-// Upsert the check-in guide for one locale on an Airbnb listing. **Write-side** — calls Airbnb upstream; the DB mirror is reconciled by the sync worker once the upstream call returns. Target the locale with `?locale=en` (defaults to `en`). Requires a connected Airbnb host, else `404 no_connection`.
+// Write the check-in guide guests see before arrival: an ordered list of text steps. **Replaces** every existing step, so send the whole guide; `{"steps": []}` removes them all. The response is the guide re-read from Airbnb after the write.
+//
+// If the listing has no guide yet, one is created in `locale` (default: the existing guide's, else `en`).
+//
+// Safe on failure: the new steps are created before the old ones are removed, and if a create fails the steps this call added are removed again, so the guide is never left emptier than it was.
+//
+// Text steps only. Steps with photos need Airbnb's media upload and are not supported here yet. For the other arrival details use `PUT /v1/channels/airbnb/listings/{id}/details`: `check_in_option.instruction` (arrival instructions), `house_manual`, `directions`, `wifi_network`, `wifi_password`.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
-// Returns a wrapper object for the known response body format(s).
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
-func (c *ClientWithResponses) UpdateAirbnbCheckinGuideWithResponse(ctx context.Context, id string, params *UpdateAirbnbCheckinGuideParams, reqEditors ...RequestEditorFn) (*UpdateAirbnbCheckinGuideClientResponse, error) {
-	rsp, err := c.UpdateAirbnbCheckinGuide(ctx, id, params, reqEditors...)
+func (c *ClientWithResponses) UpdateAirbnbCheckinGuideWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbCheckinGuideClientResponse, error) {
+	rsp, err := c.UpdateAirbnbCheckinGuideWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbCheckinGuideClientResponse(rsp)
+}
+
+// UpdateAirbnbCheckinGuideWithResponse Replace the steps of an Airbnb check-in guide
+//
+// Write the check-in guide guests see before arrival: an ordered list of text steps. **Replaces** every existing step, so send the whole guide; `{"steps": []}` removes them all. The response is the guide re-read from Airbnb after the write.
+//
+// If the listing has no guide yet, one is created in `locale` (default: the existing guide's, else `en`).
+//
+// Safe on failure: the new steps are created before the old ones are removed, and if a create fails the steps this call added are removed again, so the guide is never left emptier than it was.
+//
+// Text steps only. Steps with photos need Airbnb's media upload and are not supported here yet. For the other arrival details use `PUT /v1/channels/airbnb/listings/{id}/details`: `check_in_option.instruction` (arrival instructions), `house_manual`, `directions`, `wifi_network`, `wifi_password`.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/checkin-guide (the `UpdateAirbnbCheckinGuide` operationId).
+func (c *ClientWithResponses) UpdateAirbnbCheckinGuideWithResponse(ctx context.Context, id string, body UpdateAirbnbCheckinGuideJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbCheckinGuideClientResponse, error) {
+	rsp, err := c.UpdateAirbnbCheckinGuide(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -49038,13 +50030,13 @@ func (c *ClientWithResponses) GetAirbnbListingDetailsWithResponse(ctx context.Co
 	return ParseGetAirbnbListingDetailsClientResponse(rsp)
 }
 
-// UpdateAirbnbListingDetailsWithBodyWithResponse Update property type, room type, quiet hours or check-in method
+// UpdateAirbnbListingDetailsWithBodyWithResponse Update property type, quiet hours, check-in method, house manual, directions or Wi-Fi
 //
-// Change what kind of property the Airbnb listing is, when its quiet hours are, or how the guest gets in. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
+// Change what kind of property the Airbnb listing is, when its quiet hours are, how the guest gets in (`check_in_option.instruction` is the arrival instructions), the house manual, directions to the property, or the Wi-Fi network and password. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
 //
 // This is the UPDATE path for fields that previously had none. `POST /v1/listings` accepts a `propertyType` when a listing is CREATED and nothing could change it afterwards, so a listing mis-typed at import stayed mis-typed; the check-in method was mirrored and never exposed at all.
 //
-// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group` and `check_in_option` are among the attributes Airbnb locks on established listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
+// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group`, `check_in_option`, `house_manual`, `directions`, `wifi_network` and `wifi_password` are among the attributes Airbnb locks on some listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
 //
 // Canonical property type (the value Repull keeps and republishes) is set with `PUT /v1/listings/{id}/content` under `details`; this endpoint writes straight to Airbnb.
 //
@@ -49061,13 +50053,13 @@ func (c *ClientWithResponses) UpdateAirbnbListingDetailsWithBodyWithResponse(ctx
 	return ParseUpdateAirbnbListingDetailsClientResponse(rsp)
 }
 
-// UpdateAirbnbListingDetailsWithResponse Update property type, room type, quiet hours or check-in method
+// UpdateAirbnbListingDetailsWithResponse Update property type, quiet hours, check-in method, house manual, directions or Wi-Fi
 //
-// Change what kind of property the Airbnb listing is, when its quiet hours are, or how the guest gets in. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
+// Change what kind of property the Airbnb listing is, when its quiet hours are, how the guest gets in (`check_in_option.instruction` is the arrival instructions), the house manual, directions to the property, or the Wi-Fi network and password. Partial: only the fields you send are written. At least one required; an unknown field is refused by name rather than dropped.
 //
 // This is the UPDATE path for fields that previously had none. `POST /v1/listings` accepts a `propertyType` when a listing is CREATED and nothing could change it afterwards, so a listing mis-typed at import stayed mis-typed; the check-in method was mirrored and never exposed at all.
 //
-// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group` and `check_in_option` are among the attributes Airbnb locks on established listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
+// **A 200 does not by itself mean the change was applied.** `property_type_category`, `property_type_group`, `check_in_option`, `house_manual`, `directions`, `wifi_network` and `wifi_password` are among the attributes Airbnb locks on some listings: the write returns 200, and Airbnb applies nothing for the locked ones. The response reports `blockedFields` — the fields YOU sent that Airbnb dropped — and `blockedFields: []` is what a landed write looks like. `GET …/details` reports the same list as `lockedFields` so you can check first.
 //
 // Canonical property type (the value Repull keeps and republishes) is set with `PUT /v1/listings/{id}/content` under `details`; this endpoint writes straight to Airbnb.
 //
@@ -49109,11 +50101,13 @@ func (c *ClientWithResponses) ListAirbnbListingPermitsWithResponse(ctx context.C
 //
 // Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 //
-// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field — `<type>_value`: `text_value`, `attestation_value`, `radio_value`, `dropdown_value`, `email_value`, `future_date_value`, `file_upload_value`, and so on. Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 //
 // Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 //
 // Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+//
+// **Changing and removing answers.** Airbnb has no call that deletes or withdraws a submitted registration, so neither does Repull, and at least one permit is required. To change an answer Airbnb marks `answer_editable`, submit the flow again with the new answers — the latest submission replaces the previous one. When a submission fails with status `failed_recoverable`, fix it and submit again; `failed` cannot be resubmitted. Hosts can also manage this at airbnb.com/verify-listing/{listing_id}.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -49130,11 +50124,13 @@ func (c *ClientWithResponses) UpdateAirbnbListingPermitsWithBodyWithResponse(ctx
 //
 // Answer the regulatory permit questions for a listing — the licence or registration number a city requires to keep the listing up.
 //
-// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field (`text_value`, `attestation_value`, `radio_value`, `date_value` or `selected_options_value`). Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
+// Read the questions first with `GET …/permits?source=live`. For each permit, pick one of its `flows[]` and send its `slug` as `flow_slug`; key every answer by the question's `answer_key`, and let the question's `type` decide the value field — `<type>_value`: `text_value`, `attestation_value`, `radio_value`, `dropdown_value`, `email_value`, `future_date_value`, `file_upload_value`, and so on. Answers are forwarded verbatim — nothing is defaulted or inferred, because a wrong licence number can take a listing down in a regulated city.
 //
 // Send `Idempotency-Key`: a timeout here leaves you unable to tell "never arrived" from "arrived, response lost", and this is a compliance filing.
 //
 // Airbnb refusing the answers (an unknown `answer_key`, a malformed licence number) is `422 airbnb_rejected` carrying Airbnb's own reason. An expired or revoked Airbnb connection is `403 connection_reauth_required`.
+//
+// **Changing and removing answers.** Airbnb has no call that deletes or withdraws a submitted registration, so neither does Repull, and at least one permit is required. To change an answer Airbnb marks `answer_editable`, submit the flow again with the new answers — the latest submission replaces the previous one. When a submission fails with status `failed_recoverable`, fix it and submit again; `failed` cannot be resubmitted. Hosts can also manage this at airbnb.com/verify-listing/{listing_id}.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -50660,13 +51656,13 @@ func (c *ClientWithResponses) SendBookingMessageWithResponse(ctx context.Context
 //
 // A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"` and an empty `listings` array. That is a real mid-onboarding state, not an error: finish `POST /v1/connect/booking/map-rooms` and the listings appear. Such a property used to be dropped silently, which made a mapped-but-unreadable workspace indistinguishable from one with no Booking connection at all.
 //
-// Inactive listings are left out of `listings`; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+// Inactive listings are left out of `listings` unless `?status=inactive|all` asks for them; they then appear with identity fields only (`listingId`, `name`, `city`, `status`, `inactiveReason`, room). `mappingStatus` counts every mapped listing, inactive ones included, so a property whose listings are all inactive is still `mapped`.
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/booking/properties (the `ListBookingProperties` operationId).
-func (c *ClientWithResponses) ListBookingPropertiesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListBookingPropertiesClientResponse, error) {
-	rsp, err := c.ListBookingProperties(ctx, reqEditors...)
+func (c *ClientWithResponses) ListBookingPropertiesWithResponse(ctx context.Context, params *ListBookingPropertiesParams, reqEditors ...RequestEditorFn) (*ListBookingPropertiesClientResponse, error) {
+	rsp, err := c.ListBookingProperties(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -51250,13 +52246,13 @@ func (c *ClientWithResponses) UpdatePlumguideWebhooksWithResponse(ctx context.Co
 //
 // List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
 //
-// Inactive listings are left out; they keep syncing and reappear once activated. Use `GET /v1/listings?status=inactive` to find them.
+// Inactive listings are left out unless `?status=inactive|all` asks for them; they then come back with identity fields only (ids, `listingName`, `listingCity`, `status`, `inactiveReason`). They keep syncing and are complete again once activated.
 //
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/channels/vrbo/listings (the `ListVrboListings` operationId).
-func (c *ClientWithResponses) ListVrboListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListVrboListingsClientResponse, error) {
-	rsp, err := c.ListVrboListings(ctx, reqEditors...)
+func (c *ClientWithResponses) ListVrboListingsWithResponse(ctx context.Context, params *ListVrboListingsParams, reqEditors ...RequestEditorFn) (*ListVrboListingsClientResponse, error) {
+	rsp, err := c.ListVrboListings(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -51282,7 +52278,14 @@ func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Conte
 
 // ListConnectionsWithResponse List PMS/OTA connections
 //
-// Returns all active connections to PMS and OTA platforms.
+// Returns every PMS and OTA connection in the workspace, each with its `status`.
+//
+// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
+//
+// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
+// - `fixUrl` — a durable link that reopens the hosted Connect flow **bound to that account, on the fix screen** (e.g. "grant full access" + a Re-check button). It is safe to store and show in your own dashboard.
+//
+// **Self-serve repair:** when `action.required` is true, surface a "Fix" button that opens `fixUrl` in a new tab (or embed it). The host resolves the issue (e.g. grants the user full access in Booking.com) and clicks Re-check; the import finishes on its own and the connection flips back to `active` — no re-invite, no support ticket. Poll this endpoint (or read it after the host returns) to confirm `action` has cleared.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -52018,7 +53021,9 @@ func (c *ClientWithResponses) SelectConnectProviderWithResponse(ctx context.Cont
 
 // SubmitSmoobuCredentialsWithBodyWithResponse Submit Smoobu credentials for a Connect session
 //
-// Completes a credentials-pattern connection for Smoobu. API key from Smoobu → Settings → For developers.
+// Completes a credentials-pattern connection for Smoobu with an HMAC API key + API secret, created in Smoobu → Settings → Advanced → API Keys (Create API Key, then Generate Secret — the secret is shown only once). Smoobu retires single legacy API keys on October 31, 2026, so `apiSecret` is required; a request with only `apiKey` returns `invalid_params`.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing Smoobu connection — the `pmsConnectionId` stays the same.
 //
 // The credentials are validated against Smoobu before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 //
@@ -52037,7 +53042,9 @@ func (c *ClientWithResponses) SubmitSmoobuCredentialsWithBodyWithResponse(ctx co
 
 // SubmitSmoobuCredentialsWithResponse Submit Smoobu credentials for a Connect session
 //
-// Completes a credentials-pattern connection for Smoobu. API key from Smoobu → Settings → For developers.
+// Completes a credentials-pattern connection for Smoobu with an HMAC API key + API secret, created in Smoobu → Settings → Advanced → API Keys (Create API Key, then Generate Secret — the secret is shown only once). Smoobu retires single legacy API keys on October 31, 2026, so `apiSecret` is required; a request with only `apiKey` returns `invalid_params`.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing Smoobu connection — the `pmsConnectionId` stays the same.
 //
 // The credentials are validated against Smoobu before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 //
@@ -54291,19 +55298,57 @@ func (c *ClientWithResponses) ListReservationsWithResponse(ctx context.Context, 
 
 // CreateReservationWithBodyWithResponse Create a reservation
 //
-// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+// Creates a reservation — in the listing's PMS when it has one, otherwise as a direct booking in Repull.
 //
-// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+// ### Where the booking is made
 //
-// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
-// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
 //
-// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+// ### Fields by listing kind
 //
-// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+// | Field | PMS listing | Direct-booking listing |
+// |---|---|---|
+// | `listingId`, `checkIn`, `checkOut`, `guest`, `guestCount`, `adults`, `children` | ✓ | ✓ |
+// | `status` | `confirmed` (default) or `tentative` | ✓ |
+// | `totalPrice` | ✓ where `capabilities.reservations.customPrice`; otherwise the PMS prices the stay | `422 unsupported_field` (priced from the listing's rates) |
+// | `notes`, `unitId`, `sendConfirmationEmail` | ✓ | `422 unsupported_field` |
+// | `checkInTime`, `checkOutTime`, `currency`, `guestId` | `422 unsupported_field` (the PMS's own settings apply) | ✓ |
+// | `platform` | `direct` or `website` (`owner` → `422 pms_write_unsupported`; block owner stays in the PMS) | `direct`, `website` or `owner` |
 //
-// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// A field a listing cannot take is refused by name, never silently dropped. `platform` never accepts `airbnb` / `booking` / `vrbo`: those reservations are owned by the channel and arrive through sync.
+//
+// ### Per-PMS limits
+//
+// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+// |---|---|---|---|---|---|---|
+// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+//
+// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+//
+// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+//
+// ### Idempotency
+//
+// **Send `Idempotency-Key`.** A network timeout here is exactly the case it exists for. The key is also sent to the PMS as the booking's reference, so even a retry that reaches the PMS again finds the booking instead of making a second one (`409 pms_duplicate` with `existing`, or the existing booking returned). A completed answer is replayed with `Idempotency-Status: cached` and the PMS is not called again. `502 pms_error` (the PMS could not be reached) is NOT stored — retry with the same key. `502 reservation_created_in_pms_only` IS stored, unlike every other 5xx: the booking exists in the PMS and arrives with the next sync, so a retry replays that answer rather than booking twice.
+//
+// ### Partial success
+//
+// When the PMS created the booking but a follow-up step did not apply (for example the notes, or a tentative state), the response is still `201`, with `pms.partial: true` and the steps in `pms.failedSections`. The booking exists — do not create it again.
+//
+// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -54318,19 +55363,57 @@ func (c *ClientWithResponses) CreateReservationWithBodyWithResponse(ctx context.
 
 // CreateReservationWithResponse Create a reservation
 //
-// Creates a reservation and everything that hangs off one: the guest, the conversation thread, the dashboard item, the calendar block, and the `reservation.created` fan-out that issues the door code and starts the messaging automations.
+// Creates a reservation — in the listing's PMS when it has one, otherwise as a direct booking in Repull.
 //
-// **Platform is restricted to `direct`, `website` and `owner`.** Reservations on Airbnb, Booking.com and Vrbo are owned by the channel and arrive through sync — creating one here would mint a local booking the channel has never heard of, which then fights the next sync. Create those on the channel.
+// ### Where the booking is made
 //
-// **Dates are validated** (`YYYY-MM-DD`, and `checkOut` must be after `checkIn`), and an unrecognised field is rejected by name rather than silently ignored.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
-// **This endpoint does not set the price.** There is no `totalPrice` field: the reservation pipeline derives the price breakdown from the property's own rates and overwrites anything supplied, so accepting a total would be taking a value and discarding it. A reservation created here is priced by that engine (`0` when the property has no rates for the range). `currency` IS honoured. Quote a stay with `GET /v1/quotes` before booking if you need the figure up front.
+// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
 //
-// **Availability is NOT checked.** This creates the reservation you asked for even if the dates overlap an existing booking. Call `GET /v1/availability/{propertyId}` first if that matters.
+// ### Fields by listing kind
 //
-// Send `Idempotency-Key` — a network timeout here is exactly the case it exists for: without it, a retry books the guest twice.
+// | Field | PMS listing | Direct-booking listing |
+// |---|---|---|
+// | `listingId`, `checkIn`, `checkOut`, `guest`, `guestCount`, `adults`, `children` | ✓ | ✓ |
+// | `status` | `confirmed` (default) or `tentative` | ✓ |
+// | `totalPrice` | ✓ where `capabilities.reservations.customPrice`; otherwise the PMS prices the stay | `422 unsupported_field` (priced from the listing's rates) |
+// | `notes`, `unitId`, `sendConfirmationEmail` | ✓ | `422 unsupported_field` |
+// | `checkInTime`, `checkOutTime`, `currency`, `guestId` | `422 unsupported_field` (the PMS's own settings apply) | ✓ |
+// | `platform` | `direct` or `website` (`owner` → `422 pms_write_unsupported`; block owner stays in the PMS) | `direct`, `website` or `owner` |
 //
-// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+// A field a listing cannot take is refused by name, never silently dropped. `platform` never accepts `airbnb` / `booking` / `vrbo`: those reservations are owned by the channel and arrive through sync.
+//
+// ### Per-PMS limits
+//
+// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+// |---|---|---|---|---|---|---|
+// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+//
+// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+//
+// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+//
+// ### Idempotency
+//
+// **Send `Idempotency-Key`.** A network timeout here is exactly the case it exists for. The key is also sent to the PMS as the booking's reference, so even a retry that reaches the PMS again finds the booking instead of making a second one (`409 pms_duplicate` with `existing`, or the existing booking returned). A completed answer is replayed with `Idempotency-Status: cached` and the PMS is not called again. `502 pms_error` (the PMS could not be reached) is NOT stored — retry with the same key. `502 reservation_created_in_pms_only` IS stored, unlike every other 5xx: the booking exists in the PMS and arrives with the next sync, so a retry replays that answer rather than booking twice.
+//
+// ### Partial success
+//
+// When the PMS created the booking but a follow-up step did not apply (for example the notes, or a tentative state), the response is still `201`, with `pms.partial: true` and the steps in `pms.failedSections`. The booking exists — do not create it again.
+//
+// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -54341,6 +55424,94 @@ func (c *ClientWithResponses) CreateReservationWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseCreateReservationClientResponse(rsp)
+}
+
+// QuoteReservationWithBodyWithResponse Quote a reservation in the PMS
+//
+// Prices a stay and checks its availability **in the PMS that manages the listing**, without booking anything. It is the same check `POST /v1/reservations` makes before booking when no `totalPrice` is sent, so `available: true` with a `total` is what that create would be priced at (dates can still be taken in between).
+//
+// `available: false` is an answer, not an error: the PMS's reasons are in `restrictions` (minimum stay, closed to arrival, taken dates…).
+//
+// - A listing **not managed in a PMS** answers `422 pms_not_linked`. Book it directly with `POST /v1/reservations`, or price it with `GET /v1/quotes`.
+// - A PMS **without a quote API** (Mews, Cloudbeds, iGMS) answers `422 pms_write_unsupported`. You can still create the booking; on iGMS a `totalPrice` is required.
+//
+// `GET /v1/listings/{id}` → `capabilities.reservations.quote` says whether a listing can be quoted.
+//
+// ### Per-PMS limits
+//
+// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+// |---|---|---|---|---|---|---|
+// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+//
+// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+//
+// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+//
+// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
+func (c *ClientWithResponses) QuoteReservationWithBodyWithResponse(ctx context.Context, params *QuoteReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QuoteReservationClientResponse, error) {
+	rsp, err := c.QuoteReservationWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseQuoteReservationClientResponse(rsp)
+}
+
+// QuoteReservationWithResponse Quote a reservation in the PMS
+//
+// Prices a stay and checks its availability **in the PMS that manages the listing**, without booking anything. It is the same check `POST /v1/reservations` makes before booking when no `totalPrice` is sent, so `available: true` with a `total` is what that create would be priced at (dates can still be taken in between).
+//
+// `available: false` is an answer, not an error: the PMS's reasons are in `restrictions` (minimum stay, closed to arrival, taken dates…).
+//
+// - A listing **not managed in a PMS** answers `422 pms_not_linked`. Book it directly with `POST /v1/reservations`, or price it with `GET /v1/quotes`.
+// - A PMS **without a quote API** (Mews, Cloudbeds, iGMS) answers `422 pms_write_unsupported`. You can still create the booking; on iGMS a `totalPrice` is required.
+//
+// `GET /v1/listings/{id}` → `capabilities.reservations.quote` says whether a listing can be quoted.
+//
+// ### Per-PMS limits
+//
+// | PMS | create | change | cancel | quote | `totalPrice` | Limits |
+// |---|---|---|---|---|---|---|
+// | Mews | ✓ | ✓ | ✓ | – | ✓ | — |
+// | Cloudbeds | ✓ | ✓ | ✓ | – | – | Books at the rate plan's price; group bookings supported. |
+// | Hostaway | ✓ | ✓ | ✓ | ✓ | ✓ | Direct-channel bookings only; a specific unit is refused; a date change keeps the booked total. |
+// | Guesty | ✓ | ✓ | ✓ | ✓ | ✓ | Cancels direct and Vrbo bookings; other channel bookings are cancelled on the channel. |
+// | Beds24 | ✓ | ✓ | ✓ | ✓ | ✓ | Needs the `write:bookings` scope; a multi-room property needs `unitId`. |
+// | BookingSync | ✓ | ✓ | ✓ | ✓ | ✓ | Needs `bookings_write`; fees and taxes are not itemized; no guest email. |
+// | Lodgify | ✓ | ✓ | ✓ (declines) | ✓ | ✓ | Cancel declines the booking; single-room bookings. |
+// | Smoobu | ✓ | ✓ (no dates) | ✓ | ✓ | ✓ | Dates cannot be changed through Smoobu's API — cancel and rebook, or change them in Smoobu. |
+// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
+// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
+// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+//
+// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
+//
+// **Verification.** Mews and Cloudbeds were run end to end on their vendors' sandboxes. Every other PMS is **verified against the vendor's API documentation only** — no live account has been written to yet. `capabilities.reservations.verifiedAgainst` says which.
+//
+// `X-Account-Id` restricts the listing to one connected account. Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
+func (c *ClientWithResponses) QuoteReservationWithResponse(ctx context.Context, params *QuoteReservationParams, body QuoteReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*QuoteReservationClientResponse, error) {
+	rsp, err := c.QuoteReservation(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseQuoteReservationClientResponse(rsp)
 }
 
 // GetReservationWithResponse Get reservation details
@@ -54362,7 +55533,11 @@ func (c *ClientWithResponses) GetReservationWithResponse(ctx context.Context, id
 
 // UpdateReservationWithBodyWithResponse Update a reservation
 //
-// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+// Changes the dates, the occupancy, or the unit.
+//
+// **A stay managed in a connected PMS is changed in the PMS first**, then Repull's copy is refreshed from the PMS's record — changing only Repull's copy would be reverted by the next sync. On such a stay, `checkIn`, `checkOut` and `guestCount` are changed; moving it to another listing and changing its check-in/check-out times are done in the PMS (`422 pms_write_unsupported`), as is anything the PMS's API cannot change (for example dates on Smoobu). A channel booking that came in through the PMS (Airbnb, Booking.com, …) is changed on the channel (`409 reservation_owned_by_channel`). The PMS checks availability: taken dates answer `409 pms_unavailable`. The PMS's outcome comes back as `pms`. `GET /v1/listings/{id}` → `capabilities.reservations.modify` says whether a listing's PMS supports changes.
+//
+// **Any other stay** drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
 //
 // Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
 //
@@ -54380,9 +55555,9 @@ func (c *ClientWithResponses) GetReservationWithResponse(ctx context.Context, id
 // | `platform` | Immutable: it records where the booking actually originated. |
 // | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 //
-// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+// **Availability is NOT checked for stays outside a PMS.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 //
-// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+// `X-Account-Id` restricts the reservation (and a listing it is moved to) to one connected account. Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -54397,7 +55572,11 @@ func (c *ClientWithResponses) UpdateReservationWithBodyWithResponse(ctx context.
 
 // UpdateReservationWithResponse Update a reservation
 //
-// Changes the dates, the occupancy, or the unit. Drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
+// Changes the dates, the occupancy, or the unit.
+//
+// **A stay managed in a connected PMS is changed in the PMS first**, then Repull's copy is refreshed from the PMS's record — changing only Repull's copy would be reverted by the next sync. On such a stay, `checkIn`, `checkOut` and `guestCount` are changed; moving it to another listing and changing its check-in/check-out times are done in the PMS (`422 pms_write_unsupported`), as is anything the PMS's API cannot change (for example dates on Smoobu). A channel booking that came in through the PMS (Airbnb, Booking.com, …) is changed on the channel (`409 reservation_owned_by_channel`). The PMS checks availability: taken dates answer `409 pms_unavailable`. The PMS's outcome comes back as `pms`. `GET /v1/listings/{id}` → `capabilities.reservations.modify` says whether a listing's PMS supports changes.
+//
+// **Any other stay** drives the same command path the dashboard does, so the side effects come with it: the change audit is appended, bound task due dates re-sync, the old calendar dates unblock and the new ones block, the conversation's cached listing is invalidated, and `reservation.updated` fires — which is what revokes and re-issues the door code.
 //
 // Supply at least one field; an empty body returns 422 rather than a 200 that changed nothing.
 //
@@ -54415,9 +55594,9 @@ func (c *ClientWithResponses) UpdateReservationWithBodyWithResponse(ctx context.
 // | `platform` | Immutable: it records where the booking actually originated. |
 // | `notes` | `internal_notes` is an append-only audit trail the system writes on every change. |
 //
-// **Availability is NOT checked.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
+// **Availability is NOT checked for stays outside a PMS.** A date change that overlaps another booking will be written. Call `GET /v1/availability/{propertyId}` first if that matters.
 //
-// Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
+// `X-Account-Id` restricts the reservation (and a listing it is moved to) to one connected account. Returns `403 listing_inactive` when the reservation is on an inactive listing, or when a `listingId` move targets one; nothing is changed.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -54457,19 +55636,21 @@ func (c *ClientWithResponses) AcceptReservationRequestWithResponse(ctx context.C
 //
 // Cancels a reservation where it lives.
 //
-// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+// - **A booking managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged. Lodgify *declines* the booking rather than deleting it. **OwnerRez's API cannot cancel** — `422 pms_write_unsupported`; cancel it in OwnerRez. `GET /v1/listings/{id}` → `capabilities.reservations.cancel` says which applies.
 // - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
-// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+// - **A channel booking** (Airbnb, Booking.com, VRBO), including one that came in through a PMS: `409 reservation_owned_by_channel`. Cancel it on the channel; the cancellation reaches Repull with the next sync.
 //
 // Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
 //
-// Returns `403 listing_inactive` when the listing is inactive.
+// PMS integrations other than Mews and Cloudbeds are verified against the vendor's API documentation only.
+//
+// `X-Account-Id` restricts the reservation to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
-func (c *ClientWithResponses) CancelReservationWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error) {
-	rsp, err := c.CancelReservationWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) CancelReservationWithBodyWithResponse(ctx context.Context, id int, params *CancelReservationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error) {
+	rsp, err := c.CancelReservationWithBody(ctx, id, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -54480,19 +55661,21 @@ func (c *ClientWithResponses) CancelReservationWithBodyWithResponse(ctx context.
 //
 // Cancels a reservation where it lives.
 //
-// - **Mews or Cloudbeds** (hotel-model PMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged.
+// - **A booking managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS): cancelled in the PMS, then read back, so Repull and the PMS agree. No cancellation fee is charged. Lodgify *declines* the booking rather than deleting it. **OwnerRez's API cannot cancel** — `422 pms_write_unsupported`; cancel it in OwnerRez. `GET /v1/listings/{id}` → `capabilities.reservations.cancel` says which applies.
 // - **Direct, website or owner bookings**: cancelled in Repull — the nights are released and `reservation.cancelled` fires.
-// - **A channel booking** (Airbnb, Booking.com, VRBO) or a booking owned by another PMS: `409 reservation_owned_by_channel`. Cancel it there; the cancellation reaches Repull with the next sync.
+// - **A channel booking** (Airbnb, Booking.com, VRBO), including one that came in through a PMS: `409 reservation_owned_by_channel`. Cancel it on the channel; the cancellation reaches Repull with the next sync.
 //
 // Cancelling an already-cancelled reservation is not an error: the response carries `alreadyCancelled: true`.
 //
-// Returns `403 listing_inactive` when the listing is inactive.
+// PMS integrations other than Mews and Cloudbeds are verified against the vendor's API documentation only.
+//
+// `X-Account-Id` restricts the reservation to one connected account. Returns `403 listing_inactive` when the listing is inactive.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/reservations/{id}/cancel (the `CancelReservation` operationId).
-func (c *ClientWithResponses) CancelReservationWithResponse(ctx context.Context, id int, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error) {
-	rsp, err := c.CancelReservation(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) CancelReservationWithResponse(ctx context.Context, id int, params *CancelReservationParams, body CancelReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelReservationClientResponse, error) {
+	rsp, err := c.CancelReservation(ctx, id, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -56513,8 +57696,23 @@ func ParseUpdateAirbnbCheckinGuideClientResponse(rsp *http.Response) (*UpdateAir
 	}
 
 	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				ListingId *int    `json:"listingId,omitempty"`
+				Locale    *string `json:"locale,omitempty"`
+				Published *bool   `json:"published,omitempty"`
+				Steps     *[]struct {
+					Id       *int    `json:"id,omitempty"`
+					MediaUrl *string `json:"mediaUrl,omitempty"`
+					Notes    *string `json:"notes,omitempty"`
+				} `json:"steps,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
@@ -61157,7 +62355,8 @@ func ParseGetBookingExtranetLoginStatusClientResponse(rsp *http.Response) (*GetB
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			AccountId       *int    `json:"accountId,omitempty"`
+			// AccountId The connection id (numeric string, like every `*Id` on the wire).
+			AccountId       *string `json:"accountId,omitempty"`
 			AwaitingMapping *bool   `json:"awaitingMapping,omitempty"`
 			Completed       *bool   `json:"completed,omitempty"`
 			ErrorMessage    *string `json:"errorMessage,omitempty"`
@@ -66071,8 +67270,10 @@ func ParseListListingUnitsClientResponse(rsp *http.Response) (*ListListingUnitsC
 				// Source Example: mews
 				Source *string `json:"source,omitempty"`
 			} `json:"data,omitempty"`
-			ListingId *int `json:"listingId,omitempty"`
-			Total     *int `json:"total,omitempty"`
+
+			// ListingId Repull listing id (numeric string, like every `*Id` on the wire).
+			ListingId *string `json:"listingId,omitempty"`
+			Total     *int    `json:"total,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -66887,6 +68088,13 @@ func ParseCreateReservationClientResponse(rsp *http.Response) (*CreateReservatio
 		}
 		response.JSON201 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -66895,7 +68103,7 @@ func ParseCreateReservationClientResponse(rsp *http.Response) (*CreateReservatio
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -66908,8 +68116,15 @@ func ParseCreateReservationClientResponse(rsp *http.Response) (*CreateReservatio
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -66921,6 +68136,88 @@ func ParseCreateReservationClientResponse(rsp *http.Response) (*CreateReservatio
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseQuoteReservationClientResponse parses an HTTP response from a QuoteReservationWithResponse call
+func ParseQuoteReservationClientResponse(rsp *http.Response) (*QuoteReservationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &QuoteReservationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ReservationQuoteResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -67017,7 +68314,7 @@ func ParseUpdateReservationClientResponse(rsp *http.Response) (*UpdateReservatio
 		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -67030,8 +68327,15 @@ func ParseUpdateReservationClientResponse(rsp *http.Response) (*UpdateReservatio
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -67043,6 +68347,13 @@ func ParseUpdateReservationClientResponse(rsp *http.Response) (*UpdateReservatio
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -67168,18 +68479,8 @@ func ParseCancelReservationClientResponse(rsp *http.Response) (*CancelReservatio
 			Id               *string             `json:"id,omitempty"`
 			ListingId        *string             `json:"listingId,omitempty"`
 
-			// Pms Present when the cancellation was made in a PMS.
-			Pms *struct {
-				Applied *[]string `json:"applied,omitempty"`
-				Errors  *[]struct {
-					Code    *string `json:"code,omitempty"`
-					Message *string `json:"message,omitempty"`
-					Section *string `json:"section,omitempty"`
-				} `json:"errors,omitempty"`
-
-				// Provider Example: mews
-				Provider *string `json:"provider,omitempty"`
-			} `json:"pms,omitempty"`
+			// Pms Present when the write was made in a PMS: what the PMS applied. `partial: true` means the booking exists in the PMS but the steps in `failedSections` (e.g. notes, a tentative state) did not apply — do not create it again.
+			Pms       *ReservationPmsOutcome                      `json:"pms,omitempty"`
 			Status    *CancelReservation200JSONResponseBodyStatus `json:"status,omitempty"`
 			UpdatedAt *string                                     `json:"updatedAt,omitempty"`
 		}
@@ -67188,6 +68489,13 @@ func ParseCancelReservationClientResponse(rsp *http.Response) (*CancelReservatio
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -67195,22 +68503,40 @@ func ParseCancelReservationClientResponse(rsp *http.Response) (*CancelReservatio
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
 
-	case rsp.StatusCode == 409:
-		break // No content-type
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
-		var dest UnprocessableEntity
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 

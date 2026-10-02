@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.25] - 2026-10-02
+
+Regenerated against the live `https://api.repull.dev/openapi.json`:
+
+- New `ClientWithResponses.QuoteReservationWithResponse` (`POST /v1/reservations/quote`, body `ReservationQuoteRequest`, `JSON200 *ReservationQuoteResponse`): price a stay and check availability in the PMS without booking. `Available == false` is an answer; read `Restrictions`.
+- `ReservationCreateRequest` (used by `CreateReservationWithResponse`) gains the PMS booking fields `Adults`, `Children`, `Notes`, `TotalPrice`, `UnitId`, `Status` (`confirmed` / `tentative`), `SendConfirmationEmail`.
+- Reservation write responses (create / update / cancel) carry a `pms` block describing what the PMS did with the write.
+- `capabilities.reservations` on listing and connection responses (`create`, `change`, `cancel`, `quote`…).
+- Connections expose `action` and `fixUrl`; Smoobu credentials accept `apiSecret`; new error codes (`pms_not_linked`, `pms_write_unsupported`, …).
+
+**Type change (patch release):** reservation, listing and guest ids on reservation write responses (`id`, `listingId`, `guestId`) are now `*string`, where they were `*int`. The API returns them as strings; code that read them as integers must convert (e.g. `strconv.Atoi`).
+
 ## [0.2.19] - 2026-09-25
 
 Regenerated against the live `https://api.repull.dev/openapi.json`:

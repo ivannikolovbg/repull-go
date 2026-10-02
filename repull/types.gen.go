@@ -391,6 +391,63 @@ func (e AirbnbListingLifecycleResponseChannel) Valid() bool {
 	}
 }
 
+// Defines values for AirbnbPricingWriteRequestFeesAmountType.
+const (
+	Flat    AirbnbPricingWriteRequestFeesAmountType = "flat"
+	Percent AirbnbPricingWriteRequestFeesAmountType = "percent"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbPricingWriteRequestFeesAmountType enum.
+func (e AirbnbPricingWriteRequestFeesAmountType) Valid() bool {
+	switch e {
+	case Flat:
+		return true
+	case Percent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbPricingWriteRequestFeesChargePeriod.
+const (
+	PERBOOKING AirbnbPricingWriteRequestFeesChargePeriod = "PER_BOOKING"
+	PERNIGHT   AirbnbPricingWriteRequestFeesChargePeriod = "PER_NIGHT"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbPricingWriteRequestFeesChargePeriod enum.
+func (e AirbnbPricingWriteRequestFeesChargePeriod) Valid() bool {
+	switch e {
+	case PERBOOKING:
+		return true
+	case PERNIGHT:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbPricingWriteRequestFeesChargeType.
+const (
+	PERGROUP  AirbnbPricingWriteRequestFeesChargeType = "PER_GROUP"
+	PERPERSON AirbnbPricingWriteRequestFeesChargeType = "PER_PERSON"
+	PERPET    AirbnbPricingWriteRequestFeesChargeType = "PER_PET"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbPricingWriteRequestFeesChargeType enum.
+func (e AirbnbPricingWriteRequestFeesChargeType) Valid() bool {
+	switch e {
+	case PERGROUP:
+		return true
+	case PERPERSON:
+		return true
+	case PERPET:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AirbnbPricingWriteRequestModelType.
 const (
 	LOSRECORD AirbnbPricingWriteRequestModelType = "LOS_RECORD"
@@ -706,6 +763,27 @@ func (e BookingPricingUpdateResponseApplied) Valid() bool {
 	}
 }
 
+// Defines values for BookingPropertyListingsInactiveReason.
+const (
+	BookingPropertyListingsInactiveReasonDeactivated      BookingPropertyListingsInactiveReason = "deactivated"
+	BookingPropertyListingsInactiveReasonPlanLimit        BookingPropertyListingsInactiveReason = "plan_limit"
+	BookingPropertyListingsInactiveReasonUnlistedOnAirbnb BookingPropertyListingsInactiveReason = "unlisted_on_airbnb"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyListingsInactiveReason enum.
+func (e BookingPropertyListingsInactiveReason) Valid() bool {
+	switch e {
+	case BookingPropertyListingsInactiveReasonDeactivated:
+		return true
+	case BookingPropertyListingsInactiveReasonPlanLimit:
+		return true
+	case BookingPropertyListingsInactiveReasonUnlistedOnAirbnb:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BookingPropertyListingsMappedVia.
 const (
 	BookingPropertyListingsMappedViaProperty BookingPropertyListingsMappedVia = "property"
@@ -718,6 +796,24 @@ func (e BookingPropertyListingsMappedVia) Valid() bool {
 	case BookingPropertyListingsMappedViaProperty:
 		return true
 	case BookingPropertyListingsMappedViaRoom:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingPropertyListingsStatus.
+const (
+	BookingPropertyListingsStatusActive   BookingPropertyListingsStatus = "active"
+	BookingPropertyListingsStatusInactive BookingPropertyListingsStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyListingsStatus enum.
+func (e BookingPropertyListingsStatus) Valid() bool {
+	switch e {
+	case BookingPropertyListingsStatusActive:
+		return true
+	case BookingPropertyListingsStatusInactive:
 		return true
 	default:
 		return false
@@ -1122,16 +1218,16 @@ func (e ChannelMarketStateItemState) Valid() bool {
 
 // Defines values for ConnectProviderCategory.
 const (
-	Ota ConnectProviderCategory = "ota"
-	Pms ConnectProviderCategory = "pms"
+	ConnectProviderCategoryOta ConnectProviderCategory = "ota"
+	ConnectProviderCategoryPms ConnectProviderCategory = "pms"
 )
 
 // Valid indicates whether the value is a known member of the ConnectProviderCategory enum.
 func (e ConnectProviderCategory) Valid() bool {
 	switch e {
-	case Ota:
+	case ConnectProviderCategoryOta:
 		return true
-	case Pms:
+	case ConnectProviderCategoryPms:
 		return true
 	default:
 		return false
@@ -1272,9 +1368,12 @@ func (e ConnectStatusStatus) Valid() bool {
 
 // Defines values for ConnectionStatus.
 const (
-	ConnectionStatusActive   ConnectionStatus = "active"
-	ConnectionStatusError    ConnectionStatus = "error"
-	ConnectionStatusInactive ConnectionStatus = "inactive"
+	ConnectionStatusActive           ConnectionStatus = "active"
+	ConnectionStatusDisconnected     ConnectionStatus = "disconnected"
+	ConnectionStatusError            ConnectionStatus = "error"
+	ConnectionStatusInactive         ConnectionStatus = "inactive"
+	ConnectionStatusNeedsPermissions ConnectionStatus = "needs_permissions"
+	ConnectionStatusPending          ConnectionStatus = "pending"
 )
 
 // Valid indicates whether the value is a known member of the ConnectionStatus enum.
@@ -1282,9 +1381,15 @@ func (e ConnectionStatus) Valid() bool {
 	switch e {
 	case ConnectionStatusActive:
 		return true
+	case ConnectionStatusDisconnected:
+		return true
 	case ConnectionStatusError:
 		return true
 	case ConnectionStatusInactive:
+		return true
+	case ConnectionStatusNeedsPermissions:
+		return true
+	case ConnectionStatusPending:
 		return true
 	default:
 		return false
@@ -2758,6 +2863,42 @@ func (e ReservationCancelledPayloadCancelledBy) Valid() bool {
 	}
 }
 
+// Defines values for ReservationCapabilitiesManagedBy.
+const (
+	ReservationCapabilitiesManagedByPms    ReservationCapabilitiesManagedBy = "pms"
+	ReservationCapabilitiesManagedByRepull ReservationCapabilitiesManagedBy = "repull"
+)
+
+// Valid indicates whether the value is a known member of the ReservationCapabilitiesManagedBy enum.
+func (e ReservationCapabilitiesManagedBy) Valid() bool {
+	switch e {
+	case ReservationCapabilitiesManagedByPms:
+		return true
+	case ReservationCapabilitiesManagedByRepull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationCapabilitiesVerifiedAgainst.
+const (
+	Sandbox    ReservationCapabilitiesVerifiedAgainst = "sandbox"
+	VendorDocs ReservationCapabilitiesVerifiedAgainst = "vendor_docs"
+)
+
+// Valid indicates whether the value is a known member of the ReservationCapabilitiesVerifiedAgainst enum.
+func (e ReservationCapabilitiesVerifiedAgainst) Valid() bool {
+	switch e {
+	case Sandbox:
+		return true
+	case VendorDocs:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationCreateRequestPlatform.
 const (
 	ReservationCreateRequestPlatformDirect  ReservationCreateRequestPlatform = "direct"
@@ -2773,6 +2914,24 @@ func (e ReservationCreateRequestPlatform) Valid() bool {
 	case ReservationCreateRequestPlatformOwner:
 		return true
 	case ReservationCreateRequestPlatformWebsite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationCreateRequestStatus.
+const (
+	ReservationCreateRequestStatusConfirmed ReservationCreateRequestStatus = "confirmed"
+	ReservationCreateRequestStatusTentative ReservationCreateRequestStatus = "tentative"
+)
+
+// Valid indicates whether the value is a known member of the ReservationCreateRequestStatus enum.
+func (e ReservationCreateRequestStatus) Valid() bool {
+	switch e {
+	case ReservationCreateRequestStatusConfirmed:
+		return true
+	case ReservationCreateRequestStatusTentative:
 		return true
 	default:
 		return false
@@ -2841,16 +3000,16 @@ func (e ReservationMessageSentPayloadDirection) Valid() bool {
 
 // Defines values for ReservationMessageSentPayloadSource.
 const (
-	Channel ReservationMessageSentPayloadSource = "channel"
-	Repull  ReservationMessageSentPayloadSource = "repull"
+	ReservationMessageSentPayloadSourceChannel ReservationMessageSentPayloadSource = "channel"
+	ReservationMessageSentPayloadSourceRepull  ReservationMessageSentPayloadSource = "repull"
 )
 
 // Valid indicates whether the value is a known member of the ReservationMessageSentPayloadSource enum.
 func (e ReservationMessageSentPayloadSource) Valid() bool {
 	switch e {
-	case Channel:
+	case ReservationMessageSentPayloadSourceChannel:
 		return true
-	case Repull:
+	case ReservationMessageSentPayloadSourceRepull:
 		return true
 	default:
 		return false
@@ -3418,6 +3577,27 @@ func (e ListAirbnbAlterationsParamsType) Valid() bool {
 	case ListAirbnbAlterationsParamsTypeAll:
 		return true
 	case ListAirbnbAlterationsParamsTypePending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListAirbnbListingsParamsStatus.
+const (
+	ListAirbnbListingsParamsStatusActive   ListAirbnbListingsParamsStatus = "active"
+	ListAirbnbListingsParamsStatusAll      ListAirbnbListingsParamsStatus = "all"
+	ListAirbnbListingsParamsStatusInactive ListAirbnbListingsParamsStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the ListAirbnbListingsParamsStatus enum.
+func (e ListAirbnbListingsParamsStatus) Valid() bool {
+	switch e {
+	case ListAirbnbListingsParamsStatusActive:
+		return true
+	case ListAirbnbListingsParamsStatusAll:
+		return true
+	case ListAirbnbListingsParamsStatusInactive:
 		return true
 	default:
 		return false
@@ -4300,6 +4480,27 @@ func (e UpdateBookingContentJSONBodyType) Valid() bool {
 	}
 }
 
+// Defines values for ListBookingPropertiesParamsStatus.
+const (
+	ListBookingPropertiesParamsStatusActive   ListBookingPropertiesParamsStatus = "active"
+	ListBookingPropertiesParamsStatusAll      ListBookingPropertiesParamsStatus = "all"
+	ListBookingPropertiesParamsStatusInactive ListBookingPropertiesParamsStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the ListBookingPropertiesParamsStatus enum.
+func (e ListBookingPropertiesParamsStatus) Valid() bool {
+	switch e {
+	case ListBookingPropertiesParamsStatusActive:
+		return true
+	case ListBookingPropertiesParamsStatusAll:
+		return true
+	case ListBookingPropertiesParamsStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListBookingReservationsParamsType.
 const (
 	ListBookingReservationsParamsTypeDetails  ListBookingReservationsParamsType = "details"
@@ -4357,6 +4558,27 @@ func (e BookingSetupJSONBodyAction) Valid() bool {
 	case SetContacts:
 		return true
 	case SetPolicies:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListVrboListingsParamsStatus.
+const (
+	ListVrboListingsParamsStatusActive   ListVrboListingsParamsStatus = "active"
+	ListVrboListingsParamsStatusAll      ListVrboListingsParamsStatus = "all"
+	ListVrboListingsParamsStatusInactive ListVrboListingsParamsStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the ListVrboListingsParamsStatus enum.
+func (e ListVrboListingsParamsStatus) Valid() bool {
+	switch e {
+	case ListVrboListingsParamsStatusActive:
+		return true
+	case ListVrboListingsParamsStatusAll:
+		return true
+	case ListVrboListingsParamsStatusInactive:
 		return true
 	default:
 		return false
@@ -6179,10 +6401,15 @@ type AirbnbListing struct {
 	// Example: 6248
 	ListingId *string `json:"listingId,omitempty"`
 
-	// Name Listing title
+	// Name The host's internal nickname for the listing.
 	//
 	// Example: Oceanview Villa
 	Name *string `json:"name,omitempty"`
+
+	// PublicName The title guests see on the channel (e.g. the Airbnb listing title). `name` is the host's internal nickname for the listing; show `publicName` in anything a guest or end user reads. Present on inactive rows too.
+	//
+	// Example: Centre Oxford bright single room D
+	PublicName *string `json:"publicName,omitempty"`
 
 	// ThumbnailUrl Cover photo URL for the listing. **Only present when the caller passes `?include=thumbnail`.** `null` when the listing has no cover photo stored — the listing is still returned.
 	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
@@ -6230,13 +6457,19 @@ type AirbnbListingDetailsResponse struct {
 	UpdatedAt            *time.Time `json:"updatedAt,omitempty"`
 }
 
-// AirbnbListingDetailsWriteRequest Update what kind of property this is, when the quiet hours are, or how the guest gets in. At least one field required. These are among the attributes Airbnb locks on established listings — see `blockedFields` on the response.
+// AirbnbListingDetailsWriteRequest Update what kind of property this is, when the quiet hours are, how the guest gets in, the house manual, directions or Wi-Fi details. At least one field required. These are among the attributes Airbnb locks on established listings — see `blockedFields` on the response.
 type AirbnbListingDetailsWriteRequest struct {
-	// CheckInOption How the guest lets themselves in — Airbnb's `check_in_option`.
+	// CheckInOption How the guest lets themselves in — Airbnb's `check_in_option`. `instruction` is the arrival instructions the guest sees.
 	CheckInOption *struct {
 		Category    AirbnbListingDetailsWriteRequestCheckInOptionCategory `json:"category"`
 		Instruction *string                                               `json:"instruction,omitempty"`
 	} `json:"check_in_option,omitempty"`
+
+	// Directions Directions to the property, shown to booked guests.
+	Directions *string `json:"directions,omitempty"`
+
+	// HouseManual The house manual guests see after booking.
+	HouseManual *string `json:"house_manual,omitempty"`
 
 	// PropertyTypeCategory The specific type inside the group, e.g. `apartment`, `condominium`, `townhouse`, `guesthouse`. Airbnb validates it against the group, so send both when you are changing the kind of property.
 	PropertyTypeCategory *string `json:"property_type_category,omitempty"`
@@ -6255,6 +6488,12 @@ type AirbnbListingDetailsWriteRequest struct {
 
 	// RoomTypeCategory What the guest gets of the property.
 	RoomTypeCategory *AirbnbListingDetailsWriteRequestRoomTypeCategory `json:"room_type_category,omitempty"`
+
+	// WifiNetwork Wi-Fi network name.
+	WifiNetwork *string `json:"wifi_network,omitempty"`
+
+	// WifiPassword Wi-Fi password.
+	WifiPassword *string `json:"wifi_password,omitempty"`
 }
 
 // AirbnbListingDetailsWriteRequestCheckInOptionCategory defines model for AirbnbListingDetailsWriteRequest.CheckInOption.Category.
@@ -6322,16 +6561,8 @@ type AirbnbPermitsResponse struct {
 // Example: {"permits":[{"answers":{"attestation":{"attestation_value":true},"permit_number":{"text_value":"TMK-2-3-004-005"}},"flow_slug":"existing_registration","regulation_context":"initial","regulation_type":"registration","regulatory_body":"maui_county_hawaii"}]}
 type AirbnbPermitsWriteRequest struct {
 	Permits []struct {
-		// Answers Keyed by each question's `answer_key`. Each value carries exactly one field, chosen by the question's `type`: TEXT → `text_value`, ATTESTATION → `attestation_value`, RADIO → `radio_value`, DATE → `date_value`, SELECT → `selected_options_value`.
-		Answers map[string]struct {
-			AttestationValue *bool `json:"attestation_value,omitempty"`
-
-			// DateValue ISO date, YYYY-MM-DD.
-			DateValue            *string   `json:"date_value,omitempty"`
-			RadioValue           *string   `json:"radio_value,omitempty"`
-			SelectedOptionsValue *[]string `json:"selected_options_value,omitempty"`
-			TextValue            *string   `json:"text_value,omitempty"`
-		} `json:"answers"`
+		// Answers Keyed by each question's `answer_key`. Each value carries exactly one `<type>_value` field named after the question's `type` (lower-case): `text_value`, `attestation_value` (boolean), `radio_value`, `dropdown_value`, `email_value`, `future_date_value` (YYYY-MM-DD) and `file_upload_value` (object with the base64 file) are the ones Airbnb returns in production; other question types follow the same pattern. Airbnb validates the value against its question. Example: `{"email": {"email_value": "host@example.com"}, "expiration_date": {"future_date_value": "2029-02-04"}, "attestation": {"attestation_value": true}}`.
+		Answers map[string]map[string]interface{} `json:"answers"`
 
 		// FlowSlug The `slug` of the flow you are answering, e.g. `existing_registration` or `exemption_claim`.
 		FlowSlug string `json:"flow_slug"`
@@ -6361,6 +6592,35 @@ type AirbnbPricingWriteRequest struct {
 	// Currency Required for `type: "currency"` — ISO 4217 code in capitals, e.g. `USD`.
 	Currency *string `json:"currency,omitempty"`
 
+	// Fees With `type: "fees"` — the fee changes to apply. **Merged by `fee_type`**: fees you do not mention are kept, the ones you send are set, and `amount: null` removes that fee. (Airbnb itself replaces the whole fee list on every write, so Repull reads the listing's current fees, applies your changes and writes the full set.) The response is the listing's fees as Airbnb holds them afterwards.
+	//
+	// **Units — the same as `GET …/pricing` returns:** a `flat` fee is the amount in the listing currency × 1,000,000 (`160000000` = 160.00); a `percent` fee is a whole percent of the rent (`10` = 10%).
+	//
+	// Example — add a 10% management fee and keep everything else: `{"type":"fees","fees":[{"fee_type":"PASS_THROUGH_MANAGEMENT_FEE","amount":10,"amount_type":"percent"}]}`. Remove the pet fee: `{"type":"fees","fees":[{"fee_type":"PASS_THROUGH_PET_FEE","amount":null}]}`.
+	Fees *[]struct {
+		// Amount `null` removes the fee. Flat: currency × 1,000,000. Percent: whole percent.
+		//
+		// Example: 10
+		Amount *float32 `json:"amount"`
+
+		// AmountType Defaults to the existing fee's, else `flat`. Percent is accepted for management and resort fees.
+		AmountType *AirbnbPricingWriteRequestFeesAmountType `json:"amount_type,omitempty"`
+
+		// ChargePeriod Once per booking or per night. Defaults to the existing fee's, else `PER_BOOKING`.
+		ChargePeriod *AirbnbPricingWriteRequestFeesChargePeriod `json:"charge_period,omitempty"`
+
+		// ChargeType Who it is charged per. Defaults to the existing fee's, else `PER_GROUP`.
+		ChargeType *AirbnbPricingWriteRequestFeesChargeType `json:"charge_type,omitempty"`
+
+		// FeeType Airbnb fee type: `PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SECURITY_DEPOSIT`, `PASS_THROUGH_MANAGEMENT_FEE`, `PASS_THROUGH_RESORT_FEE`, `PASS_THROUGH_COMMUNITY_FEE`, `PASS_THROUGH_LINEN_FEE`.
+		//
+		// Example: PASS_THROUGH_MANAGEMENT_FEE
+		FeeType string `json:"fee_type"`
+
+		// Offline Collected offline by the host rather than through Airbnb. Default `false`.
+		Offline *bool `json:"offline,omitempty"`
+	} `json:"fees,omitempty"`
+
 	// ModelType Required when `type: "model"` — the pricing-availability model to switch the listing to.
 	ModelType *AirbnbPricingWriteRequestModelType `json:"modelType,omitempty"`
 
@@ -6373,10 +6633,19 @@ type AirbnbPricingWriteRequest struct {
 	// Rule Required for `type: "rule"` — a single pricing rule appended to the listing.
 	Rule *map[string]interface{} `json:"rule,omitempty"`
 
-	// Settings Required for `type: "standard" | "rate-plan" | "fees"` — the pricing-settings object to PUT.
+	// Settings Required for `type: "standard" | "rate-plan"` — the pricing-settings object to PUT. With `type: "fees"` it is the raw alternative to `fees`: `{"standard_fees": [...]}` **replaces every fee** on the listing (Airbnb does not merge), so send the complete list. Prefer `fees`.
 	Settings *map[string]interface{}       `json:"settings,omitempty"`
 	Type     AirbnbPricingWriteRequestType `json:"type"`
 }
+
+// AirbnbPricingWriteRequestFeesAmountType Defaults to the existing fee's, else `flat`. Percent is accepted for management and resort fees.
+type AirbnbPricingWriteRequestFeesAmountType string
+
+// AirbnbPricingWriteRequestFeesChargePeriod Once per booking or per night. Defaults to the existing fee's, else `PER_BOOKING`.
+type AirbnbPricingWriteRequestFeesChargePeriod string
+
+// AirbnbPricingWriteRequestFeesChargeType Who it is charged per. Defaults to the existing fee's, else `PER_GROUP`.
+type AirbnbPricingWriteRequestFeesChargeType string
 
 // AirbnbPricingWriteRequestModelType Required when `type: "model"` — the pricing-availability model to switch the listing to.
 type AirbnbPricingWriteRequestModelType string
@@ -7060,12 +7329,20 @@ type BookingProperty struct {
 	Listings *[]struct {
 		City *string `json:"city,omitempty"`
 
+		// InactiveReason On inactive listings only: why it is inactive.
+		InactiveReason *BookingPropertyListingsInactiveReason `json:"inactiveReason,omitempty"`
+
 		// ListingId Repull listing id — what `/v1/channels/booking/properties/{id}` and `/v1/channels/booking/listings/{id}/pricing` take.
 		ListingId *string `json:"listingId,omitempty"`
 
 		// MappedVia Which record carries the mapping: the room mapping written by Connect, or the legacy property-level link.
 		MappedVia *BookingPropertyListingsMappedVia `json:"mappedVia,omitempty"`
-		Name      *string                           `json:"name,omitempty"`
+
+		// Name The host's internal nickname for the listing.
+		Name *string `json:"name,omitempty"`
+
+		// PublicName The title guests see on the channel; show this to end users.
+		PublicName *string `json:"publicName,omitempty"`
 
 		// RoomBookingId Booking.com's own room id — the `roomId` an ARI write takes.
 		RoomBookingId *string `json:"roomBookingId,omitempty"`
@@ -7073,6 +7350,9 @@ type BookingProperty struct {
 		// RoomId Repull-side room row id, as used by `POST /v1/connect/booking/map-rooms`.
 		RoomId   *string `json:"roomId,omitempty"`
 		RoomName *string `json:"roomName,omitempty"`
+
+		// Status Inactive listings appear only with `?status=inactive|all`, with identity fields only.
+		Status *BookingPropertyListingsStatus `json:"status,omitempty"`
 	} `json:"listings,omitempty"`
 
 	// MappingStatus `mapped` — at least one room points at a listing. `unmapped` — the property is claimed but its rooms are not mapped yet, so `listings` is empty; finish `POST /v1/connect/booking/map-rooms`. An unmapped property is listed rather than hidden, so a half-finished connection is visible instead of looking like no connection at all.
@@ -7086,8 +7366,14 @@ type BookingProperty struct {
 	SyncEnabled      *bool      `json:"syncEnabled,omitempty"`
 }
 
+// BookingPropertyListingsInactiveReason On inactive listings only: why it is inactive.
+type BookingPropertyListingsInactiveReason string
+
 // BookingPropertyListingsMappedVia Which record carries the mapping: the room mapping written by Connect, or the legacy property-level link.
 type BookingPropertyListingsMappedVia string
+
+// BookingPropertyListingsStatus Inactive listings appear only with `?status=inactive|all`, with identity fields only.
+type BookingPropertyListingsStatus string
 
 // BookingPropertyMappingStatus `mapped` — at least one room points at a listing. `unmapped` — the property is claimed but its rooms are not mapped yet, so `listings` is empty; finish `POST /v1/connect/booking/map-rooms`. An unmapped property is listed rather than hidden, so a half-finished connection is visible instead of looking like no connection at all.
 type BookingPropertyMappingStatus string
@@ -7870,6 +8156,15 @@ type ConnectStatus struct {
 		Status *string `json:"status,omitempty"`
 	} `json:"accounts,omitempty"`
 
+	// Action Smoobu only: set to `{ required: true, reason: "reauth_required", message }` when the connection still uses a legacy single API key, which Smoobu stops accepting on October 31, 2026. `null` once it is on an API key + secret.
+	Action *ConnectionAction `json:"action,omitempty"`
+
+	// Capabilities PMS providers only. `reservations`: which reservation writes the API performs on this connection's listings — the connector's support combined with `writePolicy`. When `connected` is false, what the connector supports once connected.
+	Capabilities *struct {
+		// Reservations Which reservation writes the API performs for this listing (or, on `GET /v1/connect/{provider}`, for any listing of that connection). Derived from the PMS connector, the connection, and its write policy — a flag is true only when all three allow it.
+		Reservations *ReservationCapabilities `json:"reservations,omitempty"`
+	} `json:"capabilities,omitempty"`
+
 	// Connected Example: true
 	Connected *bool      `json:"connected,omitempty"`
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -7881,6 +8176,9 @@ type ConnectStatus struct {
 	//
 	// Example: 10000001
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+	// FixUrl Smoobu only: durable link to the hosted Smoobu form where the host pastes a new API key + secret. Submitting it updates this same connection (`id` unchanged). Present only when `action.required` is true.
+	FixUrl *string `json:"fixUrl,omitempty"`
 
 	// Host Host metadata, populated for Airbnb when the host row exists. Null for other providers (per-provider enrichment is incremental).
 	Host *ConnectHost `json:"host,omitempty"`
@@ -7908,8 +8206,13 @@ type ConnectStatusStatus string
 
 // Connection defines model for Connection.
 type Connection struct {
-	CreatedAt         *time.Time `json:"createdAt,omitempty"`
-	ExternalAccountId *string    `json:"externalAccountId,omitempty"`
+	// Action Set when the host must do something before the connection works (e.g. grant the invited Booking.com Extranet user full access). `null` when no action is pending.
+	Action            *ConnectionAction `json:"action,omitempty"`
+	CreatedAt         *time.Time        `json:"createdAt,omitempty"`
+	ExternalAccountId *string           `json:"externalAccountId,omitempty"`
+
+	// FixUrl Durable link that reopens the hosted Connect flow bound to this account on the fix screen — send the host here to resolve `action`. Present only when `action.required` is true; `null` otherwise.
+	FixUrl *string `json:"fixUrl,omitempty"`
 
 	// Host Host metadata for the linked account. Currently populated for Airbnb only; null for other providers.
 	Host *ConnectHost `json:"host,omitempty"`
@@ -7918,12 +8221,30 @@ type Connection struct {
 	// Provider Example: hostaway
 	Provider *string `json:"provider,omitempty"`
 
-	// Status Example: active
+	// Status `active` — connected and working. `pending` — still settling. `needs_permissions` — connected but the host must grant more access before it works (see `action`/`fixUrl`). An `active` connection can also carry an `action` (e.g. a Smoobu legacy API key that must be replaced with a key + secret before October 31, 2026). `error` — the last operation failed. `disconnected` — revoked or superseded.
+	//
+	// Example: active
 	Status *ConnectionStatus `json:"status,omitempty"`
 }
 
-// ConnectionStatus Example: active
+// ConnectionStatus `active` — connected and working. `pending` — still settling. `needs_permissions` — connected but the host must grant more access before it works (see `action`/`fixUrl`). An `active` connection can also carry an `action` (e.g. a Smoobu legacy API key that must be replaced with a key + secret before October 31, 2026). `error` — the last operation failed. `disconnected` — revoked or superseded.
+//
+// Example: active
 type ConnectionStatus string
+
+// ConnectionAction A host action a connection needs before it can work.
+type ConnectionAction struct {
+	// Message Host-facing one-liner describing what to do.
+	Message *string `json:"message,omitempty"`
+
+	// Reason Machine-readable reason, stable for programmatic handling.
+	//
+	// Example: needs_permissions
+	Reason *string `json:"reason,omitempty"`
+
+	// Required Whether a host action is pending.
+	Required bool `json:"required"`
+}
 
 // ConnectionListResponse defines model for ConnectionListResponse.
 type ConnectionListResponse struct {
@@ -8241,6 +8562,15 @@ type Error struct {
 		//
 		// Example: ["4118"]
 		ListingIds *[]string `json:"listing_ids,omitempty"`
+
+		// Listings The same inactive listings with their names, so you can show the user which ones to activate. Present on `code: "listing_inactive"` (HTTP 403). `name` is null only when the request did not resolve it.
+		Listings *[]struct {
+			// Id Example: 4118
+			Id string `json:"id"`
+
+			// Name Example: R-Sable 1302
+			Name *string `json:"name"`
+		} `json:"listings,omitempty"`
 
 		// Message Human-readable cause. Echoes the offending value when relevant.
 		//
@@ -8601,7 +8931,7 @@ type InquiryWebhookObjectStatus string
 
 // Listing A vacation rental listing in your Repull workspace.
 //
-// An **inactive** listing appears only in `GET /v1/listings`, and only when `?status=` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `channels` — so `address`, `content`, `details`, `createdAt` and `updatedAt` are absent until the listing is activated. `GET /v1/listings/{id}` and every other listing endpoint answer `403 listing_inactive` for it. The one field you can add back is `thumbnailUrl`, by passing `?include=thumbnail` — enough to render an activate/deactivate picker with pictures from a single request.
+// An **inactive** listing appears only in `GET /v1/listings`, and only when `?status=` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `inactiveReason`, `address.city`, `channels` — so the street, `content`, `details`, `createdAt` and `updatedAt` are absent until the listing is activated. `inactiveReason` is `plan_limit` (held back by the plan; activating needs a free slot or an upgrade), `unlisted_on_airbnb`, or `deactivated` (switched off by you). `GET /v1/listings/{id}` and every other listing endpoint answer `403 listing_inactive` for it. The one field you can add back is `thumbnailUrl`, by passing `?include=thumbnail` — enough to render an activate/deactivate picker with pictures from a single request.
 type Listing struct {
 	Address *struct {
 		City   *string `json:"city,omitempty"`
@@ -8610,6 +8940,12 @@ type Listing struct {
 
 	// Amenities Amenity rows for the listing. **Only present when the caller passes `?include=amenities`.** Empty array (`[]`) when the listing has no amenity rows.
 	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
+
+	// Capabilities `GET /v1/listings/{id}` only. What the API can do with this listing.
+	Capabilities *struct {
+		// Reservations Which reservation writes the API performs for this listing (or, on `GET /v1/connect/{provider}`, for any listing of that connection). Derived from the PMS connector, the connection, and its write policy — a flag is true only when all three allow it.
+		Reservations *ReservationCapabilities `json:"reservations,omitempty"`
+	} `json:"capabilities,omitempty"`
 
 	// Channels Channels (Airbnb, Booking, VRBO, etc.) the listing is connected to.
 	Channels *[]ListingChannel `json:"channels,omitempty"`
@@ -8624,9 +8960,16 @@ type Listing struct {
 	// Id Repull listing id
 	Id *string `json:"id,omitempty"`
 
-	// Name Example: I - Stafford Apartment
-	Name   *string        `json:"name,omitempty"`
-	Status *ListingStatus `json:"status,omitempty"`
+	// Name The host's internal nickname for the listing.
+	//
+	// Example: I - Stafford Apartment
+	Name *string `json:"name,omitempty"`
+
+	// PublicName The title guests see on the channel (e.g. the Airbnb listing title). `name` is the host's internal nickname for the listing; show `publicName` in anything a guest or end user reads. Present on inactive rows too.
+	//
+	// Example: Centre Oxford bright single room D
+	PublicName *string        `json:"publicName,omitempty"`
+	Status     *ListingStatus `json:"status,omitempty"`
 
 	// ThumbnailUrl Cover photo URL. Always present on an active listing. On an **inactive** one it is present only when the caller passes `?include=thumbnail`; `null` means the listing has no cover photo stored, absent means the expansion was not requested.
 	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
@@ -10910,7 +11253,7 @@ type PmsWritePolicy struct {
 // - `channels` is returned by the list endpoint (`GET /v1/properties`) only.
 // - `latitude`, `longitude`, `createdAt`, and `amenities` are returned by the detail endpoint (`GET /v1/properties/{id}`) only. `amenities` requires `?include=amenities`.
 //
-// An **inactive** property (`status: inactive`) appears only in the list endpoint, and only when `?status=inactive|all` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `lifecycleStatus`, `channels`, `accounts`, `updatedAt` — so every other field is absent until the property is activated. Every other endpoint answers `403 listing_inactive` for it.
+// An **inactive** property (`status: inactive`) appears only in the list endpoint, and only when `?status=inactive|all` asks for it. Such a row carries identity fields only — `id`, `name`, `city`, `status`, `inactiveReason`, `lifecycleStatus`, `channels`, `accounts`, `updatedAt` — so every other field is absent until the property is activated. `inactiveReason` is `plan_limit` (held back by the plan; activating needs a free slot or an upgrade), `unlisted_on_airbnb`, or `deactivated` (switched off by you). Every other endpoint answers `403 listing_inactive` for it.
 type Property struct {
 	// Accounts The connected account the property belongs to on each channel it is on. List endpoint.
 	Accounts *[]*RecordAccount `json:"accounts,omitempty"`
@@ -10953,10 +11296,15 @@ type Property struct {
 	// Example: -80.1918
 	Longitude *string `json:"longitude,omitempty"`
 
-	// Name Property name
+	// Name Property name — the host's internal nickname.
 	//
 	// Example: Oceanview Suite #3
 	Name *string `json:"name,omitempty"`
+
+	// PublicName The title guests see on the channel (e.g. the Airbnb listing title). `name` is the host's internal nickname for the listing; show `publicName` in anything a guest or end user reads. Present on inactive rows too.
+	//
+	// Example: Centre Oxford bright single room D
+	PublicName *string `json:"publicName,omitempty"`
 
 	// Status Derived from `listings.active`.
 	Status *PropertyStatus `json:"status,omitempty"`
@@ -11405,12 +11753,53 @@ type ReservationCancelledPayload struct {
 // Example: guest
 type ReservationCancelledPayloadCancelledBy string
 
-// ReservationCreateRequest defines model for ReservationCreateRequest.
+// ReservationCapabilities Which reservation writes the API performs for this listing (or, on `GET /v1/connect/{provider}`, for any listing of that connection). Derived from the PMS connector, the connection, and its write policy — a flag is true only when all three allow it.
+type ReservationCapabilities struct {
+	// Cancel `POST /v1/reservations/{id}/cancel`.
+	Cancel *bool `json:"cancel,omitempty"`
+
+	// Create `POST /v1/reservations`.
+	Create *bool `json:"create,omitempty"`
+
+	// CustomPrice `totalPrice` on create is honoured; otherwise the PMS (or the rate engine) prices the stay.
+	CustomPrice *bool `json:"customPrice,omitempty"`
+
+	// ManagedBy `pms` — booked in the connected PMS; `repull` — a direct booking made in Repull.
+	ManagedBy *ReservationCapabilitiesManagedBy `json:"managedBy,omitempty"`
+
+	// Modify `PATCH /v1/reservations/{id}`.
+	Modify *bool `json:"modify,omitempty"`
+
+	// Notes What the flags do not say: limits, required access, and why something is off.
+	Notes *string `json:"notes,omitempty"`
+
+	// Provider Example: hostaway
+	Provider *string `json:"provider,omitempty"`
+
+	// Quote `POST /v1/reservations/quote`.
+	Quote *bool `json:"quote,omitempty"`
+
+	// VerifiedAgainst `sandbox` — run end to end on the vendor sandbox (Mews, Cloudbeds); `vendor_docs` — verified against the vendor's API documentation only. Null for direct bookings.
+	VerifiedAgainst *ReservationCapabilitiesVerifiedAgainst `json:"verifiedAgainst,omitempty"`
+}
+
+// ReservationCapabilitiesManagedBy `pms` — booked in the connected PMS; `repull` — a direct booking made in Repull.
+type ReservationCapabilitiesManagedBy string
+
+// ReservationCapabilitiesVerifiedAgainst `sandbox` — run end to end on the vendor sandbox (Mews, Cloudbeds); `vendor_docs` — verified against the vendor's API documentation only. Null for direct bookings.
+type ReservationCapabilitiesVerifiedAgainst string
+
+// ReservationCreateRequest Which fields a listing takes depends on whether it is managed in a PMS — see the operation description and `GET /v1/listings/{id}` → `capabilities.reservations`. A field the listing cannot take is refused by name (`422 unsupported_field`), never dropped.
 type ReservationCreateRequest struct {
+	// Adults Example: 2
+	Adults *int `json:"adults,omitempty"`
+
 	// CheckIn Example: 2026-10-01
 	CheckIn openapi_types.Date `json:"checkIn"`
 
-	// CheckInTime Example: 16:00
+	// CheckInTime Listings not managed in a PMS only.
+	//
+	// Example: 16:00
 	CheckInTime *string `json:"checkInTime,omitempty"`
 
 	// CheckOut Must be after `checkIn`.
@@ -11418,19 +11807,28 @@ type ReservationCreateRequest struct {
 	// Example: 2026-10-05
 	CheckOut openapi_types.Date `json:"checkOut"`
 
-	// CheckOutTime Example: 10:00
+	// CheckOutTime Listings not managed in a PMS only.
+	//
+	// Example: 10:00
 	CheckOutTime *string `json:"checkOutTime,omitempty"`
 
-	// Currency Example: USD
+	// Children Example: 1
+	Children *int `json:"children,omitempty"`
+
+	// Currency Listings not managed in a PMS only (a PMS books in the property's currency).
+	//
+	// Example: USD
 	Currency *string `json:"currency,omitempty"`
 
 	// Guest The guest on a new reservation. Matched against existing guests on email (then phone) plus name, so repeat guests are not duplicated.
 	Guest ReservationGuestInput `json:"guest"`
 
-	// GuestCount Example: 2
+	// GuestCount Total guests. On a PMS listing without `adults`, used as the adult count.
+	//
+	// Example: 3
 	GuestCount *int `json:"guestCount,omitempty"`
 
-	// GuestId Attach an existing guest instead of matching/creating one. Must belong to this workspace.
+	// GuestId Listings not managed in a PMS only: attach an existing guest instead of matching/creating one. Must belong to this workspace.
 	//
 	// Example: 91234
 	GuestId *int `json:"guestId,omitempty"`
@@ -11440,15 +11838,38 @@ type ReservationCreateRequest struct {
 	// Example: 4118
 	ListingId int `json:"listingId"`
 
-	// Platform OTA platforms are deliberately absent — those reservations are owned by the channel and arrive through sync.
+	// Notes PMS listings only: booking notes stored in the PMS.
+	//
+	// Example: Late arrival, around 22:00.
+	Notes *string `json:"notes,omitempty"`
+
+	// Platform OTA platforms are deliberately absent — those reservations are owned by the channel and arrive through sync. `owner` is refused on a PMS listing (block owner stays in the PMS).
 	Platform *ReservationCreateRequestPlatform `json:"platform,omitempty"`
 
-	// Status Lifecycle status to open the reservation in. Defaults to confirmed.
-	Status *string `json:"status,omitempty"`
+	// SendConfirmationEmail PMS listings only: ask the PMS to email the guest its own confirmation, where the PMS supports it.
+	//
+	// Example: false
+	SendConfirmationEmail *bool `json:"sendConfirmationEmail,omitempty"`
+
+	// Status `confirmed` (default) or `tentative` (an optional hold, where the PMS has one). On a listing not managed in a PMS the value is passed to the reservation pipeline as before.
+	Status *ReservationCreateRequestStatus `json:"status,omitempty"`
+
+	// TotalPrice PMS listings only: the total for the whole stay, in the listing's currency. Honoured where `capabilities.reservations.customPrice` is true; omit it and the PMS prices the stay (from its quote where it has one). Refused on a listing not managed in a PMS, whose rate engine prices the stay.
+	//
+	// Example: 880
+	TotalPrice *float32 `json:"totalPrice,omitempty"`
+
+	// UnitId PMS listings only: book this unit (`GET /v1/listings/{id}` → `units[].id`). Refused by PMSs that cannot target a unit.
+	//
+	// Example: 3f1c9a20
+	UnitId *string `json:"unitId,omitempty"`
 }
 
-// ReservationCreateRequestPlatform OTA platforms are deliberately absent — those reservations are owned by the channel and arrive through sync.
+// ReservationCreateRequestPlatform OTA platforms are deliberately absent — those reservations are owned by the channel and arrive through sync. `owner` is refused on a PMS listing (block owner stays in the PMS).
 type ReservationCreateRequestPlatform string
+
+// ReservationCreateRequestStatus `confirmed` (default) or `tentative` (an optional hold, where the PMS has one). On a listing not managed in a PMS the value is passed to the reservation pipeline as before.
+type ReservationCreateRequestStatus string
 
 // ReservationCreateResponse defines model for ReservationCreateResponse.
 type ReservationCreateResponse struct {
@@ -11458,44 +11879,33 @@ type ReservationCreateResponse struct {
 	// ConfirmationCode Example: DIR-8H2K4N
 	ConfirmationCode *string `json:"confirmationCode,omitempty"`
 	Currency         *string `json:"currency,omitempty"`
-	GuestId          *int    `json:"guestId,omitempty"`
 
-	// Id Pass to `GET /v1/reservations/{id}` for the full record.
+	// GuestId Example: 91234
+	GuestId *string `json:"guestId,omitempty"`
+
+	// Id Pass to `GET /v1/reservations/{id}` for the full record. A string, like every id in API responses.
 	//
 	// Example: 215708
-	Id *int `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
 
 	// ListingId Example: 4118
-	ListingId *int `json:"listingId,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
 
 	// Platform Example: direct
 	Platform *string `json:"platform,omitempty"`
 
-	// Pms Mews or Cloudbeds listings only: the booking was made in the PMS first, and this is what it applied.
-	Pms *struct {
-		Applied *[]string `json:"applied,omitempty"`
-		Errors  *[]struct {
-			Code    *string `json:"code,omitempty"`
-			Message *string `json:"message,omitempty"`
-			Section *string `json:"section,omitempty"`
-		} `json:"errors,omitempty"`
-
-		// Provider Example: mews
-		Provider *string `json:"provider,omitempty"`
-
-		// ReservationId The PMS's own id for the booking.
-		ReservationId *string `json:"reservationId,omitempty"`
-	} `json:"pms,omitempty"`
+	// Pms Present when the write was made in a PMS: what the PMS applied. `partial: true` means the booking exists in the PMS but the steps in `failedSections` (e.g. notes, a tentative state) did not apply — do not create it again.
+	Pms *ReservationPmsOutcome `json:"pms,omitempty"`
 
 	// Status Same vocabulary as `GET /v1/reservations/{id}`.
 	//
 	// Example: confirmed
 	Status *string `json:"status,omitempty"`
 
-	// TotalPrice The price the pricing engine derived for the stay. Reservations created through this endpoint are NOT priced from the request — see the operation description. On a Mews or Cloudbeds listing, the PMS prices it from its own rate.
+	// TotalPrice The total the booking was recorded at. On a PMS listing: the PMS's total (your `totalPrice` where the PMS honours one, else the PMS's own price). On any other listing: the price the rate engine derived (`0` when the listing has no rates for the range).
 	TotalPrice *float32 `json:"totalPrice,omitempty"`
 
-	// Unit Mews or Cloudbeds listings only: the room the PMS assigned. Absent for every other listing.
+	// Unit PMS listings: the unit the PMS assigned (hotel-model PMSs), or null. Absent for direct bookings.
 	Unit *struct {
 		Id   *string `json:"id,omitempty"`
 		Name *string `json:"name,omitempty"`
@@ -11866,6 +12276,44 @@ type ReservationOccupancy struct {
 	Total *int `json:"total,omitempty"`
 }
 
+// ReservationPmsOutcome Present when the write was made in a PMS: what the PMS applied. `partial: true` means the booking exists in the PMS but the steps in `failedSections` (e.g. notes, a tentative state) did not apply — do not create it again.
+type ReservationPmsOutcome struct {
+	// Applied Example: ["reservation"]
+	Applied        *[]string                     `json:"applied,omitempty"`
+	Errors         *[]ReservationPmsSectionError `json:"errors,omitempty"`
+	FailedSections *[]ReservationPmsSectionError `json:"failedSections,omitempty"`
+
+	// Partial Example: false
+	Partial *bool `json:"partial,omitempty"`
+
+	// Provider Example: hostaway
+	Provider *string `json:"provider,omitempty"`
+
+	// Quote Create only: the PMS quote the booking was priced from, when no `totalPrice` was sent.
+	Quote *struct {
+		Available *bool    `json:"available,omitempty"`
+		Currency  *string  `json:"currency,omitempty"`
+		Total     *float32 `json:"total,omitempty"`
+	} `json:"quote,omitempty"`
+
+	// ReservationId The PMS's own id for the booking.
+	//
+	// Example: 4471923
+	ReservationId *string `json:"reservationId,omitempty"`
+}
+
+// ReservationPmsSectionError defines model for ReservationPmsSectionError.
+type ReservationPmsSectionError struct {
+	// Code Example: rejected
+	Code *string `json:"code,omitempty"`
+
+	// Message Example: Smoobu: notice too long
+	Message *string `json:"message,omitempty"`
+
+	// Section Example: notes
+	Section *string `json:"section,omitempty"`
+}
+
 // ReservationPrimaryGuest Inline guest summary resolved by JOIN-ing the `guests` table. Populated for every reservation that has a linked guest row; OMITTED entirely (not null) for owner-blocks / pre-arrival rows / partial-sync gaps. Always optional-chain in SDK consumers.
 type ReservationPrimaryGuest struct {
 	// Email Primary email contact (or first non-primary if no primary set).
@@ -11881,6 +12329,75 @@ type ReservationPrimaryGuest struct {
 
 	// Phone Primary phone contact (or first non-primary if no primary set).
 	Phone *string `json:"phone,omitempty"`
+}
+
+// ReservationQuoteRequest defines model for ReservationQuoteRequest.
+type ReservationQuoteRequest struct {
+	// Adults Example: 2
+	Adults *int `json:"adults,omitempty"`
+
+	// CheckIn Example: 2026-10-01
+	CheckIn openapi_types.Date `json:"checkIn"`
+
+	// CheckOut Must be after `checkIn`.
+	//
+	// Example: 2026-10-05
+	CheckOut openapi_types.Date `json:"checkOut"`
+
+	// Children Example: 1
+	Children *int `json:"children,omitempty"`
+
+	// GuestCount Total guests, when you do not split adults and children.
+	//
+	// Example: 3
+	GuestCount *int `json:"guestCount,omitempty"`
+
+	// ListingId Example: 4118
+	ListingId int `json:"listingId"`
+
+	// UnitId Quote one unit (`GET /v1/listings/{id}` → `units[].id`).
+	//
+	// Example: 3f1c9a20
+	UnitId *string `json:"unitId,omitempty"`
+}
+
+// ReservationQuoteResponse defines model for ReservationQuoteResponse.
+type ReservationQuoteResponse struct {
+	// Available Whether the PMS would take the booking as asked.
+	//
+	// Example: true
+	Available *bool `json:"available,omitempty"`
+
+	// Breakdown The parts the PMS itemized; absent parts were not itemized.
+	Breakdown *struct {
+		Accommodation *float32 `json:"accommodation,omitempty"`
+		CleaningFee   *float32 `json:"cleaningFee,omitempty"`
+		Fees          *float32 `json:"fees,omitempty"`
+		Taxes         *float32 `json:"taxes,omitempty"`
+	} `json:"breakdown,omitempty"`
+	CheckIn  *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckOut *openapi_types.Date `json:"checkOut,omitempty"`
+
+	// Currency Example: USD
+	Currency *string `json:"currency,omitempty"`
+
+	// ListingId Example: 4118
+	ListingId *string `json:"listingId,omitempty"`
+
+	// Provider The PMS that priced it.
+	//
+	// Example: hostaway
+	Provider *string `json:"provider,omitempty"`
+
+	// Restrictions The PMS's reasons, verbatim, when `available` is false.
+	//
+	// Example: []
+	Restrictions *[]string `json:"restrictions,omitempty"`
+
+	// Total Total for the stay, in `currency`. Null when the PMS gave no price (e.g. not available).
+	//
+	// Example: 880
+	Total *float32 `json:"total,omitempty"`
 }
 
 // ReservationRequestCreatedEvent defines model for ReservationRequestCreatedEvent.
@@ -12028,8 +12545,13 @@ type ReservationUpdateResponse struct {
 	CheckOut         *openapi_types.Date `json:"checkOut,omitempty"`
 	CheckOutTime     *string             `json:"checkOutTime,omitempty"`
 	ConfirmationCode *string             `json:"confirmationCode,omitempty"`
-	Id               *int                `json:"id,omitempty"`
-	ListingId        *int                `json:"listingId,omitempty"`
+
+	// Id A string, like every id in API responses.
+	Id        *string `json:"id,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
+
+	// Pms Present when the write was made in a PMS: what the PMS applied. `partial: true` means the booking exists in the PMS but the steps in `failedSections` (e.g. notes, a tentative state) did not apply — do not create it again.
+	Pms *ReservationPmsOutcome `json:"pms,omitempty"`
 
 	// Status A move forces the reservation to a confirmed status — read it back rather than assuming it is unchanged.
 	Status    *string    `json:"status,omitempty"`
@@ -12879,6 +13401,9 @@ type DeclineAirbnbAlterationJSONBody = map[string]interface{}
 
 // ListAirbnbListingsParams defines parameters for ListAirbnbListings.
 type ListAirbnbListingsParams struct {
+	// Status `active` (default) leaves inactive listings out. `inactive` returns only them and `all` returns both. An inactive listing comes back with identity fields only (ids, `name`, `city`, `status`, `inactiveReason`, its account), which is enough to show what can be activated. Every row carries `status`.
+	Status *ListAirbnbListingsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
 	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
 	//
 	// A workspace can connect several Airbnb accounts. Omit this and you get every account's rows (the default, unchanged). Every row carries `accountId` + `accountName` either way, so you can group without a second call.
@@ -12891,6 +13416,9 @@ type ListAirbnbListingsParams struct {
 	// Include Comma-separated expansions. Currently supported: `amenities` (adds `amenities` and `accessibility_amenities` arrays to each connection, sourced from the local `listings_airbnb_amenities` cache) and `thumbnail` (adds `thumbnailUrl` to each listing). Unknown values return 422 with a `valid_values` envelope.
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 }
+
+// ListAirbnbListingsParamsStatus defines parameters for ListAirbnbListings.
+type ListAirbnbListingsParamsStatus string
 
 // GetAirbnbListingParams defines parameters for GetAirbnbListing.
 type GetAirbnbListingParams struct {
@@ -13096,10 +13624,17 @@ type GetAirbnbCheckinGuideParams struct {
 	Locale *string `form:"locale,omitempty" json:"locale,omitempty"`
 }
 
-// UpdateAirbnbCheckinGuideParams defines parameters for UpdateAirbnbCheckinGuide.
-type UpdateAirbnbCheckinGuideParams struct {
-	// Locale Locale to upsert. Defaults to `en`.
-	Locale *string `form:"locale,omitempty" json:"locale,omitempty"`
+// UpdateAirbnbCheckinGuideJSONBody defines parameters for UpdateAirbnbCheckinGuide.
+type UpdateAirbnbCheckinGuideJSONBody struct {
+	// Locale Language of the guide when one has to be created. Ignored when the listing already has a guide.
+	//
+	// Example: en
+	Locale *string `json:"locale,omitempty"`
+
+	// Steps The guide's steps, in the order guests see them.
+	Steps []struct {
+		Notes string `json:"notes"`
+	} `json:"steps"`
 }
 
 // ListAirbnbListingDescriptionsParams defines parameters for ListAirbnbListingDescriptions.
@@ -13779,6 +14314,15 @@ type SendBookingMessageJSONBody struct {
 	PropertyId int `json:"property_id"`
 }
 
+// ListBookingPropertiesParams defines parameters for ListBookingProperties.
+type ListBookingPropertiesParams struct {
+	// Status `active` (default) leaves inactive listings out. `inactive` returns only them and `all` returns both. An inactive listing comes back with identity fields only (ids, `name`, `city`, `status`, `inactiveReason`, its account), which is enough to show what can be activated. Every row carries `status`.
+	Status *ListBookingPropertiesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// ListBookingPropertiesParamsStatus defines parameters for ListBookingProperties.
+type ListBookingPropertiesParamsStatus string
+
 // BookingPropertyActionParams defines parameters for BookingPropertyAction.
 type BookingPropertyActionParams struct {
 	// HotelId Booking.com property to act on, for a listing mapped to more than one. The query-string spelling of the body's `hotelId`; the body wins when both are sent.
@@ -13912,6 +14456,15 @@ type ListPlumguideBookingsParams struct {
 // UpdatePlumguideWebhooksJSONBody defines parameters for UpdatePlumguideWebhooks.
 type UpdatePlumguideWebhooksJSONBody map[string]interface{}
 
+// ListVrboListingsParams defines parameters for ListVrboListings.
+type ListVrboListingsParams struct {
+	// Status `active` (default) leaves inactive listings out. `inactive` returns only them and `all` returns both. An inactive listing comes back with identity fields only (ids, `name`, `city`, `status`, `inactiveReason`, its account), which is enough to show what can be activated. Every row carries `status`.
+	Status *ListVrboListingsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// ListVrboListingsParamsStatus defines parameters for ListVrboListings.
+type ListVrboListingsParamsStatus string
+
 // ListVrboReservationsParams defines parameters for ListVrboReservations.
 type ListVrboReservationsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
@@ -13951,6 +14504,11 @@ type CreateConnectSessionJSONBody struct {
 
 	// RedirectUrl Where to send the user after they finish (or cancel). Status query params are appended.
 	RedirectUrl string `json:"redirectUrl"`
+
+	// ReservationHistoryMonths Airbnb — how many months of past reservations the first import pulls (1–60). Omit it for the default window. Upcoming stays are always imported. A wider window takes longer to import, because every extra month is more stays to fetch.
+	//
+	// Example: 24
+	ReservationHistoryMonths *int `json:"reservationHistoryMonths,omitempty"`
 
 	// Scope Migrate only — what you want brought across, listed to the property manager before they connect.
 	Scope *[]CreateConnectSessionJSONBodyScope `json:"scope,omitempty"`
@@ -14146,11 +14704,21 @@ type SelectConnectProviderJSONBody struct {
 
 // SubmitSmoobuCredentialsJSONBody defines parameters for SubmitSmoobuCredentials.
 type SubmitSmoobuCredentialsJSONBody struct {
-	// Credentials API key from Smoobu → Settings → For developers.
-	Credentials map[string]interface{} `json:"credentials"`
+	// Credentials HMAC API key + secret from Smoobu → Settings → Advanced → API Keys.
+	Credentials SubmitSmoobuCredentialsJSONBody_Credentials `json:"credentials"`
 
 	// SessionId Connect session id from `POST /v1/connect/smoobu`.
 	SessionId *string `json:"sessionId,omitempty"`
+}
+
+// SubmitSmoobuCredentialsJSONBody_Credentials defines parameters for SubmitSmoobuCredentials.
+type SubmitSmoobuCredentialsJSONBody_Credentials struct {
+	// ApiKey Smoobu API key.
+	ApiKey string `json:"apiKey"`
+
+	// ApiSecret Smoobu API secret (shown once when generated).
+	ApiSecret            string                 `json:"apiSecret"`
+	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // GetVrboConnectImportParams defines parameters for GetVrboConnectImport.
@@ -14211,6 +14779,11 @@ type CreateConnectionJSONBody struct {
 
 	// RedirectUrl Airbnb + Booking.com — where to redirect the user after they finish the hosted connect flow.
 	RedirectUrl *string `json:"redirectUrl,omitempty"`
+
+	// ReservationHistoryMonths Airbnb — how many months of past reservations the first import pulls (1–60). Omit it for the default window. Upcoming stays are always imported. A wider window takes longer to import, because every extra month is more stays to fetch.
+	//
+	// Example: 24
+	ReservationHistoryMonths *int `json:"reservationHistoryMonths,omitempty"`
 
 	// State Airbnb + Booking.com — your own correlation token, e.g. your user id (at most 500 characters). Echoed on the redirect back (`&state=`) and in the `connect.session.completed` webhook.
 	State *string `json:"state,omitempty"`
@@ -14618,7 +15191,7 @@ type ListListingsParams struct {
 	// Q Case-insensitive substring search on name, street, or city.
 	Q *string `form:"q,omitempty" json:"q,omitempty"`
 
-	// Status Filter by listing status. Defaults to `active`. Pass `inactive` to list the listings you can activate, `archived` for archived ones, or `all` for every status. Inactive listings are returned with identity fields only — `id`, `name`, `status` and `channels` — and never with `address`, `content` or `details`; activate one to see the rest. The only field you can add to an inactive row is `thumbnailUrl`, via `?include=thumbnail`.
+	// Status Filter by listing status. Defaults to `active`. Pass `inactive` to list the listings you can activate, `archived` for archived ones, or `all` for every status. Inactive listings are returned with identity fields only — `id`, `name`, `status`, `inactiveReason` (`plan_limit`, `unlisted_on_airbnb` or `deactivated`), `address.city` and `channels` — and never with the street, `content` or `details`; activate one to see the rest. The only field you can add to an inactive row is `thumbnailUrl`, via `?include=thumbnail`.
 	Status *ListListingsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Channel Restrict to listings published on the given channel (`airbnb`, `booking`, `vrbo`, etc.). Joins through `listing_platform_links` and matches active links only.
@@ -14857,7 +15430,7 @@ type ListPropertiesParams struct {
 	// Q Case-insensitive substring search on name, street, or city.
 	Q *string `form:"q,omitempty" json:"q,omitempty"`
 
-	// Status Filter by status. Default returns active only; pass `inactive` to invert or `all` to include both. Inactive properties carry identity fields only — `id`, `name`, `status`, `lifecycleStatus`, `channels` and `updatedAt` — never `address`, `city` or `currency`.
+	// Status Filter by status. Default returns active only; pass `inactive` to invert or `all` to include both. Inactive properties carry identity fields only — `id`, `name`, `city`, `status`, `inactiveReason` (`plan_limit`, `unlisted_on_airbnb` or `deactivated`), `lifecycleStatus`, `channels` and `updatedAt` — never `address` or `currency`.
 	Status *ListPropertiesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// LifecycleStatus Filter by lifecycle status (e.g. `live`, `draft`, `archived`). Pass `all` to disable the filter.
@@ -15015,6 +15588,15 @@ type CreateReservationParams struct {
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
 	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XAccountId Restrict the request to one connected account (a Repull connection id, `GET /v1/connect` → `id`). A listing or reservation outside that account answers `404 not_found`. Omit it to act workspace-wide.
+	XAccountId *string `json:"X-Account-Id,omitempty"`
+}
+
+// QuoteReservationParams defines parameters for QuoteReservation.
+type QuoteReservationParams struct {
+	// XAccountId Restrict the request to one connected account (a Repull connection id, `GET /v1/connect` → `id`). A listing or reservation outside that account answers `404 not_found`. Omit it to act workspace-wide.
+	XAccountId *string `json:"X-Account-Id,omitempty"`
 }
 
 // GetReservationParams defines parameters for GetReservation.
@@ -15031,6 +15613,9 @@ type UpdateReservationParams struct {
 	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
 	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XAccountId Restrict the request to one connected account (a Repull connection id, `GET /v1/connect` → `id`). A listing or reservation outside that account answers `404 not_found`. Omit it to act workspace-wide.
+	XAccountId *string `json:"X-Account-Id,omitempty"`
 }
 
 // AcceptReservationRequestParams defines parameters for AcceptReservationRequest.
@@ -15059,6 +15644,19 @@ type AcceptReservationRequest200JSONResponseBodyStatus string
 type CancelReservationJSONBody struct {
 	// Reason Why it was cancelled; recorded on the reservation (and in the PMS's notes).
 	Reason *string `json:"reason,omitempty"`
+}
+
+// CancelReservationParams defines parameters for CancelReservation.
+type CancelReservationParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+
+	// XAccountId Restrict the request to one connected account (a Repull connection id, `GET /v1/connect` → `id`). A listing or reservation outside that account answers `404 not_found`. Omit it to act workspace-wide.
+	XAccountId *string `json:"X-Account-Id,omitempty"`
 }
 
 // CancelReservation200JSONResponseBodyStatus defines parameters for CancelReservation.
@@ -15276,6 +15874,9 @@ type UpdateAirbnbListingAvailabilityJSONRequestBody = AirbnbAvailabilityWriteReq
 
 // UpdateAirbnbBookingSettingsJSONRequestBody defines body for UpdateAirbnbBookingSettings for application/json ContentType.
 type UpdateAirbnbBookingSettingsJSONRequestBody UpdateAirbnbBookingSettingsJSONBody
+
+// UpdateAirbnbCheckinGuideJSONRequestBody defines body for UpdateAirbnbCheckinGuide for application/json ContentType.
+type UpdateAirbnbCheckinGuideJSONRequestBody UpdateAirbnbCheckinGuideJSONBody
 
 // UpdateAirbnbListingDescriptionJSONRequestBody defines body for UpdateAirbnbListingDescription for application/json ContentType.
 type UpdateAirbnbListingDescriptionJSONRequestBody = AirbnbDescriptionWriteRequest
@@ -15517,6 +16118,9 @@ type RunMigrationImportJSONRequestBody RunMigrationImportJSONBody
 
 // CreateReservationJSONRequestBody defines body for CreateReservation for application/json ContentType.
 type CreateReservationJSONRequestBody = ReservationCreateRequest
+
+// QuoteReservationJSONRequestBody defines body for QuoteReservation for application/json ContentType.
+type QuoteReservationJSONRequestBody = ReservationQuoteRequest
 
 // UpdateReservationJSONRequestBody defines body for UpdateReservation for application/json ContentType.
 type UpdateReservationJSONRequestBody = ReservationUpdateRequest
@@ -16972,6 +17576,85 @@ func (a BookingSetupJSONBody_LegalEntity) MarshalJSON() ([]byte, error) {
 	object["legal_contact_name"], err = json.Marshal(a.LegalContactName)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling 'legal_contact_name': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for SubmitSmoobuCredentialsJSONBody_Credentials. Returns the specified
+// element and whether it was found
+func (a SubmitSmoobuCredentialsJSONBody_Credentials) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for SubmitSmoobuCredentialsJSONBody_Credentials
+func (a *SubmitSmoobuCredentialsJSONBody_Credentials) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for SubmitSmoobuCredentialsJSONBody_Credentials to handle AdditionalProperties
+func (a *SubmitSmoobuCredentialsJSONBody_Credentials) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["apiKey"]; found {
+		err = json.Unmarshal(raw, &a.ApiKey)
+		if err != nil {
+			return fmt.Errorf("error reading 'apiKey': %w", err)
+		}
+		delete(object, "apiKey")
+	}
+
+	if raw, found := object["apiSecret"]; found {
+		err = json.Unmarshal(raw, &a.ApiSecret)
+		if err != nil {
+			return fmt.Errorf("error reading 'apiSecret': %w", err)
+		}
+		delete(object, "apiSecret")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for SubmitSmoobuCredentialsJSONBody_Credentials to handle AdditionalProperties
+func (a SubmitSmoobuCredentialsJSONBody_Credentials) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["apiKey"], err = json.Marshal(a.ApiKey)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'apiKey': %w", err)
+	}
+
+	object["apiSecret"], err = json.Marshal(a.ApiSecret)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'apiSecret': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
