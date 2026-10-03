@@ -3201,7 +3201,9 @@ type ClientInterface interface {
 	//
 	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 	//
-	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+	//
+	// **An inquiry relayed by a PMS** (Guesty, Hostaway, …) is pre-approved in that PMS. A PMS whose API cannot returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reservations.preapprove` says so beforehand. The response then carries `pms`.
 	//
 	// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 	//
@@ -3222,7 +3224,9 @@ type ClientInterface interface {
 	//
 	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 	//
-	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+	//
+	// **An inquiry relayed by a PMS** (Guesty, Hostaway, …) is pre-approved in that PMS. A PMS whose API cannot returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reservations.preapprove` says so beforehand. The response then carries `pms`.
 	//
 	// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 	//
@@ -3344,6 +3348,8 @@ type ClientInterface interface {
 	//
 	// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
 	//
+	// **Creating the guest in a connected PMS too:** send `provider` (e.g. `guesty`). The guest is created in the PMS first and its id there comes back as `pms.externalId`; a PMS whose API cannot create guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is created. `GET /v1/connect/{provider}` → `capabilities.pms.guests.create` says so beforehand.
+	//
 	// Send `Idempotency-Key` to make a retry safe.
 	//
 	// Takes any type of body and a specified content type.
@@ -3358,6 +3364,8 @@ type ClientInterface interface {
 	// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
 	//
 	// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+	//
+	// **Creating the guest in a connected PMS too:** send `provider` (e.g. `guesty`). The guest is created in the PMS first and its id there comes back as `pms.externalId`; a PMS whose API cannot create guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is created. `GET /v1/connect/{provider}` → `capabilities.pms.guests.create` says so beforehand.
 	//
 	// Send `Idempotency-Key` to make a retry safe.
 	//
@@ -3374,6 +3382,32 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/guests/{id} (the `GetGuest` operationId).
 	GetGuest(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateGuestWithBody Update a guest
+	//
+	// Change a guest's name, email, phone or language. Email and phone are added as the guest's newest contact; earlier ones are kept.
+	//
+	// **Guests linked to a connected PMS** (created with `provider`, or imported from one) are changed in that PMS first. A PMS whose API cannot change guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is written; `GET /v1/connect/{provider}` → `capabilities.pms.guests.update` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PATCH /v1/guests/{id} (the `UpdateGuest` operationId).
+	UpdateGuestWithBody(ctx context.Context, id int, params *UpdateGuestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateGuest Update a guest
+	//
+	// Change a guest's name, email, phone or language. Email and phone are added as the guest's newest contact; earlier ones are kept.
+	//
+	// **Guests linked to a connected PMS** (created with `provider`, or imported from one) are changed in that PMS first. A PMS whose API cannot change guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is written; `GET /v1/connect/{provider}` → `capabilities.pms.guests.update` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PATCH /v1/guests/{id} (the `UpdateGuest` operationId).
+	UpdateGuest(ctx context.Context, id int, params *UpdateGuestParams, body UpdateGuestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetHealth Health check
 	//
@@ -3664,6 +3698,8 @@ type ClientInterface interface {
 	//
 	// Write your PMS's canonical listing content — title, description, amenities, address, occupancy, and policies — into a Repull listing, making it the source of truth. This is the flagship "the PMS owns listing content, Repull distributes it" enabler.
 	//
+	// **Listings managed in a connected PMS** (Guesty, Hostaway, …): the PMS owns their content, so title, descriptions, check-in/out times, capacity, amenities, house rules, address and added photos are written to the PMS first; Repull keeps only what it accepted (refused sections are in `deferred`, its per-section outcome in `pms`). A section that PMS cannot write returns `422 pms_write_unsupported` naming it when nothing was applied (or is listed in `deferred` when other sections were); `GET /v1/listings/{id}` → `capabilities.pms.listings` says which sections it takes. A PMS whose connector writes no listing content at all (Mews, Cloudbeds, Lodgify, …) keeps today's behaviour: the content is written to Repull only. Send photos with `photosMode: "append"` — replacing a PMS listing's photo set needs the PMS's own photo ids. A revoked PMS connection is `403 connection_reauth_required`.
+	//
 	// **Partial update:** every field is optional. Only the fields you send are written; absent fields are left untouched. `amenities` is a FULL replacement of the amenity set (omit to leave untouched, send `[]` to clear).
 	//
 	// **Multilingual:** send `locale` to say which language this copy is in (`it`, `pt-BR`, …). Canonical content is stored per locale, so each language keeps its own row instead of overwriting the English one. Omit it for English.
@@ -3684,6 +3720,8 @@ type ClientInterface interface {
 	// UpdateListingContent Update canonical listing content
 	//
 	// Write your PMS's canonical listing content — title, description, amenities, address, occupancy, and policies — into a Repull listing, making it the source of truth. This is the flagship "the PMS owns listing content, Repull distributes it" enabler.
+	//
+	// **Listings managed in a connected PMS** (Guesty, Hostaway, …): the PMS owns their content, so title, descriptions, check-in/out times, capacity, amenities, house rules, address and added photos are written to the PMS first; Repull keeps only what it accepted (refused sections are in `deferred`, its per-section outcome in `pms`). A section that PMS cannot write returns `422 pms_write_unsupported` naming it when nothing was applied (or is listed in `deferred` when other sections were); `GET /v1/listings/{id}` → `capabilities.pms.listings` says which sections it takes. A PMS whose connector writes no listing content at all (Mews, Cloudbeds, Lodgify, …) keeps today's behaviour: the content is written to Repull only. Send photos with `photosMode: "append"` — replacing a PMS listing's photo set needs the PMS's own photo ids. A revoked PMS connection is `403 connection_reauth_required`.
 	//
 	// **Partial update:** every field is optional. Only the fields you send are written; absent fields are left untouched. `amenities` is a FULL replacement of the amenity set (omit to leave untouched, send `[]` to clear).
 	//
@@ -4613,7 +4651,7 @@ type ClientInterface interface {
 	//
 	// Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+	// **Airbnb**, for listings connected to Airbnb directly; other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 	//
 	// Takes no body.
 	//
@@ -4766,6 +4804,8 @@ type ClientInterface interface {
 	//
 	// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 	//
+	// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+	//
 	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
@@ -4780,6 +4820,8 @@ type ClientInterface interface {
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
 	// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 	//
 	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
@@ -10240,7 +10282,9 @@ func (c *Client) WithdrawConversationPreapproval(ctx context.Context, id int, re
 //
 // Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 //
-// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+//
+// **An inquiry relayed by a PMS** (Guesty, Hostaway, …) is pre-approved in that PMS. A PMS whose API cannot returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reservations.preapprove` says so beforehand. The response then carries `pms`.
 //
 // `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 //
@@ -10271,7 +10315,9 @@ func (c *Client) PreapproveConversationWithBody(ctx context.Context, id int, par
 //
 // Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 //
-// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+//
+// **An inquiry relayed by a PMS** (Guesty, Hostaway, …) is pre-approved in that PMS. A PMS whose API cannot returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reservations.preapprove` says so beforehand. The response then carries `pms`.
 //
 // `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 //
@@ -10473,6 +10519,8 @@ func (c *Client) ListGuests(ctx context.Context, params *ListGuestsParams, reqEd
 //
 // Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
 //
+// **Creating the guest in a connected PMS too:** send `provider` (e.g. `guesty`). The guest is created in the PMS first and its id there comes back as `pms.externalId`; a PMS whose API cannot create guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is created. `GET /v1/connect/{provider}` → `capabilities.pms.guests.create` says so beforehand.
+//
 // Send `Idempotency-Key` to make a retry safe.
 //
 // Takes any type of body and a specified content type.
@@ -10497,6 +10545,8 @@ func (c *Client) CreateGuestWithBody(ctx context.Context, params *CreateGuestPar
 // **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
 //
 // Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+//
+// **Creating the guest in a connected PMS too:** send `provider` (e.g. `guesty`). The guest is created in the PMS first and its id there comes back as `pms.externalId`; a PMS whose API cannot create guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is created. `GET /v1/connect/{provider}` → `capabilities.pms.guests.create` says so beforehand.
 //
 // Send `Idempotency-Key` to make a retry safe.
 //
@@ -10524,6 +10574,52 @@ func (c *Client) CreateGuest(ctx context.Context, params *CreateGuestParams, bod
 // Corresponds with GET /v1/guests/{id} (the `GetGuest` operationId).
 func (c *Client) GetGuest(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetGuestRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateGuestWithBody Update a guest
+//
+// Change a guest's name, email, phone or language. Email and phone are added as the guest's newest contact; earlier ones are kept.
+//
+// **Guests linked to a connected PMS** (created with `provider`, or imported from one) are changed in that PMS first. A PMS whose API cannot change guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is written; `GET /v1/connect/{provider}` → `capabilities.pms.guests.update` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PATCH /v1/guests/{id} (the `UpdateGuest` operationId).
+func (c *Client) UpdateGuestWithBody(ctx context.Context, id int, params *UpdateGuestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateGuestRequestWithBody(c.Server, id, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateGuest Update a guest
+//
+// Change a guest's name, email, phone or language. Email and phone are added as the guest's newest contact; earlier ones are kept.
+//
+// **Guests linked to a connected PMS** (created with `provider`, or imported from one) are changed in that PMS first. A PMS whose API cannot change guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is written; `GET /v1/connect/{provider}` → `capabilities.pms.guests.update` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PATCH /v1/guests/{id} (the `UpdateGuest` operationId).
+func (c *Client) UpdateGuest(ctx context.Context, id int, params *UpdateGuestParams, body UpdateGuestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateGuestRequest(c.Server, id, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -11073,6 +11169,8 @@ func (c *Client) ListListingComps(ctx context.Context, id int, params *ListListi
 //
 // Write your PMS's canonical listing content — title, description, amenities, address, occupancy, and policies — into a Repull listing, making it the source of truth. This is the flagship "the PMS owns listing content, Repull distributes it" enabler.
 //
+// **Listings managed in a connected PMS** (Guesty, Hostaway, …): the PMS owns their content, so title, descriptions, check-in/out times, capacity, amenities, house rules, address and added photos are written to the PMS first; Repull keeps only what it accepted (refused sections are in `deferred`, its per-section outcome in `pms`). A section that PMS cannot write returns `422 pms_write_unsupported` naming it when nothing was applied (or is listed in `deferred` when other sections were); `GET /v1/listings/{id}` → `capabilities.pms.listings` says which sections it takes. A PMS whose connector writes no listing content at all (Mews, Cloudbeds, Lodgify, …) keeps today's behaviour: the content is written to Repull only. Send photos with `photosMode: "append"` — replacing a PMS listing's photo set needs the PMS's own photo ids. A revoked PMS connection is `403 connection_reauth_required`.
+//
 // **Partial update:** every field is optional. Only the fields you send are written; absent fields are left untouched. `amenities` is a FULL replacement of the amenity set (omit to leave untouched, send `[]` to clear).
 //
 // **Multilingual:** send `locale` to say which language this copy is in (`it`, `pt-BR`, …). Canonical content is stored per locale, so each language keeps its own row instead of overwriting the English one. Omit it for English.
@@ -11103,6 +11201,8 @@ func (c *Client) UpdateListingContentWithBody(ctx context.Context, id int, param
 // UpdateListingContent Update canonical listing content
 //
 // Write your PMS's canonical listing content — title, description, amenities, address, occupancy, and policies — into a Repull listing, making it the source of truth. This is the flagship "the PMS owns listing content, Repull distributes it" enabler.
+//
+// **Listings managed in a connected PMS** (Guesty, Hostaway, …): the PMS owns their content, so title, descriptions, check-in/out times, capacity, amenities, house rules, address and added photos are written to the PMS first; Repull keeps only what it accepted (refused sections are in `deferred`, its per-section outcome in `pms`). A section that PMS cannot write returns `422 pms_write_unsupported` naming it when nothing was applied (or is listed in `deferred` when other sections were); `GET /v1/listings/{id}` → `capabilities.pms.listings` says which sections it takes. A PMS whose connector writes no listing content at all (Mews, Cloudbeds, Lodgify, …) keeps today's behaviour: the content is written to Repull only. Send photos with `photosMode: "append"` — replacing a PMS listing's photo set needs the PMS's own photo ids. A revoked PMS connection is `403 connection_reauth_required`.
 //
 // **Partial update:** every field is optional. Only the fields you send are written; absent fields are left untouched. `amenities` is a FULL replacement of the amenity set (omit to leave untouched, send `[]` to clear).
 //
@@ -12592,7 +12692,7 @@ func (c *Client) UpdateReservation(ctx context.Context, id int, params *UpdateRe
 //
 // Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+// **Airbnb**, for listings connected to Airbnb directly; other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 //
 // Takes no body.
 //
@@ -12839,6 +12939,8 @@ func (c *Client) SubmitGuestReview(ctx context.Context, id int, body SubmitGuest
 //
 // Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 //
+// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+//
 // To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
@@ -12863,6 +12965,8 @@ func (c *Client) ReplyToReviewWithBody(ctx context.Context, id int, contentType 
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
 // Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 //
 // To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
@@ -20993,6 +21097,68 @@ func NewGetGuestRequest(server string, id int, params *GetGuestParams) (*http.Re
 			}
 
 			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewUpdateGuestRequest calls the generic UpdateGuest builder with application/json body
+func NewUpdateGuestRequest(server string, id int, params *UpdateGuestParams, body UpdateGuestJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateGuestRequestWithBody(server, id, params, "application/json", bodyReader)
+}
+
+// NewUpdateGuestRequestWithBody constructs an http.Request for the UpdateGuest method, with any body, and a specified content type
+func NewUpdateGuestRequestWithBody(server string, id int, params *UpdateGuestParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/guests/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IdempotencyKey != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "Idempotency-Key", *params.IdempotencyKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("Idempotency-Key", headerParam0)
 		}
 
 	}
@@ -29503,7 +29669,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 	//
-	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+	//
+	// **An inquiry relayed by a PMS** (Guesty, Hostaway, …) is pre-approved in that PMS. A PMS whose API cannot returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reservations.preapprove` says so beforehand. The response then carries `pms`.
 	//
 	// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 	//
@@ -29524,7 +29692,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 	//
-	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+	// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+	//
+	// **An inquiry relayed by a PMS** (Guesty, Hostaway, …) is pre-approved in that PMS. A PMS whose API cannot returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reservations.preapprove` says so beforehand. The response then carries `pms`.
 	//
 	// `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 	//
@@ -29652,6 +29822,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
 	//
+	// **Creating the guest in a connected PMS too:** send `provider` (e.g. `guesty`). The guest is created in the PMS first and its id there comes back as `pms.externalId`; a PMS whose API cannot create guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is created. `GET /v1/connect/{provider}` → `capabilities.pms.guests.create` says so beforehand.
+	//
 	// Send `Idempotency-Key` to make a retry safe.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -29666,6 +29838,8 @@ type ClientWithResponsesInterface interface {
 	// **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
 	//
 	// Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+	//
+	// **Creating the guest in a connected PMS too:** send `provider` (e.g. `guesty`). The guest is created in the PMS first and its id there comes back as `pms.externalId`; a PMS whose API cannot create guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is created. `GET /v1/connect/{provider}` → `capabilities.pms.guests.create` says so beforehand.
 	//
 	// Send `Idempotency-Key` to make a retry safe.
 	//
@@ -29684,6 +29858,32 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/guests/{id} (the `GetGuest` operationId).
 	GetGuestWithResponse(ctx context.Context, id int, params *GetGuestParams, reqEditors ...RequestEditorFn) (*GetGuestClientResponse, error)
+
+	// UpdateGuestWithBodyWithResponse Update a guest
+	//
+	// Change a guest's name, email, phone or language. Email and phone are added as the guest's newest contact; earlier ones are kept.
+	//
+	// **Guests linked to a connected PMS** (created with `provider`, or imported from one) are changed in that PMS first. A PMS whose API cannot change guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is written; `GET /v1/connect/{provider}` → `capabilities.pms.guests.update` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/guests/{id} (the `UpdateGuest` operationId).
+	UpdateGuestWithBodyWithResponse(ctx context.Context, id int, params *UpdateGuestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGuestClientResponse, error)
+
+	// UpdateGuestWithResponse Update a guest
+	//
+	// Change a guest's name, email, phone or language. Email and phone are added as the guest's newest contact; earlier ones are kept.
+	//
+	// **Guests linked to a connected PMS** (created with `provider`, or imported from one) are changed in that PMS first. A PMS whose API cannot change guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is written; `GET /v1/connect/{provider}` → `capabilities.pms.guests.update` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+	//
+	// Send `Idempotency-Key` to make a retry safe.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/guests/{id} (the `UpdateGuest` operationId).
+	UpdateGuestWithResponse(ctx context.Context, id int, params *UpdateGuestParams, body UpdateGuestJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateGuestClientResponse, error)
 
 	// GetHealthWithResponse Health check
 	//
@@ -30004,6 +30204,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Write your PMS's canonical listing content — title, description, amenities, address, occupancy, and policies — into a Repull listing, making it the source of truth. This is the flagship "the PMS owns listing content, Repull distributes it" enabler.
 	//
+	// **Listings managed in a connected PMS** (Guesty, Hostaway, …): the PMS owns their content, so title, descriptions, check-in/out times, capacity, amenities, house rules, address and added photos are written to the PMS first; Repull keeps only what it accepted (refused sections are in `deferred`, its per-section outcome in `pms`). A section that PMS cannot write returns `422 pms_write_unsupported` naming it when nothing was applied (or is listed in `deferred` when other sections were); `GET /v1/listings/{id}` → `capabilities.pms.listings` says which sections it takes. A PMS whose connector writes no listing content at all (Mews, Cloudbeds, Lodgify, …) keeps today's behaviour: the content is written to Repull only. Send photos with `photosMode: "append"` — replacing a PMS listing's photo set needs the PMS's own photo ids. A revoked PMS connection is `403 connection_reauth_required`.
+	//
 	// **Partial update:** every field is optional. Only the fields you send are written; absent fields are left untouched. `amenities` is a FULL replacement of the amenity set (omit to leave untouched, send `[]` to clear).
 	//
 	// **Multilingual:** send `locale` to say which language this copy is in (`it`, `pt-BR`, …). Canonical content is stored per locale, so each language keeps its own row instead of overwriting the English one. Omit it for English.
@@ -30024,6 +30226,8 @@ type ClientWithResponsesInterface interface {
 	// UpdateListingContentWithResponse Update canonical listing content
 	//
 	// Write your PMS's canonical listing content — title, description, amenities, address, occupancy, and policies — into a Repull listing, making it the source of truth. This is the flagship "the PMS owns listing content, Repull distributes it" enabler.
+	//
+	// **Listings managed in a connected PMS** (Guesty, Hostaway, …): the PMS owns their content, so title, descriptions, check-in/out times, capacity, amenities, house rules, address and added photos are written to the PMS first; Repull keeps only what it accepted (refused sections are in `deferred`, its per-section outcome in `pms`). A section that PMS cannot write returns `422 pms_write_unsupported` naming it when nothing was applied (or is listed in `deferred` when other sections were); `GET /v1/listings/{id}` → `capabilities.pms.listings` says which sections it takes. A PMS whose connector writes no listing content at all (Mews, Cloudbeds, Lodgify, …) keeps today's behaviour: the content is written to Repull only. Send photos with `photosMode: "append"` — replacing a PMS listing's photo set needs the PMS's own photo ids. A revoked PMS connection is `403 connection_reauth_required`.
 	//
 	// **Partial update:** every field is optional. Only the fields you send are written; absent fields are left untouched. `amenities` is a FULL replacement of the amenity set (omit to leave untouched, send `[]` to clear).
 	//
@@ -30999,7 +31203,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 	//
-	// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+	// **Airbnb**, for listings connected to Airbnb directly; other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 	//
 	// Takes no body.
 	//
@@ -31158,6 +31362,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 	//
+	// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+	//
 	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
@@ -31172,6 +31378,8 @@ type ClientWithResponsesInterface interface {
 	// Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 	//
 	// Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+	//
+	// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 	//
 	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 	//
@@ -43632,6 +43840,75 @@ func (r GetGuestClientResponse) ContentType() string {
 	return ""
 }
 
+type UpdateGuestClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GuestUpdateResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateGuestClientResponse) GetJSON200() *GuestUpdateResponse {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateGuestClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateGuestClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateGuestClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateGuestClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateGuestClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateGuestClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateGuestClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateGuestClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetHealthClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -48582,6 +48859,9 @@ type ReplyToReviewClientResponse struct {
 	JSON201 *struct {
 		Id       *string `json:"id,omitempty"`
 		Platform *string `json:"platform,omitempty"`
+
+		// Pms The PMS the reply went through, when the review came from one.
+		Pms      *string `json:"pms,omitempty"`
 		Response *string `json:"response,omitempty"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -48602,6 +48882,9 @@ type ReplyToReviewClientResponse struct {
 func (r ReplyToReviewClientResponse) GetJSON201() *struct {
 	Id       *string `json:"id,omitempty"`
 	Platform *string `json:"platform,omitempty"`
+
+	// Pms The PMS the reply went through, when the review came from one.
+	Pms      *string `json:"pms,omitempty"`
 	Response *string `json:"response,omitempty"`
 } {
 	return r.JSON201
@@ -54388,7 +54671,9 @@ func (c *ClientWithResponses) WithdrawConversationPreapprovalWithResponse(ctx co
 //
 // Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 //
-// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+//
+// **An inquiry relayed by a PMS** (Guesty, Hostaway, …) is pre-approved in that PMS. A PMS whose API cannot returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reservations.preapprove` says so beforehand. The response then carries `pms`.
 //
 // `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 //
@@ -54415,7 +54700,9 @@ func (c *ClientWithResponses) PreapproveConversationWithBodyWithResponse(ctx con
 //
 // Find inquiries that need an answer with `GET /v1/inquiries` (default `status=open`); each carries the `conversationId` to use here.
 //
-// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation, or an Airbnb one relayed through a PMS (Hostaway, Guesty), returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+// One endpoint for every channel with pre-approvals: **Airbnb** (listings connected directly) and **VRBO**. A Booking.com or direct-booking conversation returns `422 channel_not_supported` and nothing is sent — `GET /v1/conversations/{id}` → `capabilities.canPreApprove` says where it works.
+//
+// **An inquiry relayed by a PMS** (Guesty, Hostaway, …) is pre-approved in that PMS. A PMS whose API cannot returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reservations.preapprove` says so beforehand. The response then carries `pms`.
 //
 // `blockInstantBooking` is Airbnb only (VRBO has no such switch: `422 invalid_params`). `message` is sent to the guest with a VRBO pre-approval (a friendly default otherwise).
 //
@@ -54591,6 +54878,8 @@ func (c *ClientWithResponses) ListGuestsWithResponse(ctx context.Context, params
 //
 // Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
 //
+// **Creating the guest in a connected PMS too:** send `provider` (e.g. `guesty`). The guest is created in the PMS first and its id there comes back as `pms.externalId`; a PMS whose API cannot create guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is created. `GET /v1/connect/{provider}` → `capabilities.pms.guests.create` says so beforehand.
+//
 // Send `Idempotency-Key` to make a retry safe.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -54611,6 +54900,8 @@ func (c *ClientWithResponses) CreateGuestWithBodyWithResponse(ctx context.Contex
 // **This is find-or-create, and the response tells you which happened.** A guest already on file matching on email — then phone — AND name is returned instead of a duplicate being created. Read the `created` flag rather than inferring from the status: `201` with `created: true` means a new record was written, `200` with `created: false` means an existing guest matched. Quietly handing back an existing record as though it were new is exactly the ambiguity this flag removes.
 //
 // Field names are camelCase, and an unrecognised field is rejected by name rather than silently dropped.
+//
+// **Creating the guest in a connected PMS too:** send `provider` (e.g. `guesty`). The guest is created in the PMS first and its id there comes back as `pms.externalId`; a PMS whose API cannot create guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is created. `GET /v1/connect/{provider}` → `capabilities.pms.guests.create` says so beforehand.
 //
 // Send `Idempotency-Key` to make a retry safe.
 //
@@ -54640,6 +54931,44 @@ func (c *ClientWithResponses) GetGuestWithResponse(ctx context.Context, id int, 
 		return nil, err
 	}
 	return ParseGetGuestClientResponse(rsp)
+}
+
+// UpdateGuestWithBodyWithResponse Update a guest
+//
+// Change a guest's name, email, phone or language. Email and phone are added as the guest's newest contact; earlier ones are kept.
+//
+// **Guests linked to a connected PMS** (created with `provider`, or imported from one) are changed in that PMS first. A PMS whose API cannot change guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is written; `GET /v1/connect/{provider}` → `capabilities.pms.guests.update` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/guests/{id} (the `UpdateGuest` operationId).
+func (c *ClientWithResponses) UpdateGuestWithBodyWithResponse(ctx context.Context, id int, params *UpdateGuestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGuestClientResponse, error) {
+	rsp, err := c.UpdateGuestWithBody(ctx, id, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateGuestClientResponse(rsp)
+}
+
+// UpdateGuestWithResponse Update a guest
+//
+// Change a guest's name, email, phone or language. Email and phone are added as the guest's newest contact; earlier ones are kept.
+//
+// **Guests linked to a connected PMS** (created with `provider`, or imported from one) are changed in that PMS first. A PMS whose API cannot change guest profiles returns `422 pms_write_unsupported` naming it (Hostaway today) and nothing is written; `GET /v1/connect/{provider}` → `capabilities.pms.guests.update` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+//
+// Send `Idempotency-Key` to make a retry safe.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/guests/{id} (the `UpdateGuest` operationId).
+func (c *ClientWithResponses) UpdateGuestWithResponse(ctx context.Context, id int, params *UpdateGuestParams, body UpdateGuestJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateGuestClientResponse, error) {
+	rsp, err := c.UpdateGuest(ctx, id, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateGuestClientResponse(rsp)
 }
 
 // GetHealthWithResponse Health check
@@ -55111,6 +55440,8 @@ func (c *ClientWithResponses) ListListingCompsWithResponse(ctx context.Context, 
 //
 // Write your PMS's canonical listing content — title, description, amenities, address, occupancy, and policies — into a Repull listing, making it the source of truth. This is the flagship "the PMS owns listing content, Repull distributes it" enabler.
 //
+// **Listings managed in a connected PMS** (Guesty, Hostaway, …): the PMS owns their content, so title, descriptions, check-in/out times, capacity, amenities, house rules, address and added photos are written to the PMS first; Repull keeps only what it accepted (refused sections are in `deferred`, its per-section outcome in `pms`). A section that PMS cannot write returns `422 pms_write_unsupported` naming it when nothing was applied (or is listed in `deferred` when other sections were); `GET /v1/listings/{id}` → `capabilities.pms.listings` says which sections it takes. A PMS whose connector writes no listing content at all (Mews, Cloudbeds, Lodgify, …) keeps today's behaviour: the content is written to Repull only. Send photos with `photosMode: "append"` — replacing a PMS listing's photo set needs the PMS's own photo ids. A revoked PMS connection is `403 connection_reauth_required`.
+//
 // **Partial update:** every field is optional. Only the fields you send are written; absent fields are left untouched. `amenities` is a FULL replacement of the amenity set (omit to leave untouched, send `[]` to clear).
 //
 // **Multilingual:** send `locale` to say which language this copy is in (`it`, `pt-BR`, …). Canonical content is stored per locale, so each language keeps its own row instead of overwriting the English one. Omit it for English.
@@ -55137,6 +55468,8 @@ func (c *ClientWithResponses) UpdateListingContentWithBodyWithResponse(ctx conte
 // UpdateListingContentWithResponse Update canonical listing content
 //
 // Write your PMS's canonical listing content — title, description, amenities, address, occupancy, and policies — into a Repull listing, making it the source of truth. This is the flagship "the PMS owns listing content, Repull distributes it" enabler.
+//
+// **Listings managed in a connected PMS** (Guesty, Hostaway, …): the PMS owns their content, so title, descriptions, check-in/out times, capacity, amenities, house rules, address and added photos are written to the PMS first; Repull keeps only what it accepted (refused sections are in `deferred`, its per-section outcome in `pms`). A section that PMS cannot write returns `422 pms_write_unsupported` naming it when nothing was applied (or is listed in `deferred` when other sections were); `GET /v1/listings/{id}` → `capabilities.pms.listings` says which sections it takes. A PMS whose connector writes no listing content at all (Mews, Cloudbeds, Lodgify, …) keeps today's behaviour: the content is written to Repull only. Send photos with `photosMode: "append"` — replacing a PMS listing's photo set needs the PMS's own photo ids. A revoked PMS connection is `403 connection_reauth_required`.
 //
 // **Partial update:** every field is optional. Only the fields you send are written; absent fields are left untouched. `amenities` is a FULL replacement of the amenity set (omit to leave untouched, send `[]` to clear).
 //
@@ -56448,7 +56781,7 @@ func (c *ClientWithResponses) UpdateReservationWithResponse(ctx context.Context,
 //
 // Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 //
-// **Airbnb only**, and only for listings connected to Airbnb directly: other channels have no request step (`422 channel_not_supported`). A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+// **Airbnb**, for listings connected to Airbnb directly; other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 //
 // Takes no body.
 //
@@ -56665,6 +56998,8 @@ func (c *ClientWithResponses) SubmitGuestReviewWithResponse(ctx context.Context,
 //
 // Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
 //
+// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
+//
 // To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
@@ -56685,6 +57020,8 @@ func (c *ClientWithResponses) ReplyToReviewWithBodyWithResponse(ctx context.Cont
 // Resolves the review, reads its channel and dispatches the reply. Channel-neutral: you do not need to know where the review came from.
 //
 // Replies work on Airbnb, Booking.com and VRBO. Each channel accepts one reply per review (VRBO: a second is `409 already_replied`; a review VRBO no longer takes a response to is `409 reply_not_allowed`). On VRBO the response is signed with a name — the connected account's host name, or `name` if you send it. A review from a channel without a reply API returns `422 unsupported_channel` naming the channels that do work.
+//
+// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 //
 // To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
 //
@@ -66111,6 +66448,60 @@ func ParseGetGuestClientResponse(rsp *http.Response) (*GetGuestClientResponse, e
 	return response, nil
 }
 
+// ParseUpdateGuestClientResponse parses an HTTP response from a UpdateGuestWithResponse call
+func ParseUpdateGuestClientResponse(rsp *http.Response) (*UpdateGuestClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateGuestClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GuestUpdateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetHealthClientResponse parses an HTTP response from a GetHealthWithResponse call
 func ParseGetHealthClientResponse(rsp *http.Response) (*GetHealthClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -69909,6 +70300,9 @@ func ParseReplyToReviewClientResponse(rsp *http.Response) (*ReplyToReviewClientR
 		var dest struct {
 			Id       *string `json:"id,omitempty"`
 			Platform *string `json:"platform,omitempty"`
+
+			// Pms The PMS the reply went through, when the review came from one.
+			Pms      *string `json:"pms,omitempty"`
 			Response *string `json:"response,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {

@@ -1549,6 +1549,24 @@ func (e GuestCreateResponseContactsType) Valid() bool {
 	}
 }
 
+// Defines values for GuestUpdateResponseContactsType.
+const (
+	GuestUpdateResponseContactsTypeEmail GuestUpdateResponseContactsType = "email"
+	GuestUpdateResponseContactsTypePhone GuestUpdateResponseContactsType = "phone"
+)
+
+// Valid indicates whether the value is a known member of the GuestUpdateResponseContactsType enum.
+func (e GuestUpdateResponseContactsType) Valid() bool {
+	switch e {
+	case GuestUpdateResponseContactsTypeEmail:
+		return true
+	case GuestUpdateResponseContactsTypePhone:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for InquiryCreatedEventEvent.
 const (
 	InquiryCreatedEventEventInquiryCreated InquiryCreatedEventEvent = "inquiry.created"
@@ -1729,6 +1747,36 @@ func (e ListingContentUpdateRequestPoliciesCheckInMethod) Valid() bool {
 	case ListingContentUpdateRequestPoliciesCheckInMethodOtherCheckin:
 		return true
 	case ListingContentUpdateRequestPoliciesCheckInMethodSmartlock:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingContentUpdateResponsePmsErrorsCode.
+const (
+	ListingContentUpdateResponsePmsErrorsCodeDuplicate      ListingContentUpdateResponsePmsErrorsCode = "duplicate"
+	ListingContentUpdateResponsePmsErrorsCodeNotFound       ListingContentUpdateResponsePmsErrorsCode = "not_found"
+	ListingContentUpdateResponsePmsErrorsCodeReauthRequired ListingContentUpdateResponsePmsErrorsCode = "reauth_required"
+	ListingContentUpdateResponsePmsErrorsCodeRejected       ListingContentUpdateResponsePmsErrorsCode = "rejected"
+	ListingContentUpdateResponsePmsErrorsCodeUnavailable    ListingContentUpdateResponsePmsErrorsCode = "unavailable"
+	ListingContentUpdateResponsePmsErrorsCodeUnsupported    ListingContentUpdateResponsePmsErrorsCode = "unsupported"
+)
+
+// Valid indicates whether the value is a known member of the ListingContentUpdateResponsePmsErrorsCode enum.
+func (e ListingContentUpdateResponsePmsErrorsCode) Valid() bool {
+	switch e {
+	case ListingContentUpdateResponsePmsErrorsCodeDuplicate:
+		return true
+	case ListingContentUpdateResponsePmsErrorsCodeNotFound:
+		return true
+	case ListingContentUpdateResponsePmsErrorsCodeReauthRequired:
+		return true
+	case ListingContentUpdateResponsePmsErrorsCodeRejected:
+		return true
+	case ListingContentUpdateResponsePmsErrorsCodeUnavailable:
+		return true
+	case ListingContentUpdateResponsePmsErrorsCodeUnsupported:
 		return true
 	default:
 		return false
@@ -3238,36 +3286,6 @@ func (e SelectProviderResponsePattern) Valid() bool {
 	case SelectProviderResponsePatternCredentials:
 		return true
 	case SelectProviderResponsePatternOauth:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for SendMessageRequestChannel.
-const (
-	SendMessageRequestChannelAirbnb  SendMessageRequestChannel = "airbnb"
-	SendMessageRequestChannelBooking SendMessageRequestChannel = "booking"
-	SendMessageRequestChannelEmail   SendMessageRequestChannel = "email"
-	SendMessageRequestChannelSms     SendMessageRequestChannel = "sms"
-	SendMessageRequestChannelVrbo    SendMessageRequestChannel = "vrbo"
-	SendMessageRequestChannelWebsite SendMessageRequestChannel = "website"
-)
-
-// Valid indicates whether the value is a known member of the SendMessageRequestChannel enum.
-func (e SendMessageRequestChannel) Valid() bool {
-	switch e {
-	case SendMessageRequestChannelAirbnb:
-		return true
-	case SendMessageRequestChannelBooking:
-		return true
-	case SendMessageRequestChannelEmail:
-		return true
-	case SendMessageRequestChannelSms:
-		return true
-	case SendMessageRequestChannelVrbo:
-		return true
-	case SendMessageRequestChannelWebsite:
 		return true
 	default:
 		return false
@@ -8267,8 +8285,11 @@ type ConnectStatus struct {
 	// Action Smoobu only: set to `{ required: true, reason: "reauth_required", message }` when the connection still uses a legacy single API key, which Smoobu stops accepting on October 31, 2026. `null` once it is on an API key + secret.
 	Action *ConnectionAction `json:"action,omitempty"`
 
-	// Capabilities PMS providers only. `reservations`: which reservation writes the API performs on this connection's listings — the connector's support combined with `writePolicy`. When `connected` is false, what the connector supports once connected.
+	// Capabilities PMS providers only. `reservations`: which reservation writes the API performs on this connection's listings — the connector's support combined with `writePolicy`. `pms`: everything else the API does through this PMS (review replies, request answers, listing content, guests, message channel/attachments, calendar). When `connected` is false, what the connector supports once connected.
 	Capabilities *struct {
+		// Pms What the API does through a connected PMS beyond reservation writes, read from the same connector table the router uses — a `false` flag is a `422 pms_write_unsupported` naming the PMS.
+		Pms *PmsCapabilities `json:"pms,omitempty"`
+
 		// Reservations Which reservation writes the API performs for this listing (or, on `GET /v1/connect/{provider}`, for any listing of that connection). Derived from the PMS connector, the connection, and its write policy — a flag is true only when all three allow it.
 		Reservations *ReservationCapabilities `json:"reservations,omitempty"`
 	} `json:"capabilities,omitempty"`
@@ -8814,6 +8835,11 @@ type GuestCreateRequest struct {
 	//
 	// Example: +14035551234
 	Phone *string `json:"phone,omitempty"`
+
+	// Provider A connected PMS to create the guest in as well. The guest is created there FIRST; a PMS that cannot create guest profiles returns `422 pms_write_unsupported` and nothing is created. The PMS's guest id comes back as `pms.externalId`, and later `PATCH /v1/guests/{id}` changes reach it.
+	//
+	// Example: guesty
+	Provider *string `json:"provider,omitempty"`
 }
 
 // GuestCreateResponse defines model for GuestCreateResponse.
@@ -8838,6 +8864,12 @@ type GuestCreateResponse struct {
 	IsBusinessTraveler *bool   `json:"isBusinessTraveler,omitempty"`
 	Language           *string `json:"language,omitempty"`
 	LastName           *string `json:"lastName,omitempty"`
+
+	// Pms Set when `provider` was sent: the PMS the guest was also created in, and its id there.
+	Pms *struct {
+		ExternalId *string `json:"externalId,omitempty"`
+		Provider   *string `json:"provider,omitempty"`
+	} `json:"pms,omitempty"`
 }
 
 // GuestCreateResponseContactsType defines model for GuestCreateResponse.Contacts.Type.
@@ -8909,6 +8941,43 @@ type GuestReservationsSummary struct {
 	Past      *int `json:"past,omitempty"`
 	Total     *int `json:"total,omitempty"`
 }
+
+// GuestUpdateRequest defines model for GuestUpdateRequest.
+type GuestUpdateRequest struct {
+	// Email Added as the guest's newest email; earlier ones are kept.
+	Email     *openapi_types.Email `json:"email,omitempty"`
+	FirstName *string              `json:"firstName,omitempty"`
+
+	// Language BCP-47 tag.
+	Language *string `json:"language,omitempty"`
+	LastName *string `json:"lastName,omitempty"`
+
+	// Phone E.164 preferred. Added as the guest's newest phone; earlier ones are kept.
+	Phone *string `json:"phone,omitempty"`
+}
+
+// GuestUpdateResponse defines model for GuestUpdateResponse.
+type GuestUpdateResponse struct {
+	Contacts *[]struct {
+		IsPrimary *bool                            `json:"isPrimary,omitempty"`
+		Type      *GuestUpdateResponseContactsType `json:"type,omitempty"`
+		Value     *string                          `json:"value,omitempty"`
+	} `json:"contacts,omitempty"`
+	FirstName *string `json:"firstName,omitempty"`
+	Id        *int    `json:"id,omitempty"`
+	Language  *string `json:"language,omitempty"`
+	LastName  *string `json:"lastName,omitempty"`
+
+	// Pms Each PMS the change was written to first (the guest's linked PMSs), with the sections it applied.
+	Pms *[]struct {
+		Applied  *[]string `json:"applied,omitempty"`
+		Provider *string   `json:"provider,omitempty"`
+	} `json:"pms,omitempty"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+}
+
+// GuestUpdateResponseContactsType defines model for GuestUpdateResponse.Contacts.Type.
+type GuestUpdateResponseContactsType string
 
 // InquiryCreatedEvent defines model for InquiryCreatedEvent.
 type InquiryCreatedEvent struct {
@@ -9049,8 +9118,11 @@ type Listing struct {
 	// Amenities Amenity rows for the listing. **Only present when the caller passes `?include=amenities`.** Empty array (`[]`) when the listing has no amenity rows.
 	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
 
-	// Capabilities `GET /v1/listings/{id}` only. What the API can do with this listing.
+	// Capabilities `GET /v1/listings/{id}` only. What the API can do with this listing. `pms` is present when a connected PMS manages it.
 	Capabilities *struct {
+		// Pms What the API does through a connected PMS beyond reservation writes, read from the same connector table the router uses — a `false` flag is a `422 pms_write_unsupported` naming the PMS.
+		Pms *PmsCapabilities `json:"pms,omitempty"`
+
 		// Reservations Which reservation writes the API performs for this listing (or, on `GET /v1/connect/{provider}`, for any listing of that connection). Derived from the PMS connector, the connection, and its write policy — a flag is true only when all three allow it.
 		Reservations *ReservationCapabilities `json:"reservations,omitempty"`
 	} `json:"capabilities,omitempty"`
@@ -9497,12 +9569,31 @@ type ListingContentUpdateResponse struct {
 	// Changed Content slabs that were actually written, e.g. ["title","occupancy","amenities"]. A non-English write also reports `locale:<tag>` so you can see which row was written. A rate change reports `pricing`, and `calendar` as well when nights on the calendar moved to the new rate.
 	Changed *[]string `json:"changed,omitempty"`
 
-	// Deferred Provided-but-not-applied fields — e.g. "photos" when a non-empty photos array carried no valid http(s) URL.
+	// Deferred Provided-but-not-applied fields — e.g. "photos" when a non-empty photos array carried no valid http(s) URL. On a listing a PMS manages, also the content sections the PMS refused (`title`, `descriptions`, `times`, `capacity`, `amenities`, `houseRules`, `address`, `photos`), which are then not written here either.
 	Deferred *[]string `json:"deferred,omitempty"`
 
 	// Id The listing id (serialized as a string to preserve precision).
 	Id *string `json:"id,omitempty"`
+
+	// Pms Present when the listing is managed in a PMS: the PMS-owned fields were written there first, and this is its per-section outcome.
+	Pms *struct {
+		// Applied Sections the PMS applied.
+		Applied *[]string `json:"applied,omitempty"`
+
+		// Errors Sections the PMS refused, with its reason.
+		Errors *[]struct {
+			Code    *ListingContentUpdateResponsePmsErrorsCode `json:"code,omitempty"`
+			Message *string                                    `json:"message,omitempty"`
+			Section *string                                    `json:"section,omitempty"`
+		} `json:"errors,omitempty"`
+
+		// Provider Example: guesty
+		Provider *string `json:"provider,omitempty"`
+	} `json:"pms,omitempty"`
 }
+
+// ListingContentUpdateResponsePmsErrorsCode defines model for ListingContentUpdateResponse.Pms.Errors.Code.
+type ListingContentUpdateResponsePmsErrorsCode string
 
 // ListingCreateRequest Inputs for `POST /v1/listings`.
 //
@@ -11329,6 +11420,75 @@ type PlumguideListingListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
+// PmsCapabilities What the API does through a connected PMS beyond reservation writes, read from the same connector table the router uses — a `false` flag is a `422 pms_write_unsupported` naming the PMS.
+type PmsCapabilities struct {
+	Calendar *struct {
+		// Write `PUT /v1/availability/{propertyId}` reaches the PMS.
+		Write *bool `json:"write,omitempty"`
+	} `json:"calendar,omitempty"`
+
+	// Connected `false`: what the connector supports once connected (on a listing: a dead link — every write answers `409 no_connection`).
+	Connected     *bool `json:"connected,omitempty"`
+	Conversations *struct {
+		// Attachments `attachments` on `POST /v1/conversations/{id}/messages`.
+		Attachments *bool `json:"attachments,omitempty"`
+
+		// ChannelSelect `channel` on `POST /v1/conversations/{id}/messages`.
+		ChannelSelect *bool `json:"channelSelect,omitempty"`
+		Send          *bool `json:"send,omitempty"`
+	} `json:"conversations,omitempty"`
+	Guests *struct {
+		// Create `POST /v1/guests` with `provider`.
+		Create *bool `json:"create,omitempty"`
+
+		// Update `PATCH /v1/guests/{id}` on a guest linked to this PMS.
+		Update *bool `json:"update,omitempty"`
+	} `json:"guests,omitempty"`
+
+	// Listings Sections `PUT /v1/listings/{id}/content` writes to the PMS.
+	Listings *struct {
+		Address       *bool `json:"address,omitempty"`
+		Amenities     *bool `json:"amenities,omitempty"`
+		Capacity      *bool `json:"capacity,omitempty"`
+		Descriptions  *bool `json:"descriptions,omitempty"`
+		HouseRules    *bool `json:"houseRules,omitempty"`
+		PhotoCaptions *bool `json:"photoCaptions,omitempty"`
+		PhotosAdd     *bool `json:"photosAdd,omitempty"`
+		PhotosDelete  *bool `json:"photosDelete,omitempty"`
+		PhotosReorder *bool `json:"photosReorder,omitempty"`
+		Times         *bool `json:"times,omitempty"`
+		Title         *bool `json:"title,omitempty"`
+	} `json:"listings,omitempty"`
+
+	// Notes The connector's own notes per family (limits, required access).
+	Notes    *map[string]string `json:"notes,omitempty"`
+	Payments *struct {
+		// Read Payments recorded in the PMS are imported onto the reservation.
+		Read *bool `json:"read,omitempty"`
+	} `json:"payments,omitempty"`
+
+	// Provider Example: guesty
+	Provider     *string `json:"provider,omitempty"`
+	Reservations *struct {
+		// Preapprove `POST /v1/conversations/{id}/pre-approval` on inquiries this PMS relays.
+		Preapprove *bool `json:"preapprove,omitempty"`
+
+		// Respond `POST /v1/reservations/{id}/accept|decline` on requests this PMS relays.
+		Respond *bool `json:"respond,omitempty"`
+	} `json:"reservations,omitempty"`
+	Reviews *struct {
+		// Read Its reviews appear in `GET /v1/reviews` (with `pms` set).
+		Read *bool `json:"read,omitempty"`
+
+		// Reply `POST /v1/reviews/{id}/reply`.
+		Reply *bool `json:"reply,omitempty"`
+	} `json:"reviews,omitempty"`
+	Tasks *struct {
+		Read  *bool `json:"read,omitempty"`
+		Write *bool `json:"write,omitempty"`
+	} `json:"tasks,omitempty"`
+}
+
 // PmsWritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
 //
 // Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
@@ -12801,6 +12961,11 @@ type Review struct {
 	ListingId *string         `json:"listingId,omitempty"`
 	Platform  *ReviewPlatform `json:"platform,omitempty"`
 
+	// Pms The PMS this review was read from (`guesty`, `hostaway`, …) when it came through one — `platform` is still the channel the guest wrote it on. A reply (`POST /v1/reviews/{id}/reply`) goes through this PMS; `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says whether it can. `null` for a review from a directly connected channel.
+	//
+	// Example: guesty
+	Pms *string `json:"pms,omitempty"`
+
 	// PrivateFeedback Private feedback the reviewer sent only to the host.
 	PrivateFeedback *string `json:"privateFeedback,omitempty"`
 
@@ -13022,20 +13187,19 @@ type SendMessagePart struct {
 // | Booking.com | JPEG, PNG | 10 MB | 5 | **required** — all files ride on the one text message |
 // | VRBO, SMS, email, direct-booking site chat | — | — | — | `422 attachments_not_supported`; nothing is sent |
 type SendMessageRequest struct {
-	// Attachments Files to send. See the per-channel table above.
+	// Attachments Files to send. See the per-channel table above. On a conversation a connected PMS relays, files go through the PMS — `422 pms_write_unsupported` when its API cannot send them (`capabilities.pms.conversations.attachments` on `GET /v1/connect/{provider}`).
 	Attachments *[]SendMessageAttachment `json:"attachments,omitempty"`
 
-	// Channel Force a channel. Omit to send on whichever channel the conversation already uses, which is the right default.
-	Channel *SendMessageRequestChannel `json:"channel,omitempty"`
+	// Channel Force a channel. Omit to send on whichever channel the conversation already uses, which is the right default. One of `airbnb`, `booking`, `vrbo`, `sms`, `email`, `website` — except on a conversation a connected PMS relays (Guesty, Hostaway, …), where the message is sent through the PMS and `channel` is passed to it: the PMS's own channel/module name (Guesty `airbnb2`, `bookingCom`, `email`, `sms`, …) or one of Repull's names, which the PMS maps. A PMS that cannot choose a channel returns `422 pms_write_unsupported`; `GET /v1/connect/{provider}` → `capabilities.pms.conversations.channelSelect` says so beforehand.
+	//
+	// Example: email
+	Channel *string `json:"channel,omitempty"`
 
 	// Message The text to send the guest. Required unless `attachments` is present.
 	//
 	// Example: Here is the parking map — the gate code is 4821.
 	Message *string `json:"message,omitempty"`
 }
-
-// SendMessageRequestChannel Force a channel. Omit to send on whichever channel the conversation already uses, which is the right default.
-type SendMessageRequestChannel string
 
 // SendMessageResponse defines model for SendMessageResponse.
 type SendMessageResponse struct {
@@ -15260,6 +15424,16 @@ type GetGuestParams struct {
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
 
+// UpdateGuestParams defines parameters for UpdateGuest.
+type UpdateGuestParams struct {
+	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
+	//
+	// - Same key while the first request is still in flight → `409 idempotency_key_in_use`.
+	// - Same key with a DIFFERENT payload → `422 idempotency_key_reused`. Generate a new key per distinct request; reuse one only when retrying that exact request.
+	// - Retryable outcomes are deliberately not stored, so a retry with the same key runs for real: any status >= 500, `408`, `425` and `429`, and the refusals that happen before anything is done and tell you to fix something outside the request first — `connection_reauth_required`, `listing_inactive`, and the rate/daily limits. Every other answer, including a final refusal such as `422 airbnb_rejected`, is stored and replayed.
+	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
+}
+
 // GetChannelHealthParamsChannel defines parameters for GetChannelHealth.
 type GetChannelHealthParamsChannel string
 
@@ -16248,6 +16422,9 @@ type PreviewConversationSpecialOfferJSONRequestBody PreviewConversationSpecialOf
 
 // CreateGuestJSONRequestBody defines body for CreateGuest for application/json ContentType.
 type CreateGuestJSONRequestBody = GuestCreateRequest
+
+// UpdateGuestJSONRequestBody defines body for UpdateGuest for application/json ContentType.
+type UpdateGuestJSONRequestBody = GuestUpdateRequest
 
 // SetKvJSONRequestBody defines body for SetKv for application/json ContentType.
 type SetKvJSONRequestBody SetKvJSONBody

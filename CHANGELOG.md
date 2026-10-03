@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.27] - 2026-10-03
+
+Regenerated against the live `https://api.repull.dev/openapi.json` — the PMS API surface for connected Guesty and Hostaway accounts:
+
+- New `ClientWithResponses.UpdateGuestWithResponse` (`PATCH /v1/guests/{id}`, body `GuestUpdateRequest`, `JSON200 *GuestUpdateResponse`, `UpdateGuestParams.IdempotencyKey`): change a guest's `FirstName`, `LastName`, `Email`, `Phone` or `Language`. A guest linked to a connected PMS is changed there first; `Pms` lists each PMS written to.
+- `GuestCreateRequest.Provider`: also create the guest in a connected PMS; `GuestCreateResponse.Pms` carries the PMS's guest id (`ExternalId`).
+- New `PmsCapabilities`, returned as `Capabilities.Pms` on `Listing` (`GET /v1/listings/{id}`) and `ConnectStatus` (`GET /v1/connect/{provider}`): review replies, request accept/decline and pre-approval, listing content sections, guest create/update, message channel and attachments, calendar writes, payments and tasks.
+- `Review.Pms` and the review reply response's `Pms`: the PMS a review was read from, and the PMS the reply went through.
+- `ListingContentUpdateResponse.Pms`: per-section outcome when a PMS manages the listing.
+- `SendMessageRequest.Channel` is now `*string` (a PMS's own channel names are accepted on PMS-relayed conversations); the `SendMessageRequestChannel` type and its constants are removed — pass the string directly.
+- PMS routing notes on accept / decline, pre-approval, listing content and review reply.
+
 ## [0.2.26] - 2026-10-03
 
 Regenerated against the live `https://api.repull.dev/openapi.json`:
