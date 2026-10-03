@@ -6196,7 +6196,7 @@ type AirbnbAlterationCreateRequest struct {
 
 	// ConfirmationCode Airbnb confirmation code of the reservation to alter. `GET /v1/channels/airbnb/reservations` lists them.
 	//
-	// Example: HMX4CMA2X9
+	// Example: HMEXAMPLE1
 	ConfirmationCode string `json:"confirmation_code"`
 
 	// ListingId Move the reservation to this listing — a **listing transfer**. This is the **Repull** listing id (the `id` from `GET /v1/properties`), the same id every other Airbnb channel route takes; Repull verifies you own it, that it is active and connected to Airbnb, and translates it to the Airbnb listing id before sending it. Airbnb decides whether to honour the move.
@@ -8274,7 +8274,7 @@ type ConnectStatus struct {
 		// Import Vrbo only: where the account import stands.
 		Import *VrboImportStatus `json:"import,omitempty"`
 
-		// Name Example: Raiden
+		// Name Example: Casey
 		Name       *string `json:"name,omitempty"`
 		PictureUrl *string `json:"pictureUrl,omitempty"`
 
@@ -8697,7 +8697,7 @@ type Error struct {
 			// Id Example: 4118
 			Id string `json:"id"`
 
-			// Name Example: R-Sable 1302
+			// Name Example: Lakeview Loft
 			Name *string `json:"name"`
 		} `json:"listings,omitempty"`
 
@@ -9761,7 +9761,7 @@ type ListingCreatedPayload struct {
 	// MaxGuests Example: 6
 	MaxGuests *int `json:"maxGuests,omitempty"`
 
-	// Title Example: R-Sable 1302 — Radium Hot Springs
+	// Title Example: Lakeview Loft — Example City
 	Title *string `json:"title,omitempty"`
 }
 
@@ -10572,7 +10572,7 @@ type ListingWebhookObject struct {
 	// Id Example: 6250
 	Id string `json:"id"`
 
-	// Name Example: R-Sable 1302 — Radium Hot Springs
+	// Name Example: Lakeview Loft — Example City
 	Name *string `json:"name,omitempty"`
 
 	// Status Example: active
@@ -12426,7 +12426,7 @@ type ReservationMessageSentPayload struct {
 	// Source `channel`: sent in the channel's own app (e.g. the Airbnb app). `repull`: sent through Repull — the API, the dashboard, an automation or AI.
 	Source *ReservationMessageSentPayloadSource `json:"source,omitempty"`
 
-	// ThreadId Example: 161347
+	// ThreadId Example: 900301
 	ThreadId *string `json:"threadId,omitempty"`
 }
 
@@ -12493,7 +12493,7 @@ type ReservationMessageUpdatedPayload struct {
 	// SentAt When the message was first sent.
 	SentAt *time.Time `json:"sentAt,omitempty"`
 
-	// ThreadId Example: 161347
+	// ThreadId Example: 900301
 	ThreadId *string `json:"threadId,omitempty"`
 }
 
@@ -12913,7 +12913,7 @@ type ReservationWebhookObject struct {
 
 	// Id Repull-internal reservation id. Pass to `GET /v1/reservations/{id}`.
 	//
-	// Example: 212605
+	// Example: 900001
 	Id int `json:"id"`
 
 	// ListingId Repull listing id this reservation is on.
@@ -12928,7 +12928,7 @@ type ReservationWebhookObject struct {
 
 	// Uid Channel-side confirmation code (Airbnb HM-prefixed, Booking.com numeric, etc.). Stable across the lifetime of the reservation.
 	//
-	// Example: HMX4CMA2X9
+	// Example: HMEXAMPLE1
 	Uid string `json:"uid"`
 }
 
