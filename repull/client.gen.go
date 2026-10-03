@@ -2355,6 +2355,28 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
 	InviteBookingExtranetUser(ctx context.Context, body InviteBookingExtranetUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RecheckBookingExtranetLoginWithBody Re-check Booking.com direct-login permissions
+	//
+	// Re-runs the account import for a Booking.com direct-login connection after the host has granted the invited user full access in the Booking.com extranet (the `needs_permissions` state). Permissions are probed again and, once full access is in place, the connection continues to property details and room mapping — no new invitation is sent. Poll `GET /v1/connect/booking-extranet-login/status` for the result.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/recheck (the `RecheckBookingExtranetLogin` operationId).
+	RecheckBookingExtranetLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RecheckBookingExtranetLogin Re-check Booking.com direct-login permissions
+	//
+	// Re-runs the account import for a Booking.com direct-login connection after the host has granted the invited user full access in the Booking.com extranet (the `needs_permissions` state). Permissions are probed again and, once full access is in place, the connection continues to property details and room mapping — no new invitation is sent. Poll `GET /v1/connect/booking-extranet-login/status` for the result.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/recheck (the `RecheckBookingExtranetLogin` operationId).
+	RecheckBookingExtranetLogin(ctx context.Context, body RecheckBookingExtranetLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetBookingExtranetLoginConfig Booking.com direct-login config
 	//
 	// Returns the 2FA number the host adds to their Extranet user.
@@ -2731,6 +2753,17 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/connect/providers (the `ListConnectProviders` operationId).
 	ListConnectProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ResumeConnect Open a connection's fix link
+	//
+	// The target of a connection's `fixUrl`. Open it in the host's browser to send them back into Connect for an EXISTING connection — for example to grant the Booking.com extranet user full access after a `needs_permissions` state, or to reconnect a Smoobu account that still uses a legacy single API key with an API key + secret.
+	//
+	// Each open starts a fresh, short-lived Connect session bound to that connection and redirects (302) to the hosted Connect page, which shows the connection's current state. The link itself does not expire on its own schedule — store `fixUrl` and open it whenever the connection needs attention.
+	//
+	// No API key — the signed `t` token is the capability. Supported for Booking.com extranet login and Smoobu connections.
+	//
+	// Corresponds with GET /v1/connect/resume (the `ResumeConnect` operationId).
+	ResumeConnect(ctx context.Context, params *ResumeConnectParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SearchConnectSessionListingOptions Search listings for a Connect mapping picker
 	//
 	// The hosted Connect pages' listing search for their mapping pickers: the session workspace's active listings by name, city or id, `limit` at a time.
@@ -2791,6 +2824,48 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /v1/connect/smoobu/credentials (the `SubmitSmoobuCredentials` operationId).
 	SubmitSmoobuCredentials(ctx context.Context, body SubmitSmoobuCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitTrackCredentialsWithBody Submit Track credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
+	//
+	// **What syncs.** Units become listings; reservations (with their fee and tax breakdown) and guest message threads are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in Track — see `capabilities.reservations` on `GET /v1/connect/track`.
+	//
+	// **Which key.** A **Server Key** — created in Track under Configuration → Company Setup → API Keys — has full access and is recommended. A **Channel Key** — under Configuration → PMS Setup → Distribution Channels — only allows booking. `keyType` defaults to `server`.
+	//
+	// The key is validated against Track before anything is stored, so an invalid key returns `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+	//
+	// Track has no webhooks: after the first sync, reservation and message changes are picked up by polling about once a minute.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing Track connection — the `pmsConnectionId` stays the same.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/track/credentials (the `SubmitTrackCredentials` operationId).
+	SubmitTrackCredentialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitTrackCredentials Submit Track credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
+	//
+	// **What syncs.** Units become listings; reservations (with their fee and tax breakdown) and guest message threads are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in Track — see `capabilities.reservations` on `GET /v1/connect/track`.
+	//
+	// **Which key.** A **Server Key** — created in Track under Configuration → Company Setup → API Keys — has full access and is recommended. A **Channel Key** — under Configuration → PMS Setup → Distribution Channels — only allows booking. `keyType` defaults to `server`.
+	//
+	// The key is validated against Track before anything is stored, so an invalid key returns `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+	//
+	// Track has no webhooks: after the first sync, reservation and message changes are picked up by polling about once a minute.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing Track connection — the `pmsConnectionId` stays the same.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/track/credentials (the `SubmitTrackCredentials` operationId).
+	SubmitTrackCredentials(ctx context.Context, body SubmitTrackCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetVrboConnectImport Import progress of the session's Vrbo account
 	//
@@ -4265,7 +4340,7 @@ type ClientInterface interface {
 	//
 	// ### Where the booking is made
 	//
-	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
 	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -4298,6 +4373,7 @@ type ClientInterface interface {
 	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -4324,7 +4400,7 @@ type ClientInterface interface {
 	//
 	// ### Where the booking is made
 	//
-	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
 	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -4357,6 +4433,7 @@ type ClientInterface interface {
 	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -4403,6 +4480,7 @@ type ClientInterface interface {
 	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -4441,6 +4519,7 @@ type ClientInterface interface {
 	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -8675,6 +8754,48 @@ func (c *Client) InviteBookingExtranetUser(ctx context.Context, body InviteBooki
 	return c.Client.Do(req)
 }
 
+// RecheckBookingExtranetLoginWithBody Re-check Booking.com direct-login permissions
+//
+// Re-runs the account import for a Booking.com direct-login connection after the host has granted the invited user full access in the Booking.com extranet (the `needs_permissions` state). Permissions are probed again and, once full access is in place, the connection continues to property details and room mapping — no new invitation is sent. Poll `GET /v1/connect/booking-extranet-login/status` for the result.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/recheck (the `RecheckBookingExtranetLogin` operationId).
+func (c *Client) RecheckBookingExtranetLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRecheckBookingExtranetLoginRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RecheckBookingExtranetLogin Re-check Booking.com direct-login permissions
+//
+// Re-runs the account import for a Booking.com direct-login connection after the host has granted the invited user full access in the Booking.com extranet (the `needs_permissions` state). Permissions are probed again and, once full access is in place, the connection continues to property details and room mapping — no new invitation is sent. Poll `GET /v1/connect/booking-extranet-login/status` for the result.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/recheck (the `RecheckBookingExtranetLogin` operationId).
+func (c *Client) RecheckBookingExtranetLogin(ctx context.Context, body RecheckBookingExtranetLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRecheckBookingExtranetLoginRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetBookingExtranetLoginConfig Booking.com direct-login config
 //
 // Returns the 2FA number the host adds to their Extranet user.
@@ -9351,6 +9472,27 @@ func (c *Client) ListConnectProviders(ctx context.Context, reqEditors ...Request
 	return c.Client.Do(req)
 }
 
+// ResumeConnect Open a connection's fix link
+//
+// The target of a connection's `fixUrl`. Open it in the host's browser to send them back into Connect for an EXISTING connection — for example to grant the Booking.com extranet user full access after a `needs_permissions` state, or to reconnect a Smoobu account that still uses a legacy single API key with an API key + secret.
+//
+// Each open starts a fresh, short-lived Connect session bound to that connection and redirects (302) to the hosted Connect page, which shows the connection's current state. The link itself does not expire on its own schedule — store `fixUrl` and open it whenever the connection needs attention.
+//
+// No API key — the signed `t` token is the capability. Supported for Booking.com extranet login and Smoobu connections.
+//
+// Corresponds with GET /v1/connect/resume (the `ResumeConnect` operationId).
+func (c *Client) ResumeConnect(ctx context.Context, params *ResumeConnectParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResumeConnectRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // SearchConnectSessionListingOptions Search listings for a Connect mapping picker
 //
 // The hosted Connect pages' listing search for their mapping pickers: the session workspace's active listings by name, city or id, `limit` at a time.
@@ -9452,6 +9594,68 @@ func (c *Client) SubmitSmoobuCredentialsWithBody(ctx context.Context, contentTyp
 // Corresponds with POST /v1/connect/smoobu/credentials (the `SubmitSmoobuCredentials` operationId).
 func (c *Client) SubmitSmoobuCredentials(ctx context.Context, body SubmitSmoobuCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSubmitSmoobuCredentialsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitTrackCredentialsWithBody Submit Track credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
+//
+// **What syncs.** Units become listings; reservations (with their fee and tax breakdown) and guest message threads are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in Track — see `capabilities.reservations` on `GET /v1/connect/track`.
+//
+// **Which key.** A **Server Key** — created in Track under Configuration → Company Setup → API Keys — has full access and is recommended. A **Channel Key** — under Configuration → PMS Setup → Distribution Channels — only allows booking. `keyType` defaults to `server`.
+//
+// The key is validated against Track before anything is stored, so an invalid key returns `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+//
+// Track has no webhooks: after the first sync, reservation and message changes are picked up by polling about once a minute.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing Track connection — the `pmsConnectionId` stays the same.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/track/credentials (the `SubmitTrackCredentials` operationId).
+func (c *Client) SubmitTrackCredentialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitTrackCredentialsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitTrackCredentials Submit Track credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
+//
+// **What syncs.** Units become listings; reservations (with their fee and tax breakdown) and guest message threads are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in Track — see `capabilities.reservations` on `GET /v1/connect/track`.
+//
+// **Which key.** A **Server Key** — created in Track under Configuration → Company Setup → API Keys — has full access and is recommended. A **Channel Key** — under Configuration → PMS Setup → Distribution Channels — only allows booking. `keyType` defaults to `server`.
+//
+// The key is validated against Track before anything is stored, so an invalid key returns `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+//
+// Track has no webhooks: after the first sync, reservation and message changes are picked up by polling about once a minute.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing Track connection — the `pmsConnectionId` stays the same.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/track/credentials (the `SubmitTrackCredentials` operationId).
+func (c *Client) SubmitTrackCredentials(ctx context.Context, body SubmitTrackCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitTrackCredentialsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -12045,7 +12249,7 @@ func (c *Client) ListReservations(ctx context.Context, params *ListReservationsP
 //
 // ### Where the booking is made
 //
-// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 // - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
 // `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -12078,6 +12282,7 @@ func (c *Client) ListReservations(ctx context.Context, params *ListReservationsP
 // | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -12114,7 +12319,7 @@ func (c *Client) CreateReservationWithBody(ctx context.Context, params *CreateRe
 //
 // ### Where the booking is made
 //
-// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 // - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
 // `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -12147,6 +12352,7 @@ func (c *Client) CreateReservationWithBody(ctx context.Context, params *CreateRe
 // | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -12203,6 +12409,7 @@ func (c *Client) CreateReservation(ctx context.Context, params *CreateReservatio
 // | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -12251,6 +12458,7 @@ func (c *Client) QuoteReservationWithBody(ctx context.Context, params *QuoteRese
 // | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -18332,6 +18540,46 @@ func NewInviteBookingExtranetUserRequestWithBody(server string, contentType stri
 	return req, nil
 }
 
+// NewRecheckBookingExtranetLoginRequest calls the generic RecheckBookingExtranetLogin builder with application/json body
+func NewRecheckBookingExtranetLoginRequest(server string, body RecheckBookingExtranetLoginJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRecheckBookingExtranetLoginRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRecheckBookingExtranetLoginRequestWithBody constructs an http.Request for the RecheckBookingExtranetLogin method, with any body, and a specified content type
+func NewRecheckBookingExtranetLoginRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/booking-extranet-login/recheck")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetBookingExtranetLoginConfigRequest constructs an http.Request for the GetBookingExtranetLoginConfig method
 func NewGetBookingExtranetLoginConfigRequest(server string, params *GetBookingExtranetLoginConfigParams) (*http.Request, error) {
 	var err error
@@ -19037,6 +19285,56 @@ func NewListConnectProvidersRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewResumeConnectRequest constructs an http.Request for the ResumeConnect method
+func NewResumeConnectRequest(server string, params *ResumeConnectParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/resume")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "t", params.T, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewSearchConnectSessionListingOptionsRequest constructs an http.Request for the SearchConnectSessionListingOptions method
 func NewSearchConnectSessionListingOptionsRequest(server string, sessionId string, params *SearchConnectSessionListingOptionsParams) (*http.Request, error) {
 	var err error
@@ -19178,6 +19476,46 @@ func NewSubmitSmoobuCredentialsRequestWithBody(server string, contentType string
 	}
 
 	operationPath := fmt.Sprintf("/v1/connect/smoobu/credentials")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSubmitTrackCredentialsRequest calls the generic SubmitTrackCredentials builder with application/json body
+func NewSubmitTrackCredentialsRequest(server string, body SubmitTrackCredentialsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSubmitTrackCredentialsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSubmitTrackCredentialsRequestWithBody constructs an http.Request for the SubmitTrackCredentials method, with any body, and a specified content type
+func NewSubmitTrackCredentialsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/track/credentials")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -28287,6 +28625,28 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connect/booking-extranet-login/invite (the `InviteBookingExtranetUser` operationId).
 	InviteBookingExtranetUserWithResponse(ctx context.Context, body InviteBookingExtranetUserJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteBookingExtranetUserClientResponse, error)
 
+	// RecheckBookingExtranetLoginWithBodyWithResponse Re-check Booking.com direct-login permissions
+	//
+	// Re-runs the account import for a Booking.com direct-login connection after the host has granted the invited user full access in the Booking.com extranet (the `needs_permissions` state). Permissions are probed again and, once full access is in place, the connection continues to property details and room mapping — no new invitation is sent. Poll `GET /v1/connect/booking-extranet-login/status` for the result.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/recheck (the `RecheckBookingExtranetLogin` operationId).
+	RecheckBookingExtranetLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RecheckBookingExtranetLoginClientResponse, error)
+
+	// RecheckBookingExtranetLoginWithResponse Re-check Booking.com direct-login permissions
+	//
+	// Re-runs the account import for a Booking.com direct-login connection after the host has granted the invited user full access in the Booking.com extranet (the `needs_permissions` state). Permissions are probed again and, once full access is in place, the connection continues to property details and room mapping — no new invitation is sent. Poll `GET /v1/connect/booking-extranet-login/status` for the result.
+	//
+	// Called by the hosted Connect page. No API key — the session ID is the capability token.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/booking-extranet-login/recheck (the `RecheckBookingExtranetLogin` operationId).
+	RecheckBookingExtranetLoginWithResponse(ctx context.Context, body RecheckBookingExtranetLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*RecheckBookingExtranetLoginClientResponse, error)
+
 	// GetBookingExtranetLoginConfigWithResponse Booking.com direct-login config
 	//
 	// Returns the 2FA number the host adds to their Extranet user.
@@ -28671,6 +29031,19 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/connect/providers (the `ListConnectProviders` operationId).
 	ListConnectProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectProvidersClientResponse, error)
 
+	// ResumeConnectWithResponse Open a connection's fix link
+	//
+	// The target of a connection's `fixUrl`. Open it in the host's browser to send them back into Connect for an EXISTING connection — for example to grant the Booking.com extranet user full access after a `needs_permissions` state, or to reconnect a Smoobu account that still uses a legacy single API key with an API key + secret.
+	//
+	// Each open starts a fresh, short-lived Connect session bound to that connection and redirects (302) to the hosted Connect page, which shows the connection's current state. The link itself does not expire on its own schedule — store `fixUrl` and open it whenever the connection needs attention.
+	//
+	// No API key — the signed `t` token is the capability. Supported for Booking.com extranet login and Smoobu connections.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/resume (the `ResumeConnect` operationId).
+	ResumeConnectWithResponse(ctx context.Context, params *ResumeConnectParams, reqEditors ...RequestEditorFn) (*ResumeConnectClientResponse, error)
+
 	// SearchConnectSessionListingOptionsWithResponse Search listings for a Connect mapping picker
 	//
 	// The hosted Connect pages' listing search for their mapping pickers: the session workspace's active listings by name, city or id, `limit` at a time.
@@ -28733,6 +29106,48 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/connect/smoobu/credentials (the `SubmitSmoobuCredentials` operationId).
 	SubmitSmoobuCredentialsWithResponse(ctx context.Context, body SubmitSmoobuCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitSmoobuCredentialsClientResponse, error)
+
+	// SubmitTrackCredentialsWithBodyWithResponse Submit Track credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
+	//
+	// **What syncs.** Units become listings; reservations (with their fee and tax breakdown) and guest message threads are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in Track — see `capabilities.reservations` on `GET /v1/connect/track`.
+	//
+	// **Which key.** A **Server Key** — created in Track under Configuration → Company Setup → API Keys — has full access and is recommended. A **Channel Key** — under Configuration → PMS Setup → Distribution Channels — only allows booking. `keyType` defaults to `server`.
+	//
+	// The key is validated against Track before anything is stored, so an invalid key returns `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+	//
+	// Track has no webhooks: after the first sync, reservation and message changes are picked up by polling about once a minute.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing Track connection — the `pmsConnectionId` stays the same.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/track/credentials (the `SubmitTrackCredentials` operationId).
+	SubmitTrackCredentialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitTrackCredentialsClientResponse, error)
+
+	// SubmitTrackCredentialsWithResponse Submit Track credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
+	//
+	// **What syncs.** Units become listings; reservations (with their fee and tax breakdown) and guest message threads are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in Track — see `capabilities.reservations` on `GET /v1/connect/track`.
+	//
+	// **Which key.** A **Server Key** — created in Track under Configuration → Company Setup → API Keys — has full access and is recommended. A **Channel Key** — under Configuration → PMS Setup → Distribution Channels — only allows booking. `keyType` defaults to `server`.
+	//
+	// The key is validated against Track before anything is stored, so an invalid key returns `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+	//
+	// Track has no webhooks: after the first sync, reservation and message changes are picked up by polling about once a minute.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing Track connection — the `pmsConnectionId` stays the same.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/track/credentials (the `SubmitTrackCredentials` operationId).
+	SubmitTrackCredentialsWithResponse(ctx context.Context, body SubmitTrackCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitTrackCredentialsClientResponse, error)
 
 	// GetVrboConnectImportWithResponse Import progress of the session's Vrbo account
 	//
@@ -30309,7 +30724,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// ### Where the booking is made
 	//
-	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
 	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -30342,6 +30757,7 @@ type ClientWithResponsesInterface interface {
 	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -30368,7 +30784,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// ### Where the booking is made
 	//
-	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
 	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -30401,6 +30817,7 @@ type ClientWithResponsesInterface interface {
 	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -30447,6 +30864,7 @@ type ClientWithResponsesInterface interface {
 	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -30485,6 +30903,7 @@ type ClientWithResponsesInterface interface {
 	// | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -38903,6 +39322,94 @@ func (r InviteBookingExtranetUserClientResponse) ContentType() string {
 	return ""
 }
 
+type RecheckBookingExtranetLoginClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// JobId Id of the queued import job, when one was queued.
+		JobId *string `json:"jobId"`
+
+		// Ok Whether the re-check was queued.
+		Ok bool `json:"ok"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RecheckBookingExtranetLoginClientResponse) GetJSON200() *struct {
+	// JobId Id of the queued import job, when one was queued.
+	JobId *string `json:"jobId"`
+
+	// Ok Whether the re-check was queued.
+	Ok bool `json:"ok"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RecheckBookingExtranetLoginClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r RecheckBookingExtranetLoginClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r RecheckBookingExtranetLoginClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r RecheckBookingExtranetLoginClientResponse) GetJSON410() *Error {
+	return r.JSON410
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RecheckBookingExtranetLoginClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RecheckBookingExtranetLoginClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RecheckBookingExtranetLoginClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RecheckBookingExtranetLoginClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RecheckBookingExtranetLoginClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetBookingExtranetLoginConfigClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -40182,6 +40689,79 @@ func (r ListConnectProvidersClientResponse) ContentType() string {
 	return ""
 }
 
+// ResumeConnectClientResponse302Headers the declared response headers of an HTTP 302 response for ResumeConnect
+type ResumeConnectClientResponse302Headers struct {
+	Location *string
+}
+
+type ResumeConnectClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *struct {
+		// Channel The token's channel (only with `unsupported_channel`).
+		Channel *string                               `json:"channel,omitempty"`
+		Error   ResumeConnect400JSONResponseBodyError `json:"error"`
+
+		// Reason Why the token was rejected (only with `invalid_resume_token`).
+		Reason *string `json:"reason,omitempty"`
+	}
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *struct {
+		Error ResumeConnect500JSONResponseBodyError `json:"error"`
+	}
+	// Headers302 the parsed response headers for an HTTP 302 response
+	Headers302 *ResumeConnectClientResponse302Headers
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ResumeConnectClientResponse) GetJSON400() *struct {
+	// Channel The token's channel (only with `unsupported_channel`).
+	Channel *string                               `json:"channel,omitempty"`
+	Error   ResumeConnect400JSONResponseBodyError `json:"error"`
+
+	// Reason Why the token was rejected (only with `invalid_resume_token`).
+	Reason *string `json:"reason,omitempty"`
+} {
+	return r.JSON400
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ResumeConnectClientResponse) GetJSON500() *struct {
+	Error ResumeConnect500JSONResponseBodyError `json:"error"`
+} {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ResumeConnectClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ResumeConnectClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResumeConnectClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ResumeConnectClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SearchConnectSessionListingOptionsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -40347,6 +40927,148 @@ func (r SubmitSmoobuCredentialsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r SubmitSmoobuCredentialsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SubmitTrackCredentialsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AccountInfo *struct {
+			AccountName *string                                                       `json:"accountName,omitempty"`
+			AuthMode    *SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode `json:"authMode,omitempty"`
+
+			// Domain The Track host the connection calls.
+			//
+			// Example: acme.trackhs.com
+			Domain  *string                                                      `json:"domain,omitempty"`
+			KeyType *SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType `json:"keyType,omitempty"`
+		} `json:"accountInfo,omitempty"`
+		Connected *bool `json:"connected,omitempty"`
+
+		// Created False when an existing connection was updated.
+		Created *bool `json:"created,omitempty"`
+
+		// FirstSync Whether the first import of listings and reservations was queued. When it was not, the connection still stands and polling syncs it.
+		FirstSync *struct {
+			Error  *string `json:"error,omitempty"`
+			Queued *bool   `json:"queued,omitempty"`
+		} `json:"firstSync,omitempty"`
+
+		// PmsConnectionId Id of the stored connection.
+		PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+		// Provider Example: track
+		Provider  *string `json:"provider,omitempty"`
+		SessionId *string `json:"sessionId,omitempty"`
+
+		// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+		//
+		// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+		WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SubmitTrackCredentialsClientResponse) GetJSON200() *struct {
+	AccountInfo *struct {
+		AccountName *string                                                       `json:"accountName,omitempty"`
+		AuthMode    *SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode `json:"authMode,omitempty"`
+
+		// Domain The Track host the connection calls.
+		//
+		// Example: acme.trackhs.com
+		Domain  *string                                                      `json:"domain,omitempty"`
+		KeyType *SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType `json:"keyType,omitempty"`
+	} `json:"accountInfo,omitempty"`
+	Connected *bool `json:"connected,omitempty"`
+
+	// Created False when an existing connection was updated.
+	Created *bool `json:"created,omitempty"`
+
+	// FirstSync Whether the first import of listings and reservations was queued. When it was not, the connection still stands and polling syncs it.
+	FirstSync *struct {
+		Error  *string `json:"error,omitempty"`
+		Queued *bool   `json:"queued,omitempty"`
+	} `json:"firstSync,omitempty"`
+
+	// PmsConnectionId Id of the stored connection.
+	PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+	// Provider Example: track
+	Provider  *string `json:"provider,omitempty"`
+	SessionId *string `json:"sessionId,omitempty"`
+
+	// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+	//
+	// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SubmitTrackCredentialsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SubmitTrackCredentialsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SubmitTrackCredentialsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SubmitTrackCredentialsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r SubmitTrackCredentialsClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r SubmitTrackCredentialsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SubmitTrackCredentialsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SubmitTrackCredentialsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SubmitTrackCredentialsClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -52404,6 +53126,40 @@ func (c *ClientWithResponses) InviteBookingExtranetUserWithResponse(ctx context.
 	return ParseInviteBookingExtranetUserClientResponse(rsp)
 }
 
+// RecheckBookingExtranetLoginWithBodyWithResponse Re-check Booking.com direct-login permissions
+//
+// Re-runs the account import for a Booking.com direct-login connection after the host has granted the invited user full access in the Booking.com extranet (the `needs_permissions` state). Permissions are probed again and, once full access is in place, the connection continues to property details and room mapping — no new invitation is sent. Poll `GET /v1/connect/booking-extranet-login/status` for the result.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/recheck (the `RecheckBookingExtranetLogin` operationId).
+func (c *ClientWithResponses) RecheckBookingExtranetLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RecheckBookingExtranetLoginClientResponse, error) {
+	rsp, err := c.RecheckBookingExtranetLoginWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRecheckBookingExtranetLoginClientResponse(rsp)
+}
+
+// RecheckBookingExtranetLoginWithResponse Re-check Booking.com direct-login permissions
+//
+// Re-runs the account import for a Booking.com direct-login connection after the host has granted the invited user full access in the Booking.com extranet (the `needs_permissions` state). Permissions are probed again and, once full access is in place, the connection continues to property details and room mapping — no new invitation is sent. Poll `GET /v1/connect/booking-extranet-login/status` for the result.
+//
+// Called by the hosted Connect page. No API key — the session ID is the capability token.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/booking-extranet-login/recheck (the `RecheckBookingExtranetLogin` operationId).
+func (c *ClientWithResponses) RecheckBookingExtranetLoginWithResponse(ctx context.Context, body RecheckBookingExtranetLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*RecheckBookingExtranetLoginClientResponse, error) {
+	rsp, err := c.RecheckBookingExtranetLogin(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRecheckBookingExtranetLoginClientResponse(rsp)
+}
+
 // GetBookingExtranetLoginConfigWithResponse Booking.com direct-login config
 //
 // Returns the 2FA number the host adds to their Extranet user.
@@ -52968,6 +53724,25 @@ func (c *ClientWithResponses) ListConnectProvidersWithResponse(ctx context.Conte
 	return ParseListConnectProvidersClientResponse(rsp)
 }
 
+// ResumeConnectWithResponse Open a connection's fix link
+//
+// The target of a connection's `fixUrl`. Open it in the host's browser to send them back into Connect for an EXISTING connection — for example to grant the Booking.com extranet user full access after a `needs_permissions` state, or to reconnect a Smoobu account that still uses a legacy single API key with an API key + secret.
+//
+// Each open starts a fresh, short-lived Connect session bound to that connection and redirects (302) to the hosted Connect page, which shows the connection's current state. The link itself does not expire on its own schedule — store `fixUrl` and open it whenever the connection needs attention.
+//
+// No API key — the signed `t` token is the capability. Supported for Booking.com extranet login and Smoobu connections.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/resume (the `ResumeConnect` operationId).
+func (c *ClientWithResponses) ResumeConnectWithResponse(ctx context.Context, params *ResumeConnectParams, reqEditors ...RequestEditorFn) (*ResumeConnectClientResponse, error) {
+	rsp, err := c.ResumeConnect(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResumeConnectClientResponse(rsp)
+}
+
 // SearchConnectSessionListingOptionsWithResponse Search listings for a Connect mapping picker
 //
 // The hosted Connect pages' listing search for their mapping pickers: the session workspace's active listings by name, city or id, `limit` at a time.
@@ -53059,6 +53834,60 @@ func (c *ClientWithResponses) SubmitSmoobuCredentialsWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParseSubmitSmoobuCredentialsClientResponse(rsp)
+}
+
+// SubmitTrackCredentialsWithBodyWithResponse Submit Track credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
+//
+// **What syncs.** Units become listings; reservations (with their fee and tax breakdown) and guest message threads are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in Track — see `capabilities.reservations` on `GET /v1/connect/track`.
+//
+// **Which key.** A **Server Key** — created in Track under Configuration → Company Setup → API Keys — has full access and is recommended. A **Channel Key** — under Configuration → PMS Setup → Distribution Channels — only allows booking. `keyType` defaults to `server`.
+//
+// The key is validated against Track before anything is stored, so an invalid key returns `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+//
+// Track has no webhooks: after the first sync, reservation and message changes are picked up by polling about once a minute.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing Track connection — the `pmsConnectionId` stays the same.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/track/credentials (the `SubmitTrackCredentials` operationId).
+func (c *ClientWithResponses) SubmitTrackCredentialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitTrackCredentialsClientResponse, error) {
+	rsp, err := c.SubmitTrackCredentialsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitTrackCredentialsClientResponse(rsp)
+}
+
+// SubmitTrackCredentialsWithResponse Submit Track credentials for a Connect session
+//
+// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
+//
+// **What syncs.** Units become listings; reservations (with their fee and tax breakdown) and guest message threads are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in Track — see `capabilities.reservations` on `GET /v1/connect/track`.
+//
+// **Which key.** A **Server Key** — created in Track under Configuration → Company Setup → API Keys — has full access and is recommended. A **Channel Key** — under Configuration → PMS Setup → Distribution Channels — only allows booking. `keyType` defaults to `server`.
+//
+// The key is validated against Track before anything is stored, so an invalid key returns `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+//
+// Track has no webhooks: after the first sync, reservation and message changes are picked up by polling about once a minute.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing Track connection — the `pmsConnectionId` stays the same.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/track/credentials (the `SubmitTrackCredentials` operationId).
+func (c *ClientWithResponses) SubmitTrackCredentialsWithResponse(ctx context.Context, body SubmitTrackCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitTrackCredentialsClientResponse, error) {
+	rsp, err := c.SubmitTrackCredentials(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitTrackCredentialsClientResponse(rsp)
 }
 
 // GetVrboConnectImportWithResponse Import progress of the session's Vrbo account
@@ -55302,7 +56131,7 @@ func (c *ClientWithResponses) ListReservationsWithResponse(ctx context.Context, 
 //
 // ### Where the booking is made
 //
-// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 // - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
 // `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -55335,6 +56164,7 @@ func (c *ClientWithResponses) ListReservationsWithResponse(ctx context.Context, 
 // | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -55367,7 +56197,7 @@ func (c *ClientWithResponses) CreateReservationWithBodyWithResponse(ctx context.
 //
 // ### Where the booking is made
 //
-// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 // - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
 // `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -55400,6 +56230,7 @@ func (c *ClientWithResponses) CreateReservationWithBodyWithResponse(ctx context.
 // | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -55452,6 +56283,7 @@ func (c *ClientWithResponses) CreateReservationWithResponse(ctx context.Context,
 // | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -55496,6 +56328,7 @@ func (c *ClientWithResponses) QuoteReservationWithBodyWithResponse(ctx context.C
 // | Hospitable | ✓ | ✓ | ✓ | ✓ (Direct plan) | ✓ | Manual reservations only; needs `reservation:write`; adds no fees or taxes. |
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
+// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -62280,6 +63113,73 @@ func ParseInviteBookingExtranetUserClientResponse(rsp *http.Response) (*InviteBo
 	return response, nil
 }
 
+// ParseRecheckBookingExtranetLoginClientResponse parses an HTTP response from a RecheckBookingExtranetLoginWithResponse call
+func ParseRecheckBookingExtranetLoginClientResponse(rsp *http.Response) (*RecheckBookingExtranetLoginClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RecheckBookingExtranetLoginClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// JobId Id of the queued import job, when one was queued.
+			JobId *string `json:"jobId"`
+
+			// Ok Whether the re-check was queued.
+			Ok bool `json:"ok"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetBookingExtranetLoginConfigClientResponse parses an HTTP response from a GetBookingExtranetLoginConfigWithResponse call
 func ParseGetBookingExtranetLoginConfigClientResponse(rsp *http.Response) (*GetBookingExtranetLoginConfigClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -63205,6 +64105,64 @@ func ParseListConnectProvidersClientResponse(rsp *http.Response) (*ListConnectPr
 	return response, nil
 }
 
+// ParseResumeConnectClientResponse parses an HTTP response from a ResumeConnectWithResponse call
+func ParseResumeConnectClientResponse(rsp *http.Response) (*ResumeConnectClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResumeConnectClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 302:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			// Channel The token's channel (only with `unsupported_channel`).
+			Channel *string                               `json:"channel,omitempty"`
+			Error   ResumeConnect400JSONResponseBodyError `json:"error"`
+
+			// Reason Why the token was rejected (only with `invalid_resume_token`).
+			Reason *string `json:"reason,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest struct {
+			Error ResumeConnect500JSONResponseBodyError `json:"error"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 302:
+		var headers ResumeConnectClientResponse302Headers
+		if values := rsp.Header.Values("Location"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "Location", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: "uri"}); err != nil {
+				return nil, err
+			}
+			headers.Location = &value
+		}
+		response.Headers302 = &headers
+	}
+
+	return response, nil
+}
+
 // ParseSearchConnectSessionListingOptionsClientResponse parses an HTTP response from a SearchConnectSessionListingOptionsWithResponse call
 func ParseSearchConnectSessionListingOptionsClientResponse(rsp *http.Response) (*SearchConnectSessionListingOptionsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -63315,6 +64273,100 @@ func ParseSubmitSmoobuCredentialsClientResponse(rsp *http.Response) (*SubmitSmoo
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSubmitTrackCredentialsClientResponse parses an HTTP response from a SubmitTrackCredentialsWithResponse call
+func ParseSubmitTrackCredentialsClientResponse(rsp *http.Response) (*SubmitTrackCredentialsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SubmitTrackCredentialsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AccountInfo *struct {
+				AccountName *string                                                       `json:"accountName,omitempty"`
+				AuthMode    *SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode `json:"authMode,omitempty"`
+
+				// Domain The Track host the connection calls.
+				//
+				// Example: acme.trackhs.com
+				Domain  *string                                                      `json:"domain,omitempty"`
+				KeyType *SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType `json:"keyType,omitempty"`
+			} `json:"accountInfo,omitempty"`
+			Connected *bool `json:"connected,omitempty"`
+
+			// Created False when an existing connection was updated.
+			Created *bool `json:"created,omitempty"`
+
+			// FirstSync Whether the first import of listings and reservations was queued. When it was not, the connection still stands and polling syncs it.
+			FirstSync *struct {
+				Error  *string `json:"error,omitempty"`
+				Queued *bool   `json:"queued,omitempty"`
+			} `json:"firstSync,omitempty"`
+
+			// PmsConnectionId Id of the stored connection.
+			PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+			// Provider Example: track
+			Provider  *string `json:"provider,omitempty"`
+			SessionId *string `json:"sessionId,omitempty"`
+
+			// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+			//
+			// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+			WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 

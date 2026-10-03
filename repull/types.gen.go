@@ -4699,6 +4699,114 @@ func (e SubmitMewsCredentialsJSONBodyCredentialsEnvironment) Valid() bool {
 	}
 }
 
+// Defines values for ResumeConnect400JSONResponseBodyError.
+const (
+	BadAccount         ResumeConnect400JSONResponseBodyError = "bad_account"
+	InvalidResumeToken ResumeConnect400JSONResponseBodyError = "invalid_resume_token"
+	UnsupportedChannel ResumeConnect400JSONResponseBodyError = "unsupported_channel"
+)
+
+// Valid indicates whether the value is a known member of the ResumeConnect400JSONResponseBodyError enum.
+func (e ResumeConnect400JSONResponseBodyError) Valid() bool {
+	switch e {
+	case BadAccount:
+		return true
+	case InvalidResumeToken:
+		return true
+	case UnsupportedChannel:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ResumeConnect500JSONResponseBodyError.
+const (
+	ResumeConnect500JSONResponseBodyErrorInternalError ResumeConnect500JSONResponseBodyError = "internal_error"
+)
+
+// Valid indicates whether the value is a known member of the ResumeConnect500JSONResponseBodyError enum.
+func (e ResumeConnect500JSONResponseBodyError) Valid() bool {
+	switch e {
+	case ResumeConnect500JSONResponseBodyErrorInternalError:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubmitTrackCredentialsJSONBodyCredentialsAuthMode.
+const (
+	SubmitTrackCredentialsJSONBodyCredentialsAuthModeBasic SubmitTrackCredentialsJSONBodyCredentialsAuthMode = "basic"
+	SubmitTrackCredentialsJSONBodyCredentialsAuthModeHmac  SubmitTrackCredentialsJSONBodyCredentialsAuthMode = "hmac"
+)
+
+// Valid indicates whether the value is a known member of the SubmitTrackCredentialsJSONBodyCredentialsAuthMode enum.
+func (e SubmitTrackCredentialsJSONBodyCredentialsAuthMode) Valid() bool {
+	switch e {
+	case SubmitTrackCredentialsJSONBodyCredentialsAuthModeBasic:
+		return true
+	case SubmitTrackCredentialsJSONBodyCredentialsAuthModeHmac:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubmitTrackCredentialsJSONBodyCredentialsKeyType.
+const (
+	SubmitTrackCredentialsJSONBodyCredentialsKeyTypeChannel SubmitTrackCredentialsJSONBodyCredentialsKeyType = "channel"
+	SubmitTrackCredentialsJSONBodyCredentialsKeyTypeServer  SubmitTrackCredentialsJSONBodyCredentialsKeyType = "server"
+)
+
+// Valid indicates whether the value is a known member of the SubmitTrackCredentialsJSONBodyCredentialsKeyType enum.
+func (e SubmitTrackCredentialsJSONBodyCredentialsKeyType) Valid() bool {
+	switch e {
+	case SubmitTrackCredentialsJSONBodyCredentialsKeyTypeChannel:
+		return true
+	case SubmitTrackCredentialsJSONBodyCredentialsKeyTypeServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode.
+const (
+	SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthModeBasic SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode = "basic"
+	SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthModeHmac  SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode = "hmac"
+)
+
+// Valid indicates whether the value is a known member of the SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode enum.
+func (e SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode) Valid() bool {
+	switch e {
+	case SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthModeBasic:
+		return true
+	case SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthModeHmac:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType.
+const (
+	SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyTypeChannel SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType = "channel"
+	SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyTypeServer  SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType = "server"
+)
+
+// Valid indicates whether the value is a known member of the SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType enum.
+func (e SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType) Valid() bool {
+	switch e {
+	case SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyTypeChannel:
+		return true
+	case SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyTypeServer:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for VrboLoginJSONBodyAccessType.
 const (
 	VrboLoginJSONBodyAccessTypeFullAccess VrboLoginJSONBodyAccessType = "full_access"
@@ -14552,6 +14660,15 @@ type InviteBookingExtranetUserJSONBody struct {
 	SessionId string  `json:"sessionId"`
 }
 
+// RecheckBookingExtranetLoginJSONBody defines parameters for RecheckBookingExtranetLogin.
+type RecheckBookingExtranetLoginJSONBody struct {
+	// AccountId The Booking.com direct-login connection id returned when the sign-in started.
+	AccountId int `json:"accountId"`
+
+	// SessionId The Connect session ID (capability token).
+	SessionId string `json:"sessionId"`
+}
+
 // GetBookingExtranetLoginConfigParams defines parameters for GetBookingExtranetLoginConfig.
 type GetBookingExtranetLoginConfigParams struct {
 	// SessionId The Connect session ID (capability token).
@@ -14688,6 +14805,18 @@ type SubmitOwnerrezCredentialsJSONBody struct {
 	SessionId *string `json:"sessionId,omitempty"`
 }
 
+// ResumeConnectParams defines parameters for ResumeConnect.
+type ResumeConnectParams struct {
+	// T The signed resume token, exactly as it appears in the connection's `fixUrl`.
+	T string `form:"t" json:"t"`
+}
+
+// ResumeConnect400JSONResponseBodyError defines parameters for ResumeConnect.
+type ResumeConnect400JSONResponseBodyError string
+
+// ResumeConnect500JSONResponseBodyError defines parameters for ResumeConnect.
+type ResumeConnect500JSONResponseBodyError string
+
 // SearchConnectSessionListingOptionsParams defines parameters for SearchConnectSessionListingOptions.
 type SearchConnectSessionListingOptionsParams struct {
 	Q     *string `form:"q,omitempty" json:"q,omitempty"`
@@ -14720,6 +14849,61 @@ type SubmitSmoobuCredentialsJSONBody_Credentials struct {
 	ApiSecret            string                 `json:"apiSecret"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
+
+// SubmitTrackCredentialsJSONBody defines parameters for SubmitTrackCredentials.
+type SubmitTrackCredentialsJSONBody struct {
+	// Credentials The Track domain and an API key + secret.
+	Credentials struct {
+		// ApiKey Track API key.
+		ApiKey string `json:"apiKey"`
+
+		// ApiSecret Track API secret, shown next to the key in Track.
+		ApiSecret string `json:"apiSecret"`
+
+		// AuthMode How requests to Track are signed. Leave the default unless Track support told you otherwise.
+		AuthMode *SubmitTrackCredentialsJSONBodyCredentialsAuthMode `json:"authMode,omitempty"`
+
+		// Domain Your Track domain: `acme.trackhs.com`, or just the subdomain `acme`. A full URL is accepted; only the host is kept.
+		//
+		// Example: acme.trackhs.com
+		Domain string `json:"domain"`
+
+		// HmacRealm HMAC realm. Defaults to `Acquia`, the realm Track's HMAC signing uses.
+		HmacRealm *string `json:"hmacRealm,omitempty"`
+
+		// KeyType `server` — a Server Key (Company Setup → API Keys), full access, recommended. `channel` — a Channel Key (PMS Setup → Distribution Channels), booking only.
+		KeyType *SubmitTrackCredentialsJSONBodyCredentialsKeyType `json:"keyType,omitempty"`
+
+		// MoveReasonId The Track move reason used when a reservation is moved to another unit. Without it, unit changes are refused.
+		MoveReasonId *int `json:"moveReasonId,omitempty"`
+
+		// PaymentTypeId The Track payment type that payments recorded through this connection are posted to.
+		PaymentTypeId *int `json:"paymentTypeId,omitempty"`
+
+		// SecretIsBase64 Whether `apiSecret` is base64-encoded, as Track issues it. Set false to sign with the secret's raw text.
+		SecretIsBase64 *bool `json:"secretIsBase64,omitempty"`
+	} `json:"credentials"`
+
+	// SessionId Connect session id from `POST /v1/connect/track`. Omit when calling with your API key.
+	SessionId *string `json:"sessionId,omitempty"`
+
+	// WritePolicy Optional: what the app may change in Track, set before the first sync. Same shape as `PATCH /v1/connect/{provider}/write-policy`; switches you leave out keep the provider default (everything on).
+	//
+	// Example: {"reservations":{"api":false}}
+	WritePolicy *map[string]interface{} `json:"writePolicy,omitempty"`
+}
+
+// SubmitTrackCredentialsJSONBodyCredentialsAuthMode defines parameters for SubmitTrackCredentials.
+type SubmitTrackCredentialsJSONBodyCredentialsAuthMode string
+
+// SubmitTrackCredentialsJSONBodyCredentialsKeyType defines parameters for SubmitTrackCredentials.
+type SubmitTrackCredentialsJSONBodyCredentialsKeyType string
+
+// SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode defines parameters for SubmitTrackCredentials.
+type SubmitTrackCredentials200JSONResponseBodyAccountInfoAuthMode string
+
+// SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType defines parameters for SubmitTrackCredentials.
+type SubmitTrackCredentials200JSONResponseBodyAccountInfoKeyType string
 
 // GetVrboConnectImportParams defines parameters for GetVrboConnectImport.
 type GetVrboConnectImportParams struct {
@@ -15981,6 +16165,9 @@ type SubmitBeds24CredentialsJSONRequestBody SubmitBeds24CredentialsJSONBody
 // InviteBookingExtranetUserJSONRequestBody defines body for InviteBookingExtranetUser for application/json ContentType.
 type InviteBookingExtranetUserJSONRequestBody InviteBookingExtranetUserJSONBody
 
+// RecheckBookingExtranetLoginJSONRequestBody defines body for RecheckBookingExtranetLogin for application/json ContentType.
+type RecheckBookingExtranetLoginJSONRequestBody RecheckBookingExtranetLoginJSONBody
+
 // StartBookingExtranetLoginJSONRequestBody defines body for StartBookingExtranetLogin for application/json ContentType.
 type StartBookingExtranetLoginJSONRequestBody StartBookingExtranetLoginJSONBody
 
@@ -16025,6 +16212,9 @@ type SelectConnectProviderJSONRequestBody SelectConnectProviderJSONBody
 
 // SubmitSmoobuCredentialsJSONRequestBody defines body for SubmitSmoobuCredentials for application/json ContentType.
 type SubmitSmoobuCredentialsJSONRequestBody SubmitSmoobuCredentialsJSONBody
+
+// SubmitTrackCredentialsJSONRequestBody defines body for SubmitTrackCredentials for application/json ContentType.
+type SubmitTrackCredentialsJSONRequestBody SubmitTrackCredentialsJSONBody
 
 // VrboLoginJSONRequestBody defines body for VrboLogin for application/json ContentType.
 type VrboLoginJSONRequestBody VrboLoginJSONBody

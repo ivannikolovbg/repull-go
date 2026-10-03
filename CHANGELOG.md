@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.26] - 2026-10-03
+
+Regenerated against the live `https://api.repull.dev/openapi.json`:
+
+- New `ClientWithResponses.SubmitTrackCredentialsWithResponse` (`POST /v1/connect/track/credentials`, body `SubmitTrackCredentialsJSONRequestBody`): connect a Track (TRACK Hospitality Software) account with `Credentials.Domain`, `ApiKey`, `ApiSecret` and optional `KeyType` (`server` / `channel`), `AuthMode` (`hmac` / `basic`), `HmacRealm`, `SecretIsBase64`, `PaymentTypeId`, `MoveReasonId`.
+- New `RecheckBookingExtranetLoginWithResponse` (`POST /v1/connect/booking-extranet-login/recheck`) and `ResumeConnectWithResponse` (`GET /v1/connect/resume`).
+- Track listed in the per-PMS reservation write tables.
+
 ## [0.2.25] - 2026-10-02
 
 Regenerated against the live `https://api.repull.dev/openapi.json`:
