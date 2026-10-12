@@ -1239,6 +1239,7 @@ const (
 	ConnectProviderConnectPatternActivation  ConnectProviderConnectPattern = "activation"
 	ConnectProviderConnectPatternClaim       ConnectProviderConnectPattern = "claim"
 	ConnectProviderConnectPatternCredentials ConnectProviderConnectPattern = "credentials"
+	ConnectProviderConnectPatternExtranet    ConnectProviderConnectPattern = "extranet"
 	ConnectProviderConnectPatternOauth       ConnectProviderConnectPattern = "oauth"
 )
 
@@ -1251,6 +1252,8 @@ func (e ConnectProviderConnectPattern) Valid() bool {
 		return true
 	case ConnectProviderConnectPatternCredentials:
 		return true
+	case ConnectProviderConnectPatternExtranet:
+		return true
 	case ConnectProviderConnectPatternOauth:
 		return true
 	default:
@@ -1260,9 +1263,10 @@ func (e ConnectProviderConnectPattern) Valid() bool {
 
 // Defines values for ConnectProviderStatus.
 const (
-	ConnectProviderStatusBeta       ConnectProviderStatus = "beta"
-	ConnectProviderStatusComingSoon ConnectProviderStatus = "coming-soon"
-	ConnectProviderStatusLive       ConnectProviderStatus = "live"
+	ConnectProviderStatusBeta        ConnectProviderStatus = "beta"
+	ConnectProviderStatusComingSoon  ConnectProviderStatus = "coming-soon"
+	ConnectProviderStatusLive        ConnectProviderStatus = "live"
+	ConnectProviderStatusRequestOnly ConnectProviderStatus = "request-only"
 )
 
 // Valid indicates whether the value is a known member of the ConnectProviderStatus enum.
@@ -1273,6 +1277,8 @@ func (e ConnectProviderStatus) Valid() bool {
 	case ConnectProviderStatusComingSoon:
 		return true
 	case ConnectProviderStatusLive:
+		return true
+	case ConnectProviderStatusRequestOnly:
 		return true
 	default:
 		return false
@@ -1624,6 +1630,42 @@ func (e InquiryWebhookObjectStatus) Valid() bool {
 	case InquiryWebhookObjectStatusPreApproved:
 		return true
 	case InquiryWebhookObjectStatusSpecialOfferSent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingHotelSource.
+const (
+	ListingHotelSourceBooking ListingHotelSource = "booking"
+	ListingHotelSourcePms     ListingHotelSource = "pms"
+)
+
+// Valid indicates whether the value is a known member of the ListingHotelSource enum.
+func (e ListingHotelSource) Valid() bool {
+	switch e {
+	case ListingHotelSourceBooking:
+		return true
+	case ListingHotelSourcePms:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingKind.
+const (
+	Home     ListingKind = "home"
+	RoomType ListingKind = "room_type"
+)
+
+// Valid indicates whether the value is a known member of the ListingKind enum.
+func (e ListingKind) Valid() bool {
+	switch e {
+	case Home:
+		return true
+	case RoomType:
 		return true
 	default:
 		return false
@@ -3273,6 +3315,7 @@ const (
 	SelectProviderResponsePatternActivation  SelectProviderResponsePattern = "activation"
 	SelectProviderResponsePatternClaim       SelectProviderResponsePattern = "claim"
 	SelectProviderResponsePatternCredentials SelectProviderResponsePattern = "credentials"
+	SelectProviderResponsePatternExtranet    SelectProviderResponsePattern = "extranet"
 	SelectProviderResponsePatternOauth       SelectProviderResponsePattern = "oauth"
 )
 
@@ -3284,6 +3327,8 @@ func (e SelectProviderResponsePattern) Valid() bool {
 	case SelectProviderResponsePatternClaim:
 		return true
 	case SelectProviderResponsePatternCredentials:
+		return true
+	case SelectProviderResponsePatternExtranet:
 		return true
 	case SelectProviderResponsePatternOauth:
 		return true
@@ -3562,20 +3607,32 @@ func (e WebhookSubscriptionStatus) Valid() bool {
 	}
 }
 
+// Defines values for WorkspaceCreatedVia.
+const (
+	WorkspaceCreatedViaConnect WorkspaceCreatedVia = "connect"
+	WorkspaceCreatedViaMigrate WorkspaceCreatedVia = "migrate"
+)
+
+// Valid indicates whether the value is a known member of the WorkspaceCreatedVia enum.
+func (e WorkspaceCreatedVia) Valid() bool {
+	switch e {
+	case WorkspaceCreatedViaConnect:
+		return true
+	case WorkspaceCreatedViaMigrate:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateBillingCheckoutJSONBodyPlan.
 const (
-	Growth  CreateBillingCheckoutJSONBodyPlan = "growth"
-	Scale   CreateBillingCheckoutJSONBodyPlan = "scale"
 	Starter CreateBillingCheckoutJSONBodyPlan = "starter"
 )
 
 // Valid indicates whether the value is a known member of the CreateBillingCheckoutJSONBodyPlan enum.
 func (e CreateBillingCheckoutJSONBodyPlan) Valid() bool {
 	switch e {
-	case Growth:
-		return true
-	case Scale:
-		return true
 	case Starter:
 		return true
 	default:
@@ -5164,6 +5221,42 @@ func (e GetChannelHealth200JSONResponseBodyStatus) Valid() bool {
 	case Down:
 		return true
 	case Ok:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListHotels200JSONResponseBodyDataSource.
+const (
+	ListHotels200JSONResponseBodyDataSourceBooking ListHotels200JSONResponseBodyDataSource = "booking"
+	ListHotels200JSONResponseBodyDataSourcePms     ListHotels200JSONResponseBodyDataSource = "pms"
+)
+
+// Valid indicates whether the value is a known member of the ListHotels200JSONResponseBodyDataSource enum.
+func (e ListHotels200JSONResponseBodyDataSource) Valid() bool {
+	switch e {
+	case ListHotels200JSONResponseBodyDataSourceBooking:
+		return true
+	case ListHotels200JSONResponseBodyDataSourcePms:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetHotel200JSONResponseBodySource.
+const (
+	GetHotel200JSONResponseBodySourceBooking GetHotel200JSONResponseBodySource = "booking"
+	GetHotel200JSONResponseBodySourcePms     GetHotel200JSONResponseBodySource = "pms"
+)
+
+// Valid indicates whether the value is a known member of the GetHotel200JSONResponseBodySource enum.
+func (e GetHotel200JSONResponseBodySource) Valid() bool {
+	switch e {
+	case GetHotel200JSONResponseBodySourceBooking:
+		return true
+	case GetHotel200JSONResponseBodySourcePms:
 		return true
 	default:
 		return false
@@ -7118,6 +7211,9 @@ type AvailabilityBatchWriteRequest struct {
 	// Available Block or unblock the dates.
 	Available *bool `json:"available,omitempty"`
 
+	// AvailableUnits Rooms to sell on these dates, for a listing that sells several identical rooms (`unitCount` > 1, e.g. a Booking.com room type). Up to the listing's `unitCount`. Refused with `409 managed_by_pms` on a hotel PMS room type (Cloudbeds, Mews) — its PMS owns the room count.
+	AvailableUnits *int `json:"availableUnits,omitempty"`
+
 	// Dates ISO dates. Capped at 731 — Airbnb refuses calendar writes spanning more.
 	Dates     []openapi_types.Date `json:"dates"`
 	MaxNights *int                 `json:"maxNights,omitempty"`
@@ -7132,6 +7228,9 @@ type AvailabilityBatchWriteRequest struct {
 type AvailabilityWriteRequest struct {
 	// Available Block or unblock the dates.
 	Available *bool `json:"available,omitempty"`
+
+	// AvailableUnits Rooms to sell on these dates, for a listing that sells several identical rooms (`unitCount` > 1, e.g. a Booking.com room type). Up to the listing's `unitCount`. Refused with `409 managed_by_pms` on a hotel PMS room type (Cloudbeds, Mews) — its PMS owns the room count.
+	AvailableUnits *int `json:"availableUnits,omitempty"`
 
 	// Dates ISO dates. Capped at 731 — Airbnb refuses calendar writes spanning more.
 	Dates     []openapi_types.Date `json:"dates"`
@@ -7166,8 +7265,11 @@ type AvailabilityWriteResult struct {
 type AvailabilityWriteSettings struct {
 	// Available Block or unblock the dates.
 	Available *bool `json:"available,omitempty"`
-	MaxNights *int  `json:"maxNights,omitempty"`
-	MinNights *int  `json:"minNights,omitempty"`
+
+	// AvailableUnits Rooms to sell on these dates, for a listing that sells several identical rooms (`unitCount` > 1, e.g. a Booking.com room type). Up to the listing's `unitCount`. Refused with `409 managed_by_pms` on a hotel PMS room type (Cloudbeds, Mews) — its PMS owns the room count.
+	AvailableUnits *int `json:"availableUnits,omitempty"`
+	MaxNights      *int `json:"maxNights,omitempty"`
+	MinNights      *int `json:"minNights,omitempty"`
 
 	// Price Nightly base price.
 	Price *float32 `json:"price,omitempty"`
@@ -8131,7 +8233,7 @@ type ConnectProvider struct {
 	// Category Channel category — OTAs are listing marketplaces; PMSes are property management systems.
 	Category ConnectProviderCategory `json:"category"`
 
-	// ConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake (Vrbo). `claim`: connectivity-provider designation in the channel's Extranet (Booking.com).
+	// ConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake. `claim`: connectivity-provider designation in the channel's Extranet (Booking.com). `extranet`: the host signs in with their Booking.com Extranet user.
 	ConnectPattern ConnectProviderConnectPattern `json:"connectPattern"`
 
 	// Description Example: OAuth consent — host approves access in one click.
@@ -8154,17 +8256,17 @@ type ConnectProvider struct {
 	// MigrationCapabilities PMS providers: what Repull Migrate can carry across, per entity — `{ read: { listings: { level, notes }, … }, write: { … } }` with `level` `full` | `partial` | `none`. `null` for channels (OTAs).
 	MigrationCapabilities *map[string]interface{} `json:"migrationCapabilities,omitempty"`
 
-	// Status Pickers should hide / disable `coming-soon` cards. `beta` cards are clickable but show a Beta pill.
+	// Status Pickers should hide / disable `coming-soon` cards. `beta` cards are clickable but show a Beta pill. `request-only` is a PMS Repull doesn't connect yet, listed only with `includeRequestOnly`: picking it collects the host's access details for the Repull team, and the session ends as `requested` instead of connecting.
 	Status ConnectProviderStatus `json:"status"`
 }
 
 // ConnectProviderCategory Channel category — OTAs are listing marketplaces; PMSes are property management systems.
 type ConnectProviderCategory string
 
-// ConnectProviderConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake (Vrbo). `claim`: connectivity-provider designation in the channel's Extranet (Booking.com).
+// ConnectProviderConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake. `claim`: connectivity-provider designation in the channel's Extranet (Booking.com). `extranet`: the host signs in with their Booking.com Extranet user.
 type ConnectProviderConnectPattern string
 
-// ConnectProviderStatus Pickers should hide / disable `coming-soon` cards. `beta` cards are clickable but show a Beta pill.
+// ConnectProviderStatus Pickers should hide / disable `coming-soon` cards. `beta` cards are clickable but show a Beta pill. `request-only` is a PMS Repull doesn't connect yet, listed only with `includeRequestOnly`: picking it collects the host's access details for the Repull team, and the session ends as `requested` instead of connecting.
 type ConnectProviderStatus string
 
 // ConnectProviderListResponse defines model for ConnectProviderListResponse.
@@ -8175,6 +8277,9 @@ type ConnectProviderListResponse struct {
 // ConnectSession A multi-channel Connect picker session. The `url` is the hosted picker page on connect.repull.dev — redirect the host to it, they pick a channel, and the picker takes them through the per-provider flow before redirecting back to the original `redirectUrl`.
 type ConnectSession struct {
 	ExpiresAt time.Time `json:"expiresAt"`
+
+	// IncludeRequestOnly Present (`true`) when the session also lists PMSes Repull doesn't connect yet.
+	IncludeRequestOnly *bool `json:"includeRequestOnly,omitempty"`
 
 	// Purpose Present only on a Repull Migrate session.
 	Purpose *ConnectSessionPurpose `json:"purpose,omitempty"`
@@ -8188,7 +8293,7 @@ type ConnectSession struct {
 	// Url Example: https://connect.repull.dev/cs_8gQrT2v9k3M4nLp7wJxYzAbCdEfGhIjKlMnOp
 	Url string `json:"url"`
 
-	// WorkspaceId Repull Migrate only: the workspace the property manager's data lands in. Read it with `X-Workspace-Id`, track it with `GET /v1/migrations/{workspaceId}`.
+	// WorkspaceId Present when the session lands on a sub-workspace (`workspace` or `X-Workspace-Id` on the request): the workspace the connection lands in. Read and write it with `X-Workspace-Id`; on a migrate session, track the import with `GET /v1/migrations/{workspaceId}`.
 	//
 	// Example: 1204
 	WorkspaceId *string `json:"workspaceId,omitempty"`
@@ -9137,8 +9242,21 @@ type Listing struct {
 	// Details **Only present when the caller passes `?include=details`.** Sourced from `listings_details`. `null` when the listing has no details row stored (vs the field being absent — that signals the caller did not opt into the expansion).
 	Details *ListingDetails `json:"details,omitempty"`
 
+	// Hotel The hotel the listing belongs to: a hotel PMS hotel (Cloudbeds, Mews) or a Booking.com property with several room types or rooms. `null` for a standalone home. `GET /v1/hotels/{id}` lists its room types.
+	Hotel *struct {
+		// Id A Repull hotel id, or `booking:<hotelId>` for a Booking.com property.
+		//
+		// Example: booking:255832
+		Id     *string             `json:"id,omitempty"`
+		Name   *string             `json:"name,omitempty"`
+		Source *ListingHotelSource `json:"source,omitempty"`
+	} `json:"hotel,omitempty"`
+
 	// Id Repull listing id
 	Id *string `json:"id,omitempty"`
+
+	// Kind `room_type` when the listing sells several identical units (a hotel room type: `unitCount` > 1) or is a hotel PMS room type; `home` otherwise. See the Hotels & multi-unit guide.
+	Kind *ListingKind `json:"kind,omitempty"`
 
 	// Name The host's internal nickname for the listing.
 	//
@@ -9154,6 +9272,9 @@ type Listing struct {
 	// ThumbnailUrl Cover photo URL. Always present on an active listing. On an **inactive** one it is present only when the caller passes `?include=thumbnail`; `null` means the listing has no cover photo stored, absent means the expansion was not requested.
 	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
 
+	// UnitCount How many identical units (rooms) this listing sells: the hotel PMS rooms of the room type, the room count on Booking.com, or 1 for a home. Rooms left per night are `availableUnits` on `GET /v1/availability/{propertyId}`.
+	UnitCount *int `json:"unitCount,omitempty"`
+
 	// Units `GET /v1/listings/{id}` only. The physical rooms under a hotel-model listing (a Mews or Cloudbeds room type); empty for a single home. Same items as `GET /v1/listings/{id}/units`.
 	Units *[]struct {
 		Active             *bool   `json:"active,omitempty"`
@@ -9166,6 +9287,12 @@ type Listing struct {
 	} `json:"units,omitempty"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
+
+// ListingHotelSource defines model for Listing.Hotel.Source.
+type ListingHotelSource string
+
+// ListingKind `room_type` when the listing sells several identical units (a hotel room type: `unitCount` > 1) or is a hotel PMS room type; `home` otherwise. See the Hotels & multi-unit guide.
+type ListingKind string
 
 // ListingStatus defines model for Listing.Status.
 type ListingStatus string
@@ -11718,6 +11845,11 @@ type RecordAccount struct {
 	// Example: 79730216
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
+	// HotelId Booking.com only: the hotel (property) id the record belongs to. On a `booking_extranet` account, `externalAccountId` is the login, which can cover several hotels.
+	//
+	// Example: 10433861
+	HotelId *string `json:"hotelId,omitempty"`
+
 	// Provider airbnb, booking, booking_extranet, vrbo, or the PMS id (hostaway, cloudbeds, …).
 	//
 	// Example: airbnb
@@ -12356,6 +12488,11 @@ type ReservationMessageReceivedPayload struct {
 		Type *string `json:"type,omitempty"`
 	} `json:"from,omitempty"`
 
+	// HotelId Booking.com only: the hotel (property) id of the conversation's listing. Absent on other channels. A Booking.com Extranet login can cover several hotels, so use this to route the message.
+	//
+	// Example: 10433861
+	HotelId *string `json:"hotelId,omitempty"`
+
 	// ReservationId Example: 215906
 	ReservationId *int `json:"reservationId,omitempty"`
 
@@ -12412,7 +12549,12 @@ type ReservationMessageSentPayload struct {
 		// Example: host
 		Type *string `json:"type,omitempty"`
 	} `json:"from,omitempty"`
-	IsAutomated *bool `json:"isAutomated,omitempty"`
+
+	// HotelId Booking.com only: the hotel (property) id of the conversation's listing. Absent on other channels. A Booking.com Extranet login can cover several hotels, so use this to route the message.
+	//
+	// Example: 10433861
+	HotelId     *string `json:"hotelId,omitempty"`
+	IsAutomated *bool   `json:"isAutomated,omitempty"`
 
 	// MessageId Repull message id, as `GET /v1/conversations/{id}/messages` returns it.
 	//
@@ -12480,6 +12622,11 @@ type ReservationMessageUpdatedPayload struct {
 		// Type Example: host
 		Type *string `json:"type,omitempty"`
 	} `json:"from,omitempty"`
+
+	// HotelId Booking.com only: the hotel (property) id of the conversation's listing. Absent on other channels. A Booking.com Extranet login can cover several hotels, so use this to route the message.
+	//
+	// Example: 10433861
+	HotelId *string `json:"hotelId,omitempty"`
 
 	// MessageId Example: 1854462
 	MessageId *string `json:"messageId,omitempty"`
@@ -13134,7 +13281,7 @@ type ReviewWebhookObjectReviewerRole string
 
 // SelectProviderResponse Returned by `POST /v1/connect/sessions/{sessionId}/select-provider`. The picker UI navigates the user to `nextUrl` to begin the per-provider handoff.
 type SelectProviderResponse struct {
-	// NextUrl Where to send the user next — OAuth consent, credentials form, activation checklist, or claim form.
+	// NextUrl Where to send the user next — OAuth consent, credentials form, activation checklist, claim form, or (for a `request-only` PMS) the request form.
 	NextUrl *string                        `json:"nextUrl,omitempty"`
 	Pattern *SelectProviderResponsePattern `json:"pattern,omitempty"`
 
@@ -13533,6 +13680,29 @@ type WebhookSubscription struct {
 
 // WebhookSubscriptionStatus defines model for WebhookSubscription.Status.
 type WebhookSubscriptionStatus string
+
+// Workspace A sub-workspace: one customer of yours, with its own connections, listings and data. Send its `workspaceId` as `X-Workspace-Id` to act on it.
+type Workspace struct {
+	Active    bool      `json:"active"`
+	CreatedAt time.Time `json:"createdAt"`
+
+	// CreatedVia `connect` — opened by a Connect session; `migrate` — opened by Repull Migrate.
+	CreatedVia *WorkspaceCreatedVia `json:"createdVia,omitempty"`
+
+	// ExternalRef Your own id for this customer, as you sent it.
+	//
+	// Example: acct_8812
+	ExternalRef *string `json:"externalRef,omitempty"`
+
+	// Name Example: Seaside Rentals
+	Name string `json:"name"`
+
+	// WorkspaceId Example: 1204
+	WorkspaceId string `json:"workspaceId"`
+}
+
+// WorkspaceCreatedVia `connect` — opened by a Connect session; `migrate` — opened by Repull Migrate.
+type WorkspaceCreatedVia string
 
 // Account Example: airbnb:79730216
 type Account = string
@@ -14766,6 +14936,9 @@ type CreateConnectSessionJSONBody struct {
 		Title          *string `json:"title,omitempty"`
 	} `json:"copy,omitempty"`
 
+	// IncludeRequestOnly Also list PMSes Repull doesn't connect yet (`status: request-only` in `GET /v1/connect/providers?includeRequestOnly=true`), plus an Other PMS card. Picking one opens a form that collects the host's contact and access details for the Repull team and ends with "A team member will contact you". No connection is made: the redirect carries `status=requested&provider=<id>`, and no `connect.session.completed` webhook fires. Naming a request-only id in `allowedProviders` offers it without this flag.
+	IncludeRequestOnly *bool `json:"includeRequestOnly,omitempty"`
+
 	// Locale Optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`). When set it pins the language for the whole flow, overriding the workspace `default_language`. Unknown codes are ignored and the page falls back to the workspace default, then `Accept-Language`, then `en`. The end user can still override per-visit with a `?locale=` query param on the hosted page.
 	//
 	// Example: fr
@@ -14788,7 +14961,7 @@ type CreateConnectSessionJSONBody struct {
 	// State Your own correlation token, e.g. your user id (at most 500 characters). Echoed in this response, on the redirect back (`&state=`), in the popup message, and in the `connect.session.completed` webhook.
 	State *string `json:"state,omitempty"`
 
-	// Workspace Migrate only — the property manager being moved. Required unless you send `X-Workspace-Id` to reconnect an existing migration.
+	// Workspace Opens a new sub-workspace for this customer of yours and lands the connection there; the response returns its `workspaceId`, which you then send as `X-Workspace-Id`. Works with both purposes: a plain `connect` keeps the normal onboarding pages. Required for `migrate` unless you send `X-Workspace-Id` to reconnect an existing one. Don't send it together with `X-Workspace-Id`.
 	Workspace *struct {
 		// ExternalRef Your own id for this property manager. Returned on every migration read.
 		//
@@ -14969,6 +15142,24 @@ type SubmitOwnerrezCredentialsJSONBody struct {
 	SessionId *string `json:"sessionId,omitempty"`
 }
 
+// ListConnectProvidersParams defines parameters for ListConnectProviders.
+type ListConnectProvidersParams struct {
+	// IncludeRequestOnly Also return the PMSes Repull doesn't connect yet (`status: request-only`), for a picker you render yourself for a session created with `includeRequestOnly`.
+	IncludeRequestOnly *bool `form:"includeRequestOnly,omitempty" json:"includeRequestOnly,omitempty"`
+}
+
+// RentalReadyConnectCallbackParams defines parameters for RentalReadyConnectCallback.
+type RentalReadyConnectCallbackParams struct {
+	// Code Authorization code from RentalReady.
+	Code *string `form:"code,omitempty" json:"code,omitempty"`
+
+	// State The signed Connect state Repull sent to RentalReady.
+	State string `form:"state" json:"state"`
+
+	// Error Set by RentalReady when the host denied access (`access_denied`).
+	Error *string `form:"error,omitempty" json:"error,omitempty"`
+}
+
 // ResumeConnectParams defines parameters for ResumeConnect.
 type ResumeConnectParams struct {
 	// T The signed resume token, exactly as it appears in the connection's `fixUrl`.
@@ -15103,6 +15294,18 @@ type SubmitVrboCredentialsJSONBody struct {
 	SessionId *string `json:"sessionId,omitempty"`
 }
 
+// ZeevouConnectCallbackParams defines parameters for ZeevouConnectCallback.
+type ZeevouConnectCallbackParams struct {
+	// Code Authorization code from Zeevou.
+	Code *string `form:"code,omitempty" json:"code,omitempty"`
+
+	// State The signed Connect state Repull sent to Zeevou.
+	State string `form:"state" json:"state"`
+
+	// Error Set by Zeevou when the host denied access (`access_denied`).
+	Error *string `form:"error,omitempty" json:"error,omitempty"`
+}
+
 // DeleteConnectionParams defines parameters for DeleteConnection.
 type DeleteConnectionParams struct {
 	// AccountId The account to disconnect: the Airbnb host id (`accounts[].externalAccountId` on `GET /v1/connect/airbnb`) or the Booking.com hotel id. Required when the workspace has more than one connected account for the provider. Not the same as the `X-Account-Id` header.
@@ -15205,6 +15408,9 @@ type ListConversationsParams struct {
 
 	// Platform Restrict to threads on a single channel.
 	Platform *ListConversationsParamsPlatform `form:"platform,omitempty" json:"platform,omitempty"`
+
+	// UpdatedSince ISO 8601 instant. Only conversations with activity at or after it, oldest change first. Keep it on every page of the walk; use the last row's `updatedAt` as the next value.
+	UpdatedSince *time.Time `form:"updated_since,omitempty" json:"updated_since,omitempty"`
 
 	// Status Filter by archive status. `archived` currently always returns an empty page — kept for forward-compat.
 	Status *ListConversationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
@@ -15455,6 +15661,9 @@ type GetChannelHealth200JSONResponseBody struct {
 		// CalendarQueueBacklog Listings with a calendar push waiting.
 		CalendarQueueBacklog *int `json:"calendar_queue_backlog,omitempty"`
 
+		// ConnectorErrors Failed pushes in the window caused by Repull's own VRBO connector (a timeout, a browser session in use), not by VRBO. They are retried and never set `status`.
+		ConnectorErrors *int `json:"connector_errors,omitempty"`
+
 		// InboxSyncLate Accounts whose last full inbox sync is older than 30 minutes (it runs every 5).
 		InboxSyncLate *int `json:"inbox_sync_late,omitempty"`
 
@@ -15463,6 +15672,12 @@ type GetChannelHealth200JSONResponseBody struct {
 	} `json:"vrbo,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
+
+// ListHotels200JSONResponseBodyDataSource defines parameters for ListHotels.
+type ListHotels200JSONResponseBodyDataSource string
+
+// GetHotel200JSONResponseBodySource defines parameters for GetHotel.
+type GetHotel200JSONResponseBodySource string
 
 // ListInquiriesParams defines parameters for ListInquiries.
 type ListInquiriesParams struct {
@@ -16195,6 +16410,17 @@ type ListWebhookDeliveriesParamsStatus string
 type ReplayWebhookDeliveryJSONBody struct {
 	// Force Replay even though this delivery already succeeded. Still counts against the 3-per-hour limit.
 	Force *bool `json:"force,omitempty"`
+}
+
+// ListWorkspacesParams defines parameters for ListWorkspaces.
+type ListWorkspacesParams struct {
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor `pagination.nextCursor` from the previous page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// ExternalRef Only the workspace you tagged with this `externalRef` (your own id for the customer).
+	ExternalRef *string `form:"externalRef,omitempty" json:"externalRef,omitempty"`
 }
 
 // BatchUpdateAvailabilityJSONRequestBody defines body for BatchUpdateAvailability for application/json ContentType.

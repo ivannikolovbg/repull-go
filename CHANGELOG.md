@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.29] - 2026-10-12
+
+Regenerated against the live `https://api.repull.dev/openapi.json`:
+
+- New `GET /v1/billing` (`get_billing`): the workspace's plan, request limits, usage this period and `manageUrl`.
+- `POST /v1/billing` (`create_billing_checkout`) now takes `plan` and returns `checkoutUrl`, the page where the owner upgrades.
+- Picks up any other spec changes since the previous release.
+
 ## [0.2.28] - 2026-10-03
 
 Regenerated against the live `https://api.repull.dev/openapi.json`. Spec examples no longer use real reservation, host or listing data: sample confirmation codes, host names and listing names are now fictional (`HMEXAMPLE1`, `Casey`, `Lakeview Loft`). No API changes.

@@ -159,18 +159,25 @@ type ClientInterface interface {
 	// Corresponds with PUT /v1/availability/{propertyId} (the `UpdateAvailability` operationId).
 	UpdateAvailability(ctx context.Context, propertyId int, body UpdateAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateBillingCheckoutWithBody Create checkout session
+	// GetBilling Get plan and usage
 	//
-	// Redirect user to Stripe checkout.
+	// The workspace's plan, its request limits, usage this period, and where the owner manages the plan. Same numbers as `GET /v1/usage/tier`.
+	//
+	// Corresponds with GET /v1/billing (the `GetBilling` operationId).
+	GetBilling(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateBillingCheckoutWithBody Start an upgrade
+	//
+	// Returns the URL where the workspace owner upgrades to Starter. Plans above Starter are set up with the Repull team and return `422 billing_error` with the next step.
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/billing (the `CreateBillingCheckout` operationId).
 	CreateBillingCheckoutWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateBillingCheckout Create checkout session
+	// CreateBillingCheckout Start an upgrade
 	//
-	// Redirect user to Stripe checkout.
+	// Returns the URL where the workspace owner upgrades to Starter. Plans above Starter are set up with the Repull team and return `422 billing_error` with the next step.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -492,6 +499,10 @@ type ClientInterface interface {
 	// GetAirbnbListingAvailability Get Airbnb availability
 	//
 	// Read the per-day availability calendar for an Airbnb listing. Returns one row per day including price overrides, min-stay, and blocked status.
+	//
+	// The calendar is served from Repull's stored copy, refreshed by the periodic sync. A successful calendar write through `PUT .../availability` or `PUT .../pricing` (`type: "calendar"`) updates the stored days immediately, so reading back right after a write returns the values you published. Changes made directly on Airbnb appear after the next sync (`dataFreshness.lastSyncedAt`).
+	//
+	// **Coverage:** with `start_date` + `end_date`, `data.coverage` gives `{ from, to }`, the first and last stored date for the listing (the sync keeps about 12 months ahead). A date outside that window is not stored, so a missing date there means "not covered", not "nothing set". Request it again once `coverage.to` reaches it.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -2751,7 +2762,14 @@ type ClientInterface interface {
 	// Returns the public registry of every channel the picker supports. No customer-specific data — display metadata only. Cached for 5 minutes at the edge.
 	//
 	// Corresponds with GET /v1/connect/providers (the `ListConnectProviders` operationId).
-	ListConnectProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListConnectProviders(ctx context.Context, params *ListConnectProvidersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RentalReadyConnectCallback RentalReady OAuth callback
+	//
+	// RentalReady's OAuth redirect after the host allows or denies access on RentalReady's consent screen. It finishes the Connect session and redirects the host to the hosted Connect page. Called by the host's browser, not by integrators.
+	//
+	// Corresponds with GET /v1/connect/rentalready/callback (the `RentalReadyConnectCallback` operationId).
+	RentalReadyConnectCallback(ctx context.Context, params *RentalReadyConnectCallbackParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResumeConnect Open a connection's fix link
 	//
@@ -2928,6 +2946,13 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connect/vrbo/credentials (the `SubmitVrboCredentials` operationId).
 	SubmitVrboCredentials(ctx context.Context, body SubmitVrboCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ZeevouConnectCallback Zeevou OAuth callback
+	//
+	// Zeevou's OAuth redirect after the host allows or denies access on Zeevou's consent screen. It finishes the Connect session and redirects the host to the hosted Connect page. Called by the host's browser, not by integrators.
+	//
+	// Corresponds with GET /v1/connect/zeevou/callback (the `ZeevouConnectCallback` operationId).
+	ZeevouConnectCallback(ctx context.Context, params *ZeevouConnectCallbackParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteConnection Disconnect provider
 	//
 	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
@@ -3088,6 +3113,10 @@ type ClientInterface interface {
 	// Filters: `platform` (`airbnb`|`booking`|`vrbo`|`website`|`email`), `status` (`open`|`archived` — `archived` is a stable no-op until the bit lands on `message_threads`).
 	//
 	// **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
+	//
+	// **Order:** newest conversation first (by when the conversation started), unless you pass `updated_since`.
+	//
+	// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations with activity (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`). Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
 	//
 	// Corresponds with GET /v1/conversations (the `ListConversations` operationId).
 	ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3427,7 +3456,7 @@ type ClientInterface interface {
 	//
 	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
 	//
-	// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is failed calendar pushes over finished ones in the last 3 hours (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
+	// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is calendar pushes VRBO refused over finished ones in the last 3 hours; failures inside Repull's own connector are reported apart as `vrbo.connector_errors` and do not count (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 	//
 	// Corresponds with GET /v1/health/channels/{channel} (the `GetChannelHealth` operationId).
 	GetChannelHealth(ctx context.Context, channel GetChannelHealthParamsChannel, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3445,6 +3474,20 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/health/webhooks (the `GetWebhooksHealth` operationId).
 	GetWebhooksHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListHotels List hotels
+	//
+	// Your workspace's hotels: hotels from a hotel PMS (Cloudbeds, Mews) and Booking.com properties with several room types or rooms. Each room type is a listing — `GET /v1/hotels/{id}` lists them with their room counts. A hotel itself is never booked: availability, prices and reservations live on its room types. See the Hotels & multi-unit guide.
+	//
+	// Corresponds with GET /v1/hotels (the `ListHotels` operationId).
+	ListHotels(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetHotel Get a hotel
+	//
+	// One hotel with its room types. `id` is from `GET /v1/hotels`, or a listing's `hotel.id`.
+	//
+	// Corresponds with GET /v1/hotels/{id} (the `GetHotel` operationId).
+	GetHotel(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListInquiries List inquiries
 	//
@@ -5064,6 +5107,13 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /v1/webhooks/{id}/test/{event_type} (the `TestFireWebhook` operationId).
 	TestFireWebhook(ctx context.Context, id openapi_types.UUID, eventType WebhookEventType, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWorkspaces List workspaces
+	//
+	// Every sub-workspace your workspace has opened, newest first: one per customer of yours, created by `POST /v1/connect` with `workspace` (or by Repull Migrate). Read or write a workspace's data by sending its `workspaceId` as `X-Workspace-Id`. Its webhook events arrive on your own webhook endpoints, tagged with `workspaceId`. Page with `pagination.nextCursor`.
+	//
+	// Corresponds with GET /v1/workspaces (the `ListWorkspaces` operationId).
+	ListWorkspaces(ctx context.Context, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 // BatchUpdateAvailabilityWithBody Update availability across many properties
@@ -5183,9 +5233,26 @@ func (c *Client) UpdateAvailability(ctx context.Context, propertyId int, body Up
 	return c.Client.Do(req)
 }
 
-// CreateBillingCheckoutWithBody Create checkout session
+// GetBilling Get plan and usage
 //
-// Redirect user to Stripe checkout.
+// The workspace's plan, its request limits, usage this period, and where the owner manages the plan. Same numbers as `GET /v1/usage/tier`.
+//
+// Corresponds with GET /v1/billing (the `GetBilling` operationId).
+func (c *Client) GetBilling(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBillingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateBillingCheckoutWithBody Start an upgrade
+//
+// Returns the URL where the workspace owner upgrades to Starter. Plans above Starter are set up with the Repull team and return `422 billing_error` with the next step.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5202,9 +5269,9 @@ func (c *Client) CreateBillingCheckoutWithBody(ctx context.Context, contentType 
 	return c.Client.Do(req)
 }
 
-// CreateBillingCheckout Create checkout session
+// CreateBillingCheckout Start an upgrade
 //
-// Redirect user to Stripe checkout.
+// Returns the URL where the workspace owner upgrades to Starter. Plans above Starter are set up with the Repull team and return `422 billing_error` with the next step.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5736,6 +5803,10 @@ func (c *Client) UpdateAirbnbListingAmenities(ctx context.Context, id string, bo
 // GetAirbnbListingAvailability Get Airbnb availability
 //
 // Read the per-day availability calendar for an Airbnb listing. Returns one row per day including price overrides, min-stay, and blocked status.
+//
+// The calendar is served from Repull's stored copy, refreshed by the periodic sync. A successful calendar write through `PUT .../availability` or `PUT .../pricing` (`type: "calendar"`) updates the stored days immediately, so reading back right after a write returns the values you published. Changes made directly on Airbnb appear after the next sync (`dataFreshness.lastSyncedAt`).
+//
+// **Coverage:** with `start_date` + `end_date`, `data.coverage` gives `{ from, to }`, the first and last stored date for the listing (the sync keeps about 12 months ahead). A date outside that window is not stored, so a missing date there means "not covered", not "nothing set". Request it again once `coverage.to` reaches it.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -9502,8 +9573,25 @@ func (c *Client) SubmitOwnerrezCredentials(ctx context.Context, body SubmitOwner
 // Returns the public registry of every channel the picker supports. No customer-specific data — display metadata only. Cached for 5 minutes at the edge.
 //
 // Corresponds with GET /v1/connect/providers (the `ListConnectProviders` operationId).
-func (c *Client) ListConnectProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListConnectProvidersRequest(c.Server)
+func (c *Client) ListConnectProviders(ctx context.Context, params *ListConnectProvidersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListConnectProvidersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RentalReadyConnectCallback RentalReady OAuth callback
+//
+// RentalReady's OAuth redirect after the host allows or denies access on RentalReady's consent screen. It finishes the Connect session and redirects the host to the hosted Connect page. Called by the host's browser, not by integrators.
+//
+// Corresponds with GET /v1/connect/rentalready/callback (the `RentalReadyConnectCallback` operationId).
+func (c *Client) RentalReadyConnectCallback(ctx context.Context, params *RentalReadyConnectCallbackParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRentalReadyConnectCallbackRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -9819,6 +9907,23 @@ func (c *Client) SubmitVrboCredentials(ctx context.Context, body SubmitVrboCrede
 	return c.Client.Do(req)
 }
 
+// ZeevouConnectCallback Zeevou OAuth callback
+//
+// Zeevou's OAuth redirect after the host allows or denies access on Zeevou's consent screen. It finishes the Connect session and redirects the host to the hosted Connect page. Called by the host's browser, not by integrators.
+//
+// Corresponds with GET /v1/connect/zeevou/callback (the `ZeevouConnectCallback` operationId).
+func (c *Client) ZeevouConnectCallback(ctx context.Context, params *ZeevouConnectCallbackParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewZeevouConnectCallbackRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // DeleteConnection Disconnect provider
 //
 // Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
@@ -10109,6 +10214,10 @@ func (c *Client) ListConnectionUnits(ctx context.Context, id string, params *Lis
 // Filters: `platform` (`airbnb`|`booking`|`vrbo`|`website`|`email`), `status` (`open`|`archived` — `archived` is a stable no-op until the bit lands on `message_threads`).
 //
 // **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
+//
+// **Order:** newest conversation first (by when the conversation started), unless you pass `updated_since`.
+//
+// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations with activity (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`). Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
 //
 // Corresponds with GET /v1/conversations (the `ListConversations` operationId).
 func (c *Client) ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10668,7 +10777,7 @@ func (c *Client) GetAuthHealth(ctx context.Context, reqEditors ...RequestEditorF
 //
 // Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
 //
-// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is failed calendar pushes over finished ones in the last 3 hours (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
+// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is calendar pushes VRBO refused over finished ones in the last 3 hours; failures inside Repull's own connector are reported apart as `vrbo.connector_errors` and do not count (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 //
 // Corresponds with GET /v1/health/channels/{channel} (the `GetChannelHealth` operationId).
 func (c *Client) GetChannelHealth(ctx context.Context, channel GetChannelHealthParamsChannel, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -10707,6 +10816,40 @@ func (c *Client) GetMcpHealth(ctx context.Context, reqEditors ...RequestEditorFn
 // Corresponds with GET /v1/health/webhooks (the `GetWebhooksHealth` operationId).
 func (c *Client) GetWebhooksHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetWebhooksHealthRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListHotels List hotels
+//
+// Your workspace's hotels: hotels from a hotel PMS (Cloudbeds, Mews) and Booking.com properties with several room types or rooms. Each room type is a listing — `GET /v1/hotels/{id}` lists them with their room counts. A hotel itself is never booked: availability, prices and reservations live on its room types. See the Hotels & multi-unit guide.
+//
+// Corresponds with GET /v1/hotels (the `ListHotels` operationId).
+func (c *Client) ListHotels(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListHotelsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetHotel Get a hotel
+//
+// One hotel with its room types. `id` is from `GET /v1/hotels`, or a listing's `hotel.id`.
+//
+// Corresponds with GET /v1/hotels/{id} (the `GetHotel` operationId).
+func (c *Client) GetHotel(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetHotelRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -13490,6 +13633,23 @@ func (c *Client) TestFireWebhook(ctx context.Context, id openapi_types.UUID, eve
 	return c.Client.Do(req)
 }
 
+// ListWorkspaces List workspaces
+//
+// Every sub-workspace your workspace has opened, newest first: one per customer of yours, created by `POST /v1/connect` with `workspace` (or by Repull Migrate). Read or write a workspace's data by sending its `workspaceId` as `X-Workspace-Id`. Its webhook events arrive on your own webhook endpoints, tagged with `workspaceId`. Page with `pagination.nextCursor`.
+//
+// Corresponds with GET /v1/workspaces (the `ListWorkspaces` operationId).
+func (c *Client) ListWorkspaces(ctx context.Context, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWorkspacesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // NewBatchUpdateAvailabilityRequest calls the generic BatchUpdateAvailability builder with application/json body
 func NewBatchUpdateAvailabilityRequest(server string, body BatchUpdateAvailabilityJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -13638,6 +13798,33 @@ func NewUpdateAvailabilityRequestWithBody(server string, propertyId int, content
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetBillingRequest constructs an http.Request for the GetBilling method
+func NewGetBillingRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/billing")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -19363,7 +19550,7 @@ func NewSubmitOwnerrezCredentialsRequestWithBody(server string, contentType stri
 }
 
 // NewListConnectProvidersRequest constructs an http.Request for the ListConnectProviders method
-func NewListConnectProvidersRequest(server string) (*http.Request, error) {
+func NewListConnectProvidersRequest(server string, params *ListConnectProvidersParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -19379,6 +19566,107 @@ func NewListConnectProvidersRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.IncludeRequestOnly != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "includeRequestOnly", *params.IncludeRequestOnly, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRentalReadyConnectCallbackRequest constructs an http.Request for the RentalReadyConnectCallback method
+func NewRentalReadyConnectCallbackRequest(server string, params *RentalReadyConnectCallbackParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/rentalready/callback")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Code != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "code", *params.Code, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "state", params.State, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.Error != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "error", *params.Error, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -19765,6 +20053,80 @@ func NewSubmitVrboCredentialsRequestWithBody(server string, contentType string, 
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewZeevouConnectCallbackRequest constructs an http.Request for the ZeevouConnectCallback method
+func NewZeevouConnectCallbackRequest(server string, params *ZeevouConnectCallbackParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/zeevou/callback")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Code != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "code", *params.Code, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "state", params.State, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.Error != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "error", *params.Error, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -20311,6 +20673,18 @@ func NewListConversationsRequest(server string, params *ListConversationsParams)
 		if params.Platform != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "platform", *params.Platform, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.UpdatedSince != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "updated_since", *params.UpdatedSince, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date-time"}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -21291,6 +21665,67 @@ func NewGetWebhooksHealthRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/v1/health/webhooks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListHotelsRequest constructs an http.Request for the ListHotels method
+func NewListHotelsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hotels")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetHotelRequest constructs an http.Request for the GetHotel method
+func NewGetHotelRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hotels/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -26374,6 +26809,84 @@ func NewTestFireWebhookRequest(server string, id openapi_types.UUID, eventType W
 	return req, nil
 }
 
+// NewListWorkspacesRequest constructs an http.Request for the ListWorkspaces method
+func NewListWorkspacesRequest(server string, params *ListWorkspacesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ExternalRef != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "externalRef", *params.ExternalRef, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -26487,18 +27000,27 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /v1/availability/{propertyId} (the `UpdateAvailability` operationId).
 	UpdateAvailabilityWithResponse(ctx context.Context, propertyId int, body UpdateAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAvailabilityClientResponse, error)
 
-	// CreateBillingCheckoutWithBodyWithResponse Create checkout session
+	// GetBillingWithResponse Get plan and usage
 	//
-	// Redirect user to Stripe checkout.
+	// The workspace's plan, its request limits, usage this period, and where the owner manages the plan. Same numbers as `GET /v1/usage/tier`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/billing (the `GetBilling` operationId).
+	GetBillingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBillingClientResponse, error)
+
+	// CreateBillingCheckoutWithBodyWithResponse Start an upgrade
+	//
+	// Returns the URL where the workspace owner upgrades to Starter. Plans above Starter are set up with the Repull team and return `422 billing_error` with the next step.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/billing (the `CreateBillingCheckout` operationId).
 	CreateBillingCheckoutWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBillingCheckoutClientResponse, error)
 
-	// CreateBillingCheckoutWithResponse Create checkout session
+	// CreateBillingCheckoutWithResponse Start an upgrade
 	//
-	// Redirect user to Stripe checkout.
+	// Returns the URL where the workspace owner upgrades to Starter. Plans above Starter are set up with the Repull team and return `422 billing_error` with the next step.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -26832,6 +27354,10 @@ type ClientWithResponsesInterface interface {
 	// GetAirbnbListingAvailabilityWithResponse Get Airbnb availability
 	//
 	// Read the per-day availability calendar for an Airbnb listing. Returns one row per day including price overrides, min-stay, and blocked status.
+	//
+	// The calendar is served from Repull's stored copy, refreshed by the periodic sync. A successful calendar write through `PUT .../availability` or `PUT .../pricing` (`type: "calendar"`) updates the stored days immediately, so reading back right after a write returns the values you published. Changes made directly on Airbnb appear after the next sync (`dataFreshness.lastSyncedAt`).
+	//
+	// **Coverage:** with `start_date` + `end_date`, `data.coverage` gives `{ from, to }`, the first and last stored date for the listing (the sync keeps about 12 months ahead). A date outside that window is not stored, so a missing date there means "not covered", not "nothing set". Request it again once `coverage.to` reaches it.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -29195,7 +29721,16 @@ type ClientWithResponsesInterface interface {
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/connect/providers (the `ListConnectProviders` operationId).
-	ListConnectProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectProvidersClientResponse, error)
+	ListConnectProvidersWithResponse(ctx context.Context, params *ListConnectProvidersParams, reqEditors ...RequestEditorFn) (*ListConnectProvidersClientResponse, error)
+
+	// RentalReadyConnectCallbackWithResponse RentalReady OAuth callback
+	//
+	// RentalReady's OAuth redirect after the host allows or denies access on RentalReady's consent screen. It finishes the Connect session and redirects the host to the hosted Connect page. Called by the host's browser, not by integrators.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/rentalready/callback (the `RentalReadyConnectCallback` operationId).
+	RentalReadyConnectCallbackWithResponse(ctx context.Context, params *RentalReadyConnectCallbackParams, reqEditors ...RequestEditorFn) (*RentalReadyConnectCallbackClientResponse, error)
 
 	// ResumeConnectWithResponse Open a connection's fix link
 	//
@@ -29378,6 +29913,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connect/vrbo/credentials (the `SubmitVrboCredentials` operationId).
 	SubmitVrboCredentialsWithResponse(ctx context.Context, body SubmitVrboCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitVrboCredentialsClientResponse, error)
 
+	// ZeevouConnectCallbackWithResponse Zeevou OAuth callback
+	//
+	// Zeevou's OAuth redirect after the host allows or denies access on Zeevou's consent screen. It finishes the Connect session and redirects the host to the hosted Connect page. Called by the host's browser, not by integrators.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/zeevou/callback (the `ZeevouConnectCallback` operationId).
+	ZeevouConnectCallbackWithResponse(ctx context.Context, params *ZeevouConnectCallbackParams, reqEditors ...RequestEditorFn) (*ZeevouConnectCallbackClientResponse, error)
+
 	// DeleteConnectionWithResponse Disconnect provider
 	//
 	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
@@ -29548,6 +30092,10 @@ type ClientWithResponsesInterface interface {
 	// Filters: `platform` (`airbnb`|`booking`|`vrbo`|`website`|`email`), `status` (`open`|`archived` — `archived` is a stable no-op until the bit lands on `message_threads`).
 	//
 	// **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
+	//
+	// **Order:** newest conversation first (by when the conversation started), unless you pass `updated_since`.
+	//
+	// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations with activity (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`). Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -29907,7 +30455,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
 	//
-	// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is failed calendar pushes over finished ones in the last 3 hours (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
+	// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is calendar pushes VRBO refused over finished ones in the last 3 hours; failures inside Repull's own connector are reported apart as `vrbo.connector_errors` and do not count (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -29931,6 +30479,24 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/health/webhooks (the `GetWebhooksHealth` operationId).
 	GetWebhooksHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetWebhooksHealthClientResponse, error)
+
+	// ListHotelsWithResponse List hotels
+	//
+	// Your workspace's hotels: hotels from a hotel PMS (Cloudbeds, Mews) and Booking.com properties with several room types or rooms. Each room type is a listing — `GET /v1/hotels/{id}` lists them with their room counts. A hotel itself is never booked: availability, prices and reservations live on its room types. See the Hotels & multi-unit guide.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/hotels (the `ListHotels` operationId).
+	ListHotelsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListHotelsClientResponse, error)
+
+	// GetHotelWithResponse Get a hotel
+	//
+	// One hotel with its room types. `id` is from `GET /v1/hotels`, or a listing's `hotel.id`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/hotels/{id} (the `GetHotel` operationId).
+	GetHotelWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetHotelClientResponse, error)
 
 	// ListInquiriesWithResponse List inquiries
 	//
@@ -31652,6 +32218,15 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/webhooks/{id}/test/{event_type} (the `TestFireWebhook` operationId).
 	TestFireWebhookWithResponse(ctx context.Context, id openapi_types.UUID, eventType WebhookEventType, reqEditors ...RequestEditorFn) (*TestFireWebhookClientResponse, error)
+
+	// ListWorkspacesWithResponse List workspaces
+	//
+	// Every sub-workspace your workspace has opened, newest first: one per customer of yours, created by `POST /v1/connect` with `workspace` (or by Repull Migrate). Read or write a workspace's data by sending its `workspaceId` as `X-Workspace-Id`. Its webhook events arrive on your own webhook endpoints, tagged with `workspaceId`. Page with `pagination.nextCursor`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/workspaces (the `ListWorkspaces` operationId).
+	ListWorkspacesWithResponse(ctx context.Context, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*ListWorkspacesClientResponse, error)
 }
 
 type BatchUpdateAvailabilityClientResponse struct {
@@ -31665,6 +32240,8 @@ type BatchUpdateAvailabilityClientResponse struct {
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UnprocessableEntity
 }
@@ -31687,6 +32264,11 @@ func (r BatchUpdateAvailabilityClientResponse) GetJSON403() *ListingInactive {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r BatchUpdateAvailabilityClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r BatchUpdateAvailabilityClientResponse) GetJSON409() *Error {
+	return r.JSON409
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -31796,6 +32378,8 @@ type UpdateAvailabilityClientResponse struct {
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
 	// JSON422 the response for an HTTP 422 `application/json` response
 	JSON422 *UnprocessableEntity
 }
@@ -31818,6 +32402,11 @@ func (r UpdateAvailabilityClientResponse) GetJSON403() *ListingInactive {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r UpdateAvailabilityClientResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r UpdateAvailabilityClientResponse) GetJSON409() *Error {
+	return r.JSON409
 }
 
 // GetJSON422 returns the response for an HTTP 422 `application/json` response
@@ -31854,9 +32443,107 @@ func (r UpdateAvailabilityClientResponse) ContentType() string {
 	return ""
 }
 
+type GetBillingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Limits *struct {
+			// DailyRequests null = no limit
+			DailyRequests *int `json:"dailyRequests,omitempty"`
+
+			// MonthlyRequests null = no limit
+			MonthlyRequests *int `json:"monthlyRequests,omitempty"`
+		} `json:"limits,omitempty"`
+
+		// ManageUrl Example: https://repull.dev/dashboard/settings
+		ManageUrl *string `json:"manageUrl,omitempty"`
+
+		// Plan Example: starter
+		Plan     *string    `json:"plan,omitempty"`
+		ResetsAt *time.Time `json:"resetsAt,omitempty"`
+		Used     *struct {
+			DailyRequests   *int `json:"dailyRequests,omitempty"`
+			MonthlyRequests *int `json:"monthlyRequests,omitempty"`
+		} `json:"used,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetBillingClientResponse) GetJSON200() *struct {
+	Limits *struct {
+		// DailyRequests null = no limit
+		DailyRequests *int `json:"dailyRequests,omitempty"`
+
+		// MonthlyRequests null = no limit
+		MonthlyRequests *int `json:"monthlyRequests,omitempty"`
+	} `json:"limits,omitempty"`
+
+	// ManageUrl Example: https://repull.dev/dashboard/settings
+	ManageUrl *string `json:"manageUrl,omitempty"`
+
+	// Plan Example: starter
+	Plan     *string    `json:"plan,omitempty"`
+	ResetsAt *time.Time `json:"resetsAt,omitempty"`
+	Used     *struct {
+		DailyRequests   *int `json:"dailyRequests,omitempty"`
+		MonthlyRequests *int `json:"monthlyRequests,omitempty"`
+	} `json:"used,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r GetBillingClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBillingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBillingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetBillingClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type CreateBillingCheckoutClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// CheckoutUrl Example: https://repull.dev/dashboard/settings
+		CheckoutUrl *string `json:"checkoutUrl,omitempty"`
+
+		// Plan Example: starter
+		Plan *string `json:"plan,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateBillingCheckoutClientResponse) GetJSON200() *struct {
+	// CheckoutUrl Example: https://repull.dev/dashboard/settings
+	CheckoutUrl *string `json:"checkoutUrl,omitempty"`
+
+	// Plan Example: starter
+	Plan *string `json:"plan,omitempty"`
+} {
+	return r.JSON200
 }
 
 // GetBody returns the raw response body bytes
@@ -40897,6 +41584,40 @@ func (r ListConnectProvidersClientResponse) ContentType() string {
 	return ""
 }
 
+type RentalReadyConnectCallbackClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r RentalReadyConnectCallbackClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RentalReadyConnectCallbackClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RentalReadyConnectCallbackClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RentalReadyConnectCallbackClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // ResumeConnectClientResponse302Headers the declared response headers of an HTTP 302 response for ResumeConnect
 type ResumeConnectClientResponse302Headers struct {
 	Location *string
@@ -41450,6 +42171,40 @@ func (r SubmitVrboCredentialsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r SubmitVrboCredentialsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ZeevouConnectCallbackClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// GetBody returns the raw response body bytes
+func (r ZeevouConnectCallbackClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ZeevouConnectCallbackClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ZeevouConnectCallbackClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ZeevouConnectCallbackClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -44120,6 +44875,218 @@ func (r GetWebhooksHealthClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetWebhooksHealthClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListHotelsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]struct {
+			City *string `json:"city,omitempty"`
+
+			// Id A Repull hotel id, or `booking:<hotelId>` for a Booking.com property.
+			//
+			// Example: 30910
+			Id   *string `json:"id,omitempty"`
+			Name *string `json:"name,omitempty"`
+
+			// Provider Example: cloudbeds
+			Provider      *string `json:"provider,omitempty"`
+			RoomTypeCount *int    `json:"roomTypeCount,omitempty"`
+
+			// Source `pms`: a hotel PMS (Cloudbeds, Mews) owns rooms and room counts. `booking`: a Booking.com property; room counts are the room count on Booking.com.
+			Source *ListHotels200JSONResponseBodyDataSource `json:"source,omitempty"`
+
+			// UnitCount Rooms across all room types.
+			UnitCount *int `json:"unitCount,omitempty"`
+		} `json:"data,omitempty"`
+		Pagination *struct {
+			HasMore    *bool   `json:"hasMore,omitempty"`
+			NextCursor *string `json:"nextCursor,omitempty"`
+			Total      *int    `json:"total,omitempty"`
+		} `json:"pagination,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListHotelsClientResponse) GetJSON200() *struct {
+	Data *[]struct {
+		City *string `json:"city,omitempty"`
+
+		// Id A Repull hotel id, or `booking:<hotelId>` for a Booking.com property.
+		//
+		// Example: 30910
+		Id   *string `json:"id,omitempty"`
+		Name *string `json:"name,omitempty"`
+
+		// Provider Example: cloudbeds
+		Provider      *string `json:"provider,omitempty"`
+		RoomTypeCount *int    `json:"roomTypeCount,omitempty"`
+
+		// Source `pms`: a hotel PMS (Cloudbeds, Mews) owns rooms and room counts. `booking`: a Booking.com property; room counts are the room count on Booking.com.
+		Source *ListHotels200JSONResponseBodyDataSource `json:"source,omitempty"`
+
+		// UnitCount Rooms across all room types.
+		UnitCount *int `json:"unitCount,omitempty"`
+	} `json:"data,omitempty"`
+	Pagination *struct {
+		HasMore    *bool   `json:"hasMore,omitempty"`
+		NextCursor *string `json:"nextCursor,omitempty"`
+		Total      *int    `json:"total,omitempty"`
+	} `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListHotelsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetBody returns the raw response body bytes
+func (r ListHotelsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListHotelsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListHotelsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListHotelsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetHotelClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		City *string `json:"city,omitempty"`
+
+		// Id A Repull hotel id, or `booking:<hotelId>` for a Booking.com property.
+		//
+		// Example: 30910
+		Id   *string `json:"id,omitempty"`
+		Name *string `json:"name,omitempty"`
+
+		// Provider Example: cloudbeds
+		Provider      *string `json:"provider,omitempty"`
+		RoomTypeCount *int    `json:"roomTypeCount,omitempty"`
+		RoomTypes     *[]struct {
+			// ListingId The room type's listing id — use it with every /v1/listings, /v1/availability and /v1/reservations endpoint.
+			ListingId *string `json:"listingId,omitempty"`
+			Name      *string `json:"name,omitempty"`
+
+			// UnitCount Rooms of this type.
+			UnitCount *int `json:"unitCount,omitempty"`
+		} `json:"roomTypes,omitempty"`
+
+		// Source `pms`: a hotel PMS (Cloudbeds, Mews) owns rooms and room counts. `booking`: a Booking.com property; room counts are the room count on Booking.com.
+		Source *GetHotel200JSONResponseBodySource `json:"source,omitempty"`
+
+		// UnitCount Rooms across all room types.
+		UnitCount *int `json:"unitCount,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetHotelClientResponse) GetJSON200() *struct {
+	City *string `json:"city,omitempty"`
+
+	// Id A Repull hotel id, or `booking:<hotelId>` for a Booking.com property.
+	//
+	// Example: 30910
+	Id   *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// Provider Example: cloudbeds
+	Provider      *string `json:"provider,omitempty"`
+	RoomTypeCount *int    `json:"roomTypeCount,omitempty"`
+	RoomTypes     *[]struct {
+		// ListingId The room type's listing id — use it with every /v1/listings, /v1/availability and /v1/reservations endpoint.
+		ListingId *string `json:"listingId,omitempty"`
+		Name      *string `json:"name,omitempty"`
+
+		// UnitCount Rooms of this type.
+		UnitCount *int `json:"unitCount,omitempty"`
+	} `json:"roomTypes,omitempty"`
+
+	// Source `pms`: a hotel PMS (Cloudbeds, Mews) owns rooms and room counts. `booking`: a Booking.com property; room counts are the room count on Booking.com.
+	Source *GetHotel200JSONResponseBodySource `json:"source,omitempty"`
+
+	// UnitCount Rooms across all room types.
+	UnitCount *int `json:"unitCount,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetHotelClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetHotelClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetHotelClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetHotelClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetHotelClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetHotelClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetHotelClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -49391,6 +50358,20 @@ type GetUsageSummaryClientResponse struct {
 			OperationId  *string  `json:"operationId,omitempty"`
 			RequestCount *int     `json:"requestCount,omitempty"`
 		} `json:"breakdown,omitempty"`
+
+		// Credits Pay-as-you-go wallet. Requests beyond your plan's monthly quota keep being served while `active`, billed at `usdPer1000Requests`. Top up at https://repull.dev/dashboard/billing.
+		Credits *struct {
+			// Active Positive balance and not paused — usage beyond the monthly quota is being served.
+			Active     *bool    `json:"active,omitempty"`
+			BalanceUsd *float32 `json:"balanceUsd,omitempty"`
+			Paused     *bool    `json:"paused,omitempty"`
+
+			// RequestsCovered Requests beyond your quota the current balance pays for.
+			RequestsCovered *int `json:"requestsCovered,omitempty"`
+
+			// UsdPer1000Requests Example: 1
+			UsdPer1000Requests *float32 `json:"usdPer1000Requests,omitempty"`
+		} `json:"credits,omitempty"`
 		DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
 		Limits        *struct {
 			DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
@@ -49445,6 +50426,20 @@ func (r GetUsageSummaryClientResponse) GetJSON200() *struct {
 		OperationId  *string  `json:"operationId,omitempty"`
 		RequestCount *int     `json:"requestCount,omitempty"`
 	} `json:"breakdown,omitempty"`
+
+	// Credits Pay-as-you-go wallet. Requests beyond your plan's monthly quota keep being served while `active`, billed at `usdPer1000Requests`. Top up at https://repull.dev/dashboard/billing.
+	Credits *struct {
+		// Active Positive balance and not paused — usage beyond the monthly quota is being served.
+		Active     *bool    `json:"active,omitempty"`
+		BalanceUsd *float32 `json:"balanceUsd,omitempty"`
+		Paused     *bool    `json:"paused,omitempty"`
+
+		// RequestsCovered Requests beyond your quota the current balance pays for.
+		RequestsCovered *int `json:"requestsCovered,omitempty"`
+
+		// UsdPer1000Requests Example: 1
+		UsdPer1000Requests *float32 `json:"usdPer1000Requests,omitempty"`
+	} `json:"credits,omitempty"`
 	DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
 	Limits        *struct {
 		DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
@@ -50152,6 +51147,82 @@ func (r TestFireWebhookClientResponse) ContentType() string {
 	return ""
 }
 
+type ListWorkspacesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data       *[]Workspace `json:"data,omitempty"`
+		Pagination *struct {
+			HasMore    *bool   `json:"hasMore,omitempty"`
+			NextCursor *string `json:"nextCursor,omitempty"`
+			Total      *int    `json:"total,omitempty"`
+		} `json:"pagination,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListWorkspacesClientResponse) GetJSON200() *struct {
+	Data       *[]Workspace `json:"data,omitempty"`
+	Pagination *struct {
+		HasMore    *bool   `json:"hasMore,omitempty"`
+		NextCursor *string `json:"nextCursor,omitempty"`
+		Total      *int    `json:"total,omitempty"`
+	} `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListWorkspacesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListWorkspacesClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListWorkspacesClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListWorkspacesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWorkspacesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWorkspacesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListWorkspacesClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // BatchUpdateAvailabilityWithBodyWithResponse Update availability across many properties
 //
 // Applies ONE settings object across up to 500 properties and pushes the result to every connected channel.
@@ -50251,9 +51322,24 @@ func (c *ClientWithResponses) UpdateAvailabilityWithResponse(ctx context.Context
 	return ParseUpdateAvailabilityClientResponse(rsp)
 }
 
-// CreateBillingCheckoutWithBodyWithResponse Create checkout session
+// GetBillingWithResponse Get plan and usage
 //
-// Redirect user to Stripe checkout.
+// The workspace's plan, its request limits, usage this period, and where the owner manages the plan. Same numbers as `GET /v1/usage/tier`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/billing (the `GetBilling` operationId).
+func (c *ClientWithResponses) GetBillingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetBillingClientResponse, error) {
+	rsp, err := c.GetBilling(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBillingClientResponse(rsp)
+}
+
+// CreateBillingCheckoutWithBodyWithResponse Start an upgrade
+//
+// Returns the URL where the workspace owner upgrades to Starter. Plans above Starter are set up with the Repull team and return `422 billing_error` with the next step.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -50266,9 +51352,9 @@ func (c *ClientWithResponses) CreateBillingCheckoutWithBodyWithResponse(ctx cont
 	return ParseCreateBillingCheckoutClientResponse(rsp)
 }
 
-// CreateBillingCheckoutWithResponse Create checkout session
+// CreateBillingCheckoutWithResponse Start an upgrade
 //
-// Redirect user to Stripe checkout.
+// Returns the URL where the workspace owner upgrades to Starter. Plans above Starter are set up with the Repull team and return `422 billing_error` with the next step.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -50728,6 +51814,10 @@ func (c *ClientWithResponses) UpdateAirbnbListingAmenitiesWithResponse(ctx conte
 // GetAirbnbListingAvailabilityWithResponse Get Airbnb availability
 //
 // Read the per-day availability calendar for an Airbnb listing. Returns one row per day including price overrides, min-stay, and blocked status.
+//
+// The calendar is served from Repull's stored copy, refreshed by the periodic sync. A successful calendar write through `PUT .../availability` or `PUT .../pricing` (`type: "calendar"`) updates the stored days immediately, so reading back right after a write returns the values you published. Changes made directly on Airbnb appear after the next sync (`dataFreshness.lastSyncedAt`).
+//
+// **Coverage:** with `start_date` + `end_date`, `data.coverage` gives `{ from, to }`, the first and last stored date for the listing (the sync keeps about 12 months ahead). A date outside that window is not stored, so a missing date there means "not covered", not "nothing set". Request it again once `coverage.to` reaches it.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -53999,12 +55089,27 @@ func (c *ClientWithResponses) SubmitOwnerrezCredentialsWithResponse(ctx context.
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/connect/providers (the `ListConnectProviders` operationId).
-func (c *ClientWithResponses) ListConnectProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListConnectProvidersClientResponse, error) {
-	rsp, err := c.ListConnectProviders(ctx, reqEditors...)
+func (c *ClientWithResponses) ListConnectProvidersWithResponse(ctx context.Context, params *ListConnectProvidersParams, reqEditors ...RequestEditorFn) (*ListConnectProvidersClientResponse, error) {
+	rsp, err := c.ListConnectProviders(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseListConnectProvidersClientResponse(rsp)
+}
+
+// RentalReadyConnectCallbackWithResponse RentalReady OAuth callback
+//
+// RentalReady's OAuth redirect after the host allows or denies access on RentalReady's consent screen. It finishes the Connect session and redirects the host to the hosted Connect page. Called by the host's browser, not by integrators.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/rentalready/callback (the `RentalReadyConnectCallback` operationId).
+func (c *ClientWithResponses) RentalReadyConnectCallbackWithResponse(ctx context.Context, params *RentalReadyConnectCallbackParams, reqEditors ...RequestEditorFn) (*RentalReadyConnectCallbackClientResponse, error) {
+	rsp, err := c.RentalReadyConnectCallback(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRentalReadyConnectCallbackClientResponse(rsp)
 }
 
 // ResumeConnectWithResponse Open a connection's fix link
@@ -54266,6 +55371,21 @@ func (c *ClientWithResponses) SubmitVrboCredentialsWithResponse(ctx context.Cont
 	return ParseSubmitVrboCredentialsClientResponse(rsp)
 }
 
+// ZeevouConnectCallbackWithResponse Zeevou OAuth callback
+//
+// Zeevou's OAuth redirect after the host allows or denies access on Zeevou's consent screen. It finishes the Connect session and redirects the host to the hosted Connect page. Called by the host's browser, not by integrators.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/zeevou/callback (the `ZeevouConnectCallback` operationId).
+func (c *ClientWithResponses) ZeevouConnectCallbackWithResponse(ctx context.Context, params *ZeevouConnectCallbackParams, reqEditors ...RequestEditorFn) (*ZeevouConnectCallbackClientResponse, error) {
+	rsp, err := c.ZeevouConnectCallback(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseZeevouConnectCallbackClientResponse(rsp)
+}
+
 // DeleteConnectionWithResponse Disconnect provider
 //
 // Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
@@ -54514,6 +55634,10 @@ func (c *ClientWithResponses) ListConnectionUnitsWithResponse(ctx context.Contex
 // Filters: `platform` (`airbnb`|`booking`|`vrbo`|`website`|`email`), `status` (`open`|`archived` — `archived` is a stable no-op until the bit lands on `message_threads`).
 //
 // **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
+//
+// **Order:** newest conversation first (by when the conversation started), unless you pass `updated_since`.
+//
+// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations with activity (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`). Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -55005,7 +56129,7 @@ func (c *ClientWithResponses) GetAuthHealthWithResponse(ctx context.Context, req
 //
 // Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
 //
-// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is failed calendar pushes over finished ones in the last 3 hours (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
+// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is calendar pushes VRBO refused over finished ones in the last 3 hours; failures inside Repull's own connector are reported apart as `vrbo.connector_errors` and do not count (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -55046,6 +56170,36 @@ func (c *ClientWithResponses) GetWebhooksHealthWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseGetWebhooksHealthClientResponse(rsp)
+}
+
+// ListHotelsWithResponse List hotels
+//
+// Your workspace's hotels: hotels from a hotel PMS (Cloudbeds, Mews) and Booking.com properties with several room types or rooms. Each room type is a listing — `GET /v1/hotels/{id}` lists them with their room counts. A hotel itself is never booked: availability, prices and reservations live on its room types. See the Hotels & multi-unit guide.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/hotels (the `ListHotels` operationId).
+func (c *ClientWithResponses) ListHotelsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListHotelsClientResponse, error) {
+	rsp, err := c.ListHotels(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListHotelsClientResponse(rsp)
+}
+
+// GetHotelWithResponse Get a hotel
+//
+// One hotel with its room types. `id` is from `GET /v1/hotels`, or a listing's `hotel.id`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/hotels/{id} (the `GetHotel` operationId).
+func (c *ClientWithResponses) GetHotelWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetHotelClientResponse, error) {
+	rsp, err := c.GetHotel(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetHotelClientResponse(rsp)
 }
 
 // ListInquiriesWithResponse List inquiries
@@ -57463,6 +58617,21 @@ func (c *ClientWithResponses) TestFireWebhookWithResponse(ctx context.Context, i
 	return ParseTestFireWebhookClientResponse(rsp)
 }
 
+// ListWorkspacesWithResponse List workspaces
+//
+// Every sub-workspace your workspace has opened, newest first: one per customer of yours, created by `POST /v1/connect` with `workspace` (or by Repull Migrate). Read or write a workspace's data by sending its `workspaceId` as `X-Workspace-Id`. Its webhook events arrive on your own webhook endpoints, tagged with `workspaceId`. Page with `pagination.nextCursor`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/workspaces (the `ListWorkspaces` operationId).
+func (c *ClientWithResponses) ListWorkspacesWithResponse(ctx context.Context, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*ListWorkspacesClientResponse, error) {
+	rsp, err := c.ListWorkspaces(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListWorkspacesClientResponse(rsp)
+}
+
 // ParseBatchUpdateAvailabilityClientResponse parses an HTTP response from a BatchUpdateAvailabilityWithResponse call
 func ParseBatchUpdateAvailabilityClientResponse(rsp *http.Response) (*BatchUpdateAvailabilityClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -57504,6 +58673,13 @@ func ParseBatchUpdateAvailabilityClientResponse(rsp *http.Response) (*BatchUpdat
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
@@ -57606,12 +58782,64 @@ func ParseUpdateAvailabilityClientResponse(rsp *http.Response) (*UpdateAvailabil
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBillingClientResponse parses an HTTP response from a GetBillingWithResponse call
+func ParseGetBillingClientResponse(rsp *http.Response) (*GetBillingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBillingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Limits *struct {
+				// DailyRequests null = no limit
+				DailyRequests *int `json:"dailyRequests,omitempty"`
+
+				// MonthlyRequests null = no limit
+				MonthlyRequests *int `json:"monthlyRequests,omitempty"`
+			} `json:"limits,omitempty"`
+
+			// ManageUrl Example: https://repull.dev/dashboard/settings
+			ManageUrl *string `json:"manageUrl,omitempty"`
+
+			// Plan Example: starter
+			Plan     *string    `json:"plan,omitempty"`
+			ResetsAt *time.Time `json:"resetsAt,omitempty"`
+			Used     *struct {
+				DailyRequests   *int `json:"dailyRequests,omitempty"`
+				MonthlyRequests *int `json:"monthlyRequests,omitempty"`
+			} `json:"used,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
@@ -57629,6 +58857,25 @@ func ParseCreateBillingCheckoutClientResponse(rsp *http.Response) (*CreateBillin
 	response := &CreateBillingCheckoutClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// CheckoutUrl Example: https://repull.dev/dashboard/settings
+			CheckoutUrl *string `json:"checkoutUrl,omitempty"`
+
+			// Plan Example: starter
+			Plan *string `json:"plan,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case rsp.StatusCode == 422:
+		break // No content-type
+
 	}
 
 	return response, nil
@@ -64442,6 +65689,22 @@ func ParseListConnectProvidersClientResponse(rsp *http.Response) (*ListConnectPr
 	return response, nil
 }
 
+// ParseRentalReadyConnectCallbackClientResponse parses an HTTP response from a RentalReadyConnectCallbackWithResponse call
+func ParseRentalReadyConnectCallbackClientResponse(rsp *http.Response) (*RentalReadyConnectCallbackClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RentalReadyConnectCallbackClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseResumeConnectClientResponse parses an HTTP response from a ResumeConnectWithResponse call
 func ParseResumeConnectClientResponse(rsp *http.Response) (*ResumeConnectClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -64822,6 +66085,22 @@ func ParseSubmitVrboCredentialsClientResponse(rsp *http.Response) (*SubmitVrboCr
 		}
 		response.JSON422 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseZeevouConnectCallbackClientResponse parses an HTTP response from a ZeevouConnectCallbackWithResponse call
+func ParseZeevouConnectCallbackClientResponse(rsp *http.Response) (*ZeevouConnectCallbackClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ZeevouConnectCallbackClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
@@ -66632,6 +67911,137 @@ func ParseGetWebhooksHealthClientResponse(rsp *http.Response) (*GetWebhooksHealt
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListHotelsClientResponse parses an HTTP response from a ListHotelsWithResponse call
+func ParseListHotelsClientResponse(rsp *http.Response) (*ListHotelsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListHotelsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]struct {
+				City *string `json:"city,omitempty"`
+
+				// Id A Repull hotel id, or `booking:<hotelId>` for a Booking.com property.
+				//
+				// Example: 30910
+				Id   *string `json:"id,omitempty"`
+				Name *string `json:"name,omitempty"`
+
+				// Provider Example: cloudbeds
+				Provider      *string `json:"provider,omitempty"`
+				RoomTypeCount *int    `json:"roomTypeCount,omitempty"`
+
+				// Source `pms`: a hotel PMS (Cloudbeds, Mews) owns rooms and room counts. `booking`: a Booking.com property; room counts are the room count on Booking.com.
+				Source *ListHotels200JSONResponseBodyDataSource `json:"source,omitempty"`
+
+				// UnitCount Rooms across all room types.
+				UnitCount *int `json:"unitCount,omitempty"`
+			} `json:"data,omitempty"`
+			Pagination *struct {
+				HasMore    *bool   `json:"hasMore,omitempty"`
+				NextCursor *string `json:"nextCursor,omitempty"`
+				Total      *int    `json:"total,omitempty"`
+			} `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetHotelClientResponse parses an HTTP response from a GetHotelWithResponse call
+func ParseGetHotelClientResponse(rsp *http.Response) (*GetHotelClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetHotelClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			City *string `json:"city,omitempty"`
+
+			// Id A Repull hotel id, or `booking:<hotelId>` for a Booking.com property.
+			//
+			// Example: 30910
+			Id   *string `json:"id,omitempty"`
+			Name *string `json:"name,omitempty"`
+
+			// Provider Example: cloudbeds
+			Provider      *string `json:"provider,omitempty"`
+			RoomTypeCount *int    `json:"roomTypeCount,omitempty"`
+			RoomTypes     *[]struct {
+				// ListingId The room type's listing id — use it with every /v1/listings, /v1/availability and /v1/reservations endpoint.
+				ListingId *string `json:"listingId,omitempty"`
+				Name      *string `json:"name,omitempty"`
+
+				// UnitCount Rooms of this type.
+				UnitCount *int `json:"unitCount,omitempty"`
+			} `json:"roomTypes,omitempty"`
+
+			// Source `pms`: a hotel PMS (Cloudbeds, Mews) owns rooms and room counts. `booking`: a Booking.com property; room counts are the room count on Booking.com.
+			Source *GetHotel200JSONResponseBodySource `json:"source,omitempty"`
+
+			// UnitCount Rooms across all room types.
+			UnitCount *int `json:"unitCount,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -70698,6 +72108,20 @@ func ParseGetUsageSummaryClientResponse(rsp *http.Response) (*GetUsageSummaryCli
 				OperationId  *string  `json:"operationId,omitempty"`
 				RequestCount *int     `json:"requestCount,omitempty"`
 			} `json:"breakdown,omitempty"`
+
+			// Credits Pay-as-you-go wallet. Requests beyond your plan's monthly quota keep being served while `active`, billed at `usdPer1000Requests`. Top up at https://repull.dev/dashboard/billing.
+			Credits *struct {
+				// Active Positive balance and not paused — usage beyond the monthly quota is being served.
+				Active     *bool    `json:"active,omitempty"`
+				BalanceUsd *float32 `json:"balanceUsd,omitempty"`
+				Paused     *bool    `json:"paused,omitempty"`
+
+				// RequestsCovered Requests beyond your quota the current balance pays for.
+				RequestsCovered *int `json:"requestsCovered,omitempty"`
+
+				// UsdPer1000Requests Example: 1
+				UsdPer1000Requests *float32 `json:"usdPer1000Requests,omitempty"`
+			} `json:"credits,omitempty"`
 			DailyResetsAt *time.Time `json:"dailyResetsAt,omitempty"`
 			Limits        *struct {
 				DailyAiRequests *int `json:"dailyAiRequests,omitempty"`
@@ -71137,6 +72561,60 @@ func ParseTestFireWebhookClientResponse(rsp *http.Response) (*TestFireWebhookCli
 	response := &TestFireWebhookClientResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListWorkspacesClientResponse parses an HTTP response from a ListWorkspacesWithResponse call
+func ParseListWorkspacesClientResponse(rsp *http.Response) (*ListWorkspacesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWorkspacesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data       *[]Workspace `json:"data,omitempty"`
+			Pagination *struct {
+				HasMore    *bool   `json:"hasMore,omitempty"`
+				NextCursor *string `json:"nextCursor,omitempty"`
+				Total      *int    `json:"total,omitempty"`
+			} `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
 	}
 
 	return response, nil
