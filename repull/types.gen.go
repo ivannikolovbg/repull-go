@@ -5854,6 +5854,27 @@ func (e ListReviewsParamsReviewerRole) Valid() bool {
 	}
 }
 
+// Defines values for ListTransactionsParamsPlatform.
+const (
+	ListTransactionsParamsPlatformAirbnb  ListTransactionsParamsPlatform = "airbnb"
+	ListTransactionsParamsPlatformBooking ListTransactionsParamsPlatform = "booking"
+	ListTransactionsParamsPlatformVrbo    ListTransactionsParamsPlatform = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the ListTransactionsParamsPlatform enum.
+func (e ListTransactionsParamsPlatform) Valid() bool {
+	switch e {
+	case ListTransactionsParamsPlatformAirbnb:
+		return true
+	case ListTransactionsParamsPlatformBooking:
+		return true
+	case ListTransactionsParamsPlatformVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetUsageLogsParamsRange.
 const (
 	GetUsageLogsParamsRangeN1h  GetUsageLogsParamsRange = "1h"
@@ -11917,6 +11938,11 @@ type Reservation struct {
 	// Example: HMXYZ123
 	ConfirmationCode string `json:"confirmationCode"`
 
+	// ConversationId The conversation with this guest — pass it to `GET /v1/conversations/{id}` and `/v1/conversations/{id}/messages`. It is the same conversation from inquiry through pre-approval to the confirmed booking, and the same id the message webhooks carry, so a booking links straight to the messages that led to it. `null` when the channel has no conversation for this booking.
+	//
+	// Example: 164743
+	ConversationId *string `json:"conversationId,omitempty"`
+
 	// CreatedAt When the reservation row was created in Repull (not the booking-on-channel timestamp).
 	CreatedAt time.Time `json:"createdAt"`
 
@@ -11925,6 +11951,11 @@ type Reservation struct {
 	// Example: USD
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	Currency *string `json:"currency,omitempty"`
+
+	// ExternalThreadId The channel's own id for that conversation (Airbnb thread id, Booking.com conversation id, …). `null` when there is none.
+	//
+	// Example: 2680544213
+	ExternalThreadId *string `json:"externalThreadId,omitempty"`
 
 	// Financials Normalized money block. Always populated for paid reservations.
 	Financials *ReservationFinancials `json:"financials,omitempty"`
@@ -11940,8 +11971,18 @@ type Reservation struct {
 	// GuestName Pre-resolved display name (`firstName lastName`) from the joined guest row. Undefined when no first name is available.
 	GuestName *string `json:"guestName,omitempty"`
 
+	// GuestNotes What the guest wrote with the booking, as the channel sent it. Booking.com puts the estimated arrival time and special requests here. Free text, never parsed. `null` when the guest left none.
+	//
+	// Example: Approximate time of arrival: between 15:00 and 16:00
+	GuestNotes *string `json:"guestNotes,omitempty"`
+
 	// Id Internal Repull reservation ID
 	Id string `json:"id"`
+
+	// InquiryId The inquiry this booking came from (`GET /v1/inquiries`), when the guest asked before booking. When an inquiry turns into a booking, `inquiry.updated` fires with `status: "booked"` and this reservation's id. `null` for bookings with no inquiry.
+	//
+	// Example: 25173
+	InquiryId *string `json:"inquiryId,omitempty"`
 
 	// ListingId Internal Repull listing ID this reservation is on.
 	ListingId string `json:"listingId"`
@@ -13053,15 +13094,35 @@ type ReservationWebhookObject struct {
 	// Example: 2026-06-16
 	CheckoutDate openapi_types.Date `json:"checkoutDate"`
 
+	// ConversationId The conversation with this guest — pass it to `GET /v1/conversations/{id}` and `/v1/conversations/{id}/messages`. It is the same conversation from inquiry through pre-approval to the confirmed booking, and the same id the message webhooks carry, so a booking links straight to the messages that led to it. `null` when the channel has no conversation for this booking.
+	//
+	// Example: 164743
+	ConversationId *string `json:"conversationId,omitempty"`
+
 	// CustomerId Workspace (customer) id this reservation belongs to.
 	//
 	// Example: 1
 	CustomerId int `json:"customerId"`
 
+	// ExternalThreadId The channel's own id for that conversation (Airbnb thread id, Booking.com conversation id, …). `null` when there is none.
+	//
+	// Example: 2680544213
+	ExternalThreadId *string `json:"externalThreadId,omitempty"`
+
+	// GuestNotes What the guest wrote with the booking — on Booking.com, the estimated arrival time and special requests. Free text. `null` when there were none.
+	//
+	// Example: Approximate time of arrival: between 15:00 and 16:00
+	GuestNotes *string `json:"guestNotes,omitempty"`
+
 	// Id Repull-internal reservation id. Pass to `GET /v1/reservations/{id}`.
 	//
 	// Example: 900001
 	Id int `json:"id"`
+
+	// InquiryId The inquiry this booking came from (`GET /v1/inquiries`), when the guest asked before booking. When an inquiry turns into a booking, `inquiry.updated` fires with `status: "booked"` and this reservation's id. `null` for bookings with no inquiry.
+	//
+	// Example: 25173
+	InquiryId *string `json:"inquiryId,omitempty"`
 
 	// ListingId Repull listing id this reservation is on.
 	//
@@ -13409,6 +13470,88 @@ type SentAttachment struct {
 
 // SentAttachmentType defines model for SentAttachment.Type.
 type SentAttachmentType string
+
+// Transaction One row of the unified transactions & payments ledger: a payout (`isPayout: true`) or a reservation charge / refund, on any channel. `platform` is normalized — `booking` is Booking.com however the account was connected (never `booking_extranet`). For a payout, `amount` is the net the host received, `grossAmount` the guest-paid gross, and `fees` the deductions (commission, payments service fee, processing fee).
+type Transaction struct {
+	// Amount Net amount; for a payout, what the host received.
+	//
+	// Example: 18597.12
+	Amount *float32 `json:"amount,omitempty"`
+
+	// ConfirmationCode Example: 5463377687
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+
+	// Currency Example: NOK
+	Currency *string `json:"currency,omitempty"`
+
+	// Date Transaction / payout date (the channel's display form or ISO).
+	//
+	// Example: 27 Aug 2026
+	Date *string `json:"date,omitempty"`
+	Fees struct {
+		// Commission Channel commission deducted.
+		//
+		// Example: 3340.8
+		Commission    *float32 `json:"commission"`
+		ProcessingFee *float32 `json:"processingFee"`
+
+		// ServiceFee Payments service fee deducted.
+		//
+		// Example: 334.08
+		ServiceFee *float32 `json:"serviceFee"`
+	} `json:"fees"`
+
+	// GrossAmount Guest-paid gross (payouts).
+	//
+	// Example: 22272
+	GrossAmount *float32 `json:"grossAmount,omitempty"`
+
+	// IsPayout `true` when this is money that reached the host (a payout).
+	IsPayout  bool `json:"isPayout"`
+	ListingId *int `json:"listingId,omitempty"`
+	Payout    struct {
+		// BankDestination Masked destination bank account the payout was sent to (Booking.com payouts, from the statement PDF). Null on channels/rows without one.
+		//
+		// Example: NO***********404
+		BankDestination *string `json:"bankDestination,omitempty"`
+
+		// PaidOutAmount On a payout row: the net paid out to the host.
+		//
+		// Example: 18597.12
+		PaidOutAmount *float32 `json:"paidOutAmount"`
+		PayoutDate    *string  `json:"payoutDate"`
+
+		// PayoutId Reference of the payout this row belongs to.
+		//
+		// Example: gkvDj0Jm9ZaA6IiO
+		PayoutId *string `json:"payoutId"`
+
+		// StatementUrl Link to the channel's original payout statement PDF — the authoritative settlement record (Booking.com). Null when none.
+		StatementUrl *string `json:"statementUrl,omitempty"`
+	} `json:"payout"`
+
+	// Platform Normalized channel: `airbnb`, `booking` (Booking.com, however connected — never `booking_extranet`), or `vrbo`.
+	//
+	// Example: booking
+	Platform      *string `json:"platform"`
+	ReservationId *int    `json:"reservationId,omitempty"`
+
+	// Status Normalized settlement status (`COMPLETED` / `UPCOMING`; the raw value passes through when it maps to neither).
+	//
+	// Example: COMPLETED
+	Status   *string    `json:"status,omitempty"`
+	SyncedAt *time.Time `json:"syncedAt,omitempty"`
+
+	// TransactionId Stable id of the transaction (the underlying payment id). Upsert on it.
+	//
+	// Example: booking_payout_5463377687_bank_transfer
+	TransactionId *string `json:"transactionId"`
+
+	// Type Transaction type: `Payout`, `Reservation`, `Refund`, …
+	//
+	// Example: Payout
+	Type *string `json:"type,omitempty"`
+}
 
 // UsageQuotaWarningEvent defines model for UsageQuotaWarningEvent.
 type UsageQuotaWarningEvent struct {
@@ -14871,6 +15014,24 @@ type BookingSetupJSONBody_LegalEntity struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// ListBookingTransactionsParams defines parameters for ListBookingTransactions.
+type ListBookingTransactionsParams struct {
+	// Type Filter by transaction type, e.g. `Payout`, `Reservation`, `Refund`.
+	Type *string `form:"type,omitempty" json:"type,omitempty"`
+
+	// Status Filter by raw status.
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// IsPayout When `true`, only payout rows (money that reached the host).
+	IsPayout *bool `form:"is_payout,omitempty" json:"is_payout,omitempty"`
+
+	// Limit Page size (default 100, max 500).
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque pagination cursor from a previous `pagination.nextCursor`.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
 // DeleteBookingWebhookParams defines parameters for DeleteBookingWebhook.
 type DeleteBookingWebhookParams struct {
 	// NotificationType Booking.com CNS notification type to unsubscribe.
@@ -16322,6 +16483,30 @@ type ReplyToReviewJSONBody struct {
 	// Name VRBO: the name the response is signed with (the connected account's host name otherwise). Ignored on other channels.
 	Name *string `json:"name,omitempty"`
 }
+
+// ListTransactionsParams defines parameters for ListTransactions.
+type ListTransactionsParams struct {
+	// Platform Filter to one channel: `airbnb`, `booking` (Booking.com, however connected), or `vrbo`. Omit for all channels.
+	Platform *ListTransactionsParamsPlatform `form:"platform,omitempty" json:"platform,omitempty"`
+
+	// Type Filter by transaction type, e.g. `Payout`, `Reservation`, `Refund`.
+	Type *string `form:"type,omitempty" json:"type,omitempty"`
+
+	// Status Filter by raw status.
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// IsPayout When `true`, only payout rows (money that reached the host).
+	IsPayout *bool `form:"is_payout,omitempty" json:"is_payout,omitempty"`
+
+	// Limit Page size (default 100, max 500).
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque pagination cursor from a previous `pagination.nextCursor`.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+}
+
+// ListTransactionsParamsPlatform defines parameters for ListTransactions.
+type ListTransactionsParamsPlatform string
 
 // GetUsageLogsParams defines parameters for GetUsageLogs.
 type GetUsageLogsParams struct {

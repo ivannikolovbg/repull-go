@@ -2140,6 +2140,13 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
 	BookingSetup(ctx context.Context, body BookingSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListBookingTransactions List Booking.com transactions (settlement ledger)
+	//
+	// The Booking.com settlement ledger for this workspace: every payout (Payments by Booking.com → bank transfer) and reservation charge, with the gross the guest paid, Booking's commission and payments service fee, and the net paid out, each tied to its reservation. Official Connectivity-API and extranet-connected accounts are returned together as one Booking.com — there is no `booking_extranet` distinction and nothing extra to request. Cursor-paginated, newest first. (For all channels at once, use `/v1/transactions`.)
+	//
+	// Corresponds with GET /v1/channels/booking/transactions (the `ListBookingTransactions` operationId).
+	ListBookingTransactions(ctx context.Context, params *ListBookingTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteBookingWebhook Unsubscribe from a Booking.com notification
 	//
 	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
@@ -4939,6 +4946,13 @@ type ClientInterface interface {
 	//
 	// Corresponds with PATCH /v1/schema/custom/{id} (the `UpdateCustomSchema` operationId).
 	UpdateCustomSchema(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListTransactions List transactions & payments (unified ledger)
+	//
+	// Every channel's money in one ledger: payouts that reached the host, reservation charges, refunds and adjustments, across Airbnb, Booking.com and Vrbo. Each row carries a normalized `platform` — `booking` always means Booking.com however the account was connected (official API or extranet); there is no `booking_extranet`, and `?platform=booking` matches all of them. A payout row's `amount` is the net the host received; `grossAmount` is what the guest paid and `fees` the deductions (commission, payments service fee, processing fee). Cursor-paginated, newest first.
+	//
+	// Corresponds with GET /v1/transactions (the `ListTransactions` operationId).
+	ListTransactions(ctx context.Context, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUsageLogs List API request logs
 	//
@@ -8405,6 +8419,23 @@ func (c *Client) BookingSetupWithBody(ctx context.Context, contentType string, b
 // Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
 func (c *Client) BookingSetup(ctx context.Context, body BookingSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewBookingSetupRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListBookingTransactions List Booking.com transactions (settlement ledger)
+//
+// The Booking.com settlement ledger for this workspace: every payout (Payments by Booking.com → bank transfer) and reservation charge, with the gross the guest paid, Booking's commission and payments service fee, and the net paid out, each tied to its reservation. Official Connectivity-API and extranet-connected accounts are returned together as one Booking.com — there is no `booking_extranet` distinction and nothing extra to request. Cursor-paginated, newest first. (For all channels at once, use `/v1/transactions`.)
+//
+// Corresponds with GET /v1/channels/booking/transactions (the `ListBookingTransactions` operationId).
+func (c *Client) ListBookingTransactions(ctx context.Context, params *ListBookingTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBookingTransactionsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -13255,6 +13286,23 @@ func (c *Client) UpdateCustomSchemaWithBody(ctx context.Context, id openapi_type
 // Corresponds with PATCH /v1/schema/custom/{id} (the `UpdateCustomSchema` operationId).
 func (c *Client) UpdateCustomSchema(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateCustomSchemaRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListTransactions List transactions & payments (unified ledger)
+//
+// Every channel's money in one ledger: payouts that reached the host, reservation charges, refunds and adjustments, across Airbnb, Booking.com and Vrbo. Each row carries a normalized `platform` — `booking` always means Booking.com however the account was connected (official API or extranet); there is no `booking_extranet`, and `?platform=booking` matches all of them. A payout row's `amount` is the net the host received; `grossAmount` is what the guest paid and `fees` the deductions (commission, payments service fee, processing fee). Cursor-paginated, newest first.
+//
+// Corresponds with GET /v1/transactions (the `ListTransactions` operationId).
+func (c *Client) ListTransactions(ctx context.Context, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListTransactionsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18124,6 +18172,108 @@ func NewBookingSetupRequestWithBody(server string, contentType string, body io.R
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListBookingTransactionsRequest constructs an http.Request for the ListBookingTransactions method
+func NewListBookingTransactionsRequest(server string, params *ListBookingTransactionsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/booking/transactions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.IsPayout != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "is_payout", *params.IsPayout, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -26040,6 +26190,120 @@ func NewUpdateCustomSchemaRequestWithBody(server string, id openapi_types.UUID, 
 	return req, nil
 }
 
+// NewListTransactionsRequest constructs an http.Request for the ListTransactions method
+func NewListTransactionsRequest(server string, params *ListTransactionsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/transactions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Platform != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "platform", *params.Platform, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.IsPayout != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "is_payout", *params.IsPayout, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetUsageLogsRequest constructs an http.Request for the GetUsageLogs method
 func NewGetUsageLogsRequest(server string, params *GetUsageLogsParams) (*http.Request, error) {
 	var err error
@@ -29065,6 +29329,15 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/channels/booking/setup (the `BookingSetup` operationId).
 	BookingSetupWithResponse(ctx context.Context, body BookingSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*BookingSetupClientResponse, error)
 
+	// ListBookingTransactionsWithResponse List Booking.com transactions (settlement ledger)
+	//
+	// The Booking.com settlement ledger for this workspace: every payout (Payments by Booking.com → bank transfer) and reservation charge, with the gross the guest paid, Booking's commission and payments service fee, and the net paid out, each tied to its reservation. Official Connectivity-API and extranet-connected accounts are returned together as one Booking.com — there is no `booking_extranet` distinction and nothing extra to request. Cursor-paginated, newest first. (For all channels at once, use `/v1/transactions`.)
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/booking/transactions (the `ListBookingTransactions` operationId).
+	ListBookingTransactionsWithResponse(ctx context.Context, params *ListBookingTransactionsParams, reqEditors ...RequestEditorFn) (*ListBookingTransactionsClientResponse, error)
+
 	// DeleteBookingWebhookWithResponse Unsubscribe from a Booking.com notification
 	//
 	// **Not available through the API — always returns `403 forbidden`.** Booking.com notification subscriptions belong to the Repull platform account that every workspace shares: they are per notification type, not per property, so reading or changing them would affect every workspace. Booking.com events for your own properties are delivered through Repull webhooks — subscribe with `POST /v1/webhooks`.
@@ -32026,6 +32299,15 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PATCH /v1/schema/custom/{id} (the `UpdateCustomSchema` operationId).
 	UpdateCustomSchemaWithResponse(ctx context.Context, id openapi_types.UUID, body UpdateCustomSchemaJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomSchemaClientResponse, error)
+
+	// ListTransactionsWithResponse List transactions & payments (unified ledger)
+	//
+	// Every channel's money in one ledger: payouts that reached the host, reservation charges, refunds and adjustments, across Airbnb, Booking.com and Vrbo. Each row carries a normalized `platform` — `booking` always means Booking.com however the account was connected (official API or extranet); there is no `booking_extranet`, and `?platform=booking` matches all of them. A payout row's `amount` is the net the host received; `grossAmount` is what the guest paid and `fees` the deductions (commission, payments service fee, processing fee). Cursor-paginated, newest first.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/transactions (the `ListTransactions` operationId).
+	ListTransactionsWithResponse(ctx context.Context, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*ListTransactionsClientResponse, error)
 
 	// GetUsageLogsWithResponse List API request logs
 	//
@@ -39338,6 +39620,57 @@ func (r BookingSetupClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r BookingSetupClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListBookingTransactionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]Transaction `json:"data,omitempty"`
+
+		// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+		Pagination *CursorPagination `json:"pagination,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListBookingTransactionsClientResponse) GetJSON200() *struct {
+	Data *[]Transaction `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ListBookingTransactionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBookingTransactionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBookingTransactionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListBookingTransactionsClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -50240,6 +50573,57 @@ func (r UpdateCustomSchemaClientResponse) ContentType() string {
 	return ""
 }
 
+type ListTransactionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]Transaction `json:"data,omitempty"`
+
+		// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+		Pagination *CursorPagination `json:"pagination,omitempty"`
+	}
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListTransactionsClientResponse) GetJSON200() *struct {
+	Data *[]Transaction `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetBody returns the raw response body bytes
+func (r ListTransactionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListTransactionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListTransactionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListTransactionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetUsageLogsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -54108,6 +54492,21 @@ func (c *ClientWithResponses) BookingSetupWithResponse(ctx context.Context, body
 		return nil, err
 	}
 	return ParseBookingSetupClientResponse(rsp)
+}
+
+// ListBookingTransactionsWithResponse List Booking.com transactions (settlement ledger)
+//
+// The Booking.com settlement ledger for this workspace: every payout (Payments by Booking.com → bank transfer) and reservation charge, with the gross the guest paid, Booking's commission and payments service fee, and the net paid out, each tied to its reservation. Official Connectivity-API and extranet-connected accounts are returned together as one Booking.com — there is no `booking_extranet` distinction and nothing extra to request. Cursor-paginated, newest first. (For all channels at once, use `/v1/transactions`.)
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/booking/transactions (the `ListBookingTransactions` operationId).
+func (c *ClientWithResponses) ListBookingTransactionsWithResponse(ctx context.Context, params *ListBookingTransactionsParams, reqEditors ...RequestEditorFn) (*ListBookingTransactionsClientResponse, error) {
+	rsp, err := c.ListBookingTransactions(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBookingTransactionsClientResponse(rsp)
 }
 
 // DeleteBookingWebhookWithResponse Unsubscribe from a Booking.com notification
@@ -58303,6 +58702,21 @@ func (c *ClientWithResponses) UpdateCustomSchemaWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseUpdateCustomSchemaClientResponse(rsp)
+}
+
+// ListTransactionsWithResponse List transactions & payments (unified ledger)
+//
+// Every channel's money in one ledger: payouts that reached the host, reservation charges, refunds and adjustments, across Airbnb, Booking.com and Vrbo. Each row carries a normalized `platform` — `booking` always means Booking.com however the account was connected (official API or extranet); there is no `booking_extranet`, and `?platform=booking` matches all of them. A payout row's `amount` is the net the host received; `grossAmount` is what the guest paid and `fees` the deductions (commission, payments service fee, processing fee). Cursor-paginated, newest first.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/transactions (the `ListTransactions` operationId).
+func (c *ClientWithResponses) ListTransactionsWithResponse(ctx context.Context, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*ListTransactionsClientResponse, error) {
+	rsp, err := c.ListTransactions(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListTransactionsClientResponse(rsp)
 }
 
 // GetUsageLogsWithResponse List API request logs
@@ -64072,6 +64486,37 @@ func ParseBookingSetupClientResponse(rsp *http.Response) (*BookingSetupClientRes
 			return nil, err
 		}
 		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListBookingTransactionsClientResponse parses an HTTP response from a ListBookingTransactionsWithResponse call
+func ParseListBookingTransactionsClientResponse(rsp *http.Response) (*ListBookingTransactionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBookingTransactionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]Transaction `json:"data,omitempty"`
+
+			// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+			Pagination *CursorPagination `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
@@ -72010,6 +72455,37 @@ func ParseUpdateCustomSchemaClientResponse(rsp *http.Response) (*UpdateCustomSch
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListTransactionsClientResponse parses an HTTP response from a ListTransactionsWithResponse call
+func ParseListTransactionsClientResponse(rsp *http.Response) (*ListTransactionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListTransactionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]Transaction `json:"data,omitempty"`
+
+			// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+			Pagination *CursorPagination `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
