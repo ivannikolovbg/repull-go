@@ -152,4 +152,4 @@ generated client and the live API — both are still settling.
 
 ---
 
-Powered by Repull. AI features powered by Vanio AI.
+Powered by Repull.

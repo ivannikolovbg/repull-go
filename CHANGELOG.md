@@ -242,7 +242,7 @@ Regenerated against the live `https://api.repull.dev/openapi.json` (202 → 209 
 
 ### Additive
 
-- **`PaymentRequired` type added.** New 402 error envelope type alias (`type PaymentRequired = Error`) generated alongside the existing `BadRequest` / `Unauthorized` / `NotFound` / `TooManyRequests` aliases. Surfaces when the API returns `402 Payment Required` with `error.code = "listings_limit_exceeded"` for over-cap customers. Unlike 429, 402 is NOT a "wait and retry" condition — `Retry-After` is not set. Recovery: `DELETE` listings under the cap or upgrade at `repull.dev/dashboard/billing`. `/v1/health`, `/v1/usage/*`, and any `DELETE` are exempt. The 402 envelope mirrors `rate_limit_exceeded` and adds `tier`, `limit`, `active_listings`, `upgrade_url`. Tracks vanio-repull-api PR #66.
+- **`PaymentRequired` type added.** New 402 error envelope type alias (`type PaymentRequired = Error`) generated alongside the existing `BadRequest` / `Unauthorized` / `NotFound` / `TooManyRequests` aliases. Surfaces when the API returns `402 Payment Required` with `error.code = "listings_limit_exceeded"` for over-cap customers. Unlike 429, 402 is NOT a "wait and retry" condition — `Retry-After` is not set. Recovery: `DELETE` listings under the cap or upgrade at `repull.dev/dashboard/billing`. `/v1/health`, `/v1/usage/*`, and any `DELETE` are exempt. The 402 envelope mirrors `rate_limit_exceeded` and adds `tier`, `limit`, `active_listings`, `upgrade_url`. Tracks repull-api PR #66.
 
 ## v0.2.2 — 2026-05-07
 
@@ -251,7 +251,7 @@ Regenerated against the live `https://api.repull.dev/openapi.json` (202 → 209 
 - **`?include=amenities` on `GET /v1/listings/{id}` and `GET /v1/properties/{id}`.** Both endpoints now expose an `Include` query param with the canonical `amenities` value. When passed, responses populate the new `Amenities *[]ListingAmenity` field on `Listing` and `Property` from the unified `listings_amenities` cache. Unknown include values return 422.
 - **New `ListingAmenity` type.** Single amenity row from the unified `listings_amenities` table, with `amenityKey`, `isPresent`, and optional metadata. Surfaced on listing + property detail endpoints when `?include=amenities` is requested.
 
-Refs: vanio-repull-api #59 (listings include), vanio-repull-api #61 (properties include).
+Refs: repull-api #59 (listings include), repull-api #61 (properties include).
 
 ## v0.2.0 — 2026-05-02
 
