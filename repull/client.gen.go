@@ -3661,6 +3661,24 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
 	BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// BulkListingPromotionsWithBody Add or remove a promotion on many listings
+	//
+	// Applies one promotion to up to 100 listings — `add` it, or `remove` the listing's running promotion of that channel and type. Each listing gets its own result with the channel's reason when refused, so one refusal doesn't stop the rest. Returns `403 listing_inactive` before doing anything when any listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/listings/promotions/bulk (the `BulkListingPromotions` operationId).
+	BulkListingPromotionsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BulkListingPromotions Add or remove a promotion on many listings
+	//
+	// Applies one promotion to up to 100 listings — `add` it, or `remove` the listing's running promotion of that channel and type. Each listing gets its own result with the channel's reason when refused, so one refusal doesn't stop the rest. Returns `403 listing_inactive` before doing anything when any listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/promotions/bulk (the `BulkListingPromotions` operationId).
+	BulkListingPromotions(ctx context.Context, body BulkListingPromotionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SetListingsStatusWithBody Activate or deactivate listings in bulk
 	//
 	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
@@ -4128,6 +4146,113 @@ type ClientInterface interface {
 	//
 	// Corresponds with PUT /v1/listings/{id}/pricing/strategy (the `UpdateListingPricingStrategy` operationId).
 	UpdateListingPricingStrategy(ctx context.Context, id int, body UpdateListingPricingStrategyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListListingPromotions List a listing's promotions
+	//
+	// Airbnb and Booking.com promotions on the listing, in one model. Includes Airbnb promotions running or available (the new listing promotion shows as `eligible` when the listing qualifies), Airbnb Custom promotions seen on bookings (read-only — they override your prices on Airbnb), and Booking.com promotions covering the listing's room, including deactivated ones.
+	//
+	// Pass `refresh=true` to re-read the channels first; otherwise the stored copy is returned (kept current by Airbnb's notifications and a sync every 30 minutes).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Corresponds with GET /v1/listings/{id}/promotions (the `ListListingPromotions` operationId).
+	ListListingPromotions(ctx context.Context, id int, params *ListListingPromotionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateListingPromotionWithBody Add a promotion to a listing
+	//
+	// Adds an Airbnb or Booking.com promotion. Read `GET /v1/listings/{id}/promotions/catalog` first for the types and fields the listing's channels accept.
+	//
+	// **Airbnb:** send `channel` and `type` only (`top_rated_guests`, `mobile`, `new_listing`) — Airbnb sets the discount. **Booking.com:** a listing's promotion covers that listing's room; send `discountPercent` and the rules the type takes, and `hotelId` when the listing is on several properties.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/promotions (the `CreateListingPromotion` operationId).
+	CreateListingPromotionWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateListingPromotion Add a promotion to a listing
+	//
+	// Adds an Airbnb or Booking.com promotion. Read `GET /v1/listings/{id}/promotions/catalog` first for the types and fields the listing's channels accept.
+	//
+	// **Airbnb:** send `channel` and `type` only (`top_rated_guests`, `mobile`, `new_listing`) — Airbnb sets the discount. **Booking.com:** a listing's promotion covers that listing's room; send `discountPercent` and the rules the type takes, and `hotelId` when the listing is on several properties.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/promotions (the `CreateListingPromotion` operationId).
+	CreateListingPromotion(ctx context.Context, id int, body CreateListingPromotionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetListingPromotionCatalog Promotion types a listing can use
+	//
+	// Per channel: whether the listing is connected, and each promotion type with a short description for hosts, whether it is new, whether it is available to this listing (and why not), and every field — supported or not — with its limits and any value the channel fixes. Booking.com's types and limits come from the property itself; seasonal campaigns appear while Booking.com runs them.
+	//
+	// Airbnb asks partners to show newly available discounts with a “New” badge and to grey out fields a discount does not support rather than hide them; `isNew` and `fields` carry what that needs.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Corresponds with GET /v1/listings/{id}/promotions/catalog (the `GetListingPromotionCatalog` operationId).
+	GetListingPromotionCatalog(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RefreshListingPromotions Re-read a listing's promotions now
+	//
+	// Reads the listing's promotions from Airbnb and Booking.com and returns them. Booking.com promotions belong to the property, so the property's other listings are refreshed too. `errors` lists any channel that could not be read.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Corresponds with POST /v1/listings/{id}/promotions/refresh (the `RefreshListingPromotions` operationId).
+	RefreshListingPromotions(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteListingPromotion Remove a promotion from a listing
+	//
+	// Airbnb: ends the listing's enrolment. Booking.com: takes the listing's room off the promotion — it keeps running for any other rooms it covers, and is deactivated when none are left. Airbnb Custom promotions can only be ended in Airbnb.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Corresponds with DELETE /v1/listings/{id}/promotions/{promotionId} (the `DeleteListingPromotion` operationId).
+	DeleteListingPromotion(ctx context.Context, id int, promotionId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetListingPromotion Get one promotion
+	//
+	// One promotion on the listing.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Corresponds with GET /v1/listings/{id}/promotions/{promotionId} (the `GetListingPromotion` operationId).
+	GetListingPromotion(ctx context.Context, id int, promotionId int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateListingPromotionWithBody Change a promotion
+	//
+	// Booking.com promotions only — Airbnb's have nothing to change. `rules`, when sent, replaces the promotion's rules whole. A promotion that also covers other listings' rooms changes for them too, so it needs `confirmShared: true` (otherwise `409 promotion_shared_promotion`). Promotions that come from the listing's weekly or monthly discount are changed in its pricing settings.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PATCH /v1/listings/{id}/promotions/{promotionId} (the `UpdateListingPromotion` operationId).
+	UpdateListingPromotionWithBody(ctx context.Context, id int, promotionId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateListingPromotion Change a promotion
+	//
+	// Booking.com promotions only — Airbnb's have nothing to change. `rules`, when sent, replaces the promotion's rules whole. A promotion that also covers other listings' rooms changes for them too, so it needs `confirmShared: true` (otherwise `409 promotion_shared_promotion`). Promotions that come from the listing's weekly or monthly discount are changed in its pricing settings.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PATCH /v1/listings/{id}/promotions/{promotionId} (the `UpdateListingPromotion` operationId).
+	UpdateListingPromotion(ctx context.Context, id int, promotionId int, body UpdateListingPromotionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetListingPublishStatus Per-channel publish status
 	//
@@ -11276,6 +11401,44 @@ func (c *Client) BulkApplyPricing(ctx context.Context, body BulkApplyPricingJSON
 	return c.Client.Do(req)
 }
 
+// BulkListingPromotionsWithBody Add or remove a promotion on many listings
+//
+// Applies one promotion to up to 100 listings — `add` it, or `remove` the listing's running promotion of that channel and type. Each listing gets its own result with the channel's reason when refused, so one refusal doesn't stop the rest. Returns `403 listing_inactive` before doing anything when any listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/listings/promotions/bulk (the `BulkListingPromotions` operationId).
+func (c *Client) BulkListingPromotionsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkListingPromotionsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// BulkListingPromotions Add or remove a promotion on many listings
+//
+// Applies one promotion to up to 100 listings — `add` it, or `remove` the listing's running promotion of that channel and type. Each listing gets its own result with the channel's reason when refused, so one refusal doesn't stop the rest. Returns `403 listing_inactive` before doing anything when any listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/promotions/bulk (the `BulkListingPromotions` operationId).
+func (c *Client) BulkListingPromotions(ctx context.Context, body BulkListingPromotionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkListingPromotionsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // SetListingsStatusWithBody Activate or deactivate listings in bulk
 //
 // Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
@@ -12044,6 +12207,203 @@ func (c *Client) UpdateListingPricingStrategyWithBody(ctx context.Context, id in
 // Corresponds with PUT /v1/listings/{id}/pricing/strategy (the `UpdateListingPricingStrategy` operationId).
 func (c *Client) UpdateListingPricingStrategy(ctx context.Context, id int, body UpdateListingPricingStrategyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateListingPricingStrategyRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListListingPromotions List a listing's promotions
+//
+// Airbnb and Booking.com promotions on the listing, in one model. Includes Airbnb promotions running or available (the new listing promotion shows as `eligible` when the listing qualifies), Airbnb Custom promotions seen on bookings (read-only — they override your prices on Airbnb), and Booking.com promotions covering the listing's room, including deactivated ones.
+//
+// Pass `refresh=true` to re-read the channels first; otherwise the stored copy is returned (kept current by Airbnb's notifications and a sync every 30 minutes).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Corresponds with GET /v1/listings/{id}/promotions (the `ListListingPromotions` operationId).
+func (c *Client) ListListingPromotions(ctx context.Context, id int, params *ListListingPromotionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListListingPromotionsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateListingPromotionWithBody Add a promotion to a listing
+//
+// Adds an Airbnb or Booking.com promotion. Read `GET /v1/listings/{id}/promotions/catalog` first for the types and fields the listing's channels accept.
+//
+// **Airbnb:** send `channel` and `type` only (`top_rated_guests`, `mobile`, `new_listing`) — Airbnb sets the discount. **Booking.com:** a listing's promotion covers that listing's room; send `discountPercent` and the rules the type takes, and `hotelId` when the listing is on several properties.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/listings/{id}/promotions (the `CreateListingPromotion` operationId).
+func (c *Client) CreateListingPromotionWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateListingPromotionRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateListingPromotion Add a promotion to a listing
+//
+// Adds an Airbnb or Booking.com promotion. Read `GET /v1/listings/{id}/promotions/catalog` first for the types and fields the listing's channels accept.
+//
+// **Airbnb:** send `channel` and `type` only (`top_rated_guests`, `mobile`, `new_listing`) — Airbnb sets the discount. **Booking.com:** a listing's promotion covers that listing's room; send `discountPercent` and the rules the type takes, and `hotelId` when the listing is on several properties.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/{id}/promotions (the `CreateListingPromotion` operationId).
+func (c *Client) CreateListingPromotion(ctx context.Context, id int, body CreateListingPromotionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateListingPromotionRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetListingPromotionCatalog Promotion types a listing can use
+//
+// Per channel: whether the listing is connected, and each promotion type with a short description for hosts, whether it is new, whether it is available to this listing (and why not), and every field — supported or not — with its limits and any value the channel fixes. Booking.com's types and limits come from the property itself; seasonal campaigns appear while Booking.com runs them.
+//
+// Airbnb asks partners to show newly available discounts with a “New” badge and to grey out fields a discount does not support rather than hide them; `isNew` and `fields` carry what that needs.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Corresponds with GET /v1/listings/{id}/promotions/catalog (the `GetListingPromotionCatalog` operationId).
+func (c *Client) GetListingPromotionCatalog(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingPromotionCatalogRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RefreshListingPromotions Re-read a listing's promotions now
+//
+// Reads the listing's promotions from Airbnb and Booking.com and returns them. Booking.com promotions belong to the property, so the property's other listings are refreshed too. `errors` lists any channel that could not be read.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Corresponds with POST /v1/listings/{id}/promotions/refresh (the `RefreshListingPromotions` operationId).
+func (c *Client) RefreshListingPromotions(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRefreshListingPromotionsRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteListingPromotion Remove a promotion from a listing
+//
+// Airbnb: ends the listing's enrolment. Booking.com: takes the listing's room off the promotion — it keeps running for any other rooms it covers, and is deactivated when none are left. Airbnb Custom promotions can only be ended in Airbnb.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Corresponds with DELETE /v1/listings/{id}/promotions/{promotionId} (the `DeleteListingPromotion` operationId).
+func (c *Client) DeleteListingPromotion(ctx context.Context, id int, promotionId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteListingPromotionRequest(c.Server, id, promotionId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetListingPromotion Get one promotion
+//
+// One promotion on the listing.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Corresponds with GET /v1/listings/{id}/promotions/{promotionId} (the `GetListingPromotion` operationId).
+func (c *Client) GetListingPromotion(ctx context.Context, id int, promotionId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingPromotionRequest(c.Server, id, promotionId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateListingPromotionWithBody Change a promotion
+//
+// Booking.com promotions only — Airbnb's have nothing to change. `rules`, when sent, replaces the promotion's rules whole. A promotion that also covers other listings' rooms changes for them too, so it needs `confirmShared: true` (otherwise `409 promotion_shared_promotion`). Promotions that come from the listing's weekly or monthly discount are changed in its pricing settings.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PATCH /v1/listings/{id}/promotions/{promotionId} (the `UpdateListingPromotion` operationId).
+func (c *Client) UpdateListingPromotionWithBody(ctx context.Context, id int, promotionId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateListingPromotionRequestWithBody(c.Server, id, promotionId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateListingPromotion Change a promotion
+//
+// Booking.com promotions only — Airbnb's have nothing to change. `rules`, when sent, replaces the promotion's rules whole. A promotion that also covers other listings' rooms changes for them too, so it needs `confirmShared: true` (otherwise `409 promotion_shared_promotion`). Promotions that come from the listing's weekly or monthly discount are changed in its pricing settings.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PATCH /v1/listings/{id}/promotions/{promotionId} (the `UpdateListingPromotion` operationId).
+func (c *Client) UpdateListingPromotion(ctx context.Context, id int, promotionId int, body UpdateListingPromotionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateListingPromotionRequest(c.Server, id, promotionId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -22994,6 +23354,46 @@ func NewBulkApplyPricingRequestWithBody(server string, contentType string, body 
 	return req, nil
 }
 
+// NewBulkListingPromotionsRequest calls the generic BulkListingPromotions builder with application/json body
+func NewBulkListingPromotionsRequest(server string, body BulkListingPromotionsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkListingPromotionsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewBulkListingPromotionsRequestWithBody constructs an http.Request for the BulkListingPromotions method, with any body, and a specified content type
+func NewBulkListingPromotionsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/promotions/bulk")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewSetListingsStatusRequest calls the generic SetListingsStatus builder with application/json body
 func NewSetListingsStatusRequest(server string, body SetListingsStatusJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -24119,6 +24519,318 @@ func NewUpdateListingPricingStrategyRequestWithBody(server string, id int, conte
 	}
 
 	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListListingPromotionsRequest constructs an http.Request for the ListListingPromotions method
+func NewListListingPromotionsRequest(server string, id int, params *ListListingPromotionsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/promotions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Refresh != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "refresh", *params.Refresh, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateListingPromotionRequest calls the generic CreateListingPromotion builder with application/json body
+func NewCreateListingPromotionRequest(server string, id int, body CreateListingPromotionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateListingPromotionRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewCreateListingPromotionRequestWithBody constructs an http.Request for the CreateListingPromotion method, with any body, and a specified content type
+func NewCreateListingPromotionRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/promotions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetListingPromotionCatalogRequest constructs an http.Request for the GetListingPromotionCatalog method
+func NewGetListingPromotionCatalogRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/promotions/catalog", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRefreshListingPromotionsRequest constructs an http.Request for the RefreshListingPromotions method
+func NewRefreshListingPromotionsRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/promotions/refresh", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteListingPromotionRequest constructs an http.Request for the DeleteListingPromotion method
+func NewDeleteListingPromotionRequest(server string, id int, promotionId int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "promotionId", promotionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/promotions/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetListingPromotionRequest constructs an http.Request for the GetListingPromotion method
+func NewGetListingPromotionRequest(server string, id int, promotionId int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "promotionId", promotionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/promotions/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateListingPromotionRequest calls the generic UpdateListingPromotion builder with application/json body
+func NewUpdateListingPromotionRequest(server string, id int, promotionId int, body UpdateListingPromotionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateListingPromotionRequestWithBody(server, id, promotionId, "application/json", bodyReader)
+}
+
+// NewUpdateListingPromotionRequestWithBody constructs an http.Request for the UpdateListingPromotion method, with any body, and a specified content type
+func NewUpdateListingPromotionRequestWithBody(server string, id int, promotionId int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithOptions("simple", false, "promotionId", promotionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/promotions/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -31460,6 +32172,24 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/listings/pricing/bulk (the `BulkApplyPricing` operationId).
 	BulkApplyPricingWithResponse(ctx context.Context, body BulkApplyPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkApplyPricingClientResponse, error)
 
+	// BulkListingPromotionsWithBodyWithResponse Add or remove a promotion on many listings
+	//
+	// Applies one promotion to up to 100 listings — `add` it, or `remove` the listing's running promotion of that channel and type. Each listing gets its own result with the channel's reason when refused, so one refusal doesn't stop the rest. Returns `403 listing_inactive` before doing anything when any listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/promotions/bulk (the `BulkListingPromotions` operationId).
+	BulkListingPromotionsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkListingPromotionsClientResponse, error)
+
+	// BulkListingPromotionsWithResponse Add or remove a promotion on many listings
+	//
+	// Applies one promotion to up to 100 listings — `add` it, or `remove` the listing's running promotion of that channel and type. Each listing gets its own result with the channel's reason when refused, so one refusal doesn't stop the rest. Returns `403 listing_inactive` before doing anything when any listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/promotions/bulk (the `BulkListingPromotions` operationId).
+	BulkListingPromotionsWithResponse(ctx context.Context, body BulkListingPromotionsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkListingPromotionsClientResponse, error)
+
 	// SetListingsStatusWithBodyWithResponse Activate or deactivate listings in bulk
 	//
 	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
@@ -31945,6 +32675,123 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PUT /v1/listings/{id}/pricing/strategy (the `UpdateListingPricingStrategy` operationId).
 	UpdateListingPricingStrategyWithResponse(ctx context.Context, id int, body UpdateListingPricingStrategyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListingPricingStrategyClientResponse, error)
+
+	// ListListingPromotionsWithResponse List a listing's promotions
+	//
+	// Airbnb and Booking.com promotions on the listing, in one model. Includes Airbnb promotions running or available (the new listing promotion shows as `eligible` when the listing qualifies), Airbnb Custom promotions seen on bookings (read-only — they override your prices on Airbnb), and Booking.com promotions covering the listing's room, including deactivated ones.
+	//
+	// Pass `refresh=true` to re-read the channels first; otherwise the stored copy is returned (kept current by Airbnb's notifications and a sync every 30 minutes).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/listings/{id}/promotions (the `ListListingPromotions` operationId).
+	ListListingPromotionsWithResponse(ctx context.Context, id int, params *ListListingPromotionsParams, reqEditors ...RequestEditorFn) (*ListListingPromotionsClientResponse, error)
+
+	// CreateListingPromotionWithBodyWithResponse Add a promotion to a listing
+	//
+	// Adds an Airbnb or Booking.com promotion. Read `GET /v1/listings/{id}/promotions/catalog` first for the types and fields the listing's channels accept.
+	//
+	// **Airbnb:** send `channel` and `type` only (`top_rated_guests`, `mobile`, `new_listing`) — Airbnb sets the discount. **Booking.com:** a listing's promotion covers that listing's room; send `discountPercent` and the rules the type takes, and `hotelId` when the listing is on several properties.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/promotions (the `CreateListingPromotion` operationId).
+	CreateListingPromotionWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateListingPromotionClientResponse, error)
+
+	// CreateListingPromotionWithResponse Add a promotion to a listing
+	//
+	// Adds an Airbnb or Booking.com promotion. Read `GET /v1/listings/{id}/promotions/catalog` first for the types and fields the listing's channels accept.
+	//
+	// **Airbnb:** send `channel` and `type` only (`top_rated_guests`, `mobile`, `new_listing`) — Airbnb sets the discount. **Booking.com:** a listing's promotion covers that listing's room; send `discountPercent` and the rules the type takes, and `hotelId` when the listing is on several properties.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/promotions (the `CreateListingPromotion` operationId).
+	CreateListingPromotionWithResponse(ctx context.Context, id int, body CreateListingPromotionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateListingPromotionClientResponse, error)
+
+	// GetListingPromotionCatalogWithResponse Promotion types a listing can use
+	//
+	// Per channel: whether the listing is connected, and each promotion type with a short description for hosts, whether it is new, whether it is available to this listing (and why not), and every field — supported or not — with its limits and any value the channel fixes. Booking.com's types and limits come from the property itself; seasonal campaigns appear while Booking.com runs them.
+	//
+	// Airbnb asks partners to show newly available discounts with a “New” badge and to grey out fields a discount does not support rather than hide them; `isNew` and `fields` carry what that needs.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/listings/{id}/promotions/catalog (the `GetListingPromotionCatalog` operationId).
+	GetListingPromotionCatalogWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingPromotionCatalogClientResponse, error)
+
+	// RefreshListingPromotionsWithResponse Re-read a listing's promotions now
+	//
+	// Reads the listing's promotions from Airbnb and Booking.com and returns them. Booking.com promotions belong to the property, so the property's other listings are refreshed too. `errors` lists any channel that could not be read.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/promotions/refresh (the `RefreshListingPromotions` operationId).
+	RefreshListingPromotionsWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*RefreshListingPromotionsClientResponse, error)
+
+	// DeleteListingPromotionWithResponse Remove a promotion from a listing
+	//
+	// Airbnb: ends the listing's enrolment. Booking.com: takes the listing's room off the promotion — it keeps running for any other rooms it covers, and is deactivated when none are left. Airbnb Custom promotions can only be ended in Airbnb.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/listings/{id}/promotions/{promotionId} (the `DeleteListingPromotion` operationId).
+	DeleteListingPromotionWithResponse(ctx context.Context, id int, promotionId int, reqEditors ...RequestEditorFn) (*DeleteListingPromotionClientResponse, error)
+
+	// GetListingPromotionWithResponse Get one promotion
+	//
+	// One promotion on the listing.
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/listings/{id}/promotions/{promotionId} (the `GetListingPromotion` operationId).
+	GetListingPromotionWithResponse(ctx context.Context, id int, promotionId int, reqEditors ...RequestEditorFn) (*GetListingPromotionClientResponse, error)
+
+	// UpdateListingPromotionWithBodyWithResponse Change a promotion
+	//
+	// Booking.com promotions only — Airbnb's have nothing to change. `rules`, when sent, replaces the promotion's rules whole. A promotion that also covers other listings' rooms changes for them too, so it needs `confirmShared: true` (otherwise `409 promotion_shared_promotion`). Promotions that come from the listing's weekly or monthly discount are changed in its pricing settings.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/listings/{id}/promotions/{promotionId} (the `UpdateListingPromotion` operationId).
+	UpdateListingPromotionWithBodyWithResponse(ctx context.Context, id int, promotionId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListingPromotionClientResponse, error)
+
+	// UpdateListingPromotionWithResponse Change a promotion
+	//
+	// Booking.com promotions only — Airbnb's have nothing to change. `rules`, when sent, replaces the promotion's rules whole. A promotion that also covers other listings' rooms changes for them too, so it needs `confirmShared: true` (otherwise `409 promotion_shared_promotion`). Promotions that come from the listing's weekly or monthly discount are changed in its pricing settings.
+	//
+	// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+	//
+	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PATCH /v1/listings/{id}/promotions/{promotionId} (the `UpdateListingPromotion` operationId).
+	UpdateListingPromotionWithResponse(ctx context.Context, id int, promotionId int, body UpdateListingPromotionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListingPromotionClientResponse, error)
 
 	// GetListingPublishStatusWithResponse Per-channel publish status
 	//
@@ -46991,6 +47838,68 @@ func (r BulkApplyPricingClientResponse) ContentType() string {
 	return ""
 }
 
+type BulkListingPromotionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PromotionBulkResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r BulkListingPromotionsClientResponse) GetJSON200() *PromotionBulkResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r BulkListingPromotionsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r BulkListingPromotionsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r BulkListingPromotionsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetBody returns the raw response body bytes
+func (r BulkListingPromotionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkListingPromotionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkListingPromotionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r BulkListingPromotionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SetListingsStatusClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -48509,6 +49418,531 @@ func (r UpdateListingPricingStrategyClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateListingPricingStrategyClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListListingPromotionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PromotionListResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListListingPromotionsClientResponse) GetJSON200() *PromotionListResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListListingPromotionsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListListingPromotionsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListListingPromotionsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListListingPromotionsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r ListListingPromotionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListListingPromotionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListListingPromotionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListListingPromotionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateListingPromotionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *PromotionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateListingPromotionClientResponse) GetJSON201() *PromotionResponse {
+	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateListingPromotionClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateListingPromotionClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateListingPromotionClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateListingPromotionClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateListingPromotionClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateListingPromotionClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateListingPromotionClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateListingPromotionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateListingPromotionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateListingPromotionClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetListingPromotionCatalogClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PromotionCatalogResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetListingPromotionCatalogClientResponse) GetJSON200() *PromotionCatalogResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetListingPromotionCatalogClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetListingPromotionCatalogClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingPromotionCatalogClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetListingPromotionCatalogClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r GetListingPromotionCatalogClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingPromotionCatalogClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingPromotionCatalogClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetListingPromotionCatalogClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RefreshListingPromotionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PromotionRefreshResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RefreshListingPromotionsClientResponse) GetJSON200() *PromotionRefreshResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RefreshListingPromotionsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RefreshListingPromotionsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r RefreshListingPromotionsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r RefreshListingPromotionsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r RefreshListingPromotionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RefreshListingPromotionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RefreshListingPromotionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RefreshListingPromotionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteListingPromotionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PromotionDeleteResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteListingPromotionClientResponse) GetJSON200() *PromotionDeleteResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteListingPromotionClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteListingPromotionClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteListingPromotionClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteListingPromotionClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r DeleteListingPromotionClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeleteListingPromotionClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteListingPromotionClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteListingPromotionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteListingPromotionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteListingPromotionClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetListingPromotionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PromotionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetListingPromotionClientResponse) GetJSON200() *PromotionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetListingPromotionClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetListingPromotionClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingPromotionClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetListingPromotionClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r GetListingPromotionClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingPromotionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingPromotionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetListingPromotionClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateListingPromotionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PromotionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateListingPromotionClientResponse) GetJSON200() *PromotionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r UpdateListingPromotionClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateListingPromotionClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateListingPromotionClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateListingPromotionClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r UpdateListingPromotionClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateListingPromotionClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateListingPromotionClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateListingPromotionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateListingPromotionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateListingPromotionClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -57806,6 +59240,36 @@ func (c *ClientWithResponses) BulkApplyPricingWithResponse(ctx context.Context, 
 	return ParseBulkApplyPricingClientResponse(rsp)
 }
 
+// BulkListingPromotionsWithBodyWithResponse Add or remove a promotion on many listings
+//
+// Applies one promotion to up to 100 listings — `add` it, or `remove` the listing's running promotion of that channel and type. Each listing gets its own result with the channel's reason when refused, so one refusal doesn't stop the rest. Returns `403 listing_inactive` before doing anything when any listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/promotions/bulk (the `BulkListingPromotions` operationId).
+func (c *ClientWithResponses) BulkListingPromotionsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkListingPromotionsClientResponse, error) {
+	rsp, err := c.BulkListingPromotionsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkListingPromotionsClientResponse(rsp)
+}
+
+// BulkListingPromotionsWithResponse Add or remove a promotion on many listings
+//
+// Applies one promotion to up to 100 listings — `add` it, or `remove` the listing's running promotion of that channel and type. Each listing gets its own result with the channel's reason when refused, so one refusal doesn't stop the rest. Returns `403 listing_inactive` before doing anything when any listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/promotions/bulk (the `BulkListingPromotions` operationId).
+func (c *ClientWithResponses) BulkListingPromotionsWithResponse(ctx context.Context, body BulkListingPromotionsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkListingPromotionsClientResponse, error) {
+	rsp, err := c.BulkListingPromotions(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkListingPromotionsClientResponse(rsp)
+}
+
 // SetListingsStatusWithBodyWithResponse Activate or deactivate listings in bulk
 //
 // Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
@@ -58476,6 +59940,177 @@ func (c *ClientWithResponses) UpdateListingPricingStrategyWithResponse(ctx conte
 		return nil, err
 	}
 	return ParseUpdateListingPricingStrategyClientResponse(rsp)
+}
+
+// ListListingPromotionsWithResponse List a listing's promotions
+//
+// Airbnb and Booking.com promotions on the listing, in one model. Includes Airbnb promotions running or available (the new listing promotion shows as `eligible` when the listing qualifies), Airbnb Custom promotions seen on bookings (read-only — they override your prices on Airbnb), and Booking.com promotions covering the listing's room, including deactivated ones.
+//
+// Pass `refresh=true` to re-read the channels first; otherwise the stored copy is returned (kept current by Airbnb's notifications and a sync every 30 minutes).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/listings/{id}/promotions (the `ListListingPromotions` operationId).
+func (c *ClientWithResponses) ListListingPromotionsWithResponse(ctx context.Context, id int, params *ListListingPromotionsParams, reqEditors ...RequestEditorFn) (*ListListingPromotionsClientResponse, error) {
+	rsp, err := c.ListListingPromotions(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListListingPromotionsClientResponse(rsp)
+}
+
+// CreateListingPromotionWithBodyWithResponse Add a promotion to a listing
+//
+// Adds an Airbnb or Booking.com promotion. Read `GET /v1/listings/{id}/promotions/catalog` first for the types and fields the listing's channels accept.
+//
+// **Airbnb:** send `channel` and `type` only (`top_rated_guests`, `mobile`, `new_listing`) — Airbnb sets the discount. **Booking.com:** a listing's promotion covers that listing's room; send `discountPercent` and the rules the type takes, and `hotelId` when the listing is on several properties.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/promotions (the `CreateListingPromotion` operationId).
+func (c *ClientWithResponses) CreateListingPromotionWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateListingPromotionClientResponse, error) {
+	rsp, err := c.CreateListingPromotionWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateListingPromotionClientResponse(rsp)
+}
+
+// CreateListingPromotionWithResponse Add a promotion to a listing
+//
+// Adds an Airbnb or Booking.com promotion. Read `GET /v1/listings/{id}/promotions/catalog` first for the types and fields the listing's channels accept.
+//
+// **Airbnb:** send `channel` and `type` only (`top_rated_guests`, `mobile`, `new_listing`) — Airbnb sets the discount. **Booking.com:** a listing's promotion covers that listing's room; send `discountPercent` and the rules the type takes, and `hotelId` when the listing is on several properties.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/promotions (the `CreateListingPromotion` operationId).
+func (c *ClientWithResponses) CreateListingPromotionWithResponse(ctx context.Context, id int, body CreateListingPromotionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateListingPromotionClientResponse, error) {
+	rsp, err := c.CreateListingPromotion(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateListingPromotionClientResponse(rsp)
+}
+
+// GetListingPromotionCatalogWithResponse Promotion types a listing can use
+//
+// Per channel: whether the listing is connected, and each promotion type with a short description for hosts, whether it is new, whether it is available to this listing (and why not), and every field — supported or not — with its limits and any value the channel fixes. Booking.com's types and limits come from the property itself; seasonal campaigns appear while Booking.com runs them.
+//
+// Airbnb asks partners to show newly available discounts with a “New” badge and to grey out fields a discount does not support rather than hide them; `isNew` and `fields` carry what that needs.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/listings/{id}/promotions/catalog (the `GetListingPromotionCatalog` operationId).
+func (c *ClientWithResponses) GetListingPromotionCatalogWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingPromotionCatalogClientResponse, error) {
+	rsp, err := c.GetListingPromotionCatalog(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetListingPromotionCatalogClientResponse(rsp)
+}
+
+// RefreshListingPromotionsWithResponse Re-read a listing's promotions now
+//
+// Reads the listing's promotions from Airbnb and Booking.com and returns them. Booking.com promotions belong to the property, so the property's other listings are refreshed too. `errors` lists any channel that could not be read.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/promotions/refresh (the `RefreshListingPromotions` operationId).
+func (c *ClientWithResponses) RefreshListingPromotionsWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*RefreshListingPromotionsClientResponse, error) {
+	rsp, err := c.RefreshListingPromotions(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRefreshListingPromotionsClientResponse(rsp)
+}
+
+// DeleteListingPromotionWithResponse Remove a promotion from a listing
+//
+// Airbnb: ends the listing's enrolment. Booking.com: takes the listing's room off the promotion — it keeps running for any other rooms it covers, and is deactivated when none are left. Airbnb Custom promotions can only be ended in Airbnb.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/listings/{id}/promotions/{promotionId} (the `DeleteListingPromotion` operationId).
+func (c *ClientWithResponses) DeleteListingPromotionWithResponse(ctx context.Context, id int, promotionId int, reqEditors ...RequestEditorFn) (*DeleteListingPromotionClientResponse, error) {
+	rsp, err := c.DeleteListingPromotion(ctx, id, promotionId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteListingPromotionClientResponse(rsp)
+}
+
+// GetListingPromotionWithResponse Get one promotion
+//
+// One promotion on the listing.
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/listings/{id}/promotions/{promotionId} (the `GetListingPromotion` operationId).
+func (c *ClientWithResponses) GetListingPromotionWithResponse(ctx context.Context, id int, promotionId int, reqEditors ...RequestEditorFn) (*GetListingPromotionClientResponse, error) {
+	rsp, err := c.GetListingPromotion(ctx, id, promotionId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetListingPromotionClientResponse(rsp)
+}
+
+// UpdateListingPromotionWithBodyWithResponse Change a promotion
+//
+// Booking.com promotions only — Airbnb's have nothing to change. `rules`, when sent, replaces the promotion's rules whole. A promotion that also covers other listings' rooms changes for them too, so it needs `confirmShared: true` (otherwise `409 promotion_shared_promotion`). Promotions that come from the listing's weekly or monthly discount are changed in its pricing settings.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/listings/{id}/promotions/{promotionId} (the `UpdateListingPromotion` operationId).
+func (c *ClientWithResponses) UpdateListingPromotionWithBodyWithResponse(ctx context.Context, id int, promotionId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListingPromotionClientResponse, error) {
+	rsp, err := c.UpdateListingPromotionWithBody(ctx, id, promotionId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateListingPromotionClientResponse(rsp)
+}
+
+// UpdateListingPromotionWithResponse Change a promotion
+//
+// Booking.com promotions only — Airbnb's have nothing to change. `rules`, when sent, replaces the promotion's rules whole. A promotion that also covers other listings' rooms changes for them too, so it needs `confirmShared: true` (otherwise `409 promotion_shared_promotion`). Promotions that come from the listing's weekly or monthly discount are changed in its pricing settings.
+//
+// A request a channel can't take is refused with `422` and a `promotion_*` code; the message names the channel and the field and says what to do, and `channel` / `field` are set. Booking.com writes return once Booking.com shows the change (it lags its own writes by a few seconds).
+//
+// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PATCH /v1/listings/{id}/promotions/{promotionId} (the `UpdateListingPromotion` operationId).
+func (c *ClientWithResponses) UpdateListingPromotionWithResponse(ctx context.Context, id int, promotionId int, body UpdateListingPromotionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListingPromotionClientResponse, error) {
+	rsp, err := c.UpdateListingPromotion(ctx, id, promotionId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateListingPromotionClientResponse(rsp)
 }
 
 // GetListingPublishStatusWithResponse Per-channel publish status
@@ -70198,6 +71833,53 @@ func ParseBulkApplyPricingClientResponse(rsp *http.Response) (*BulkApplyPricingC
 	return response, nil
 }
 
+// ParseBulkListingPromotionsClientResponse parses an HTTP response from a BulkListingPromotionsWithResponse call
+func ParseBulkListingPromotionsClientResponse(rsp *http.Response) (*BulkListingPromotionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkListingPromotionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PromotionBulkResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseSetListingsStatusClientResponse parses an HTTP response from a SetListingsStatusWithResponse call
 func ParseSetListingsStatusClientResponse(rsp *http.Response) (*SetListingsStatusClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -71386,6 +73068,435 @@ func ParseUpdateListingPricingStrategyClientResponse(rsp *http.Response) (*Updat
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListListingPromotionsClientResponse parses an HTTP response from a ListListingPromotionsWithResponse call
+func ParseListListingPromotionsClientResponse(rsp *http.Response) (*ListListingPromotionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListListingPromotionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PromotionListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateListingPromotionClientResponse parses an HTTP response from a CreateListingPromotionWithResponse call
+func ParseCreateListingPromotionClientResponse(rsp *http.Response) (*CreateListingPromotionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateListingPromotionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest PromotionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case rsp.StatusCode == 502:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingPromotionCatalogClientResponse parses an HTTP response from a GetListingPromotionCatalogWithResponse call
+func ParseGetListingPromotionCatalogClientResponse(rsp *http.Response) (*GetListingPromotionCatalogClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingPromotionCatalogClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PromotionCatalogResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRefreshListingPromotionsClientResponse parses an HTTP response from a RefreshListingPromotionsWithResponse call
+func ParseRefreshListingPromotionsClientResponse(rsp *http.Response) (*RefreshListingPromotionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RefreshListingPromotionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PromotionRefreshResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteListingPromotionClientResponse parses an HTTP response from a DeleteListingPromotionWithResponse call
+func ParseDeleteListingPromotionClientResponse(rsp *http.Response) (*DeleteListingPromotionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteListingPromotionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PromotionDeleteResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case rsp.StatusCode == 502:
+		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingPromotionClientResponse parses an HTTP response from a GetListingPromotionWithResponse call
+func ParseGetListingPromotionClientResponse(rsp *http.Response) (*GetListingPromotionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingPromotionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PromotionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateListingPromotionClientResponse parses an HTTP response from a UpdateListingPromotionWithResponse call
+func ParseUpdateListingPromotionClientResponse(rsp *http.Response) (*UpdateListingPromotionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateListingPromotionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PromotionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case rsp.StatusCode == 502:
+		break // No content-type
 
 	}
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.32] - 2026-10-16
+
+### Added
+- Listing promotions — Airbnb and Booking.com in one model: `ListListingPromotions`, `CreateListingPromotion`, `GetListingPromotion`, `UpdateListingPromotion`, `DeleteListingPromotion`, `RefreshListingPromotions`, `GetListingPromotionCatalog`, `BulkListingPromotions` (`Promotion`, `PromotionCatalog`, `PromotionRules`, …). Guide: https://repull.dev/docs/promotions
+- `listing.updated` area `promotions`.
+- `ReservationMoneyLine.PromotionType` on discount lines produced by an Airbnb promotion.
+
 ## [0.2.31] - 2026-10-16
 
 ### Added

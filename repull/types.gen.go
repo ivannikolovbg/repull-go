@@ -2548,6 +2548,7 @@ const (
 	ListingUpdatedPayloadAreaBookingSettings ListingUpdatedPayloadArea = "booking_settings"
 	ListingUpdatedPayloadAreaContent         ListingUpdatedPayloadArea = "content"
 	ListingUpdatedPayloadAreaPricing         ListingUpdatedPayloadArea = "pricing"
+	ListingUpdatedPayloadAreaPromotions      ListingUpdatedPayloadArea = "promotions"
 	ListingUpdatedPayloadAreaRules           ListingUpdatedPayloadArea = "rules"
 	ListingUpdatedPayloadAreaSyncSettings    ListingUpdatedPayloadArea = "sync_settings"
 )
@@ -2562,6 +2563,8 @@ func (e ListingUpdatedPayloadArea) Valid() bool {
 	case ListingUpdatedPayloadAreaContent:
 		return true
 	case ListingUpdatedPayloadAreaPricing:
+		return true
+	case ListingUpdatedPayloadAreaPromotions:
 		return true
 	case ListingUpdatedPayloadAreaRules:
 		return true
@@ -2830,6 +2833,285 @@ const (
 func (e PlanNoticeCode) Valid() bool {
 	switch e {
 	case ListingsHeldBack:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionChannel.
+const (
+	PromotionChannelAirbnb  PromotionChannel = "airbnb"
+	PromotionChannelBooking PromotionChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the PromotionChannel enum.
+func (e PromotionChannel) Valid() bool {
+	switch e {
+	case PromotionChannelAirbnb:
+		return true
+	case PromotionChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionDiscountSetBy.
+const (
+	PromotionDiscountSetByChannel PromotionDiscountSetBy = "channel"
+	PromotionDiscountSetByHost    PromotionDiscountSetBy = "host"
+)
+
+// Valid indicates whether the value is a known member of the PromotionDiscountSetBy enum.
+func (e PromotionDiscountSetBy) Valid() bool {
+	switch e {
+	case PromotionDiscountSetByChannel:
+		return true
+	case PromotionDiscountSetByHost:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionManagedBy.
+const (
+	PromotionManagedByApi     PromotionManagedBy = "api"
+	PromotionManagedByChannel PromotionManagedBy = "channel"
+)
+
+// Valid indicates whether the value is a known member of the PromotionManagedBy enum.
+func (e PromotionManagedBy) Valid() bool {
+	switch e {
+	case PromotionManagedByApi:
+		return true
+	case PromotionManagedByChannel:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionManagedKey.
+const (
+	MonthlyDiscount PromotionManagedKey = "monthly_discount"
+	WeeklyDiscount  PromotionManagedKey = "weekly_discount"
+)
+
+// Valid indicates whether the value is a known member of the PromotionManagedKey enum.
+func (e PromotionManagedKey) Valid() bool {
+	switch e {
+	case MonthlyDiscount:
+		return true
+	case WeeklyDiscount:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionStatus.
+const (
+	PromotionStatusActive    PromotionStatus = "active"
+	PromotionStatusEligible  PromotionStatus = "eligible"
+	PromotionStatusExpired   PromotionStatus = "expired"
+	PromotionStatusInactive  PromotionStatus = "inactive"
+	PromotionStatusScheduled PromotionStatus = "scheduled"
+)
+
+// Valid indicates whether the value is a known member of the PromotionStatus enum.
+func (e PromotionStatus) Valid() bool {
+	switch e {
+	case PromotionStatusActive:
+		return true
+	case PromotionStatusEligible:
+		return true
+	case PromotionStatusExpired:
+		return true
+	case PromotionStatusInactive:
+		return true
+	case PromotionStatusScheduled:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionBulkRequestAction.
+const (
+	Add    PromotionBulkRequestAction = "add"
+	Remove PromotionBulkRequestAction = "remove"
+)
+
+// Valid indicates whether the value is a known member of the PromotionBulkRequestAction enum.
+func (e PromotionBulkRequestAction) Valid() bool {
+	switch e {
+	case Add:
+		return true
+	case Remove:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionCatalogChannelsChannel.
+const (
+	PromotionCatalogChannelsChannelAirbnb  PromotionCatalogChannelsChannel = "airbnb"
+	PromotionCatalogChannelsChannelBooking PromotionCatalogChannelsChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the PromotionCatalogChannelsChannel enum.
+func (e PromotionCatalogChannelsChannel) Valid() bool {
+	switch e {
+	case PromotionCatalogChannelsChannelAirbnb:
+		return true
+	case PromotionCatalogChannelsChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionCatalogEntryChannel.
+const (
+	PromotionCatalogEntryChannelAirbnb  PromotionCatalogEntryChannel = "airbnb"
+	PromotionCatalogEntryChannelBooking PromotionCatalogEntryChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the PromotionCatalogEntryChannel enum.
+func (e PromotionCatalogEntryChannel) Valid() bool {
+	switch e {
+	case PromotionCatalogEntryChannelAirbnb:
+		return true
+	case PromotionCatalogEntryChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionCreateRequestChannel.
+const (
+	PromotionCreateRequestChannelAirbnb  PromotionCreateRequestChannel = "airbnb"
+	PromotionCreateRequestChannelBooking PromotionCreateRequestChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the PromotionCreateRequestChannel enum.
+func (e PromotionCreateRequestChannel) Valid() bool {
+	switch e {
+	case PromotionCreateRequestChannelAirbnb:
+		return true
+	case PromotionCreateRequestChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionInputChannel.
+const (
+	PromotionInputChannelAirbnb  PromotionInputChannel = "airbnb"
+	PromotionInputChannelBooking PromotionInputChannel = "booking"
+)
+
+// Valid indicates whether the value is a known member of the PromotionInputChannel enum.
+func (e PromotionInputChannel) Valid() bool {
+	switch e {
+	case PromotionInputChannelAirbnb:
+		return true
+	case PromotionInputChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionRulesLastMinuteUnit.
+const (
+	Day  PromotionRulesLastMinuteUnit = "day"
+	Hour PromotionRulesLastMinuteUnit = "hour"
+)
+
+// Valid indicates whether the value is a known member of the PromotionRulesLastMinuteUnit enum.
+func (e PromotionRulesLastMinuteUnit) Valid() bool {
+	switch e {
+	case Day:
+		return true
+	case Hour:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionRulesStayWindowWeekdays.
+const (
+	Fri PromotionRulesStayWindowWeekdays = "fri"
+	Mon PromotionRulesStayWindowWeekdays = "mon"
+	Sat PromotionRulesStayWindowWeekdays = "sat"
+	Sun PromotionRulesStayWindowWeekdays = "sun"
+	Thu PromotionRulesStayWindowWeekdays = "thu"
+	Tue PromotionRulesStayWindowWeekdays = "tue"
+	Wed PromotionRulesStayWindowWeekdays = "wed"
+)
+
+// Valid indicates whether the value is a known member of the PromotionRulesStayWindowWeekdays enum.
+func (e PromotionRulesStayWindowWeekdays) Valid() bool {
+	switch e {
+	case Fri:
+		return true
+	case Mon:
+		return true
+	case Sat:
+		return true
+	case Sun:
+		return true
+	case Thu:
+		return true
+	case Tue:
+		return true
+	case Wed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PromotionType.
+const (
+	PromotionTypeCampaign       PromotionType = "campaign"
+	PromotionTypeCountry        PromotionType = "country"
+	PromotionTypeCustom         PromotionType = "custom"
+	PromotionTypeDeal           PromotionType = "deal"
+	PromotionTypeEarlyBooker    PromotionType = "early_booker"
+	PromotionTypeLastMinute     PromotionType = "last_minute"
+	PromotionTypeMobile         PromotionType = "mobile"
+	PromotionTypeNewListing     PromotionType = "new_listing"
+	PromotionTypeTopRatedGuests PromotionType = "top_rated_guests"
+)
+
+// Valid indicates whether the value is a known member of the PromotionType enum.
+func (e PromotionType) Valid() bool {
+	switch e {
+	case PromotionTypeCampaign:
+		return true
+	case PromotionTypeCountry:
+		return true
+	case PromotionTypeCustom:
+		return true
+	case PromotionTypeDeal:
+		return true
+	case PromotionTypeEarlyBooker:
+		return true
+	case PromotionTypeLastMinute:
+		return true
+	case PromotionTypeMobile:
+		return true
+	case PromotionTypeNewListing:
+		return true
+	case PromotionTypeTopRatedGuests:
 		return true
 	default:
 		return false
@@ -3325,6 +3607,30 @@ func (e ReservationMessageUpdatedPayloadDirection) Valid() bool {
 	case ReservationMessageUpdatedPayloadDirectionInbound:
 		return true
 	case ReservationMessageUpdatedPayloadDirectionOutbound:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationMoneyLinePromotionType.
+const (
+	ReservationMoneyLinePromotionTypeCustom         ReservationMoneyLinePromotionType = "custom"
+	ReservationMoneyLinePromotionTypeMobile         ReservationMoneyLinePromotionType = "mobile"
+	ReservationMoneyLinePromotionTypeNewListing     ReservationMoneyLinePromotionType = "new_listing"
+	ReservationMoneyLinePromotionTypeTopRatedGuests ReservationMoneyLinePromotionType = "top_rated_guests"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMoneyLinePromotionType enum.
+func (e ReservationMoneyLinePromotionType) Valid() bool {
+	switch e {
+	case ReservationMoneyLinePromotionTypeCustom:
+		return true
+	case ReservationMoneyLinePromotionTypeMobile:
+		return true
+	case ReservationMoneyLinePromotionTypeNewListing:
+		return true
+	case ReservationMoneyLinePromotionTypeTopRatedGuests:
 		return true
 	default:
 		return false
@@ -11060,7 +11366,7 @@ type ListingUpdatedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `listing.updated`. Something about the listing changed on the channel — content, pricing, booking settings, house rules, availability or sync settings.
+	// Data Payload for `listing.updated`. Something about the listing changed on the channel — content, pricing, booking settings, house rules, availability, sync settings or promotions.
 	Data ListingUpdatedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -11076,9 +11382,9 @@ type ListingUpdatedEvent struct {
 // ListingUpdatedEventEvent The event name. This field is `event`, not `type`.
 type ListingUpdatedEventEvent string
 
-// ListingUpdatedPayload Payload for `listing.updated`. Something about the listing changed on the channel — content, pricing, booking settings, house rules, availability or sync settings.
+// ListingUpdatedPayload Payload for `listing.updated`. Something about the listing changed on the channel — content, pricing, booking settings, house rules, availability, sync settings or promotions.
 type ListingUpdatedPayload struct {
-	// Area Which part moved. Airbnb sends one notification per area rather than a diff, so this is the signal for what to re-read.
+	// Area Which part moved. Airbnb sends one notification per area rather than a diff, so this is the signal for what to re-read. `promotions`: the listing’s Airbnb or Booking.com promotions changed — re-read `GET /v1/listings/{id}/promotions`.
 	//
 	// Example: content
 	Area *ListingUpdatedPayloadArea `json:"area,omitempty"`
@@ -11091,7 +11397,7 @@ type ListingUpdatedPayload struct {
 	Revision           *time.Time              `json:"revision,omitempty"`
 }
 
-// ListingUpdatedPayloadArea Which part moved. Airbnb sends one notification per area rather than a diff, so this is the signal for what to re-read.
+// ListingUpdatedPayloadArea Which part moved. Airbnb sends one notification per area rather than a diff, so this is the signal for what to re-read. `promotions`: the listing’s Airbnb or Booking.com promotions changed — re-read `GET /v1/listings/{id}/promotions`.
 //
 // Example: content
 type ListingUpdatedPayloadArea string
@@ -12077,6 +12383,310 @@ type PmsWritePolicy struct {
 		// Website Create bookings from booking websites.
 		Website bool `json:"website"`
 	} `json:"reservations"`
+}
+
+// Promotion One promotion on one listing. Airbnb sets the discount for its promotions (`discount.setBy: channel`); Booking.com promotions belong to the property and list the rooms they cover in `appliesTo`.
+type Promotion struct {
+	// AppliesTo Booking.com only. An empty `rooms` list means every room on the property.
+	AppliesTo *struct {
+		RatePlans *[]string `json:"ratePlans,omitempty"`
+		Rooms     *[]string `json:"rooms,omitempty"`
+	} `json:"appliesTo,omitempty"`
+	Channel *PromotionChannel `json:"channel,omitempty"`
+
+	// ChannelPropertyId Airbnb listing id, or the Booking.com property (hotel id) the promotion belongs to.
+	ChannelPropertyId *string `json:"channelPropertyId,omitempty"`
+
+	// ChannelType The channel’s own name, e.g. `HIGH_RATED_GUEST_DISCOUNT`, `basic`, `campaign_getaway`.
+	ChannelType *string `json:"channelType,omitempty"`
+	Discount    *struct {
+		Percent *float32                `json:"percent,omitempty"`
+		SetBy   *PromotionDiscountSetBy `json:"setBy,omitempty"`
+	} `json:"discount,omitempty"`
+	Editable  *bool      `json:"editable,omitempty"`
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+
+	// ExternalId The channel’s promotion id. Booking.com may issue a new one when a promotion is changed; the Repull `id` stays the same.
+	ExternalId *string `json:"externalId,omitempty"`
+
+	// Id Repull id of this promotion on this listing (use it in `/promotions/{promotionId}`).
+	Id        *string `json:"id,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
+
+	// ManagedBy `channel`: created in the channel’s own tools and read-only here (Airbnb Custom promotions).
+	ManagedBy *PromotionManagedBy `json:"managedBy,omitempty"`
+
+	// ManagedKey Set when it comes from the listing’s weekly or monthly discount in its pricing settings — change those instead.
+	ManagedKey *PromotionManagedKey `json:"managedKey,omitempty"`
+	Name       *string              `json:"name,omitempty"`
+	Removable  *bool                `json:"removable,omitempty"`
+
+	// Rules Which rules a type supports depends on the channel — see the catalog.
+	Rules *PromotionRules `json:"rules,omitempty"`
+
+	// Status `eligible`: the listing qualifies but is not enrolled (Airbnb new listing promotion). `inactive`: switched off; Booking.com keeps deactivated promotions.
+	Status   *PromotionStatus `json:"status,omitempty"`
+	SyncedAt *time.Time       `json:"syncedAt,omitempty"`
+
+	// Type The same idea on both channels shares a type: `mobile` is Airbnb’s mobile-only discount or Booking.com’s mobile rate; `new_listing` is Airbnb’s new listing promotion or Booking.com’s new property deal. `top_rated_guests` is Airbnb only; the deal, last-minute, early-booker, country and campaign types are Booking.com only; `custom` (Airbnb Custom promotion) is read-only.
+	Type  *PromotionType `json:"type,omitempty"`
+	Usage *struct {
+		Bookings          *int `json:"bookings,omitempty"`
+		Cancellations     *int `json:"cancellations,omitempty"`
+		LastAppliedAmount *struct {
+			Amount   *float32 `json:"amount,omitempty"`
+			Currency *string  `json:"currency,omitempty"`
+		} `json:"lastAppliedAmount,omitempty"`
+
+		// LastAppliedAt Airbnb Custom promotion: when it was last applied to a booking.
+		LastAppliedAt *time.Time `json:"lastAppliedAt,omitempty"`
+		Revenue       *struct {
+			Amount   *float32 `json:"amount,omitempty"`
+			Currency *string  `json:"currency,omitempty"`
+		} `json:"revenue,omitempty"`
+		RoomNights *int `json:"roomNights,omitempty"`
+	} `json:"usage,omitempty"`
+}
+
+// PromotionChannel defines model for Promotion.Channel.
+type PromotionChannel string
+
+// PromotionDiscountSetBy defines model for Promotion.Discount.SetBy.
+type PromotionDiscountSetBy string
+
+// PromotionManagedBy `channel`: created in the channel’s own tools and read-only here (Airbnb Custom promotions).
+type PromotionManagedBy string
+
+// PromotionManagedKey Set when it comes from the listing’s weekly or monthly discount in its pricing settings — change those instead.
+type PromotionManagedKey string
+
+// PromotionStatus `eligible`: the listing qualifies but is not enrolled (Airbnb new listing promotion). `inactive`: switched off; Booking.com keeps deactivated promotions.
+type PromotionStatus string
+
+// PromotionBulkRequest defines model for PromotionBulkRequest.
+type PromotionBulkRequest struct {
+	Action     PromotionBulkRequestAction `json:"action"`
+	ListingIds []int                      `json:"listingIds"`
+	Promotion  PromotionInput             `json:"promotion"`
+}
+
+// PromotionBulkRequestAction defines model for PromotionBulkRequest.Action.
+type PromotionBulkRequestAction string
+
+// PromotionBulkResponse defines model for PromotionBulkResponse.
+type PromotionBulkResponse struct {
+	Data *[]struct {
+		Error *struct {
+			Code    *string `json:"code,omitempty"`
+			Field   *string `json:"field,omitempty"`
+			Message *string `json:"message,omitempty"`
+		} `json:"error,omitempty"`
+		ListingId *string `json:"listingId,omitempty"`
+		Ok        *bool   `json:"ok,omitempty"`
+
+		// Promotion One promotion on one listing. Airbnb sets the discount for its promotions (`discount.setBy: channel`); Booking.com promotions belong to the property and list the rooms they cover in `appliesTo`.
+		Promotion *Promotion `json:"promotion,omitempty"`
+	} `json:"data,omitempty"`
+	Summary *struct {
+		Failed    *int `json:"failed,omitempty"`
+		Succeeded *int `json:"succeeded,omitempty"`
+	} `json:"summary,omitempty"`
+}
+
+// PromotionCatalog defines model for PromotionCatalog.
+type PromotionCatalog struct {
+	Channels *[]struct {
+		Channel   *PromotionCatalogChannelsChannel `json:"channel,omitempty"`
+		Connected *bool                            `json:"connected,omitempty"`
+		Entries   *[]PromotionCatalogEntry         `json:"entries,omitempty"`
+
+		// Properties Booking.com properties the listing has a room on.
+		Properties *[]string `json:"properties,omitempty"`
+		Reason     *string   `json:"reason,omitempty"`
+	} `json:"channels,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
+}
+
+// PromotionCatalogChannelsChannel defines model for PromotionCatalog.Channels.Channel.
+type PromotionCatalogChannelsChannel string
+
+// PromotionCatalogEntry defines model for PromotionCatalogEntry.
+type PromotionCatalogEntry struct {
+	Available   *bool                         `json:"available,omitempty"`
+	Campaign    *string                       `json:"campaign,omitempty"`
+	Channel     *PromotionCatalogEntryChannel `json:"channel,omitempty"`
+	ChannelType *string                       `json:"channelType,omitempty"`
+
+	// Description One or two sentences to show hosts.
+	Description *string `json:"description,omitempty"`
+
+	// Fields Every field, supported or not, so a UI can grey out what a type does not take.
+	Fields *map[string]PromotionCatalogField `json:"fields,omitempty"`
+
+	// IsNew Newly available — show a “New” badge.
+	IsNew *bool   `json:"isNew,omitempty"`
+	Label *string `json:"label,omitempty"`
+
+	// Single Only one at a time (Airbnb types; Booking.com mobile and country rates per property).
+	Single *bool `json:"single,omitempty"`
+
+	// Type The same idea on both channels shares a type: `mobile` is Airbnb’s mobile-only discount or Booking.com’s mobile rate; `new_listing` is Airbnb’s new listing promotion or Booking.com’s new property deal. `top_rated_guests` is Airbnb only; the deal, last-minute, early-booker, country and campaign types are Booking.com only; `custom` (Airbnb Custom promotion) is read-only.
+	Type              *PromotionType `json:"type,omitempty"`
+	UnavailableReason *string        `json:"unavailableReason,omitempty"`
+}
+
+// PromotionCatalogEntryChannel defines model for PromotionCatalogEntry.Channel.
+type PromotionCatalogEntryChannel string
+
+// PromotionCatalogField defines model for PromotionCatalogField.
+type PromotionCatalogField struct {
+	// ComingSoon Shown but not yet usable on this channel.
+	ComingSoon *bool `json:"comingSoon,omitempty"`
+
+	// Fixed Value the channel sets (e.g. Airbnb’s 15% top-rated-guests discount).
+	Fixed   *float32 `json:"fixed,omitempty"`
+	Max     *float32 `json:"max,omitempty"`
+	Min     *float32 `json:"min,omitempty"`
+	Options *[]struct {
+		Id    *string `json:"id,omitempty"`
+		Label *string `json:"label,omitempty"`
+	} `json:"options,omitempty"`
+	Required  *bool `json:"required,omitempty"`
+	Supported *bool `json:"supported,omitempty"`
+}
+
+// PromotionCatalogResponse defines model for PromotionCatalogResponse.
+type PromotionCatalogResponse struct {
+	Data *PromotionCatalog `json:"data,omitempty"`
+}
+
+// PromotionCreateRequest defines model for PromotionCreateRequest.
+type PromotionCreateRequest struct {
+	Channel PromotionCreateRequestChannel `json:"channel"`
+
+	// DiscountPercent Booking.com only — Airbnb sets its own rates. Limits per type are in the catalog.
+	DiscountPercent *int `json:"discountPercent,omitempty"`
+
+	// HotelId Booking.com: required when the listing has a room on more than one property (see `properties` in the catalog).
+	HotelId *string `json:"hotelId,omitempty"`
+
+	// Name Booking.com only; only you see it.
+	Name *string `json:"name,omitempty"`
+
+	// Rules Which rules a type supports depends on the channel — see the catalog.
+	Rules *PromotionRules `json:"rules,omitempty"`
+
+	// Type The same idea on both channels shares a type: `mobile` is Airbnb’s mobile-only discount or Booking.com’s mobile rate; `new_listing` is Airbnb’s new listing promotion or Booking.com’s new property deal. `top_rated_guests` is Airbnb only; the deal, last-minute, early-booker, country and campaign types are Booking.com only; `custom` (Airbnb Custom promotion) is read-only.
+	Type PromotionType `json:"type"`
+}
+
+// PromotionCreateRequestChannel defines model for PromotionCreateRequest.Channel.
+type PromotionCreateRequestChannel string
+
+// PromotionDeleteResponse defines model for PromotionDeleteResponse.
+type PromotionDeleteResponse struct {
+	Data *struct {
+		PromotionId *string `json:"promotionId,omitempty"`
+		Removed     *bool   `json:"removed,omitempty"`
+	} `json:"data,omitempty"`
+}
+
+// PromotionInput defines model for PromotionInput.
+type PromotionInput struct {
+	Channel PromotionInputChannel `json:"channel"`
+
+	// DiscountPercent Booking.com only — Airbnb sets its own rates. Limits per type are in the catalog.
+	DiscountPercent *int `json:"discountPercent,omitempty"`
+
+	// Name Booking.com only; only you see it.
+	Name *string `json:"name,omitempty"`
+
+	// Rules Which rules a type supports depends on the channel — see the catalog.
+	Rules *PromotionRules `json:"rules,omitempty"`
+
+	// Type The same idea on both channels shares a type: `mobile` is Airbnb’s mobile-only discount or Booking.com’s mobile rate; `new_listing` is Airbnb’s new listing promotion or Booking.com’s new property deal. `top_rated_guests` is Airbnb only; the deal, last-minute, early-booker, country and campaign types are Booking.com only; `custom` (Airbnb Custom promotion) is read-only.
+	Type PromotionType `json:"type"`
+}
+
+// PromotionInputChannel defines model for PromotionInput.Channel.
+type PromotionInputChannel string
+
+// PromotionListResponse defines model for PromotionListResponse.
+type PromotionListResponse struct {
+	Data      *[]Promotion `json:"data,omitempty"`
+	SyncError *string      `json:"syncError,omitempty"`
+
+	// SyncedAt When the channels were last read for this listing.
+	SyncedAt *time.Time `json:"syncedAt,omitempty"`
+}
+
+// PromotionRefreshResponse defines model for PromotionRefreshResponse.
+type PromotionRefreshResponse struct {
+	Data     *[]Promotion `json:"data,omitempty"`
+	Errors   *[]string    `json:"errors,omitempty"`
+	SyncedAt *time.Time   `json:"syncedAt,omitempty"`
+}
+
+// PromotionResponse defines model for PromotionResponse.
+type PromotionResponse struct {
+	// Data One promotion on one listing. Airbnb sets the discount for its promotions (`discount.setBy: channel`); Booking.com promotions belong to the property and list the rooms they cover in `appliesTo`.
+	Data *Promotion `json:"data,omitempty"`
+}
+
+// PromotionRules Which rules a type supports depends on the channel — see the catalog.
+type PromotionRules struct {
+	// Audience `public`, `subscribers` (members only, at least 10%), `app`, `all` (app and mobile web), or a country id from the catalog (e.g. `united_kingdom_pos`).
+	Audience *string `json:"audience,omitempty"`
+
+	// BlackoutDates Airbnb — not yet available.
+	BlackoutDates      *[]openapi_types.Date `json:"blackoutDates,omitempty"`
+	BlackoutDatesQuota *struct {
+		Available *int `json:"available,omitempty"`
+		Used      *int `json:"used,omitempty"`
+	} `json:"blackoutDatesQuota,omitempty"`
+	BookingWindow *struct {
+		End       *openapi_types.Date `json:"end,omitempty"`
+		EndHour   *int                `json:"endHour,omitempty"`
+		Start     *openapi_types.Date `json:"start,omitempty"`
+		StartHour *int                `json:"startHour,omitempty"`
+	} `json:"bookingWindow,omitempty"`
+
+	// Campaign Booking.com campaigns: `black_friday`, `getaway`, `late_escape`, `early_year`.
+	Campaign        *string `json:"campaign,omitempty"`
+	EarlyBookerDays *int    `json:"earlyBookerDays,omitempty"`
+	LastMinute      *struct {
+		Unit  *PromotionRulesLastMinuteUnit `json:"unit,omitempty"`
+		Value *int                          `json:"value,omitempty"`
+	} `json:"lastMinute,omitempty"`
+	MinNights     *int  `json:"minNights,omitempty"`
+	NonRefundable *bool `json:"nonRefundable,omitempty"`
+	StayWindow    *struct {
+		AdditionalDates *[]openapi_types.Date               `json:"additionalDates,omitempty"`
+		End             *openapi_types.Date                 `json:"end,omitempty"`
+		ExcludedDates   *[]openapi_types.Date               `json:"excludedDates,omitempty"`
+		Start           *openapi_types.Date                 `json:"start,omitempty"`
+		Weekdays        *[]PromotionRulesStayWindowWeekdays `json:"weekdays,omitempty"`
+	} `json:"stayWindow,omitempty"`
+}
+
+// PromotionRulesLastMinuteUnit defines model for PromotionRules.LastMinute.Unit.
+type PromotionRulesLastMinuteUnit string
+
+// PromotionRulesStayWindowWeekdays defines model for PromotionRules.StayWindow.Weekdays.
+type PromotionRulesStayWindowWeekdays string
+
+// PromotionType The same idea on both channels shares a type: `mobile` is Airbnb’s mobile-only discount or Booking.com’s mobile rate; `new_listing` is Airbnb’s new listing promotion or Booking.com’s new property deal. `top_rated_guests` is Airbnb only; the deal, last-minute, early-booker, country and campaign types are Booking.com only; `custom` (Airbnb Custom promotion) is read-only.
+type PromotionType string
+
+// PromotionUpdateRequest defines model for PromotionUpdateRequest.
+type PromotionUpdateRequest struct {
+	// ConfirmShared Required when the promotion also covers other listings’ rooms — the change applies to them too.
+	ConfirmShared   *bool   `json:"confirmShared,omitempty"`
+	DiscountPercent *int    `json:"discountPercent,omitempty"`
+	Name            *string `json:"name,omitempty"`
+
+	// Rules Which rules a type supports depends on the channel — see the catalog.
+	Rules *PromotionRules `json:"rules,omitempty"`
 }
 
 // Property A vacation rental property in your Repull workspace. Backed by the core `listings` row — enriched per-PMS fields (bedrooms, property type, provider id, etc.) live in provider-specific detail tables and are NOT returned here.
@@ -13121,6 +13731,9 @@ type ReservationMoneyLine struct {
 	// Example: Cleaning Fee
 	Name *string `json:"name,omitempty"`
 
+	// PromotionType Discount lines only: the listing promotion that produced the discount, named as in `GET /v1/listings/{id}/promotions` (Airbnb reports each applied promotion as its own line). `custom` is an Airbnb Custom promotion.
+	PromotionType *ReservationMoneyLinePromotionType `json:"promotionType,omitempty"`
+
 	// Quantity Units billed, when the channel reports a quantity (Booking.com add-ons).
 	//
 	// Example: 1
@@ -13136,6 +13749,9 @@ type ReservationMoneyLine struct {
 	// Example: 0
 	Vat *float32 `json:"vat,omitempty"`
 }
+
+// ReservationMoneyLinePromotionType Discount lines only: the listing promotion that produced the discount, named as in `GET /v1/listings/{id}/promotions` (Airbnb reports each applied promotion as its own line). `custom` is an Airbnb Custom promotion.
+type ReservationMoneyLinePromotionType string
 
 // ReservationOccupancy Normalized guest counts for the stay. Mirrors the legacy `guestDetails.numberOf*` fields under canonical short names. Omitted when no count fields are present on the reservation.
 type ReservationOccupancy struct {
@@ -16570,6 +17186,12 @@ type GetListingPricingHistoryParams struct {
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
+// ListListingPromotionsParams defines parameters for ListListingPromotions.
+type ListListingPromotionsParams struct {
+	// Refresh Re-read Airbnb and Booking.com before answering.
+	Refresh *bool `form:"refresh,omitempty" json:"refresh,omitempty"`
+}
+
 // PublishListingToAirbnbParams defines parameters for PublishListingToAirbnb.
 type PublishListingToAirbnbParams struct {
 	// IdempotencyKey Makes a retry of this request safe. Send a unique string (a UUID generated at the point you build the request) and the response is stored for 24 hours: a repeat with the SAME key replays that stored response — tagged `Idempotency-Status: cached` — without running the operation again, so no duplicate reservation, guest or guest message is created.
@@ -17382,6 +18004,9 @@ type CreateListingJSONRequestBody = ListingCreateRequest
 // BulkApplyPricingJSONRequestBody defines body for BulkApplyPricing for application/json ContentType.
 type BulkApplyPricingJSONRequestBody = BulkPricingRequest
 
+// BulkListingPromotionsJSONRequestBody defines body for BulkListingPromotions for application/json ContentType.
+type BulkListingPromotionsJSONRequestBody = PromotionBulkRequest
+
 // SetListingsStatusJSONRequestBody defines body for SetListingsStatus for application/json ContentType.
 type SetListingsStatusJSONRequestBody = ListingStatusBatchRequest
 
@@ -17414,6 +18039,12 @@ type ApplyListingPricingJSONRequestBody = ListingPricingApplyRequest
 
 // UpdateListingPricingStrategyJSONRequestBody defines body for UpdateListingPricingStrategy for application/json ContentType.
 type UpdateListingPricingStrategyJSONRequestBody = ListingPricingStrategyInput
+
+// CreateListingPromotionJSONRequestBody defines body for CreateListingPromotion for application/json ContentType.
+type CreateListingPromotionJSONRequestBody = PromotionCreateRequest
+
+// UpdateListingPromotionJSONRequestBody defines body for UpdateListingPromotion for application/json ContentType.
+type UpdateListingPromotionJSONRequestBody = PromotionUpdateRequest
 
 // PublishListingToAirbnbJSONRequestBody defines body for PublishListingToAirbnb for application/json ContentType.
 type PublishListingToAirbnbJSONRequestBody = ListingPublishAirbnbRequest
