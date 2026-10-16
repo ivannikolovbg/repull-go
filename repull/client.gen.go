@@ -1372,6 +1372,38 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
 	AirbnbReservationAction(ctx context.Context, code string, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListAirbnbResolutions List Airbnb Resolution Center cases
+	//
+	// The host's Airbnb Resolution Center cases (AirCover / damage, extra-guest, refund and change requests), open and closed. Served from the database; `POST` this path to refresh from Airbnb. READ-ONLY upstream — Airbnb's Resolutions API is read-only; a claim is created, evidence added and status changed only in Airbnb's Resolution Center UI, not via API. Use this for visibility and action tracking (`suggestedActionText`). The money a resolution moved is in the transactions ledger as `Resolution Payout` / `Resolution Adjustment` rows sharing the same reference — join on `resolutionId`. Cursor-paginated, newest first.
+	//
+	// Corresponds with GET /v1/channels/airbnb/resolutions (the `ListAirbnbResolutions` operationId).
+	ListAirbnbResolutions(ctx context.Context, params *ListAirbnbResolutionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RefreshAirbnbResolutionsWithBody Refresh Airbnb resolutions from Airbnb
+	//
+	// Pulls the latest Resolution Center cases from Airbnb (read-only) and stores them, then read with GET. Optionally scope to one `account_id` and/or `status`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/airbnb/resolutions (the `RefreshAirbnbResolutions` operationId).
+	RefreshAirbnbResolutionsWithBody(ctx context.Context, params *RefreshAirbnbResolutionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RefreshAirbnbResolutions Refresh Airbnb resolutions from Airbnb
+	//
+	// Pulls the latest Resolution Center cases from Airbnb (read-only) and stores them, then read with GET. Optionally scope to one `account_id` and/or `status`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/airbnb/resolutions (the `RefreshAirbnbResolutions` operationId).
+	RefreshAirbnbResolutions(ctx context.Context, params *RefreshAirbnbResolutionsParams, body RefreshAirbnbResolutionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbResolution Get an Airbnb Resolution Center case
+	//
+	// One Airbnb Resolution Center case. `{id}` is the Airbnb resolution id (the `resolutionId` from the list, also a transaction's `reference`). Read-only (see the list endpoint). The amounts moved are in the transactions ledger — join `resolutionId` to a transaction's `reference`. 404 when it isn't in this workspace (POST the list endpoint to refresh first).
+	//
+	// Corresponds with GET /v1/channels/airbnb/resolutions/{id} (the `GetAirbnbResolution` operationId).
+	GetAirbnbResolution(ctx context.Context, id string, params *GetAirbnbResolutionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAirbnbReviews List Airbnb reviews
 	//
 	// List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
@@ -3042,6 +3074,17 @@ type ClientInterface interface {
 	//
 	// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
 	UpdateConnectWritePolicy(ctx context.Context, provider Provider, body UpdateConnectWritePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListConnectionImports List a connection's imports
+	//
+	// The import runs of one connected account, newest first: the first sync after connecting, a room or unit mapped later, a reconnect, a re-sync. Each run says where it stands (`running`, `completed`, `failed`), its stages and what it imported.
+	//
+	// To know when an account's first sync is done, wait for the `account.import.completed` webhook, or poll this endpoint (or `GET /v1/connect`, whose connections carry their latest `import`) until the newest run is no longer `running`.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`).
+	//
+	// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
+	ListConnectionImports(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SearchConnectionListingOptions Search listings a unit can be mapped to
 	//
@@ -4953,6 +4996,13 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/transactions (the `ListTransactions` operationId).
 	ListTransactions(ctx context.Context, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTransactionStatement Download the original payout statement
+	//
+	// Downloads the channel's ORIGINAL payout statement — the authoritative settlement record a host reconciles against — for a payout transaction. `{id}` is the payout `transactionId` (e.g. `booking_payout_5463377687_bank_transfer`). Repull serves the stored bytes itself (no channel session), so unlike the channel's own link it never expires or leaks a session. PDF by default; pass `?format=csv` for the CSV remittance. Returns `404` when no statement was captured for the payout (e.g. an upcoming payout, or a channel that has none).
+	//
+	// Corresponds with GET /v1/transactions/{id}/statement (the `GetTransactionStatement` operationId).
+	GetTransactionStatement(ctx context.Context, id string, params *GetTransactionStatementParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetUsageLogs List API request logs
 	//
@@ -7260,6 +7310,78 @@ func (c *Client) AirbnbReservationActionWithBody(ctx context.Context, code strin
 // Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
 func (c *Client) AirbnbReservationAction(ctx context.Context, code string, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAirbnbReservationActionRequest(c.Server, code, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListAirbnbResolutions List Airbnb Resolution Center cases
+//
+// The host's Airbnb Resolution Center cases (AirCover / damage, extra-guest, refund and change requests), open and closed. Served from the database; `POST` this path to refresh from Airbnb. READ-ONLY upstream — Airbnb's Resolutions API is read-only; a claim is created, evidence added and status changed only in Airbnb's Resolution Center UI, not via API. Use this for visibility and action tracking (`suggestedActionText`). The money a resolution moved is in the transactions ledger as `Resolution Payout` / `Resolution Adjustment` rows sharing the same reference — join on `resolutionId`. Cursor-paginated, newest first.
+//
+// Corresponds with GET /v1/channels/airbnb/resolutions (the `ListAirbnbResolutions` operationId).
+func (c *Client) ListAirbnbResolutions(ctx context.Context, params *ListAirbnbResolutionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAirbnbResolutionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RefreshAirbnbResolutionsWithBody Refresh Airbnb resolutions from Airbnb
+//
+// Pulls the latest Resolution Center cases from Airbnb (read-only) and stores them, then read with GET. Optionally scope to one `account_id` and/or `status`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/airbnb/resolutions (the `RefreshAirbnbResolutions` operationId).
+func (c *Client) RefreshAirbnbResolutionsWithBody(ctx context.Context, params *RefreshAirbnbResolutionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRefreshAirbnbResolutionsRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RefreshAirbnbResolutions Refresh Airbnb resolutions from Airbnb
+//
+// Pulls the latest Resolution Center cases from Airbnb (read-only) and stores them, then read with GET. Optionally scope to one `account_id` and/or `status`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/airbnb/resolutions (the `RefreshAirbnbResolutions` operationId).
+func (c *Client) RefreshAirbnbResolutions(ctx context.Context, params *RefreshAirbnbResolutionsParams, body RefreshAirbnbResolutionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRefreshAirbnbResolutionsRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetAirbnbResolution Get an Airbnb Resolution Center case
+//
+// One Airbnb Resolution Center case. `{id}` is the Airbnb resolution id (the `resolutionId` from the list, also a transaction's `reference`). Read-only (see the list endpoint). The amounts moved are in the transactions ledger — join `resolutionId` to a transaction's `reference`. 404 when it isn't in this workspace (POST the list endpoint to refresh first).
+//
+// Corresponds with GET /v1/channels/airbnb/resolutions/{id} (the `GetAirbnbResolution` operationId).
+func (c *Client) GetAirbnbResolution(ctx context.Context, id string, params *GetAirbnbResolutionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbResolutionRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -10098,6 +10220,27 @@ func (c *Client) UpdateConnectWritePolicyWithBody(ctx context.Context, provider 
 // Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
 func (c *Client) UpdateConnectWritePolicy(ctx context.Context, provider Provider, body UpdateConnectWritePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateConnectWritePolicyRequest(c.Server, provider, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListConnectionImports List a connection's imports
+//
+// The import runs of one connected account, newest first: the first sync after connecting, a room or unit mapped later, a reconnect, a re-sync. Each run says where it stands (`running`, `completed`, `failed`), its stages and what it imported.
+//
+// To know when an account's first sync is done, wait for the `account.import.completed` webhook, or poll this endpoint (or `GET /v1/connect`, whose connections carry their latest `import`) until the newest run is no longer `running`.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`).
+//
+// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
+func (c *Client) ListConnectionImports(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListConnectionImportsRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -13303,6 +13446,23 @@ func (c *Client) UpdateCustomSchema(ctx context.Context, id openapi_types.UUID, 
 // Corresponds with GET /v1/transactions (the `ListTransactions` operationId).
 func (c *Client) ListTransactions(ctx context.Context, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListTransactionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetTransactionStatement Download the original payout statement
+//
+// Downloads the channel's ORIGINAL payout statement — the authoritative settlement record a host reconciles against — for a payout transaction. `{id}` is the payout `transactionId` (e.g. `booking_payout_5463377687_bank_transfer`). Repull serves the stored bytes itself (no channel session), so unlike the channel's own link it never expires or leaks a session. PDF by default; pass `?format=csv` for the CSV remittance. Returns `404` when no statement was captured for the payout (e.g. an upcoming payout, or a channel that has none).
+//
+// Corresponds with GET /v1/transactions/{id}/statement (the `GetTransactionStatement` operationId).
+func (c *Client) GetTransactionStatement(ctx context.Context, id string, params *GetTransactionStatementParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTransactionStatementRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16659,6 +16819,203 @@ func NewAirbnbReservationActionRequestWithBody(server string, code string, param
 			}
 
 			req.Header.Set("Idempotency-Key", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewListAirbnbResolutionsRequest constructs an http.Request for the ListAirbnbResolutions method
+func NewListAirbnbResolutionsRequest(server string, params *ListAirbnbResolutionsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/resolutions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewRefreshAirbnbResolutionsRequest calls the generic RefreshAirbnbResolutions builder with application/json body
+func NewRefreshAirbnbResolutionsRequest(server string, params *RefreshAirbnbResolutionsParams, body RefreshAirbnbResolutionsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRefreshAirbnbResolutionsRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewRefreshAirbnbResolutionsRequestWithBody constructs an http.Request for the RefreshAirbnbResolutions method, with any body, and a specified content type
+func NewRefreshAirbnbResolutionsRequestWithBody(server string, params *RefreshAirbnbResolutionsParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/resolutions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
+// NewGetAirbnbResolutionRequest constructs an http.Request for the GetAirbnbResolution method
+func NewGetAirbnbResolutionRequest(server string, id string, params *GetAirbnbResolutionParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/resolutions/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
 		}
 
 	}
@@ -20500,6 +20857,79 @@ func NewUpdateConnectWritePolicyRequestWithBody(server string, provider Provider
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListConnectionImportsRequest constructs an http.Request for the ListConnectionImports method
+func NewListConnectionImportsRequest(server string, id string, params *ListConnectionImportsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connections/%s/imports", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.SessionId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", *params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -26304,6 +26734,82 @@ func NewListTransactionsRequest(server string, params *ListTransactionsParams) (
 	return req, nil
 }
 
+// NewGetTransactionStatementRequest constructs an http.Request for the GetTransactionStatement method
+func NewGetTransactionStatementRequest(server string, id string, params *GetTransactionStatementParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/transactions/%s/statement", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Format != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "format", *params.Format, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		if params.XSchema != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "X-Schema", *params.XSchema, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("X-Schema", headerParam0)
+		}
+
+	}
+
+	return req, nil
+}
+
 // NewGetUsageLogsRequest constructs an http.Request for the GetUsageLogs method
 func NewGetUsageLogsRequest(server string, params *GetUsageLogsParams) (*http.Request, error) {
 	var err error
@@ -28535,6 +29041,42 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/channels/airbnb/reservations/{code} (the `AirbnbReservationAction` operationId).
 	AirbnbReservationActionWithResponse(ctx context.Context, code string, params *AirbnbReservationActionParams, body AirbnbReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*AirbnbReservationActionClientResponse, error)
 
+	// ListAirbnbResolutionsWithResponse List Airbnb Resolution Center cases
+	//
+	// The host's Airbnb Resolution Center cases (AirCover / damage, extra-guest, refund and change requests), open and closed. Served from the database; `POST` this path to refresh from Airbnb. READ-ONLY upstream — Airbnb's Resolutions API is read-only; a claim is created, evidence added and status changed only in Airbnb's Resolution Center UI, not via API. Use this for visibility and action tracking (`suggestedActionText`). The money a resolution moved is in the transactions ledger as `Resolution Payout` / `Resolution Adjustment` rows sharing the same reference — join on `resolutionId`. Cursor-paginated, newest first.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/airbnb/resolutions (the `ListAirbnbResolutions` operationId).
+	ListAirbnbResolutionsWithResponse(ctx context.Context, params *ListAirbnbResolutionsParams, reqEditors ...RequestEditorFn) (*ListAirbnbResolutionsClientResponse, error)
+
+	// RefreshAirbnbResolutionsWithBodyWithResponse Refresh Airbnb resolutions from Airbnb
+	//
+	// Pulls the latest Resolution Center cases from Airbnb (read-only) and stores them, then read with GET. Optionally scope to one `account_id` and/or `status`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/airbnb/resolutions (the `RefreshAirbnbResolutions` operationId).
+	RefreshAirbnbResolutionsWithBodyWithResponse(ctx context.Context, params *RefreshAirbnbResolutionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RefreshAirbnbResolutionsClientResponse, error)
+
+	// RefreshAirbnbResolutionsWithResponse Refresh Airbnb resolutions from Airbnb
+	//
+	// Pulls the latest Resolution Center cases from Airbnb (read-only) and stores them, then read with GET. Optionally scope to one `account_id` and/or `status`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/airbnb/resolutions (the `RefreshAirbnbResolutions` operationId).
+	RefreshAirbnbResolutionsWithResponse(ctx context.Context, params *RefreshAirbnbResolutionsParams, body RefreshAirbnbResolutionsJSONRequestBody, reqEditors ...RequestEditorFn) (*RefreshAirbnbResolutionsClientResponse, error)
+
+	// GetAirbnbResolutionWithResponse Get an Airbnb Resolution Center case
+	//
+	// One Airbnb Resolution Center case. `{id}` is the Airbnb resolution id (the `resolutionId` from the list, also a transaction's `reference`). Read-only (see the list endpoint). The amounts moved are in the transactions ledger — join `resolutionId` to a transaction's `reference`. 404 when it isn't in this workspace (POST the list endpoint to refresh first).
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/airbnb/resolutions/{id} (the `GetAirbnbResolution` operationId).
+	GetAirbnbResolutionWithResponse(ctx context.Context, id string, params *GetAirbnbResolutionParams, reqEditors ...RequestEditorFn) (*GetAirbnbResolutionClientResponse, error)
+
 	// ListAirbnbReviewsWithResponse List Airbnb reviews
 	//
 	// List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
@@ -30283,6 +30825,19 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PATCH /v1/connect/{provider}/write-policy (the `UpdateConnectWritePolicy` operationId).
 	UpdateConnectWritePolicyWithResponse(ctx context.Context, provider Provider, body UpdateConnectWritePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateConnectWritePolicyClientResponse, error)
+
+	// ListConnectionImportsWithResponse List a connection's imports
+	//
+	// The import runs of one connected account, newest first: the first sync after connecting, a room or unit mapped later, a reconnect, a re-sync. Each run says where it stands (`running`, `completed`, `failed`), its stages and what it imported.
+	//
+	// To know when an account's first sync is done, wait for the `account.import.completed` webhook, or poll this endpoint (or `GET /v1/connect`, whose connections carry their latest `import`) until the newest run is no longer `running`.
+	//
+	// Auth: a Repull API key, or a Connect session token (`sessionId`).
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
+	ListConnectionImportsWithResponse(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*ListConnectionImportsClientResponse, error)
 
 	// SearchConnectionListingOptionsWithResponse Search listings a unit can be mapped to
 	//
@@ -32308,6 +32863,15 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/transactions (the `ListTransactions` operationId).
 	ListTransactionsWithResponse(ctx context.Context, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*ListTransactionsClientResponse, error)
+
+	// GetTransactionStatementWithResponse Download the original payout statement
+	//
+	// Downloads the channel's ORIGINAL payout statement — the authoritative settlement record a host reconciles against — for a payout transaction. `{id}` is the payout `transactionId` (e.g. `booking_payout_5463377687_bank_transfer`). Repull serves the stored bytes itself (no channel session), so unlike the channel's own link it never expires or leaks a session. PDF by default; pass `?format=csv` for the CSV remittance. Returns `404` when no statement was captured for the payout (e.g. an upcoming payout, or a channel that has none).
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/transactions/{id}/statement (the `GetTransactionStatement` operationId).
+	GetTransactionStatementWithResponse(ctx context.Context, id string, params *GetTransactionStatementParams, reqEditors ...RequestEditorFn) (*GetTransactionStatementClientResponse, error)
 
 	// GetUsageLogsWithResponse List API request logs
 	//
@@ -37610,6 +38174,235 @@ func (r AirbnbReservationActionClientResponse) ContentType() string {
 	return ""
 }
 
+type ListAirbnbResolutionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data []Resolution `json:"data"`
+
+		// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+		Pagination Pagination `json:"pagination"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListAirbnbResolutionsClientResponse) GetJSON200() *struct {
+	Data []Resolution `json:"data"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination Pagination `json:"pagination"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListAirbnbResolutionsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListAirbnbResolutionsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListAirbnbResolutionsClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListAirbnbResolutionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAirbnbResolutionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAirbnbResolutionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListAirbnbResolutionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RefreshAirbnbResolutionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Accounts []struct {
+			AccountId string `json:"account_id"`
+			Count     int    `json:"count"`
+			Error     *struct {
+				Code    *string `json:"code,omitempty"`
+				Message *string `json:"message,omitempty"`
+			} `json:"error,omitempty"`
+		} `json:"accounts"`
+
+		// Count Resolutions upserted across all accounts.
+		Count  int  `json:"count"`
+		Synced bool `json:"synced"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RefreshAirbnbResolutionsClientResponse) GetJSON200() *struct {
+	Accounts []struct {
+		AccountId string `json:"account_id"`
+		Count     int    `json:"count"`
+		Error     *struct {
+			Code    *string `json:"code,omitempty"`
+			Message *string `json:"message,omitempty"`
+		} `json:"error,omitempty"`
+	} `json:"accounts"`
+
+	// Count Resolutions upserted across all accounts.
+	Count  int  `json:"count"`
+	Synced bool `json:"synced"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RefreshAirbnbResolutionsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r RefreshAirbnbResolutionsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r RefreshAirbnbResolutionsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RefreshAirbnbResolutionsClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RefreshAirbnbResolutionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RefreshAirbnbResolutionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RefreshAirbnbResolutionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RefreshAirbnbResolutionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetAirbnbResolutionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *Resolution
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetAirbnbResolutionClientResponse) GetJSON200() *Resolution {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetAirbnbResolutionClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetAirbnbResolutionClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetAirbnbResolutionClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetAirbnbResolutionClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbResolutionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbResolutionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetAirbnbResolutionClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListAirbnbReviewsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -42867,6 +43660,71 @@ func (r UpdateConnectWritePolicyClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateConnectWritePolicyClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListConnectionImportsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]AccountImport `json:"data,omitempty"`
+
+		// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+		Pagination *Pagination `json:"pagination,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListConnectionImportsClientResponse) GetJSON200() *struct {
+	Data *[]AccountImport `json:"data,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *Pagination `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListConnectionImportsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListConnectionImportsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetBody returns the raw response body bytes
+func (r ListConnectionImportsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListConnectionImportsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListConnectionImportsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListConnectionImportsClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -50624,6 +51482,68 @@ func (r ListTransactionsClientResponse) ContentType() string {
 	return ""
 }
 
+type GetTransactionStatementClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetTransactionStatementClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetTransactionStatementClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetTransactionStatementClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetTransactionStatementClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetTransactionStatementClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTransactionStatementClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTransactionStatementClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetTransactionStatementClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetUsageLogsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -53463,6 +54383,66 @@ func (c *ClientWithResponses) AirbnbReservationActionWithResponse(ctx context.Co
 	return ParseAirbnbReservationActionClientResponse(rsp)
 }
 
+// ListAirbnbResolutionsWithResponse List Airbnb Resolution Center cases
+//
+// The host's Airbnb Resolution Center cases (AirCover / damage, extra-guest, refund and change requests), open and closed. Served from the database; `POST` this path to refresh from Airbnb. READ-ONLY upstream — Airbnb's Resolutions API is read-only; a claim is created, evidence added and status changed only in Airbnb's Resolution Center UI, not via API. Use this for visibility and action tracking (`suggestedActionText`). The money a resolution moved is in the transactions ledger as `Resolution Payout` / `Resolution Adjustment` rows sharing the same reference — join on `resolutionId`. Cursor-paginated, newest first.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/airbnb/resolutions (the `ListAirbnbResolutions` operationId).
+func (c *ClientWithResponses) ListAirbnbResolutionsWithResponse(ctx context.Context, params *ListAirbnbResolutionsParams, reqEditors ...RequestEditorFn) (*ListAirbnbResolutionsClientResponse, error) {
+	rsp, err := c.ListAirbnbResolutions(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAirbnbResolutionsClientResponse(rsp)
+}
+
+// RefreshAirbnbResolutionsWithBodyWithResponse Refresh Airbnb resolutions from Airbnb
+//
+// Pulls the latest Resolution Center cases from Airbnb (read-only) and stores them, then read with GET. Optionally scope to one `account_id` and/or `status`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/airbnb/resolutions (the `RefreshAirbnbResolutions` operationId).
+func (c *ClientWithResponses) RefreshAirbnbResolutionsWithBodyWithResponse(ctx context.Context, params *RefreshAirbnbResolutionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RefreshAirbnbResolutionsClientResponse, error) {
+	rsp, err := c.RefreshAirbnbResolutionsWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRefreshAirbnbResolutionsClientResponse(rsp)
+}
+
+// RefreshAirbnbResolutionsWithResponse Refresh Airbnb resolutions from Airbnb
+//
+// Pulls the latest Resolution Center cases from Airbnb (read-only) and stores them, then read with GET. Optionally scope to one `account_id` and/or `status`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/airbnb/resolutions (the `RefreshAirbnbResolutions` operationId).
+func (c *ClientWithResponses) RefreshAirbnbResolutionsWithResponse(ctx context.Context, params *RefreshAirbnbResolutionsParams, body RefreshAirbnbResolutionsJSONRequestBody, reqEditors ...RequestEditorFn) (*RefreshAirbnbResolutionsClientResponse, error) {
+	rsp, err := c.RefreshAirbnbResolutions(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRefreshAirbnbResolutionsClientResponse(rsp)
+}
+
+// GetAirbnbResolutionWithResponse Get an Airbnb Resolution Center case
+//
+// One Airbnb Resolution Center case. `{id}` is the Airbnb resolution id (the `resolutionId` from the list, also a transaction's `reference`). Read-only (see the list endpoint). The amounts moved are in the transactions ledger — join `resolutionId` to a transaction's `reference`. 404 when it isn't in this workspace (POST the list endpoint to refresh first).
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/airbnb/resolutions/{id} (the `GetAirbnbResolution` operationId).
+func (c *ClientWithResponses) GetAirbnbResolutionWithResponse(ctx context.Context, id string, params *GetAirbnbResolutionParams, reqEditors ...RequestEditorFn) (*GetAirbnbResolutionClientResponse, error) {
+	rsp, err := c.GetAirbnbResolution(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbResolutionClientResponse(rsp)
+}
+
 // ListAirbnbReviewsWithResponse List Airbnb reviews
 //
 // List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
@@ -55914,6 +56894,25 @@ func (c *ClientWithResponses) UpdateConnectWritePolicyWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseUpdateConnectWritePolicyClientResponse(rsp)
+}
+
+// ListConnectionImportsWithResponse List a connection's imports
+//
+// The import runs of one connected account, newest first: the first sync after connecting, a room or unit mapped later, a reconnect, a re-sync. Each run says where it stands (`running`, `completed`, `failed`), its stages and what it imported.
+//
+// To know when an account's first sync is done, wait for the `account.import.completed` webhook, or poll this endpoint (or `GET /v1/connect`, whose connections carry their latest `import`) until the newest run is no longer `running`.
+//
+// Auth: a Repull API key, or a Connect session token (`sessionId`).
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
+func (c *ClientWithResponses) ListConnectionImportsWithResponse(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*ListConnectionImportsClientResponse, error) {
+	rsp, err := c.ListConnectionImports(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListConnectionImportsClientResponse(rsp)
 }
 
 // SearchConnectionListingOptionsWithResponse Search listings a unit can be mapped to
@@ -58717,6 +59716,21 @@ func (c *ClientWithResponses) ListTransactionsWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseListTransactionsClientResponse(rsp)
+}
+
+// GetTransactionStatementWithResponse Download the original payout statement
+//
+// Downloads the channel's ORIGINAL payout statement — the authoritative settlement record a host reconciles against — for a payout transaction. `{id}` is the payout `transactionId` (e.g. `booking_payout_5463377687_bank_transfer`). Repull serves the stored bytes itself (no channel session), so unlike the channel's own link it never expires or leaks a session. PDF by default; pass `?format=csv` for the CSV remittance. Returns `404` when no statement was captured for the payout (e.g. an upcoming payout, or a channel that has none).
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/transactions/{id}/statement (the `GetTransactionStatement` operationId).
+func (c *ClientWithResponses) GetTransactionStatementWithResponse(ctx context.Context, id string, params *GetTransactionStatementParams, reqEditors ...RequestEditorFn) (*GetTransactionStatementClientResponse, error) {
+	rsp, err := c.GetTransactionStatement(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTransactionStatementClientResponse(rsp)
 }
 
 // GetUsageLogsWithResponse List API request logs
@@ -62864,6 +63878,172 @@ func ParseAirbnbReservationActionClientResponse(rsp *http.Response) (*AirbnbRese
 	return response, nil
 }
 
+// ParseListAirbnbResolutionsClientResponse parses an HTTP response from a ListAirbnbResolutionsWithResponse call
+func ParseListAirbnbResolutionsClientResponse(rsp *http.Response) (*ListAirbnbResolutionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAirbnbResolutionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []Resolution `json:"data"`
+
+			// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+			Pagination Pagination `json:"pagination"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRefreshAirbnbResolutionsClientResponse parses an HTTP response from a RefreshAirbnbResolutionsWithResponse call
+func ParseRefreshAirbnbResolutionsClientResponse(rsp *http.Response) (*RefreshAirbnbResolutionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RefreshAirbnbResolutionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Accounts []struct {
+				AccountId string `json:"account_id"`
+				Count     int    `json:"count"`
+				Error     *struct {
+					Code    *string `json:"code,omitempty"`
+					Message *string `json:"message,omitempty"`
+				} `json:"error,omitempty"`
+			} `json:"accounts"`
+
+			// Count Resolutions upserted across all accounts.
+			Count  int  `json:"count"`
+			Synced bool `json:"synced"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbResolutionClientResponse parses an HTTP response from a GetAirbnbResolutionWithResponse call
+func ParseGetAirbnbResolutionClientResponse(rsp *http.Response) (*GetAirbnbResolutionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbResolutionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Resolution
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListAirbnbReviewsClientResponse parses an HTTP response from a ListAirbnbReviewsWithResponse call
 func ParseListAirbnbReviewsClientResponse(rsp *http.Response) (*ListAirbnbReviewsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -66765,6 +67945,51 @@ func ParseUpdateConnectWritePolicyClientResponse(rsp *http.Response) (*UpdateCon
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListConnectionImportsClientResponse parses an HTTP response from a ListConnectionImportsWithResponse call
+func ParseListConnectionImportsClientResponse(rsp *http.Response) (*ListConnectionImportsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListConnectionImportsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]AccountImport `json:"data,omitempty"`
+
+			// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+			Pagination *Pagination `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	}
 
@@ -72486,6 +73711,53 @@ func ParseListTransactionsClientResponse(rsp *http.Response) (*ListTransactionsC
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTransactionStatementClientResponse parses an HTTP response from a GetTransactionStatementWithResponse call
+func ParseGetTransactionStatementClientResponse(rsp *http.Response) (*GetTransactionStatementClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTransactionStatementClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 

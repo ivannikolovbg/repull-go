@@ -94,6 +94,198 @@ func (e AccountDisconnectedPayloadReason) Valid() bool {
 	}
 }
 
+// Defines values for AccountImportOutcome.
+const (
+	AccountImportOutcomeComplete AccountImportOutcome = "complete"
+	AccountImportOutcomePartial  AccountImportOutcome = "partial"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportOutcome enum.
+func (e AccountImportOutcome) Valid() bool {
+	switch e {
+	case AccountImportOutcomeComplete:
+		return true
+	case AccountImportOutcomePartial:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportStatus.
+const (
+	AccountImportStatusCompleted AccountImportStatus = "completed"
+	AccountImportStatusFailed    AccountImportStatus = "failed"
+	AccountImportStatusRunning   AccountImportStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportStatus enum.
+func (e AccountImportStatus) Valid() bool {
+	switch e {
+	case AccountImportStatusCompleted:
+		return true
+	case AccountImportStatusFailed:
+		return true
+	case AccountImportStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportTrigger.
+const (
+	AccountImportTriggerConnect   AccountImportTrigger = "connect"
+	AccountImportTriggerMapping   AccountImportTrigger = "mapping"
+	AccountImportTriggerReconnect AccountImportTrigger = "reconnect"
+	AccountImportTriggerResync    AccountImportTrigger = "resync"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportTrigger enum.
+func (e AccountImportTrigger) Valid() bool {
+	switch e {
+	case AccountImportTriggerConnect:
+		return true
+	case AccountImportTriggerMapping:
+		return true
+	case AccountImportTriggerReconnect:
+		return true
+	case AccountImportTriggerResync:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportCompletedEventEvent.
+const (
+	AccountImportCompletedEventEventAccountImportCompleted AccountImportCompletedEventEvent = "account.import.completed"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportCompletedEventEvent enum.
+func (e AccountImportCompletedEventEvent) Valid() bool {
+	switch e {
+	case AccountImportCompletedEventEventAccountImportCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportFailedEventEvent.
+const (
+	AccountImportFailedEventEventAccountImportFailed AccountImportFailedEventEvent = "account.import.failed"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportFailedEventEvent enum.
+func (e AccountImportFailedEventEvent) Valid() bool {
+	switch e {
+	case AccountImportFailedEventEventAccountImportFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportFinishedPayloadOutcome.
+const (
+	AccountImportFinishedPayloadOutcomeComplete AccountImportFinishedPayloadOutcome = "complete"
+	AccountImportFinishedPayloadOutcomePartial  AccountImportFinishedPayloadOutcome = "partial"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportFinishedPayloadOutcome enum.
+func (e AccountImportFinishedPayloadOutcome) Valid() bool {
+	switch e {
+	case AccountImportFinishedPayloadOutcomeComplete:
+		return true
+	case AccountImportFinishedPayloadOutcomePartial:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportFinishedPayloadStatus.
+const (
+	AccountImportFinishedPayloadStatusCompleted AccountImportFinishedPayloadStatus = "completed"
+	AccountImportFinishedPayloadStatusFailed    AccountImportFinishedPayloadStatus = "failed"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportFinishedPayloadStatus enum.
+func (e AccountImportFinishedPayloadStatus) Valid() bool {
+	switch e {
+	case AccountImportFinishedPayloadStatusCompleted:
+		return true
+	case AccountImportFinishedPayloadStatusFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportFinishedPayloadTrigger.
+const (
+	AccountImportFinishedPayloadTriggerConnect   AccountImportFinishedPayloadTrigger = "connect"
+	AccountImportFinishedPayloadTriggerMapping   AccountImportFinishedPayloadTrigger = "mapping"
+	AccountImportFinishedPayloadTriggerReconnect AccountImportFinishedPayloadTrigger = "reconnect"
+	AccountImportFinishedPayloadTriggerResync    AccountImportFinishedPayloadTrigger = "resync"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportFinishedPayloadTrigger enum.
+func (e AccountImportFinishedPayloadTrigger) Valid() bool {
+	switch e {
+	case AccountImportFinishedPayloadTriggerConnect:
+		return true
+	case AccountImportFinishedPayloadTriggerMapping:
+		return true
+	case AccountImportFinishedPayloadTriggerReconnect:
+		return true
+	case AccountImportFinishedPayloadTriggerResync:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportStartedEventEvent.
+const (
+	AccountImportStartedEventEventAccountImportStarted AccountImportStartedEventEvent = "account.import.started"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportStartedEventEvent enum.
+func (e AccountImportStartedEventEvent) Valid() bool {
+	switch e {
+	case AccountImportStartedEventEventAccountImportStarted:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountImportStartedPayloadTrigger.
+const (
+	AccountImportStartedPayloadTriggerConnect   AccountImportStartedPayloadTrigger = "connect"
+	AccountImportStartedPayloadTriggerMapping   AccountImportStartedPayloadTrigger = "mapping"
+	AccountImportStartedPayloadTriggerReconnect AccountImportStartedPayloadTrigger = "reconnect"
+	AccountImportStartedPayloadTriggerResync    AccountImportStartedPayloadTrigger = "resync"
+)
+
+// Valid indicates whether the value is a known member of the AccountImportStartedPayloadTrigger enum.
+func (e AccountImportStartedPayloadTrigger) Valid() bool {
+	switch e {
+	case AccountImportStartedPayloadTriggerConnect:
+		return true
+	case AccountImportStartedPayloadTriggerMapping:
+		return true
+	case AccountImportStartedPayloadTriggerReconnect:
+		return true
+	case AccountImportStartedPayloadTriggerResync:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AiOperationCompletedEventEvent.
 const (
 	AiOperationCompletedEventEventAiOperationCompleted AiOperationCompletedEventEvent = "ai.operation.completed"
@@ -3482,6 +3674,9 @@ func (e WebhookEventCatalogEntryDomain) Valid() bool {
 const (
 	WebhookEventTypeAccountCreated                 WebhookEventType = "account.created"
 	WebhookEventTypeAccountDisconnected            WebhookEventType = "account.disconnected"
+	WebhookEventTypeAccountImportCompleted         WebhookEventType = "account.import.completed"
+	WebhookEventTypeAccountImportFailed            WebhookEventType = "account.import.failed"
+	WebhookEventTypeAccountImportStarted           WebhookEventType = "account.import.started"
 	WebhookEventTypeAiOperationCompleted           WebhookEventType = "ai.operation.completed"
 	WebhookEventTypeAiOperationFailed              WebhookEventType = "ai.operation.failed"
 	WebhookEventTypeCalendarUpdated                WebhookEventType = "calendar.updated"
@@ -3520,6 +3715,12 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeAccountCreated:
 		return true
 	case WebhookEventTypeAccountDisconnected:
+		return true
+	case WebhookEventTypeAccountImportCompleted:
+		return true
+	case WebhookEventTypeAccountImportFailed:
+		return true
+	case WebhookEventTypeAccountImportStarted:
 		return true
 	case WebhookEventTypeAiOperationCompleted:
 		return true
@@ -4441,6 +4642,42 @@ func (e AirbnbReservationActionJSONBodyReason) Valid() bool {
 	case AirbnbReservationActionJSONBodyReasonSpam:
 		return true
 	case AirbnbReservationActionJSONBodyReasonUnableToHost:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListAirbnbResolutionsParamsStatus.
+const (
+	ListAirbnbResolutionsParamsStatusClosed ListAirbnbResolutionsParamsStatus = "closed"
+	ListAirbnbResolutionsParamsStatusOpen   ListAirbnbResolutionsParamsStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the ListAirbnbResolutionsParamsStatus enum.
+func (e ListAirbnbResolutionsParamsStatus) Valid() bool {
+	switch e {
+	case ListAirbnbResolutionsParamsStatusClosed:
+		return true
+	case ListAirbnbResolutionsParamsStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RefreshAirbnbResolutionsJSONBodyStatus.
+const (
+	CLOSED RefreshAirbnbResolutionsJSONBodyStatus = "CLOSED"
+	OPEN   RefreshAirbnbResolutionsJSONBodyStatus = "OPEN"
+)
+
+// Valid indicates whether the value is a known member of the RefreshAirbnbResolutionsJSONBodyStatus enum.
+func (e RefreshAirbnbResolutionsJSONBodyStatus) Valid() bool {
+	switch e {
+	case CLOSED:
+		return true
+	case OPEN:
 		return true
 	default:
 		return false
@@ -5875,6 +6112,24 @@ func (e ListTransactionsParamsPlatform) Valid() bool {
 	}
 }
 
+// Defines values for GetTransactionStatementParamsFormat.
+const (
+	Csv GetTransactionStatementParamsFormat = "csv"
+	Pdf GetTransactionStatementParamsFormat = "pdf"
+)
+
+// Valid indicates whether the value is a known member of the GetTransactionStatementParamsFormat enum.
+func (e GetTransactionStatementParamsFormat) Valid() bool {
+	switch e {
+	case Csv:
+		return true
+	case Pdf:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetUsageLogsParamsRange.
 const (
 	GetUsageLogsParamsRangeN1h  GetUsageLogsParamsRange = "1h"
@@ -6090,6 +6345,164 @@ type AccountDisconnectedPayload struct {
 //
 // Example: refresh_token_rejected
 type AccountDisconnectedPayloadReason string
+
+// AccountImport One import run of a connected account: the first sync after connecting, a room or unit mapped later, a reconnect or a re-sync.
+type AccountImport struct {
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+
+	// Counts What the import brought in. A channel reports the keys it imports.
+	Counts *AccountImportCounts `json:"counts,omitempty"`
+
+	// Id The import id — the `importId` on `account.import.*` webhooks.
+	Id             *openapi_types.UUID `json:"id,omitempty"`
+	LastActivityAt *time.Time          `json:"lastActivityAt,omitempty"`
+
+	// Outcome `completed` imports only: `partial` when some units failed (see `stages`).
+	Outcome *AccountImportOutcome `json:"outcome,omitempty"`
+
+	// Reason `failed` imports only: why it stopped — e.g. `needs_permissions`, `duplicate_account`, `stalled`.
+	Reason    *string               `json:"reason,omitempty"`
+	Stages    *[]AccountImportStage `json:"stages,omitempty"`
+	StartedAt *time.Time            `json:"startedAt,omitempty"`
+	Status    *AccountImportStatus  `json:"status,omitempty"`
+	Trigger   *AccountImportTrigger `json:"trigger,omitempty"`
+}
+
+// AccountImportOutcome `completed` imports only: `partial` when some units failed (see `stages`).
+type AccountImportOutcome string
+
+// AccountImportStatus defines model for AccountImport.Status.
+type AccountImportStatus string
+
+// AccountImportTrigger defines model for AccountImport.Trigger.
+type AccountImportTrigger string
+
+// AccountImportCompletedEvent Every stage of an account import finished. Its data is readable through the API.
+type AccountImportCompletedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string                       `json:"apiVersion"`
+	Data       AccountImportFinishedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AccountImportCompletedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// AccountImportCompletedEventEvent The event name. This field is `event`, not `type`.
+type AccountImportCompletedEventEvent string
+
+// AccountImportCounts What the import brought in. A channel reports the keys it imports.
+type AccountImportCounts struct {
+	Conversations *int `json:"conversations,omitempty"`
+	Listings      *int `json:"listings,omitempty"`
+	Messages      *int `json:"messages,omitempty"`
+	Payments      *int `json:"payments,omitempty"`
+	Reservations  *int `json:"reservations,omitempty"`
+	Reviews       *int `json:"reviews,omitempty"`
+}
+
+// AccountImportFailedEvent An account import stopped before finishing; `data.reason` says why.
+type AccountImportFailedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string                       `json:"apiVersion"`
+	Data       AccountImportFinishedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AccountImportFailedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// AccountImportFailedEventEvent The event name. This field is `event`, not `type`.
+type AccountImportFailedEventEvent string
+
+// AccountImportFinishedPayload defines model for AccountImportFinishedPayload.
+type AccountImportFinishedPayload struct {
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+
+	// Counts What the import brought in. A channel reports the keys it imports.
+	Counts   *AccountImportCounts                 `json:"counts,omitempty"`
+	ImportId *openapi_types.UUID                  `json:"importId,omitempty"`
+	Outcome  *AccountImportFinishedPayloadOutcome `json:"outcome,omitempty"`
+
+	// Reason `account.import.failed` only.
+	Reason    *string                              `json:"reason,omitempty"`
+	Stages    *[]AccountImportStage                `json:"stages,omitempty"`
+	StartedAt *time.Time                           `json:"startedAt,omitempty"`
+	Status    *AccountImportFinishedPayloadStatus  `json:"status,omitempty"`
+	Trigger   *AccountImportFinishedPayloadTrigger `json:"trigger,omitempty"`
+}
+
+// AccountImportFinishedPayloadOutcome defines model for AccountImportFinishedPayload.Outcome.
+type AccountImportFinishedPayloadOutcome string
+
+// AccountImportFinishedPayloadStatus defines model for AccountImportFinishedPayload.Status.
+type AccountImportFinishedPayloadStatus string
+
+// AccountImportFinishedPayloadTrigger defines model for AccountImportFinishedPayload.Trigger.
+type AccountImportFinishedPayloadTrigger string
+
+// AccountImportStage One stage of an account import (e.g. `reservations`). The stage is done when `done + failed` reaches `expected`.
+type AccountImportStage struct {
+	Done *int `json:"done,omitempty"`
+
+	// Expected Units of work in this stage (one per page, chunk, listing or thread, depending on the channel). `null` until the stage knows its size.
+	Expected *int `json:"expected,omitempty"`
+	Failed   *int `json:"failed,omitempty"`
+
+	// Name Example: reservations
+	Name *string `json:"name,omitempty"`
+}
+
+// AccountImportStartedEvent An account import began.
+type AccountImportStartedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string                      `json:"apiVersion"`
+	Data       AccountImportStartedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AccountImportStartedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// AccountImportStartedEventEvent The event name. This field is `event`, not `type`.
+type AccountImportStartedEventEvent string
+
+// AccountImportStartedPayload defines model for AccountImportStartedPayload.
+type AccountImportStartedPayload struct {
+	ImportId *openapi_types.UUID `json:"importId,omitempty"`
+
+	// Stages The stages this import will run.
+	Stages    *[]string                           `json:"stages,omitempty"`
+	StartedAt *time.Time                          `json:"startedAt,omitempty"`
+	Trigger   *AccountImportStartedPayloadTrigger `json:"trigger,omitempty"`
+}
+
+// AccountImportStartedPayloadTrigger defines model for AccountImportStartedPayload.Trigger.
+type AccountImportStartedPayloadTrigger string
 
 // AiOperationCompletedEvent defines model for AiOperationCompletedEvent.
 type AiOperationCompletedEvent struct {
@@ -8472,6 +8885,9 @@ type Connection struct {
 	// Host Host metadata for the linked account. Currently populated for Airbnb only; null for other providers.
 	Host *ConnectHost `json:"host,omitempty"`
 	Id   *string      `json:"id,omitempty"`
+
+	// Import The account's latest import — `status: running` while the first sync (or a later one) is going, then `completed` or `failed`. `null` when no import has been recorded. The same run is announced by the `account.import.*` webhooks; the history is on `GET /v1/connections/{id}/imports`.
+	Import *AccountImport `json:"import,omitempty"`
 
 	// Provider Example: hostaway
 	Provider *string `json:"provider,omitempty"`
@@ -13140,6 +13556,55 @@ type ReservationWebhookObject struct {
 	Uid string `json:"uid"`
 }
 
+// Resolution An Airbnb Resolution Center case (AirCover / damage, extra-guest, refund or change request). Read-only — Airbnb exposes no create/evidence/status API. The money a resolution moved rides in the transactions ledger as `Resolution Payout` / `Resolution Adjustment` rows sharing the same reference; join on `resolutionId`.
+type Resolution struct {
+	// CaseStatus Airbnb's case-status label.
+	CaseStatus *string `json:"caseStatus,omitempty"`
+
+	// ConfirmationCode Airbnb confirmation code of the reservation the case is on.
+	//
+	// Example: HMZKMYCBC5
+	ConfirmationCode *string    `json:"confirmationCode,omitempty"`
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+
+	// CustomerSupportInitiated True when Airbnb Customer Support (not the host/guest) opened the case.
+	CustomerSupportInitiated *bool `json:"customerSupportInitiated,omitempty"`
+
+	// Initiator Who opened the case (id + name).
+	Initiator   *map[string]interface{} `json:"initiator,omitempty"`
+	ListingName *string                 `json:"listingName,omitempty"`
+	ProductType *string                 `json:"productType,omitempty"`
+
+	// Reason Why the resolution was opened.
+	Reason *string `json:"reason,omitempty"`
+
+	// ReservationId Repull's internal reservation id, when the reservation is in this workspace.
+	ReservationId *int `json:"reservationId,omitempty"`
+
+	// ResolutionId Airbnb's resolution id — the `{id}` path value and the join key to a transaction's `reference`.
+	//
+	// Example: CLSF-06464054
+	ResolutionId string `json:"resolutionId"`
+
+	// Responder Who responds (id + name).
+	Responder *map[string]interface{} `json:"responder,omitempty"`
+
+	// Status OPEN or CLOSED, as Airbnb reports it.
+	//
+	// Example: OPEN
+	Status *string `json:"status"`
+
+	// StatusText Human-readable status detail.
+	StatusText *string `json:"statusText,omitempty"`
+
+	// SuggestedActionText Airbnb's hint on whose turn it is to act next — track progress with it.
+	SuggestedActionText *string `json:"suggestedActionText,omitempty"`
+
+	// SyncedAt When Repull last refreshed this case from Airbnb.
+	SyncedAt  *time.Time `json:"syncedAt,omitempty"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+}
+
 // Review A guest or host review unified across channels. Returned by `GET /v1/reviews` and `GET /v1/reviews/{id}`. Includes every channel's reviews once they have been imported.
 type Review struct {
 	// Account The connected account this review belongs to. List endpoint.
@@ -13526,7 +13991,12 @@ type Transaction struct {
 		// Example: gkvDj0Jm9ZaA6IiO
 		PayoutId *string `json:"payoutId"`
 
-		// StatementUrl Link to the channel's original payout statement PDF — the authoritative settlement record (Booking.com). Null when none.
+		// StatementId The channel's own numeric statement id (Booking.com, e.g. "010747030095"). Null when none.
+		//
+		// Example: 010747030095
+		StatementId *string `json:"statementId,omitempty"`
+
+		// StatementUrl Repull-hosted download link for the original payout statement PDF (the authoritative settlement record). Add `?format=csv` for the CSV. Served by `GET /v1/transactions/{id}/statement` — no channel session needed. Null when none is stored.
 		StatementUrl *string `json:"statementUrl,omitempty"`
 	} `json:"payout"`
 
@@ -14698,6 +15168,48 @@ type AirbnbReservationActionJSONBodyAction string
 // AirbnbReservationActionJSONBodyReason defines parameters for AirbnbReservationAction.
 type AirbnbReservationActionJSONBodyReason string
 
+// ListAirbnbResolutionsParams defines parameters for ListAirbnbResolutions.
+type ListAirbnbResolutionsParams struct {
+	// Status Filter by lifecycle: `open` (still needs action) or `closed` (settled). Omit for all.
+	Status *ListAirbnbResolutionsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Limit Page size (default 50, max 200).
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Cursor Opaque pagination cursor from a previous `pagination.nextCursor`.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
+
+// ListAirbnbResolutionsParamsStatus defines parameters for ListAirbnbResolutions.
+type ListAirbnbResolutionsParamsStatus string
+
+// RefreshAirbnbResolutionsJSONBody defines parameters for RefreshAirbnbResolutions.
+type RefreshAirbnbResolutionsJSONBody struct {
+	// AccountId Limit the refresh to one Airbnb host id. Omit for all connected accounts.
+	AccountId *string `json:"account_id,omitempty"`
+
+	// Status Limit the refresh to one lifecycle. Omit for all.
+	Status *RefreshAirbnbResolutionsJSONBodyStatus `json:"status,omitempty"`
+}
+
+// RefreshAirbnbResolutionsParams defines parameters for RefreshAirbnbResolutions.
+type RefreshAirbnbResolutionsParams struct {
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
+
+// RefreshAirbnbResolutionsJSONBodyStatus defines parameters for RefreshAirbnbResolutions.
+type RefreshAirbnbResolutionsJSONBodyStatus string
+
+// GetAirbnbResolutionParams defines parameters for GetAirbnbResolution.
+type GetAirbnbResolutionParams struct {
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
+
 // ListAirbnbReviewsParams defines parameters for ListAirbnbReviews.
 type ListAirbnbReviewsParams struct {
 	// AccountId Scope the response to ONE connected Airbnb account. The value is the Airbnb host id — the same `accounts[].externalAccountId` that `GET /v1/connect/airbnb` returns and `DELETE /v1/connect/airbnb?accountId=` accepts.
@@ -15516,6 +16028,15 @@ type UpdateConnectWritePolicyJSONBody struct {
 		Dashboard *bool `json:"dashboard,omitempty"`
 		Website   *bool `json:"website,omitempty"`
 	} `json:"reservations,omitempty"`
+}
+
+// ListConnectionImportsParams defines parameters for ListConnectionImports.
+type ListConnectionImportsParams struct {
+	// Limit How many runs to return, newest first.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// SessionId The Connect session ID (capability token).
+	SessionId *string `form:"sessionId,omitempty" json:"sessionId,omitempty"`
 }
 
 // SearchConnectionListingOptionsParams defines parameters for SearchConnectionListingOptions.
@@ -16508,6 +17029,18 @@ type ListTransactionsParams struct {
 // ListTransactionsParamsPlatform defines parameters for ListTransactions.
 type ListTransactionsParamsPlatform string
 
+// GetTransactionStatementParams defines parameters for GetTransactionStatement.
+type GetTransactionStatementParams struct {
+	// Format Statement format.
+	Format *GetTransactionStatementParamsFormat `form:"format,omitempty" json:"format,omitempty"`
+
+	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
+	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
+}
+
+// GetTransactionStatementParamsFormat defines parameters for GetTransactionStatement.
+type GetTransactionStatementParamsFormat string
+
 // GetUsageLogsParams defines parameters for GetUsageLogs.
 type GetUsageLogsParams struct {
 	// Range Time window ending now.
@@ -16691,6 +17224,9 @@ type CreateAirbnbOfferJSONRequestBody CreateAirbnbOfferJSONBody
 
 // AirbnbReservationActionJSONRequestBody defines body for AirbnbReservationAction for application/json ContentType.
 type AirbnbReservationActionJSONRequestBody AirbnbReservationActionJSONBody
+
+// RefreshAirbnbResolutionsJSONRequestBody defines body for RefreshAirbnbResolutions for application/json ContentType.
+type RefreshAirbnbResolutionsJSONRequestBody RefreshAirbnbResolutionsJSONBody
 
 // EditAirbnbReviewJSONRequestBody defines body for EditAirbnbReview for application/json ContentType.
 type EditAirbnbReviewJSONRequestBody = AirbnbHostReviewSubmit
@@ -19613,6 +20149,108 @@ func (t *WebhookEvent) MergeAccountDisconnectedEvent(v AccountDisconnectedEvent)
 	return err
 }
 
+// AsAccountImportStartedEvent returns the union data inside the WebhookEvent as a AccountImportStartedEvent
+func (t WebhookEvent) AsAccountImportStartedEvent() (AccountImportStartedEvent, error) {
+	var body AccountImportStartedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAccountImportStartedEvent overwrites any union data inside the WebhookEvent as the provided AccountImportStartedEvent
+func (t *WebhookEvent) FromAccountImportStartedEvent(v AccountImportStartedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.import.started"}`))
+	t.union = b
+	return err
+}
+
+// MergeAccountImportStartedEvent performs a merge with any union data inside the WebhookEvent, using the provided AccountImportStartedEvent
+func (t *WebhookEvent) MergeAccountImportStartedEvent(v AccountImportStartedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.import.started"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAccountImportCompletedEvent returns the union data inside the WebhookEvent as a AccountImportCompletedEvent
+func (t WebhookEvent) AsAccountImportCompletedEvent() (AccountImportCompletedEvent, error) {
+	var body AccountImportCompletedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAccountImportCompletedEvent overwrites any union data inside the WebhookEvent as the provided AccountImportCompletedEvent
+func (t *WebhookEvent) FromAccountImportCompletedEvent(v AccountImportCompletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.import.completed"}`))
+	t.union = b
+	return err
+}
+
+// MergeAccountImportCompletedEvent performs a merge with any union data inside the WebhookEvent, using the provided AccountImportCompletedEvent
+func (t *WebhookEvent) MergeAccountImportCompletedEvent(v AccountImportCompletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.import.completed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAccountImportFailedEvent returns the union data inside the WebhookEvent as a AccountImportFailedEvent
+func (t WebhookEvent) AsAccountImportFailedEvent() (AccountImportFailedEvent, error) {
+	var body AccountImportFailedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAccountImportFailedEvent overwrites any union data inside the WebhookEvent as the provided AccountImportFailedEvent
+func (t *WebhookEvent) FromAccountImportFailedEvent(v AccountImportFailedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.import.failed"}`))
+	t.union = b
+	return err
+}
+
+// MergeAccountImportFailedEvent performs a merge with any union data inside the WebhookEvent, using the provided AccountImportFailedEvent
+func (t *WebhookEvent) MergeAccountImportFailedEvent(v AccountImportFailedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.import.failed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsReviewCreatedEvent returns the union data inside the WebhookEvent as a ReviewCreatedEvent
 func (t WebhookEvent) AsReviewCreatedEvent() (ReviewCreatedEvent, error) {
 	var body ReviewCreatedEvent
@@ -20005,6 +20643,12 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsAccountCreatedEvent()
 	case "account.disconnected":
 		return t.AsAccountDisconnectedEvent()
+	case "account.import.completed":
+		return t.AsAccountImportCompletedEvent()
+	case "account.import.failed":
+		return t.AsAccountImportFailedEvent()
+	case "account.import.started":
+		return t.AsAccountImportStartedEvent()
 	case "ai.operation.completed":
 		return t.AsAiOperationCompletedEvent()
 	case "ai.operation.failed":
