@@ -2219,90 +2219,6 @@ type ClientInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhook(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetPlumguideAvailability Get Plumguide availability
-	//
-	// Read the per-day availability calendar for a Plumguide listing. Returns the same row shape as Airbnb availability for SDK convenience.
-	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-	//
-	// Corresponds with GET /v1/channels/plumguide/availability (the `GetPlumguideAvailability` operationId).
-	GetPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdatePlumguideAvailability Push availability to Plumguide
-	//
-	// Push per-day availability changes to Plumguide. Plumguide accepts only the next 24 months — dates beyond that are silently ignored.
-	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-	//
-	// Corresponds with PUT /v1/channels/plumguide/availability (the `UpdatePlumguideAvailability` operationId).
-	UpdatePlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// ListPlumguideBookings List Plumguide bookings
-	//
-	// List Plumguide bookings. Default returns all bookings; pass `listing_id` to filter to one listing, or `booking_code` to fetch a single booking.
-	//
-	// Returns `403 listing_inactive` when `listing_id` or `booking_code` resolves to an inactive listing. The unfiltered list is read straight from Plum Guide and is not filtered by listing status.
-	//
-	// Corresponds with GET /v1/channels/plumguide/bookings (the `ListPlumguideBookings` operationId).
-	ListPlumguideBookings(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// ListPlumguideListings List Plumguide listings
-	//
-	// List Plumguide listings this workspace has access to. Plumguide is approval-based — listings appear once Plumguide has accepted them.
-	//
-	// Corresponds with GET /v1/channels/plumguide/listings (the `ListPlumguideListings` operationId).
-	ListPlumguideListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetPlumguidePricing Get Plumguide pricing
-	//
-	// Read the current pricing for a Plumguide listing (base price, currency, weekend uplift).
-	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-	//
-	// Corresponds with GET /v1/channels/plumguide/pricing (the `GetPlumguidePricing` operationId).
-	GetPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdatePlumguidePricing Push pricing to Plumguide
-	//
-	// Push pricing changes to Plumguide. Plumguide rounds all prices to whole units of the listing currency — sub-unit precision is silently truncated.
-	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-	//
-	// Corresponds with PUT /v1/channels/plumguide/pricing (the `UpdatePlumguidePricing` operationId).
-	UpdatePlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// DeletePlumguideWebhooks Remove Plumguide webhook config
-	//
-	// Delete the Plumguide webhook configuration for this workspace. Plumguide stops delivering webhooks until a new config is set.
-	//
-	// Corresponds with DELETE /v1/channels/plumguide/webhooks (the `DeletePlumguideWebhooks` operationId).
-	DeletePlumguideWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetPlumguideWebhooks Get Plumguide webhook config
-	//
-	// Read the current Plumguide webhook configuration for this workspace.
-	//
-	// Corresponds with GET /v1/channels/plumguide/webhooks (the `GetPlumguideWebhooks` operationId).
-	GetPlumguideWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdatePlumguideWebhooksWithBody Replace Plumguide webhook config
-	//
-	// Replace the Plumguide webhook configuration. The body carries the full webhook config payload — this is a full replacement, not a patch.
-	//
-	// Takes any type of body and a specified content type.
-	//
-	// Corresponds with PUT /v1/channels/plumguide/webhooks (the `UpdatePlumguideWebhooks` operationId).
-	UpdatePlumguideWebhooksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdatePlumguideWebhooks Replace Plumguide webhook config
-	//
-	// Replace the Plumguide webhook configuration. The body carries the full webhook config payload — this is a full replacement, not a patch.
-	//
-	// Takes a body of the `application/json` content type.
-	//
-	// Corresponds with PUT /v1/channels/plumguide/webhooks (the `UpdatePlumguideWebhooks` operationId).
-	UpdatePlumguideWebhooks(ctx context.Context, body UpdatePlumguideWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// ListVrboListings List VRBO listings
 	//
 	// List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
@@ -2522,7 +2438,7 @@ type ClientInterface interface {
 
 	// VerifyBookingHotelWithBody Verify a Booking.com hotel ID for a Connect session
 	//
-	// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (ticking FantasticStay/Repull as their connectivity provider) and pastes their Hotel ID into the hosted picker.
+	// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (selecting our connectivity provider, named on the hosted Connect page) and pastes their Hotel ID into the hosted picker.
 	//
 	// Validates the hotel against Booking's property API, persists the `pms_connections` row, kicks off the room import, and transitions the Connect session to `awaiting_room_mapping`.
 	//
@@ -2535,7 +2451,7 @@ type ClientInterface interface {
 
 	// VerifyBookingHotel Verify a Booking.com hotel ID for a Connect session
 	//
-	// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (ticking FantasticStay/Repull as their connectivity provider) and pastes their Hotel ID into the hosted picker.
+	// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (selecting our connectivity provider, named on the hosted Connect page) and pastes their Hotel ID into the hosted picker.
 	//
 	// Validates the hotel against Booking's property API, persists the `pms_connections` row, kicks off the room import, and transitions the Connect session to `awaiting_room_mapping`.
 	//
@@ -3018,11 +2934,11 @@ type ClientInterface interface {
 	//
 	// Establish a connection to a PMS or OTA platform. Credentials vary by provider — see docs for each provider.
 	//
-	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
+	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 	//
-	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
-	// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3033,11 +2949,11 @@ type ClientInterface interface {
 	//
 	// Establish a connection to a PMS or OTA platform. Credentials vary by provider — see docs for each provider.
 	//
-	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
+	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 	//
-	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
-	// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3504,7 +3420,7 @@ type ClientInterface interface {
 
 	// GetChannelHealth Per-channel connectivity health
 	//
-	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
+	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
 	//
 	// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is calendar pushes VRBO refused over finished ones in the last 3 hours; failures inside Repull's own connector are reported apart as `vrbo.connector_errors` and do not count (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 	//
@@ -8769,190 +8685,6 @@ func (c *Client) CreateBookingWebhook(ctx context.Context, body CreateBookingWeb
 	return c.Client.Do(req)
 }
 
-// GetPlumguideAvailability Get Plumguide availability
-//
-// Read the per-day availability calendar for a Plumguide listing. Returns the same row shape as Airbnb availability for SDK convenience.
-//
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-//
-// Corresponds with GET /v1/channels/plumguide/availability (the `GetPlumguideAvailability` operationId).
-func (c *Client) GetPlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPlumguideAvailabilityRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// UpdatePlumguideAvailability Push availability to Plumguide
-//
-// Push per-day availability changes to Plumguide. Plumguide accepts only the next 24 months — dates beyond that are silently ignored.
-//
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-//
-// Corresponds with PUT /v1/channels/plumguide/availability (the `UpdatePlumguideAvailability` operationId).
-func (c *Client) UpdatePlumguideAvailability(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdatePlumguideAvailabilityRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// ListPlumguideBookings List Plumguide bookings
-//
-// List Plumguide bookings. Default returns all bookings; pass `listing_id` to filter to one listing, or `booking_code` to fetch a single booking.
-//
-// Returns `403 listing_inactive` when `listing_id` or `booking_code` resolves to an inactive listing. The unfiltered list is read straight from Plum Guide and is not filtered by listing status.
-//
-// Corresponds with GET /v1/channels/plumguide/bookings (the `ListPlumguideBookings` operationId).
-func (c *Client) ListPlumguideBookings(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListPlumguideBookingsRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// ListPlumguideListings List Plumguide listings
-//
-// List Plumguide listings this workspace has access to. Plumguide is approval-based — listings appear once Plumguide has accepted them.
-//
-// Corresponds with GET /v1/channels/plumguide/listings (the `ListPlumguideListings` operationId).
-func (c *Client) ListPlumguideListings(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListPlumguideListingsRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// GetPlumguidePricing Get Plumguide pricing
-//
-// Read the current pricing for a Plumguide listing (base price, currency, weekend uplift).
-//
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-//
-// Corresponds with GET /v1/channels/plumguide/pricing (the `GetPlumguidePricing` operationId).
-func (c *Client) GetPlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPlumguidePricingRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// UpdatePlumguidePricing Push pricing to Plumguide
-//
-// Push pricing changes to Plumguide. Plumguide rounds all prices to whole units of the listing currency — sub-unit precision is silently truncated.
-//
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-//
-// Corresponds with PUT /v1/channels/plumguide/pricing (the `UpdatePlumguidePricing` operationId).
-func (c *Client) UpdatePlumguidePricing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdatePlumguidePricingRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// DeletePlumguideWebhooks Remove Plumguide webhook config
-//
-// Delete the Plumguide webhook configuration for this workspace. Plumguide stops delivering webhooks until a new config is set.
-//
-// Corresponds with DELETE /v1/channels/plumguide/webhooks (the `DeletePlumguideWebhooks` operationId).
-func (c *Client) DeletePlumguideWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeletePlumguideWebhooksRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// GetPlumguideWebhooks Get Plumguide webhook config
-//
-// Read the current Plumguide webhook configuration for this workspace.
-//
-// Corresponds with GET /v1/channels/plumguide/webhooks (the `GetPlumguideWebhooks` operationId).
-func (c *Client) GetPlumguideWebhooks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPlumguideWebhooksRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// UpdatePlumguideWebhooksWithBody Replace Plumguide webhook config
-//
-// Replace the Plumguide webhook configuration. The body carries the full webhook config payload — this is a full replacement, not a patch.
-//
-// Takes any type of body and a specified content type.
-//
-// Corresponds with PUT /v1/channels/plumguide/webhooks (the `UpdatePlumguideWebhooks` operationId).
-func (c *Client) UpdatePlumguideWebhooksWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdatePlumguideWebhooksRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-// UpdatePlumguideWebhooks Replace Plumguide webhook config
-//
-// Replace the Plumguide webhook configuration. The body carries the full webhook config payload — this is a full replacement, not a patch.
-//
-// Takes a body of the `application/json` content type.
-//
-// Corresponds with PUT /v1/channels/plumguide/webhooks (the `UpdatePlumguideWebhooks` operationId).
-func (c *Client) UpdatePlumguideWebhooks(ctx context.Context, body UpdatePlumguideWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdatePlumguideWebhooksRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 // ListVrboListings List VRBO listings
 //
 // List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
@@ -9372,7 +9104,7 @@ func (c *Client) ListConnectBookingRooms(ctx context.Context, params *ListConnec
 
 // VerifyBookingHotelWithBody Verify a Booking.com hotel ID for a Connect session
 //
-// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (ticking FantasticStay/Repull as their connectivity provider) and pastes their Hotel ID into the hosted picker.
+// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (selecting our connectivity provider, named on the hosted Connect page) and pastes their Hotel ID into the hosted picker.
 //
 // Validates the hotel against Booking's property API, persists the `pms_connections` row, kicks off the room import, and transitions the Connect session to `awaiting_room_mapping`.
 //
@@ -9395,7 +9127,7 @@ func (c *Client) VerifyBookingHotelWithBody(ctx context.Context, contentType str
 
 // VerifyBookingHotel Verify a Booking.com hotel ID for a Connect session
 //
-// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (ticking FantasticStay/Repull as their connectivity provider) and pastes their Hotel ID into the hosted picker.
+// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (selecting our connectivity provider, named on the hosted Connect page) and pastes their Hotel ID into the hosted picker.
 //
 // Validates the hotel against Booking's property API, persists the `pms_connections` row, kicks off the room import, and transitions the Connect session to `awaiting_room_mapping`.
 //
@@ -10248,11 +9980,11 @@ func (c *Client) GetConnectStatus(ctx context.Context, provider Provider, reqEdi
 //
 // Establish a connection to a PMS or OTA platform. Credentials vary by provider — see docs for each provider.
 //
-// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
+// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 //
-// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
-// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -10273,11 +10005,11 @@ func (c *Client) CreateConnectionWithBody(ctx context.Context, provider Provider
 //
 // Establish a connection to a PMS or OTA platform. Credentials vary by provider — see docs for each provider.
 //
-// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
+// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 //
-// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
-// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -11074,7 +10806,7 @@ func (c *Client) GetAuthHealth(ctx context.Context, reqEditors ...RequestEditorF
 
 // GetChannelHealth Per-channel connectivity health
 //
-// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
+// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
 //
 // **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is calendar pushes VRBO refused over finished ones in the last 3 hours; failures inside Repull's own connector are reported apart as `vrbo.connector_errors` and do not count (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 //
@@ -19103,301 +18835,6 @@ func NewCreateBookingWebhookRequestWithBody(server string, contentType string, b
 	}
 
 	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewGetPlumguideAvailabilityRequest constructs an http.Request for the GetPlumguideAvailability method
-func NewGetPlumguideAvailabilityRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/availability")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdatePlumguideAvailabilityRequest constructs an http.Request for the UpdatePlumguideAvailability method
-func NewUpdatePlumguideAvailabilityRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/availability")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPut, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewListPlumguideBookingsRequest constructs an http.Request for the ListPlumguideBookings method
-func NewListPlumguideBookingsRequest(server string, params *ListPlumguideBookingsParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/bookings")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-		// queryValues collects non-styled parameters (passthrough, JSON)
-		// that are safe to round-trip through url.Values.Encode().
-		queryValues := queryURL.Query()
-		// rawQueryFragments collects pre-encoded query fragments from
-		// styled parameters, preserving literal commas as delimiters
-		// per the OpenAPI spec (e.g. "color=blue,black,brown").
-		var rawQueryFragments []string
-
-		if params.ListingId != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
-		if params.BookingCode != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "booking_code", *params.BookingCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else {
-				for _, qp := range strings.Split(queryFrag, "&") {
-					rawQueryFragments = append(rawQueryFragments, qp)
-				}
-			}
-
-		}
-
-		if encoded := queryValues.Encode(); encoded != "" {
-			rawQueryFragments = append(rawQueryFragments, encoded)
-		}
-		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewListPlumguideListingsRequest constructs an http.Request for the ListPlumguideListings method
-func NewListPlumguideListingsRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/listings")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetPlumguidePricingRequest constructs an http.Request for the GetPlumguidePricing method
-func NewGetPlumguidePricingRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/pricing")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdatePlumguidePricingRequest constructs an http.Request for the UpdatePlumguidePricing method
-func NewUpdatePlumguidePricingRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/pricing")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPut, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewDeletePlumguideWebhooksRequest constructs an http.Request for the DeletePlumguideWebhooks method
-func NewDeletePlumguideWebhooksRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/webhooks")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetPlumguideWebhooksRequest constructs an http.Request for the GetPlumguideWebhooks method
-func NewGetPlumguideWebhooksRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/webhooks")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdatePlumguideWebhooksRequest calls the generic UpdatePlumguideWebhooks builder with application/json body
-func NewUpdatePlumguideWebhooksRequest(server string, body UpdatePlumguideWebhooksJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewUpdatePlumguideWebhooksRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewUpdatePlumguideWebhooksRequestWithBody constructs an http.Request for the UpdatePlumguideWebhooks method, with any body, and a specified content type
-func NewUpdatePlumguideWebhooksRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/channels/plumguide/webhooks")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -30636,106 +30073,6 @@ type ClientWithResponsesInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhookWithResponse(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error)
 
-	// GetPlumguideAvailabilityWithResponse Get Plumguide availability
-	//
-	// Read the per-day availability calendar for a Plumguide listing. Returns the same row shape as Airbnb availability for SDK convenience.
-	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with GET /v1/channels/plumguide/availability (the `GetPlumguideAvailability` operationId).
-	GetPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideAvailabilityClientResponse, error)
-
-	// UpdatePlumguideAvailabilityWithResponse Push availability to Plumguide
-	//
-	// Push per-day availability changes to Plumguide. Plumguide accepts only the next 24 months — dates beyond that are silently ignored.
-	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with PUT /v1/channels/plumguide/availability (the `UpdatePlumguideAvailability` operationId).
-	UpdatePlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguideAvailabilityClientResponse, error)
-
-	// ListPlumguideBookingsWithResponse List Plumguide bookings
-	//
-	// List Plumguide bookings. Default returns all bookings; pass `listing_id` to filter to one listing, or `booking_code` to fetch a single booking.
-	//
-	// Returns `403 listing_inactive` when `listing_id` or `booking_code` resolves to an inactive listing. The unfiltered list is read straight from Plum Guide and is not filtered by listing status.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with GET /v1/channels/plumguide/bookings (the `ListPlumguideBookings` operationId).
-	ListPlumguideBookingsWithResponse(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*ListPlumguideBookingsClientResponse, error)
-
-	// ListPlumguideListingsWithResponse List Plumguide listings
-	//
-	// List Plumguide listings this workspace has access to. Plumguide is approval-based — listings appear once Plumguide has accepted them.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with GET /v1/channels/plumguide/listings (the `ListPlumguideListings` operationId).
-	ListPlumguideListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListPlumguideListingsClientResponse, error)
-
-	// GetPlumguidePricingWithResponse Get Plumguide pricing
-	//
-	// Read the current pricing for a Plumguide listing (base price, currency, weekend uplift).
-	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with GET /v1/channels/plumguide/pricing (the `GetPlumguidePricing` operationId).
-	GetPlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguidePricingClientResponse, error)
-
-	// UpdatePlumguidePricingWithResponse Push pricing to Plumguide
-	//
-	// Push pricing changes to Plumguide. Plumguide rounds all prices to whole units of the listing currency — sub-unit precision is silently truncated.
-	//
-	// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with PUT /v1/channels/plumguide/pricing (the `UpdatePlumguidePricing` operationId).
-	UpdatePlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguidePricingClientResponse, error)
-
-	// DeletePlumguideWebhooksWithResponse Remove Plumguide webhook config
-	//
-	// Delete the Plumguide webhook configuration for this workspace. Plumguide stops delivering webhooks until a new config is set.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with DELETE /v1/channels/plumguide/webhooks (the `DeletePlumguideWebhooks` operationId).
-	DeletePlumguideWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeletePlumguideWebhooksClientResponse, error)
-
-	// GetPlumguideWebhooksWithResponse Get Plumguide webhook config
-	//
-	// Read the current Plumguide webhook configuration for this workspace.
-	//
-	// Returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with GET /v1/channels/plumguide/webhooks (the `GetPlumguideWebhooks` operationId).
-	GetPlumguideWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideWebhooksClientResponse, error)
-
-	// UpdatePlumguideWebhooksWithBodyWithResponse Replace Plumguide webhook config
-	//
-	// Replace the Plumguide webhook configuration. The body carries the full webhook config payload — this is a full replacement, not a patch.
-	//
-	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with PUT /v1/channels/plumguide/webhooks (the `UpdatePlumguideWebhooks` operationId).
-	UpdatePlumguideWebhooksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePlumguideWebhooksClientResponse, error)
-
-	// UpdatePlumguideWebhooksWithResponse Replace Plumguide webhook config
-	//
-	// Replace the Plumguide webhook configuration. The body carries the full webhook config payload — this is a full replacement, not a patch.
-	//
-	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
-	//
-	// Corresponds with PUT /v1/channels/plumguide/webhooks (the `UpdatePlumguideWebhooks` operationId).
-	UpdatePlumguideWebhooksWithResponse(ctx context.Context, body UpdatePlumguideWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePlumguideWebhooksClientResponse, error)
-
 	// ListVrboListingsWithResponse List VRBO listings
 	//
 	// List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
@@ -30967,7 +30304,7 @@ type ClientWithResponsesInterface interface {
 
 	// VerifyBookingHotelWithBodyWithResponse Verify a Booking.com hotel ID for a Connect session
 	//
-	// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (ticking FantasticStay/Repull as their connectivity provider) and pastes their Hotel ID into the hosted picker.
+	// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (selecting our connectivity provider, named on the hosted Connect page) and pastes their Hotel ID into the hosted picker.
 	//
 	// Validates the hotel against Booking's property API, persists the `pms_connections` row, kicks off the room import, and transitions the Connect session to `awaiting_room_mapping`.
 	//
@@ -30980,7 +30317,7 @@ type ClientWithResponsesInterface interface {
 
 	// VerifyBookingHotelWithResponse Verify a Booking.com hotel ID for a Connect session
 	//
-	// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (ticking FantasticStay/Repull as their connectivity provider) and pastes their Hotel ID into the hosted picker.
+	// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (selecting our connectivity provider, named on the hosted Connect page) and pastes their Hotel ID into the hosted picker.
 	//
 	// Validates the hotel against Booking's property API, persists the `pms_connections` row, kicks off the room import, and transitions the Connect session to `awaiting_room_mapping`.
 	//
@@ -31479,11 +30816,11 @@ type ClientWithResponsesInterface interface {
 	//
 	// Establish a connection to a PMS or OTA platform. Credentials vary by provider — see docs for each provider.
 	//
-	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
+	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 	//
-	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
-	// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -31494,11 +30831,11 @@ type ClientWithResponsesInterface interface {
 	//
 	// Establish a connection to a PMS or OTA platform. Credentials vary by provider — see docs for each provider.
 	//
-	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
+	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 	//
-	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
-	// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -31993,7 +31330,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetChannelHealthWithResponse Per-channel connectivity health
 	//
-	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
+	// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
 	//
 	// **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is calendar pushes VRBO refused over finished ones in the last 3 hours; failures inside Repull's own connector are reported apart as `vrbo.connector_errors` and do not count (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 	//
@@ -41461,445 +40798,6 @@ func (r CreateBookingWebhookClientResponse) ContentType() string {
 	return ""
 }
 
-type GetPlumguideAvailabilityClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
-}
-
-// GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r GetPlumguideAvailabilityClientResponse) GetJSON403() *ListingInactive {
-	return r.JSON403
-}
-
-// GetBody returns the raw response body bytes
-func (r GetPlumguideAvailabilityClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r GetPlumguideAvailabilityClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetPlumguideAvailabilityClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r GetPlumguideAvailabilityClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type UpdatePlumguideAvailabilityClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
-}
-
-// GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r UpdatePlumguideAvailabilityClientResponse) GetJSON403() *ListingInactive {
-	return r.JSON403
-}
-
-// GetBody returns the raw response body bytes
-func (r UpdatePlumguideAvailabilityClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdatePlumguideAvailabilityClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdatePlumguideAvailabilityClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r UpdatePlumguideAvailabilityClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type ListPlumguideBookingsClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON401 the response for an HTTP 401 `application/json` response
-	JSON401 *Unauthorized
-	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
-}
-
-// GetJSON401 returns the response for an HTTP 401 `application/json` response
-func (r ListPlumguideBookingsClientResponse) GetJSON401() *Unauthorized {
-	return r.JSON401
-}
-
-// GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r ListPlumguideBookingsClientResponse) GetJSON403() *ListingInactive {
-	return r.JSON403
-}
-
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r ListPlumguideBookingsClientResponse) GetJSON404() *NotFound {
-	return r.JSON404
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r ListPlumguideBookingsClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
-}
-
-// GetBody returns the raw response body bytes
-func (r ListPlumguideBookingsClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r ListPlumguideBookingsClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListPlumguideBookingsClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r ListPlumguideBookingsClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type ListPlumguideListingsClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *PlumguideListingListResponse
-}
-
-// GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r ListPlumguideListingsClientResponse) GetJSON200() *PlumguideListingListResponse {
-	return r.JSON200
-}
-
-// GetBody returns the raw response body bytes
-func (r ListPlumguideListingsClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r ListPlumguideListingsClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListPlumguideListingsClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r ListPlumguideListingsClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type GetPlumguidePricingClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
-}
-
-// GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r GetPlumguidePricingClientResponse) GetJSON403() *ListingInactive {
-	return r.JSON403
-}
-
-// GetBody returns the raw response body bytes
-func (r GetPlumguidePricingClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r GetPlumguidePricingClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetPlumguidePricingClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r GetPlumguidePricingClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type UpdatePlumguidePricingClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON403 the response for an HTTP 403 `application/json` response
-	JSON403 *ListingInactive
-}
-
-// GetJSON403 returns the response for an HTTP 403 `application/json` response
-func (r UpdatePlumguidePricingClientResponse) GetJSON403() *ListingInactive {
-	return r.JSON403
-}
-
-// GetBody returns the raw response body bytes
-func (r UpdatePlumguidePricingClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdatePlumguidePricingClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdatePlumguidePricingClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r UpdatePlumguidePricingClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type DeletePlumguideWebhooksClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON401 the response for an HTTP 401 `application/json` response
-	JSON401 *Unauthorized
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
-}
-
-// GetJSON401 returns the response for an HTTP 401 `application/json` response
-func (r DeletePlumguideWebhooksClientResponse) GetJSON401() *Unauthorized {
-	return r.JSON401
-}
-
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r DeletePlumguideWebhooksClientResponse) GetJSON404() *NotFound {
-	return r.JSON404
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r DeletePlumguideWebhooksClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
-}
-
-// GetBody returns the raw response body bytes
-func (r DeletePlumguideWebhooksClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r DeletePlumguideWebhooksClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeletePlumguideWebhooksClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r DeletePlumguideWebhooksClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type GetPlumguideWebhooksClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON401 the response for an HTTP 401 `application/json` response
-	JSON401 *Unauthorized
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
-}
-
-// GetJSON401 returns the response for an HTTP 401 `application/json` response
-func (r GetPlumguideWebhooksClientResponse) GetJSON401() *Unauthorized {
-	return r.JSON401
-}
-
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r GetPlumguideWebhooksClientResponse) GetJSON404() *NotFound {
-	return r.JSON404
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r GetPlumguideWebhooksClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
-}
-
-// GetBody returns the raw response body bytes
-func (r GetPlumguideWebhooksClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r GetPlumguideWebhooksClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetPlumguideWebhooksClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r GetPlumguideWebhooksClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
-type UpdatePlumguideWebhooksClientResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	// JSON400 the response for an HTTP 400 `application/json` response
-	JSON400 *BadRequest
-	// JSON401 the response for an HTTP 401 `application/json` response
-	JSON401 *Unauthorized
-	// JSON404 the response for an HTTP 404 `application/json` response
-	JSON404 *NotFound
-	// JSON500 the response for an HTTP 500 `application/json` response
-	JSON500 *InternalError
-}
-
-// GetJSON400 returns the response for an HTTP 400 `application/json` response
-func (r UpdatePlumguideWebhooksClientResponse) GetJSON400() *BadRequest {
-	return r.JSON400
-}
-
-// GetJSON401 returns the response for an HTTP 401 `application/json` response
-func (r UpdatePlumguideWebhooksClientResponse) GetJSON401() *Unauthorized {
-	return r.JSON401
-}
-
-// GetJSON404 returns the response for an HTTP 404 `application/json` response
-func (r UpdatePlumguideWebhooksClientResponse) GetJSON404() *NotFound {
-	return r.JSON404
-}
-
-// GetJSON500 returns the response for an HTTP 500 `application/json` response
-func (r UpdatePlumguideWebhooksClientResponse) GetJSON500() *InternalError {
-	return r.JSON500
-}
-
-// GetBody returns the raw response body bytes
-func (r UpdatePlumguideWebhooksClientResponse) GetBody() []byte {
-	return r.Body
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdatePlumguideWebhooksClientResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdatePlumguideWebhooksClientResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
-func (r UpdatePlumguideWebhooksClientResponse) ContentType() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Header.Get("Content-Type")
-	}
-	return ""
-}
-
 type ListVrboListingsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -44775,12 +43673,17 @@ type ListConnectionUnitsClientResponse struct {
 		} `json:"listing_options,omitempty"`
 
 		// ListingOptionsTotal How many listings the workspace has to map to.
-		ListingOptionsTotal *int                                          `json:"listing_options_total,omitempty"`
-		MissingCapabilities *[]string                                     `json:"missing_capabilities,omitempty"`
-		Status              *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
-		Units               *[]struct {
-			CurrentListingId   *int                    `json:"current_listing_id,omitempty"`
-			Grain              *string                 `json:"grain,omitempty"`
+		ListingOptionsTotal *int      `json:"listing_options_total,omitempty"`
+		MissingCapabilities *[]string `json:"missing_capabilities,omitempty"`
+
+		// NotificationEmail Vrbo only. Ask the host to add this address on Vrbo as a secondary email, with message and reservation notifications on. It is how new bookings, inquiries and guest messages reach Repull within a minute; without it they arrive at the next scheduled check. Hosted Connect asks for it on its mapping screen, so show it in your own flow when you map with `mapping: "api"`.
+		NotificationEmail *string                                       `json:"notification_email,omitempty"`
+		Status            *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
+		Units             *[]struct {
+			CurrentListingId *int    `json:"current_listing_id,omitempty"`
+			Grain            *string `json:"grain,omitempty"`
+
+			// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`; the Vrbo listing ID is `unit_id`.
 			Meta               *map[string]interface{} `json:"meta,omitempty"`
 			SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 			UnitId             *string                 `json:"unit_id,omitempty"`
@@ -44800,12 +43703,17 @@ func (r ListConnectionUnitsClientResponse) GetJSON200() *struct {
 	} `json:"listing_options,omitempty"`
 
 	// ListingOptionsTotal How many listings the workspace has to map to.
-	ListingOptionsTotal *int                                          `json:"listing_options_total,omitempty"`
-	MissingCapabilities *[]string                                     `json:"missing_capabilities,omitempty"`
-	Status              *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
-	Units               *[]struct {
-		CurrentListingId   *int                    `json:"current_listing_id,omitempty"`
-		Grain              *string                 `json:"grain,omitempty"`
+	ListingOptionsTotal *int      `json:"listing_options_total,omitempty"`
+	MissingCapabilities *[]string `json:"missing_capabilities,omitempty"`
+
+	// NotificationEmail Vrbo only. Ask the host to add this address on Vrbo as a secondary email, with message and reservation notifications on. It is how new bookings, inquiries and guest messages reach Repull within a minute; without it they arrive at the next scheduled check. Hosted Connect asks for it on its mapping screen, so show it in your own flow when you map with `mapping: "api"`.
+	NotificationEmail *string                                       `json:"notification_email,omitempty"`
+	Status            *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
+	Units             *[]struct {
+		CurrentListingId *int    `json:"current_listing_id,omitempty"`
+		Grain            *string `json:"grain,omitempty"`
+
+		// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`; the Vrbo listing ID is `unit_id`.
 		Meta               *map[string]interface{} `json:"meta,omitempty"`
 		SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 		UnitId             *string                 `json:"unit_id,omitempty"`
@@ -56990,166 +55898,6 @@ func (c *ClientWithResponses) CreateBookingWebhookWithResponse(ctx context.Conte
 	return ParseCreateBookingWebhookClientResponse(rsp)
 }
 
-// GetPlumguideAvailabilityWithResponse Get Plumguide availability
-//
-// Read the per-day availability calendar for a Plumguide listing. Returns the same row shape as Airbnb availability for SDK convenience.
-//
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with GET /v1/channels/plumguide/availability (the `GetPlumguideAvailability` operationId).
-func (c *ClientWithResponses) GetPlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideAvailabilityClientResponse, error) {
-	rsp, err := c.GetPlumguideAvailability(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetPlumguideAvailabilityClientResponse(rsp)
-}
-
-// UpdatePlumguideAvailabilityWithResponse Push availability to Plumguide
-//
-// Push per-day availability changes to Plumguide. Plumguide accepts only the next 24 months — dates beyond that are silently ignored.
-//
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with PUT /v1/channels/plumguide/availability (the `UpdatePlumguideAvailability` operationId).
-func (c *ClientWithResponses) UpdatePlumguideAvailabilityWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguideAvailabilityClientResponse, error) {
-	rsp, err := c.UpdatePlumguideAvailability(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdatePlumguideAvailabilityClientResponse(rsp)
-}
-
-// ListPlumguideBookingsWithResponse List Plumguide bookings
-//
-// List Plumguide bookings. Default returns all bookings; pass `listing_id` to filter to one listing, or `booking_code` to fetch a single booking.
-//
-// Returns `403 listing_inactive` when `listing_id` or `booking_code` resolves to an inactive listing. The unfiltered list is read straight from Plum Guide and is not filtered by listing status.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with GET /v1/channels/plumguide/bookings (the `ListPlumguideBookings` operationId).
-func (c *ClientWithResponses) ListPlumguideBookingsWithResponse(ctx context.Context, params *ListPlumguideBookingsParams, reqEditors ...RequestEditorFn) (*ListPlumguideBookingsClientResponse, error) {
-	rsp, err := c.ListPlumguideBookings(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListPlumguideBookingsClientResponse(rsp)
-}
-
-// ListPlumguideListingsWithResponse List Plumguide listings
-//
-// List Plumguide listings this workspace has access to. Plumguide is approval-based — listings appear once Plumguide has accepted them.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with GET /v1/channels/plumguide/listings (the `ListPlumguideListings` operationId).
-func (c *ClientWithResponses) ListPlumguideListingsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListPlumguideListingsClientResponse, error) {
-	rsp, err := c.ListPlumguideListings(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListPlumguideListingsClientResponse(rsp)
-}
-
-// GetPlumguidePricingWithResponse Get Plumguide pricing
-//
-// Read the current pricing for a Plumguide listing (base price, currency, weekend uplift).
-//
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with GET /v1/channels/plumguide/pricing (the `GetPlumguidePricing` operationId).
-func (c *ClientWithResponses) GetPlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguidePricingClientResponse, error) {
-	rsp, err := c.GetPlumguidePricing(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetPlumguidePricingClientResponse(rsp)
-}
-
-// UpdatePlumguidePricingWithResponse Push pricing to Plumguide
-//
-// Push pricing changes to Plumguide. Plumguide rounds all prices to whole units of the listing currency — sub-unit precision is silently truncated.
-//
-// Returns `403 listing_inactive` when the listing this resolves to is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with PUT /v1/channels/plumguide/pricing (the `UpdatePlumguidePricing` operationId).
-func (c *ClientWithResponses) UpdatePlumguidePricingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*UpdatePlumguidePricingClientResponse, error) {
-	rsp, err := c.UpdatePlumguidePricing(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdatePlumguidePricingClientResponse(rsp)
-}
-
-// DeletePlumguideWebhooksWithResponse Remove Plumguide webhook config
-//
-// Delete the Plumguide webhook configuration for this workspace. Plumguide stops delivering webhooks until a new config is set.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with DELETE /v1/channels/plumguide/webhooks (the `DeletePlumguideWebhooks` operationId).
-func (c *ClientWithResponses) DeletePlumguideWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeletePlumguideWebhooksClientResponse, error) {
-	rsp, err := c.DeletePlumguideWebhooks(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeletePlumguideWebhooksClientResponse(rsp)
-}
-
-// GetPlumguideWebhooksWithResponse Get Plumguide webhook config
-//
-// Read the current Plumguide webhook configuration for this workspace.
-//
-// Returns a wrapper object for the known response body format(s).
-//
-// Corresponds with GET /v1/channels/plumguide/webhooks (the `GetPlumguideWebhooks` operationId).
-func (c *ClientWithResponses) GetPlumguideWebhooksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetPlumguideWebhooksClientResponse, error) {
-	rsp, err := c.GetPlumguideWebhooks(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetPlumguideWebhooksClientResponse(rsp)
-}
-
-// UpdatePlumguideWebhooksWithBodyWithResponse Replace Plumguide webhook config
-//
-// Replace the Plumguide webhook configuration. The body carries the full webhook config payload — this is a full replacement, not a patch.
-//
-// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
-//
-// Corresponds with PUT /v1/channels/plumguide/webhooks (the `UpdatePlumguideWebhooks` operationId).
-func (c *ClientWithResponses) UpdatePlumguideWebhooksWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePlumguideWebhooksClientResponse, error) {
-	rsp, err := c.UpdatePlumguideWebhooksWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdatePlumguideWebhooksClientResponse(rsp)
-}
-
-// UpdatePlumguideWebhooksWithResponse Replace Plumguide webhook config
-//
-// Replace the Plumguide webhook configuration. The body carries the full webhook config payload — this is a full replacement, not a patch.
-//
-// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
-//
-// Corresponds with PUT /v1/channels/plumguide/webhooks (the `UpdatePlumguideWebhooks` operationId).
-func (c *ClientWithResponses) UpdatePlumguideWebhooksWithResponse(ctx context.Context, body UpdatePlumguideWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePlumguideWebhooksClientResponse, error) {
-	rsp, err := c.UpdatePlumguideWebhooks(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdatePlumguideWebhooksClientResponse(rsp)
-}
-
 // ListVrboListingsWithResponse List VRBO listings
 //
 // List the Vrbo units linked to this workspace's listings, from the host's connected Vrbo account (host sign-in, beta).
@@ -57501,7 +56249,7 @@ func (c *ClientWithResponses) ListConnectBookingRoomsWithResponse(ctx context.Co
 
 // VerifyBookingHotelWithBodyWithResponse Verify a Booking.com hotel ID for a Connect session
 //
-// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (ticking FantasticStay/Repull as their connectivity provider) and pastes their Hotel ID into the hosted picker.
+// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (selecting our connectivity provider, named on the hosted Connect page) and pastes their Hotel ID into the hosted picker.
 //
 // Validates the hotel against Booking's property API, persists the `pms_connections` row, kicks off the room import, and transitions the Connect session to `awaiting_room_mapping`.
 //
@@ -57520,7 +56268,7 @@ func (c *ClientWithResponses) VerifyBookingHotelWithBodyWithResponse(ctx context
 
 // VerifyBookingHotelWithResponse Verify a Booking.com hotel ID for a Connect session
 //
-// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (ticking FantasticStay/Repull as their connectivity provider) and pastes their Hotel ID into the hosted picker.
+// Manual-paste fallback that closes the Booking.com claim flow. Call this after the customer completes Stage 1 designation in their Booking Extranet (selecting our connectivity provider, named on the hosted Connect page) and pastes their Hotel ID into the hosted picker.
 //
 // Validates the hotel against Booking's property API, persists the `pms_connections` row, kicks off the room import, and transitions the Connect session to `awaiting_room_mapping`.
 //
@@ -58241,11 +56989,11 @@ func (c *ClientWithResponses) GetConnectStatusWithResponse(ctx context.Context, 
 //
 // Establish a connection to a PMS or OTA platform. Credentials vary by provider — see docs for each provider.
 //
-// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
+// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 //
-// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
-// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -58262,11 +57010,11 @@ func (c *ClientWithResponses) CreateConnectionWithBodyWithResponse(ctx context.C
 //
 // Establish a connection to a PMS or OTA platform. Credentials vary by provider — see docs for each provider.
 //
-// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
+// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 //
-// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to designate FantasticStay in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
-// Plumguide passes `clientId`/`clientSecret`. PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -58959,7 +57707,7 @@ func (c *ClientWithResponses) GetAuthHealthWithResponse(ctx context.Context, req
 
 // GetChannelHealthWithResponse Per-channel connectivity health
 //
-// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`, `plumguide`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
+// Reports reachability and auth state for one channel (`airbnb`, `booking`, `vrbo`). Use it to tell "the channel is down" apart from "this workspace's connection expired". `200` when `status` is `ok`, `503` when `degraded` or `down` (the body's `status` and `message` say which and why).
 //
 // **`vrbo`** reports the connector's own signals in a `vrbo` block: connected accounts, accounts VRBO signed out (their bookings, messages and calendar stop until reconnected — `down`), accounts whose inbox sync is late (`degraded`), and the calendar push queue backlog and its oldest wait (`degraded` past 3 hours). Its rate is calendar pushes VRBO refused over finished ones in the last 3 hours; failures inside Repull's own connector are reported apart as `vrbo.connector_errors` and do not count (`vrbo.window_hours`; `refresh_attempts_24h` / `refresh_rejections_24h` count that window for VRBO), judged only once at least 50 pushes finished and at least 5 failed — VRBO pushes run in bursts, so a day-long window would keep reporting a problem already fixed.
 //
@@ -67437,334 +66185,6 @@ func ParseCreateBookingWebhookClientResponse(rsp *http.Response) (*CreateBooking
 	return response, nil
 }
 
-// ParseGetPlumguideAvailabilityClientResponse parses an HTTP response from a GetPlumguideAvailabilityWithResponse call
-func ParseGetPlumguideAvailabilityClientResponse(rsp *http.Response) (*GetPlumguideAvailabilityClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetPlumguideAvailabilityClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdatePlumguideAvailabilityClientResponse parses an HTTP response from a UpdatePlumguideAvailabilityWithResponse call
-func ParseUpdatePlumguideAvailabilityClientResponse(rsp *http.Response) (*UpdatePlumguideAvailabilityClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdatePlumguideAvailabilityClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseListPlumguideBookingsClientResponse parses an HTTP response from a ListPlumguideBookingsWithResponse call
-func ParseListPlumguideBookingsClientResponse(rsp *http.Response) (*ListPlumguideBookingsClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListPlumguideBookingsClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Unauthorized
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseListPlumguideListingsClientResponse parses an HTTP response from a ListPlumguideListingsWithResponse call
-func ParseListPlumguideListingsClientResponse(rsp *http.Response) (*ListPlumguideListingsClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListPlumguideListingsClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PlumguideListingListResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetPlumguidePricingClientResponse parses an HTTP response from a GetPlumguidePricingWithResponse call
-func ParseGetPlumguidePricingClientResponse(rsp *http.Response) (*GetPlumguidePricingClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetPlumguidePricingClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdatePlumguidePricingClientResponse parses an HTTP response from a UpdatePlumguidePricingWithResponse call
-func ParseUpdatePlumguidePricingClientResponse(rsp *http.Response) (*UpdatePlumguidePricingClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdatePlumguidePricingClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest ListingInactive
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeletePlumguideWebhooksClientResponse parses an HTTP response from a DeletePlumguideWebhooksWithResponse call
-func ParseDeletePlumguideWebhooksClientResponse(rsp *http.Response) (*DeletePlumguideWebhooksClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeletePlumguideWebhooksClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Unauthorized
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetPlumguideWebhooksClientResponse parses an HTTP response from a GetPlumguideWebhooksWithResponse call
-func ParseGetPlumguideWebhooksClientResponse(rsp *http.Response) (*GetPlumguideWebhooksClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetPlumguideWebhooksClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Unauthorized
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdatePlumguideWebhooksClientResponse parses an HTTP response from a UpdatePlumguideWebhooksWithResponse call
-func ParseUpdatePlumguideWebhooksClientResponse(rsp *http.Response) (*UpdatePlumguideWebhooksClientResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdatePlumguideWebhooksClientResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case rsp.StatusCode == 200:
-		break // No content-type
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest BadRequest
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Unauthorized
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest NotFound
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest InternalError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseListVrboListingsClientResponse parses an HTTP response from a ListVrboListingsWithResponse call
 func ParseListVrboListingsClientResponse(rsp *http.Response) (*ListVrboListingsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -69764,12 +68184,17 @@ func ParseListConnectionUnitsClientResponse(rsp *http.Response) (*ListConnection
 			} `json:"listing_options,omitempty"`
 
 			// ListingOptionsTotal How many listings the workspace has to map to.
-			ListingOptionsTotal *int                                          `json:"listing_options_total,omitempty"`
-			MissingCapabilities *[]string                                     `json:"missing_capabilities,omitempty"`
-			Status              *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
-			Units               *[]struct {
-				CurrentListingId   *int                    `json:"current_listing_id,omitempty"`
-				Grain              *string                 `json:"grain,omitempty"`
+			ListingOptionsTotal *int      `json:"listing_options_total,omitempty"`
+			MissingCapabilities *[]string `json:"missing_capabilities,omitempty"`
+
+			// NotificationEmail Vrbo only. Ask the host to add this address on Vrbo as a secondary email, with message and reservation notifications on. It is how new bookings, inquiries and guest messages reach Repull within a minute; without it they arrive at the next scheduled check. Hosted Connect asks for it on its mapping screen, so show it in your own flow when you map with `mapping: "api"`.
+			NotificationEmail *string                                       `json:"notification_email,omitempty"`
+			Status            *ListConnectionUnits200JSONResponseBodyStatus `json:"status,omitempty"`
+			Units             *[]struct {
+				CurrentListingId *int    `json:"current_listing_id,omitempty"`
+				Grain            *string `json:"grain,omitempty"`
+
+				// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`; the Vrbo listing ID is `unit_id`.
 				Meta               *map[string]interface{} `json:"meta,omitempty"`
 				SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 				UnitId             *string                 `json:"unit_id,omitempty"`

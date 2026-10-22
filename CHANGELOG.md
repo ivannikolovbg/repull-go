@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.33] - 2026-10-22
+
+### Added
+- `Property.AddressDetails` (`*PostalAddress`) on list/get properties: `line1`, `line2`, `city`, `state`, `postalCode`, `countryCode`. `line2` carries the apartment / unit number. The existing `address` string and `city` are unchanged.
+- `Listing.Address` gains `Line1`, `Line2`, `State`, `PostalCode`, `CountryCode` next to `street` and `city`.
+
+### Changed
+- Regenerated from the live spec (also picks up the Plum Guide channel hidden until certified, and `calendar.updated` removed from webhook events).
+
 ## [0.2.32] - 2026-10-16
 
 ### Added
