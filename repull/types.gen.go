@@ -1351,21 +1351,6 @@ func (e BulkPricingRequestAction) Valid() bool {
 	}
 }
 
-// Defines values for CalendarUpdatedEventEvent.
-const (
-	CalendarUpdatedEventEventCalendarUpdated CalendarUpdatedEventEvent = "calendar.updated"
-)
-
-// Valid indicates whether the value is a known member of the CalendarUpdatedEventEvent enum.
-func (e CalendarUpdatedEventEvent) Valid() bool {
-	switch e {
-	case CalendarUpdatedEventEventCalendarUpdated:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ChannelMarketStateItemChannel.
 const (
 	ChannelMarketStateItemChannelAirbnb  ChannelMarketStateItemChannel = "airbnb"
@@ -2602,6 +2587,30 @@ func (e MessageDirection) Valid() bool {
 	case MessageDirectionInbound:
 		return true
 	case MessageDirectionOutbound:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for MessageStatus.
+const (
+	MessageStatusFailed   MessageStatus = "failed"
+	MessageStatusReceived MessageStatus = "received"
+	MessageStatusSending  MessageStatus = "sending"
+	MessageStatusSent     MessageStatus = "sent"
+)
+
+// Valid indicates whether the value is a known member of the MessageStatus enum.
+func (e MessageStatus) Valid() bool {
+	switch e {
+	case MessageStatusFailed:
+		return true
+	case MessageStatusReceived:
+		return true
+	case MessageStatusSending:
+		return true
+	case MessageStatusSent:
 		return true
 	default:
 		return false
@@ -3985,7 +3994,6 @@ const (
 	WebhookEventTypeAccountImportStarted           WebhookEventType = "account.import.started"
 	WebhookEventTypeAiOperationCompleted           WebhookEventType = "ai.operation.completed"
 	WebhookEventTypeAiOperationFailed              WebhookEventType = "ai.operation.failed"
-	WebhookEventTypeCalendarUpdated                WebhookEventType = "calendar.updated"
 	WebhookEventTypeConnectSessionCompleted        WebhookEventType = "connect.session.completed"
 	WebhookEventTypeInquiryCreated                 WebhookEventType = "inquiry.created"
 	WebhookEventTypeInquiryUpdated                 WebhookEventType = "inquiry.updated"
@@ -4031,8 +4039,6 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeAiOperationCompleted:
 		return true
 	case WebhookEventTypeAiOperationFailed:
-		return true
-	case WebhookEventTypeCalendarUpdated:
 		return true
 	case WebhookEventTypeConnectSessionCompleted:
 		return true
@@ -5224,6 +5230,24 @@ func (e CreateConnectSessionJSONBodyAccessType) Valid() bool {
 	}
 }
 
+// Defines values for CreateConnectSessionJSONBodyMapping.
+const (
+	CreateConnectSessionJSONBodyMappingApi    CreateConnectSessionJSONBodyMapping = "api"
+	CreateConnectSessionJSONBodyMappingHosted CreateConnectSessionJSONBodyMapping = "hosted"
+)
+
+// Valid indicates whether the value is a known member of the CreateConnectSessionJSONBodyMapping enum.
+func (e CreateConnectSessionJSONBodyMapping) Valid() bool {
+	switch e {
+	case CreateConnectSessionJSONBodyMappingApi:
+		return true
+	case CreateConnectSessionJSONBodyMappingHosted:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateConnectSessionJSONBodyPurpose.
 const (
 	CreateConnectSessionJSONBodyPurposeConnect CreateConnectSessionJSONBodyPurpose = "connect"
@@ -5727,10 +5751,9 @@ func (e GetConversationSpecialOffer200JSONResponseBodyChannel) Valid() bool {
 
 // Defines values for GetChannelHealthParamsChannel.
 const (
-	GetChannelHealthParamsChannelAirbnb    GetChannelHealthParamsChannel = "airbnb"
-	GetChannelHealthParamsChannelBooking   GetChannelHealthParamsChannel = "booking"
-	GetChannelHealthParamsChannelPlumguide GetChannelHealthParamsChannel = "plumguide"
-	GetChannelHealthParamsChannelVrbo      GetChannelHealthParamsChannel = "vrbo"
+	GetChannelHealthParamsChannelAirbnb  GetChannelHealthParamsChannel = "airbnb"
+	GetChannelHealthParamsChannelBooking GetChannelHealthParamsChannel = "booking"
+	GetChannelHealthParamsChannelVrbo    GetChannelHealthParamsChannel = "vrbo"
 )
 
 // Valid indicates whether the value is a known member of the GetChannelHealthParamsChannel enum.
@@ -5739,8 +5762,6 @@ func (e GetChannelHealthParamsChannel) Valid() bool {
 	case GetChannelHealthParamsChannelAirbnb:
 		return true
 	case GetChannelHealthParamsChannelBooking:
-		return true
-	case GetChannelHealthParamsChannelPlumguide:
 		return true
 	case GetChannelHealthParamsChannelVrbo:
 		return true
@@ -8832,52 +8853,6 @@ type CalendarResponse struct {
 	Data *[]CalendarDay `json:"data,omitempty"`
 }
 
-// CalendarUpdatedEvent defines model for CalendarUpdatedEvent.
-type CalendarUpdatedEvent struct {
-	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
-	Account *WebhookEventAccount `json:"account,omitempty"`
-
-	// ApiVersion Example: 2026-04
-	ApiVersion string `json:"apiVersion"`
-
-	// Data Payload for `calendar.updated`. Availability or pricing for a listing was updated.
-	Data CalendarUpdatedPayload `json:"data"`
-
-	// Event The event name. This field is `event`, not `type`.
-	Event CalendarUpdatedEventEvent `json:"event"`
-
-	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
-	EventId openapi_types.UUID `json:"eventId"`
-
-	// Timestamp When this delivery was built.
-	Timestamp time.Time `json:"timestamp"`
-}
-
-// CalendarUpdatedEventEvent The event name. This field is `event`, not `type`.
-type CalendarUpdatedEventEvent string
-
-// CalendarUpdatedPayload Payload for `calendar.updated`. Availability or pricing for a listing was updated.
-type CalendarUpdatedPayload struct {
-	// AffectedDates Example: 14
-	AffectedDates *int `json:"affectedDates,omitempty"`
-
-	// AvailabilityChanged Example: false
-	AvailabilityChanged *bool `json:"availabilityChanged,omitempty"`
-
-	// ListingId Example: 6250
-	ListingId *int `json:"listingId,omitempty"`
-
-	// PricingChanged Example: true
-	PricingChanged *bool `json:"pricingChanged,omitempty"`
-	Range          *struct {
-		// End Example: 2026-06-15
-		End *openapi_types.Date `json:"end,omitempty"`
-
-		// Start Example: 2026-06-01
-		Start *openapi_types.Date `json:"start,omitempty"`
-	} `json:"range,omitempty"`
-}
-
 // ChannelMarketStateItem What happened on ONE channel item — one Airbnb connection, one Booking.com property, or one VRBO unit. A listing can carry several Airbnb connections (a re-list, or a move between host accounts) and each gets its own entry.
 type ChannelMarketStateItem struct {
 	Channel ChannelMarketStateItemChannel `json:"channel"`
@@ -9078,7 +9053,7 @@ type ConnectSessionCompletedPayload struct {
 	// Example: 36
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
-	// Provider Channel or PMS: airbnb, booking, booking_extranet, vrbo, plumguide, hostaway, …
+	// Provider Channel or PMS: airbnb, booking, booking_extranet, vrbo, hostaway, …
 	//
 	// Example: vrbo
 	Provider *string                                `json:"provider,omitempty"`
@@ -9120,8 +9095,11 @@ type ConnectStatus struct {
 		Import *VrboImportStatus `json:"import,omitempty"`
 
 		// Name Example: Casey
-		Name       *string `json:"name,omitempty"`
-		PictureUrl *string `json:"pictureUrl,omitempty"`
+		Name *string `json:"name,omitempty"`
+
+		// NotificationEmail Vrbo only. The address the host can add on Vrbo as a secondary email (with message and reservation notifications on) so new bookings, inquiries and messages arrive within a minute instead of at the scheduled check. Ask every host to add it: notifications are how Vrbo updates reach Repull, the scheduled check is the backup. Hosted Connect shows it on its mapping screen; show it in your own app when you create sessions with `mapping: "api"`.
+		NotificationEmail *string `json:"notificationEmail,omitempty"`
+		PictureUrl        *string `json:"pictureUrl,omitempty"`
 
 		// Status Example: active
 		Status *string `json:"status,omitempty"`
@@ -9595,7 +9573,7 @@ type Error struct {
 
 		// ValidValues Allowed values when the error is enum-related (e.g. unknown `provider`, unknown `status`).
 		//
-		// Example: ["airbnb","booking","vrbo","plumguide"]
+		// Example: ["airbnb","booking","vrbo"]
 		ValidValues *[]string `json:"valid_values,omitempty"`
 
 		// ValueReceived Echo of the offending value (truncated to 200 chars). Useful for debugging — helps callers see what the server actually parsed.
@@ -9958,8 +9936,39 @@ type InquiryWebhookObjectStatus string
 //
 // An **inactive** listing appears only in `GET /v1/listings`, and only when `?status=` asks for it. Such a row carries identity fields only — `id`, `name`, `status`, `inactiveReason`, `address.city`, `channels` — so the street, `content`, `details`, `createdAt` and `updatedAt` are absent until the listing is activated. `inactiveReason` is `plan_limit` (held back by the plan; activating needs a free slot or an upgrade), `unlisted_on_airbnb`, or `deactivated` (switched off by you). `GET /v1/listings/{id}` and every other listing endpoint answer `403 listing_inactive` for it. The one field you can add back is `thumbnailUrl`, by passing `?include=thumbnail` — enough to render an activate/deactivate picker with pictures from a single request.
 type Listing struct {
+	// Address The listing's postal address, unit included. Each part is read from the listing first, then from the connected channels (Airbnb, Vrbo, Booking.com). On an inactive row only `city` is present.
 	Address *struct {
-		City   *string `json:"city,omitempty"`
+		// City Example: Miami
+		City *string `json:"city,omitempty"`
+
+		// CountryCode ISO 3166-1 alpha-2 country code.
+		//
+		// Example: US
+		CountryCode *string `json:"countryCode,omitempty"`
+
+		// Line1 Street address: number and street.
+		//
+		// Example: 2700 Northwest 2nd Avenue
+		Line1 *string `json:"line1,omitempty"`
+
+		// Line2 Apartment, unit, suite or building.
+		//
+		// Example: Unit 241
+		Line2 *string `json:"line2,omitempty"`
+
+		// PostalCode Postal or ZIP code.
+		//
+		// Example: 33127
+		PostalCode *string `json:"postalCode,omitempty"`
+
+		// State State, province or region.
+		//
+		// Example: FL
+		State *string `json:"state,omitempty"`
+
+		// Street Street line as stored on the listing. Kept for existing integrations; same value as `line1` unless the listing has no street of its own.
+		//
+		// Example: 2700 Northwest 2nd Avenue
 		Street *string `json:"street,omitempty"`
 	} `json:"address,omitempty"`
 
@@ -11815,7 +11824,9 @@ type Message struct {
 	Body *string `json:"body,omitempty"`
 
 	// Channel Delivery channel — `airbnb`, `booking`, `sms`, `email`, etc.
-	Channel     *string           `json:"channel,omitempty"`
+	Channel *string `json:"channel,omitempty"`
+
+	// DeliveredAt When the message reached the channel. `null` while it is `sending` or when it `failed`.
 	DeliveredAt *time.Time        `json:"deliveredAt,omitempty"`
 	Direction   *MessageDirection `json:"direction,omitempty"`
 
@@ -11833,12 +11844,21 @@ type Message struct {
 	SenderType *string    `json:"senderType,omitempty"`
 	SentAt     *time.Time `json:"sentAt,omitempty"`
 
+	// Status Delivery state. Inbound messages are `received`. An outbound message is `sending` while it is queued to the channel, `sent` once the channel accepted it, or `failed`. Only `sent` (or `received`) means the guest can see it.
+	Status *MessageStatus `json:"status,omitempty"`
+
+	// StatusReason Why a message is still `sending` or `failed`, in plain words. `null` otherwise.
+	StatusReason *string `json:"statusReason,omitempty"`
+
 	// TranslatedBody English translation when the original language is non-English and a translation has been computed.
 	TranslatedBody *string `json:"translatedBody,omitempty"`
 }
 
 // MessageDirection defines model for Message.Direction.
 type MessageDirection string
+
+// MessageStatus Delivery state. Inbound messages are `received`. An outbound message is `sending` while it is queued to the channel, `sent` once the channel accepted it, or `failed`. Only `sent` (or `received`) means the guest can see it.
+type MessageStatus string
 
 // MessageListResponse Cursor-paginated message list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page.
 type MessageListResponse struct {
@@ -12275,21 +12295,6 @@ type PlanNotice struct {
 // PlanNoticeCode defines model for PlanNotice.Code.
 type PlanNoticeCode string
 
-// PlumguideListing A Plumguide listing.
-type PlumguideListing struct {
-	Id     *string `json:"id,omitempty"`
-	Name   *string `json:"name,omitempty"`
-	Status *string `json:"status,omitempty"`
-}
-
-// PlumguideListingListResponse defines model for PlumguideListingListResponse.
-type PlumguideListingListResponse struct {
-	Data *[]PlumguideListing `json:"data,omitempty"`
-
-	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
-	Pagination *Pagination `json:"pagination,omitempty"`
-}
-
 // PmsCapabilities What the API does through a connected PMS beyond reservation writes, read from the same connector table the router uses — a `false` flag is a `422 pms_write_unsupported` naming the PMS.
 type PmsCapabilities struct {
 	Calendar *struct {
@@ -12383,6 +12388,37 @@ type PmsWritePolicy struct {
 		// Website Create bookings from booking websites.
 		Website bool `json:"website"`
 	} `json:"reservations"`
+}
+
+// PostalAddress The full postal address, unit included. Returned on every active row of `GET /v1/properties`, `GET /v1/properties/{id}`, `GET /v1/listings` and `GET /v1/listings/{id}` (on listings, these fields sit inside `address`). Each part is read from the listing first, then from the connected channels (Airbnb, Vrbo, Booking.com), so `line2` carries the apartment or unit number that tells units in the same building apart. A part nobody has stored is `null`.
+type PostalAddress struct {
+	// City Example: Miami
+	City *string `json:"city"`
+
+	// CountryCode ISO 3166-1 alpha-2 country code.
+	//
+	// Example: US
+	CountryCode *string `json:"countryCode"`
+
+	// Line1 Street address: number and street.
+	//
+	// Example: 2700 Northwest 2nd Avenue
+	Line1 *string `json:"line1"`
+
+	// Line2 Apartment, unit, suite or building.
+	//
+	// Example: Unit 241
+	Line2 *string `json:"line2"`
+
+	// PostalCode Postal or ZIP code.
+	//
+	// Example: 33127
+	PostalCode *string `json:"postalCode"`
+
+	// State State, province or region.
+	//
+	// Example: FL
+	State *string `json:"state"`
 }
 
 // Promotion One promotion on one listing. Airbnb sets the discount for its promotions (`discount.setBy: channel`); Booking.com promotions belong to the property and list the rooms they cover in `appliesTo`.
@@ -12700,8 +12736,13 @@ type Property struct {
 	// Accounts The connected account the property belongs to on each channel it is on. List endpoint.
 	Accounts *[]*RecordAccount `json:"accounts,omitempty"`
 
-	// Address Street address (from the listing's `street` field).
+	// Address Street line only, as stored on the listing — no unit, state or postal code. Kept for existing integrations; read `addressDetails` for the full postal address.
+	//
+	// Example: 2700 Northwest 2nd Avenue
 	Address *string `json:"address,omitempty"`
+
+	// AddressDetails The full postal address, unit included. Returned on every active row of `GET /v1/properties`, `GET /v1/properties/{id}`, `GET /v1/listings` and `GET /v1/listings/{id}` (on listings, these fields sit inside `address`). Each part is read from the listing first, then from the connected channels (Airbnb, Vrbo, Booking.com), so `line2` carries the apartment or unit number that tells units in the same building apart. A part nobody has stored is `null`.
+	AddressDetails *PostalAddress `json:"addressDetails,omitempty"`
 
 	// Amenities Amenity rows for the property. Detail endpoint only, and **only present when the caller passes `?include=amenities`.** Empty array (`[]`) when the property has no amenity rows.
 	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
@@ -12711,7 +12752,9 @@ type Property struct {
 	// Example: ["airbnb","booking"]
 	Channels *[]string `json:"channels,omitempty"`
 
-	// City Example: Miami Beach
+	// City City as stored on the listing. Kept for existing integrations; `addressDetails.city` is the resolved city.
+	//
+	// Example: Miami
 	City *string `json:"city,omitempty"`
 
 	// CreatedAt When the property was created. Detail endpoint only.
@@ -16175,18 +16218,6 @@ type CreateBookingWebhookJSONBody struct {
 	NotificationType string `json:"notification_type"`
 }
 
-// ListPlumguideBookingsParams defines parameters for ListPlumguideBookings.
-type ListPlumguideBookingsParams struct {
-	// ListingId Filter to a single Plumguide listing.
-	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
-
-	// BookingCode Fetch a single booking by its Plumguide booking code.
-	BookingCode *string `form:"booking_code,omitempty" json:"booking_code,omitempty"`
-}
-
-// UpdatePlumguideWebhooksJSONBody defines parameters for UpdatePlumguideWebhooks.
-type UpdatePlumguideWebhooksJSONBody map[string]interface{}
-
 // ListVrboListingsParams defines parameters for ListVrboListings.
 type ListVrboListingsParams struct {
 	// Status `active` (default) leaves inactive listings out. `inactive` returns only them and `all` returns both. An inactive listing comes back with identity fields only (ids, `name`, `city`, `status`, `inactiveReason`, its account), which is enough to show what can be activated. Every row carries `status`.
@@ -16233,6 +16264,9 @@ type CreateConnectSessionJSONBody struct {
 	// Example: fr
 	Locale *string `json:"locale,omitempty"`
 
+	// Mapping Where the channel's units get linked to listings. `hosted` (default): after a Vrbo or Booking.com Extranet sign-in, Connect shows a mapping step and returns to `redirectUrl` when it's confirmed. `api`: Connect skips that step and finishes right after sign-in. The connection reaches you in the `connect.session.completed` webhook (and as `connectionId` in the popup message), its handle is `vrbo:{connectionId}` or `booking_extranet:{connectionId}`; you list the units with `GET /v1/connections/{id}/units` and link them with `POST /v1/connections/{id}/mappings`. Nothing is imported until you post the mappings. Other providers ignore it.
+	Mapping *CreateConnectSessionJSONBodyMapping `json:"mapping,omitempty"`
+
 	// Purpose `migrate` starts a Repull Migrate session: the property manager connects their current PMS (or channel) and their data is copied into a new workspace of theirs, which you read with `X-Workspace-Id`. The hosted pages use migration wording, and after connecting they show the import's progress.
 	Purpose *CreateConnectSessionJSONBodyPurpose `json:"purpose,omitempty"`
 
@@ -16264,6 +16298,9 @@ type CreateConnectSessionJSONBody struct {
 
 // CreateConnectSessionJSONBodyAccessType defines parameters for CreateConnectSession.
 type CreateConnectSessionJSONBodyAccessType string
+
+// CreateConnectSessionJSONBodyMapping defines parameters for CreateConnectSession.
+type CreateConnectSessionJSONBodyMapping string
 
 // CreateConnectSessionJSONBodyPurpose defines parameters for CreateConnectSession.
 type CreateConnectSessionJSONBodyPurpose string
@@ -16603,14 +16640,8 @@ type DeleteConnectionParams struct {
 
 // CreateConnectionJSONBody defines parameters for CreateConnection.
 type CreateConnectionJSONBody struct {
-	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants read-only scopes; 'messaging' grants read scopes plus message read/send but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; 'full_access' (default) grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The hosted consent screen normally lets the host pick a tier; passing `accessType` explicitly fixes the tier and hides that choice, so the host can only continue with the tier you requested. Omit it to let the host choose.
+	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants read-only scopes; 'messaging' (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's reviews_write) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; 'full_access' (default) grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The hosted consent screen normally lets the host pick a tier; passing `accessType` explicitly fixes the tier and hides that choice, so the host can only continue with the tier you requested. Omit it to let the host choose.
 	AccessType *CreateConnectionJSONBodyAccessType `json:"accessType,omitempty"`
-
-	// ClientId Plumguide — client ID.
-	ClientId *string `json:"clientId,omitempty"`
-
-	// ClientSecret Plumguide — client secret.
-	ClientSecret *string `json:"clientSecret,omitempty"`
 
 	// Locale Airbnb only — optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`); unknown codes are ignored and resolution falls back to the workspace `default_language`, then `Accept-Language`, then `en`.
 	//
@@ -17895,9 +17926,6 @@ type BookingSetupJSONRequestBody BookingSetupJSONBody
 //
 // Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type CreateBookingWebhookJSONRequestBody CreateBookingWebhookJSONBody
-
-// UpdatePlumguideWebhooksJSONRequestBody defines body for UpdatePlumguideWebhooks for application/json ContentType.
-type UpdatePlumguideWebhooksJSONRequestBody UpdatePlumguideWebhooksJSONBody
 
 // CreateConnectSessionJSONRequestBody defines body for CreateConnectSession for application/json ContentType.
 type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
@@ -20644,40 +20672,6 @@ func (t *WebhookEvent) MergeListingReactivatedEvent(v ListingReactivatedEvent) e
 	return err
 }
 
-// AsCalendarUpdatedEvent returns the union data inside the WebhookEvent as a CalendarUpdatedEvent
-func (t WebhookEvent) AsCalendarUpdatedEvent() (CalendarUpdatedEvent, error) {
-	var body CalendarUpdatedEvent
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromCalendarUpdatedEvent overwrites any union data inside the WebhookEvent as the provided CalendarUpdatedEvent
-func (t *WebhookEvent) FromCalendarUpdatedEvent(v CalendarUpdatedEvent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	b, err = runtime.JSONMerge(b, []byte(`{"event":"calendar.updated"}`))
-	t.union = b
-	return err
-}
-
-// MergeCalendarUpdatedEvent performs a merge with any union data inside the WebhookEvent, using the provided CalendarUpdatedEvent
-func (t *WebhookEvent) MergeCalendarUpdatedEvent(v CalendarUpdatedEvent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	b, err = runtime.JSONMerge(b, []byte(`{"event":"calendar.updated"}`))
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
 // AsAccountCreatedEvent returns the union data inside the WebhookEvent as a AccountCreatedEvent
 func (t WebhookEvent) AsAccountCreatedEvent() (AccountCreatedEvent, error) {
 	var body AccountCreatedEvent
@@ -21284,8 +21278,6 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsAiOperationCompletedEvent()
 	case "ai.operation.failed":
 		return t.AsAiOperationFailedEvent()
-	case "calendar.updated":
-		return t.AsCalendarUpdatedEvent()
 	case "connect.session.completed":
 		return t.AsConnectSessionCompletedEvent()
 	case "inquiry.created":
