@@ -2910,9 +2910,9 @@ type ClientInterface interface {
 
 	// DeleteConnection Disconnect provider
 	//
-	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
+	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking` and `vrbo-login`.
 	//
-	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
+	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 	//
 	// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 	//
@@ -3518,7 +3518,7 @@ type ClientInterface interface {
 	//
 	// Cursor-paginated list of listings owned by the authenticated workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request to walk the full set. `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. Filters: `q` (substring on name/street/city), `status`, `channel`.
 	//
-	// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Pass `?include=thumbnail` to guarantee `thumbnailUrl` on every returned row — including the reduced inactive ones. Combine comma-separated, e.g. `?include=content,thumbnail`. The default response stays lean; consumers must opt in.
+	// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Pass `?include=thumbnail` to guarantee `thumbnailUrl` on every returned row — including the reduced inactive ones. Pass `rooms`, `policies`, `rules`, `pricing`, `fees`, `taxes` or `photos` for the same sections as `GET /v1/listings/{id}`, loaded for the whole page in one go. Combine comma-separated, e.g. `?include=content,thumbnail`. The default response stays lean; consumers must opt in.
 	//
 	// **Inactive listings:** by default only active listings are returned. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated, so when `status` asks for inactive ones they carry only `id`, `name`, `status` and `channels` — enough to choose what to activate with `PATCH /v1/listings/{id}`. The `content` and `details` expansions are not applied to them. `?include=thumbnail` is the one exception: it adds `thumbnailUrl` to an inactive row so a single request can render an active/inactive selection screen with pictures, instead of one follow-up call per listing (which an inactive listing would answer with `403 listing_inactive` anyway).
 	//
@@ -3654,7 +3654,7 @@ type ClientInterface interface {
 	//
 	// Fetch a single listing by id. Returns the same shape as one element of the `GET /v1/listings` response, so you can bind the result to the same model. Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403, never reveals the listing's existence.
 	//
-	// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Combine comma-separated, e.g. `?include=amenities,content,details`. The default response stays lean; consumers must opt in.
+	// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Pass `?include=rooms` for rooms and beds, `policies` for cancellation, house rules, check-in/out and guest rules, `rules` for stay rules (min/max nights, booking window, notice, preparation time), `pricing` for standing prices and discounts, `fees` and `taxes` for every fee and tax in one shape whatever channel or PMS the listing comes from, and `photos`. Combine comma-separated, e.g. `?include=content,details,rooms,policies,pricing,fees,taxes`. The default response stays lean; consumers must opt in.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -4378,6 +4378,24 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/migrations (the `ListMigrations` operationId).
 	ListMigrations(ctx context.Context, params *ListMigrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ImportFromChannexWithBody Import from Channex
+	//
+	// Move a workspace off Channex without changing a single id on your side. Pass your Channex API key: Repull reads your Channex properties, room types, rate plans, webhooks, signing keys, channels and upcoming bookings through Channex's own API (read-only — nothing is written to Channex, and the key is not stored). Each Channex property is matched to your Repull listing or hotel (by Booking.com hotel/room and Airbnb/Vrbo listing ids, then by title and address) or created; every Channex id then resolves, and is returned, unchanged on the Channex-compatible API at `/channex/api/v1`. Webhooks are recreated inactive; activate them with `POST /channex/api/v1/migration/cutover`. Safe to re-run: a run that hits its time budget returns `complete: false` and the next run continues.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/migrations/channex (the `ImportFromChannex` operationId).
+	ImportFromChannexWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ImportFromChannex Import from Channex
+	//
+	// Move a workspace off Channex without changing a single id on your side. Pass your Channex API key: Repull reads your Channex properties, room types, rate plans, webhooks, signing keys, channels and upcoming bookings through Channex's own API (read-only — nothing is written to Channex, and the key is not stored). Each Channex property is matched to your Repull listing or hotel (by Booking.com hotel/room and Airbnb/Vrbo listing ids, then by title and address) or created; every Channex id then resolves, and is returned, unchanged on the Channex-compatible API at `/channex/api/v1`. Webhooks are recreated inactive; activate them with `POST /channex/api/v1/migration/cutover`. Safe to re-run: a run that hits its time budget returns `complete: false` and the next run continues.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/migrations/channex (the `ImportFromChannex` operationId).
+	ImportFromChannex(ctx context.Context, body ImportFromChannexJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteMigration End a migration
 	//
@@ -9936,9 +9954,9 @@ func (c *Client) ZeevouConnectCallback(ctx context.Context, params *ZeevouConnec
 
 // DeleteConnection Disconnect provider
 //
-// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
+// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking` and `vrbo-login`.
 //
-// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
+// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 //
 // **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 //
@@ -11024,7 +11042,7 @@ func (c *Client) SetKv(ctx context.Context, key string, params *SetKvParams, bod
 //
 // Cursor-paginated list of listings owned by the authenticated workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request to walk the full set. `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. Filters: `q` (substring on name/street/city), `status`, `channel`.
 //
-// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Pass `?include=thumbnail` to guarantee `thumbnailUrl` on every returned row — including the reduced inactive ones. Combine comma-separated, e.g. `?include=content,thumbnail`. The default response stays lean; consumers must opt in.
+// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Pass `?include=thumbnail` to guarantee `thumbnailUrl` on every returned row — including the reduced inactive ones. Pass `rooms`, `policies`, `rules`, `pricing`, `fees`, `taxes` or `photos` for the same sections as `GET /v1/listings/{id}`, loaded for the whole page in one go. Combine comma-separated, e.g. `?include=content,thumbnail`. The default response stays lean; consumers must opt in.
 //
 // **Inactive listings:** by default only active listings are returned. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated, so when `status` asks for inactive ones they carry only `id`, `name`, `status` and `channels` — enough to choose what to activate with `PATCH /v1/listings/{id}`. The `content` and `details` expansions are not applied to them. `?include=thumbnail` is the one exception: it adds `thumbnailUrl` to an inactive row so a single request can render an active/inactive selection screen with pictures, instead of one follow-up call per listing (which an inactive listing would answer with `403 listing_inactive` anyway).
 //
@@ -11260,7 +11278,7 @@ func (c *Client) DeactivateListing(ctx context.Context, id int, reqEditors ...Re
 //
 // Fetch a single listing by id. Returns the same shape as one element of the `GET /v1/listings` response, so you can bind the result to the same model. Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403, never reveals the listing's existence.
 //
-// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Combine comma-separated, e.g. `?include=amenities,content,details`. The default response stays lean; consumers must opt in.
+// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Pass `?include=rooms` for rooms and beds, `policies` for cancellation, house rules, check-in/out and guest rules, `rules` for stay rules (min/max nights, booking window, notice, preparation time), `pricing` for standing prices and discounts, `fees` and `taxes` for every fee and tax in one shape whatever channel or PMS the listing comes from, and `photos`. Combine comma-separated, e.g. `?include=content,details,rooms,policies,pricing,fees,taxes`. The default response stays lean; consumers must opt in.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -12485,6 +12503,44 @@ func (c *Client) GetMarketCalendar(ctx context.Context, city string, params *Get
 // Corresponds with GET /v1/migrations (the `ListMigrations` operationId).
 func (c *Client) ListMigrations(ctx context.Context, params *ListMigrationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListMigrationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ImportFromChannexWithBody Import from Channex
+//
+// Move a workspace off Channex without changing a single id on your side. Pass your Channex API key: Repull reads your Channex properties, room types, rate plans, webhooks, signing keys, channels and upcoming bookings through Channex's own API (read-only — nothing is written to Channex, and the key is not stored). Each Channex property is matched to your Repull listing or hotel (by Booking.com hotel/room and Airbnb/Vrbo listing ids, then by title and address) or created; every Channex id then resolves, and is returned, unchanged on the Channex-compatible API at `/channex/api/v1`. Webhooks are recreated inactive; activate them with `POST /channex/api/v1/migration/cutover`. Safe to re-run: a run that hits its time budget returns `complete: false` and the next run continues.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/migrations/channex (the `ImportFromChannex` operationId).
+func (c *Client) ImportFromChannexWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewImportFromChannexRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ImportFromChannex Import from Channex
+//
+// Move a workspace off Channex without changing a single id on your side. Pass your Channex API key: Repull reads your Channex properties, room types, rate plans, webhooks, signing keys, channels and upcoming bookings through Channex's own API (read-only — nothing is written to Channex, and the key is not stored). Each Channex property is matched to your Repull listing or hotel (by Booking.com hotel/room and Airbnb/Vrbo listing ids, then by title and address) or created; every Channex id then resolves, and is returned, unchanged on the Channex-compatible API at `/channex/api/v1`. Webhooks are recreated inactive; activate them with `POST /channex/api/v1/migration/cutover`. Safe to re-run: a run that hits its time budget returns `complete: false` and the next run continues.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/migrations/channex (the `ImportFromChannex` operationId).
+func (c *Client) ImportFromChannex(ctx context.Context, body ImportFromChannexJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewImportFromChannexRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -24966,6 +25022,46 @@ func NewListMigrationsRequest(server string, params *ListMigrationsParams) (*htt
 	return req, nil
 }
 
+// NewImportFromChannexRequest calls the generic ImportFromChannex builder with application/json body
+func NewImportFromChannexRequest(server string, body ImportFromChannexJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewImportFromChannexRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewImportFromChannexRequestWithBody constructs an http.Request for the ImportFromChannex method, with any body, and a specified content type
+func NewImportFromChannexRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/migrations/channex")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteMigrationRequest constructs an http.Request for the DeleteMigration method
 func NewDeleteMigrationRequest(server string, workspaceId int) (*http.Request, error) {
 	var err error
@@ -30788,9 +30884,9 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteConnectionWithResponse Disconnect provider
 	//
-	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
+	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking` and `vrbo-login`.
 	//
-	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
+	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 	//
 	// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 	//
@@ -31448,7 +31544,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Cursor-paginated list of listings owned by the authenticated workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request to walk the full set. `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. Filters: `q` (substring on name/street/city), `status`, `channel`.
 	//
-	// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Pass `?include=thumbnail` to guarantee `thumbnailUrl` on every returned row — including the reduced inactive ones. Combine comma-separated, e.g. `?include=content,thumbnail`. The default response stays lean; consumers must opt in.
+	// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Pass `?include=thumbnail` to guarantee `thumbnailUrl` on every returned row — including the reduced inactive ones. Pass `rooms`, `policies`, `rules`, `pricing`, `fees`, `taxes` or `photos` for the same sections as `GET /v1/listings/{id}`, loaded for the whole page in one go. Combine comma-separated, e.g. `?include=content,thumbnail`. The default response stays lean; consumers must opt in.
 	//
 	// **Inactive listings:** by default only active listings are returned. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated, so when `status` asks for inactive ones they carry only `id`, `name`, `status` and `channels` — enough to choose what to activate with `PATCH /v1/listings/{id}`. The `content` and `details` expansions are not applied to them. `?include=thumbnail` is the one exception: it adds `thumbnailUrl` to an inactive row so a single request can render an active/inactive selection screen with pictures, instead of one follow-up call per listing (which an inactive listing would answer with `403 listing_inactive` anyway).
 	//
@@ -31588,7 +31684,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Fetch a single listing by id. Returns the same shape as one element of the `GET /v1/listings` response, so you can bind the result to the same model. Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403, never reveals the listing's existence.
 	//
-	// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Combine comma-separated, e.g. `?include=amenities,content,details`. The default response stays lean; consumers must opt in.
+	// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Pass `?include=rooms` for rooms and beds, `policies` for cancellation, house rules, check-in/out and guest rules, `rules` for stay rules (min/max nights, booking window, notice, preparation time), `pricing` for standing prices and discounts, `fees` and `taxes` for every fee and tax in one shape whatever channel or PMS the listing comes from, and `photos`. Combine comma-separated, e.g. `?include=content,details,rooms,policies,pricing,fees,taxes`. The default response stays lean; consumers must opt in.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -32354,6 +32450,24 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/migrations (the `ListMigrations` operationId).
 	ListMigrationsWithResponse(ctx context.Context, params *ListMigrationsParams, reqEditors ...RequestEditorFn) (*ListMigrationsClientResponse, error)
+
+	// ImportFromChannexWithBodyWithResponse Import from Channex
+	//
+	// Move a workspace off Channex without changing a single id on your side. Pass your Channex API key: Repull reads your Channex properties, room types, rate plans, webhooks, signing keys, channels and upcoming bookings through Channex's own API (read-only — nothing is written to Channex, and the key is not stored). Each Channex property is matched to your Repull listing or hotel (by Booking.com hotel/room and Airbnb/Vrbo listing ids, then by title and address) or created; every Channex id then resolves, and is returned, unchanged on the Channex-compatible API at `/channex/api/v1`. Webhooks are recreated inactive; activate them with `POST /channex/api/v1/migration/cutover`. Safe to re-run: a run that hits its time budget returns `complete: false` and the next run continues.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/migrations/channex (the `ImportFromChannex` operationId).
+	ImportFromChannexWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ImportFromChannexClientResponse, error)
+
+	// ImportFromChannexWithResponse Import from Channex
+	//
+	// Move a workspace off Channex without changing a single id on your side. Pass your Channex API key: Repull reads your Channex properties, room types, rate plans, webhooks, signing keys, channels and upcoming bookings through Channex's own API (read-only — nothing is written to Channex, and the key is not stored). Each Channex property is matched to your Repull listing or hotel (by Booking.com hotel/room and Airbnb/Vrbo listing ids, then by title and address) or created; every Channex id then resolves, and is returned, unchanged on the Channex-compatible API at `/channex/api/v1`. Webhooks are recreated inactive; activate them with `POST /channex/api/v1/migration/cutover`. Safe to re-run: a run that hits its time budget returns `complete: false` and the next run continues.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/migrations/channex (the `ImportFromChannex` operationId).
+	ImportFromChannexWithResponse(ctx context.Context, body ImportFromChannexJSONRequestBody, reqEditors ...RequestEditorFn) (*ImportFromChannexClientResponse, error)
 
 	// DeleteMigrationWithResponse End a migration
 	//
@@ -49635,6 +49749,549 @@ func (r ListMigrationsClientResponse) ContentType() string {
 	return ""
 }
 
+type ImportFromChannexClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *struct {
+			Channels *[]struct {
+				// Channel Channex adapter code (BookingCom, AirBNB, VRBO…).
+				Channel *string `json:"channel,omitempty"`
+
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                         `json:"detail,omitempty"`
+				Instructions    *string                                                         `json:"instructions,omitempty"`
+				ProviderSwitch  *ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch `json:"providerSwitch,omitempty"`
+				RepullListingId *int                                                            `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex200JSONResponseBodyDataChannelsStatus         `json:"status,omitempty"`
+				Title           *string                                                         `json:"title,omitempty"`
+			} `json:"channels,omitempty"`
+
+			// Complete False when the time budget ran out; run the same request again to continue.
+			Complete    *bool                                                `json:"complete,omitempty"`
+			DryRun      *bool                                                `json:"dryRun,omitempty"`
+			Environment *ImportFromChannex200JSONResponseBodyDataEnvironment `json:"environment,omitempty"`
+			FinishedAt  *time.Time                                           `json:"finishedAt,omitempty"`
+			Id          *openapi_types.UUID                                  `json:"id,omitempty"`
+			NextSteps   *[]string                                            `json:"nextSteps,omitempty"`
+			Properties  *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                   `json:"detail,omitempty"`
+				RepullListingId *int                                                      `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex200JSONResponseBodyDataPropertiesStatus `json:"status,omitempty"`
+				Title           *string                                                   `json:"title,omitempty"`
+			} `json:"properties,omitempty"`
+			RatePlans *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                  `json:"detail,omitempty"`
+				RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex200JSONResponseBodyDataRatePlansStatus `json:"status,omitempty"`
+				Title           *string                                                  `json:"title,omitempty"`
+			} `json:"ratePlans,omitempty"`
+			RoomTypes *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                  `json:"detail,omitempty"`
+				RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex200JSONResponseBodyDataRoomTypesStatus `json:"status,omitempty"`
+				Title           *string                                                  `json:"title,omitempty"`
+			} `json:"roomTypes,omitempty"`
+			SigningKeys *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                    `json:"detail,omitempty"`
+				RepullListingId *int                                                       `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex200JSONResponseBodyDataSigningKeysStatus `json:"status,omitempty"`
+				Title           *string                                                    `json:"title,omitempty"`
+			} `json:"signingKeys,omitempty"`
+			StartedAt *time.Time `json:"startedAt,omitempty"`
+			Summary   *struct {
+				Bookings *struct {
+					Linked  *int `json:"linked,omitempty"`
+					Read    *int `json:"read,omitempty"`
+					Waiting *int `json:"waiting,omitempty"`
+				} `json:"bookings,omitempty"`
+				Channels *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"channels,omitempty"`
+				Properties *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"properties,omitempty"`
+				RatePlans *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"ratePlans,omitempty"`
+				RoomTypes *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"roomTypes,omitempty"`
+				SigningKeys *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"signingKeys,omitempty"`
+				Webhooks *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"webhooks,omitempty"`
+			} `json:"summary,omitempty"`
+			Warnings *[]string `json:"warnings,omitempty"`
+			Webhooks *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                 `json:"detail,omitempty"`
+				RepullListingId *int                                                    `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex200JSONResponseBodyDataWebhooksStatus `json:"status,omitempty"`
+				Title           *string                                                 `json:"title,omitempty"`
+			} `json:"webhooks,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *struct {
+		Data *struct {
+			Channels *[]struct {
+				// Channel Channex adapter code (BookingCom, AirBNB, VRBO…).
+				Channel *string `json:"channel,omitempty"`
+
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                         `json:"detail,omitempty"`
+				Instructions    *string                                                         `json:"instructions,omitempty"`
+				ProviderSwitch  *ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch `json:"providerSwitch,omitempty"`
+				RepullListingId *int                                                            `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex201JSONResponseBodyDataChannelsStatus         `json:"status,omitempty"`
+				Title           *string                                                         `json:"title,omitempty"`
+			} `json:"channels,omitempty"`
+
+			// Complete False when the time budget ran out; run the same request again to continue.
+			Complete    *bool                                                `json:"complete,omitempty"`
+			DryRun      *bool                                                `json:"dryRun,omitempty"`
+			Environment *ImportFromChannex201JSONResponseBodyDataEnvironment `json:"environment,omitempty"`
+			FinishedAt  *time.Time                                           `json:"finishedAt,omitempty"`
+			Id          *openapi_types.UUID                                  `json:"id,omitempty"`
+			NextSteps   *[]string                                            `json:"nextSteps,omitempty"`
+			Properties  *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                   `json:"detail,omitempty"`
+				RepullListingId *int                                                      `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex201JSONResponseBodyDataPropertiesStatus `json:"status,omitempty"`
+				Title           *string                                                   `json:"title,omitempty"`
+			} `json:"properties,omitempty"`
+			RatePlans *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                  `json:"detail,omitempty"`
+				RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex201JSONResponseBodyDataRatePlansStatus `json:"status,omitempty"`
+				Title           *string                                                  `json:"title,omitempty"`
+			} `json:"ratePlans,omitempty"`
+			RoomTypes *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                  `json:"detail,omitempty"`
+				RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex201JSONResponseBodyDataRoomTypesStatus `json:"status,omitempty"`
+				Title           *string                                                  `json:"title,omitempty"`
+			} `json:"roomTypes,omitempty"`
+			SigningKeys *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                    `json:"detail,omitempty"`
+				RepullListingId *int                                                       `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex201JSONResponseBodyDataSigningKeysStatus `json:"status,omitempty"`
+				Title           *string                                                    `json:"title,omitempty"`
+			} `json:"signingKeys,omitempty"`
+			StartedAt *time.Time `json:"startedAt,omitempty"`
+			Summary   *struct {
+				Bookings *struct {
+					Linked  *int `json:"linked,omitempty"`
+					Read    *int `json:"read,omitempty"`
+					Waiting *int `json:"waiting,omitempty"`
+				} `json:"bookings,omitempty"`
+				Channels *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"channels,omitempty"`
+				Properties *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"properties,omitempty"`
+				RatePlans *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"ratePlans,omitempty"`
+				RoomTypes *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"roomTypes,omitempty"`
+				SigningKeys *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"signingKeys,omitempty"`
+				Webhooks *struct {
+					Created     *int `json:"created,omitempty"`
+					Matched     *int `json:"matched,omitempty"`
+					NeedsAction *int `json:"needsAction,omitempty"`
+				} `json:"webhooks,omitempty"`
+			} `json:"summary,omitempty"`
+			Warnings *[]string `json:"warnings,omitempty"`
+			Webhooks *[]struct {
+				// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+				ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+				// Detail How it was matched, or what to do.
+				Detail          *string                                                 `json:"detail,omitempty"`
+				RepullListingId *int                                                    `json:"repullListingId,omitempty"`
+				Status          *ImportFromChannex201JSONResponseBodyDataWebhooksStatus `json:"status,omitempty"`
+				Title           *string                                                 `json:"title,omitempty"`
+			} `json:"webhooks,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ImportFromChannexClientResponse) GetJSON200() *struct {
+	Data *struct {
+		Channels *[]struct {
+			// Channel Channex adapter code (BookingCom, AirBNB, VRBO…).
+			Channel *string `json:"channel,omitempty"`
+
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                         `json:"detail,omitempty"`
+			Instructions    *string                                                         `json:"instructions,omitempty"`
+			ProviderSwitch  *ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch `json:"providerSwitch,omitempty"`
+			RepullListingId *int                                                            `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex200JSONResponseBodyDataChannelsStatus         `json:"status,omitempty"`
+			Title           *string                                                         `json:"title,omitempty"`
+		} `json:"channels,omitempty"`
+
+		// Complete False when the time budget ran out; run the same request again to continue.
+		Complete    *bool                                                `json:"complete,omitempty"`
+		DryRun      *bool                                                `json:"dryRun,omitempty"`
+		Environment *ImportFromChannex200JSONResponseBodyDataEnvironment `json:"environment,omitempty"`
+		FinishedAt  *time.Time                                           `json:"finishedAt,omitempty"`
+		Id          *openapi_types.UUID                                  `json:"id,omitempty"`
+		NextSteps   *[]string                                            `json:"nextSteps,omitempty"`
+		Properties  *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                   `json:"detail,omitempty"`
+			RepullListingId *int                                                      `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex200JSONResponseBodyDataPropertiesStatus `json:"status,omitempty"`
+			Title           *string                                                   `json:"title,omitempty"`
+		} `json:"properties,omitempty"`
+		RatePlans *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                  `json:"detail,omitempty"`
+			RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex200JSONResponseBodyDataRatePlansStatus `json:"status,omitempty"`
+			Title           *string                                                  `json:"title,omitempty"`
+		} `json:"ratePlans,omitempty"`
+		RoomTypes *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                  `json:"detail,omitempty"`
+			RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex200JSONResponseBodyDataRoomTypesStatus `json:"status,omitempty"`
+			Title           *string                                                  `json:"title,omitempty"`
+		} `json:"roomTypes,omitempty"`
+		SigningKeys *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                    `json:"detail,omitempty"`
+			RepullListingId *int                                                       `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex200JSONResponseBodyDataSigningKeysStatus `json:"status,omitempty"`
+			Title           *string                                                    `json:"title,omitempty"`
+		} `json:"signingKeys,omitempty"`
+		StartedAt *time.Time `json:"startedAt,omitempty"`
+		Summary   *struct {
+			Bookings *struct {
+				Linked  *int `json:"linked,omitempty"`
+				Read    *int `json:"read,omitempty"`
+				Waiting *int `json:"waiting,omitempty"`
+			} `json:"bookings,omitempty"`
+			Channels *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"channels,omitempty"`
+			Properties *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"properties,omitempty"`
+			RatePlans *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"ratePlans,omitempty"`
+			RoomTypes *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"roomTypes,omitempty"`
+			SigningKeys *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"signingKeys,omitempty"`
+			Webhooks *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"webhooks,omitempty"`
+		} `json:"summary,omitempty"`
+		Warnings *[]string `json:"warnings,omitempty"`
+		Webhooks *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                 `json:"detail,omitempty"`
+			RepullListingId *int                                                    `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex200JSONResponseBodyDataWebhooksStatus `json:"status,omitempty"`
+			Title           *string                                                 `json:"title,omitempty"`
+		} `json:"webhooks,omitempty"`
+	} `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r ImportFromChannexClientResponse) GetJSON201() *struct {
+	Data *struct {
+		Channels *[]struct {
+			// Channel Channex adapter code (BookingCom, AirBNB, VRBO…).
+			Channel *string `json:"channel,omitempty"`
+
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                         `json:"detail,omitempty"`
+			Instructions    *string                                                         `json:"instructions,omitempty"`
+			ProviderSwitch  *ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch `json:"providerSwitch,omitempty"`
+			RepullListingId *int                                                            `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex201JSONResponseBodyDataChannelsStatus         `json:"status,omitempty"`
+			Title           *string                                                         `json:"title,omitempty"`
+		} `json:"channels,omitempty"`
+
+		// Complete False when the time budget ran out; run the same request again to continue.
+		Complete    *bool                                                `json:"complete,omitempty"`
+		DryRun      *bool                                                `json:"dryRun,omitempty"`
+		Environment *ImportFromChannex201JSONResponseBodyDataEnvironment `json:"environment,omitempty"`
+		FinishedAt  *time.Time                                           `json:"finishedAt,omitempty"`
+		Id          *openapi_types.UUID                                  `json:"id,omitempty"`
+		NextSteps   *[]string                                            `json:"nextSteps,omitempty"`
+		Properties  *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                   `json:"detail,omitempty"`
+			RepullListingId *int                                                      `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex201JSONResponseBodyDataPropertiesStatus `json:"status,omitempty"`
+			Title           *string                                                   `json:"title,omitempty"`
+		} `json:"properties,omitempty"`
+		RatePlans *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                  `json:"detail,omitempty"`
+			RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex201JSONResponseBodyDataRatePlansStatus `json:"status,omitempty"`
+			Title           *string                                                  `json:"title,omitempty"`
+		} `json:"ratePlans,omitempty"`
+		RoomTypes *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                  `json:"detail,omitempty"`
+			RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex201JSONResponseBodyDataRoomTypesStatus `json:"status,omitempty"`
+			Title           *string                                                  `json:"title,omitempty"`
+		} `json:"roomTypes,omitempty"`
+		SigningKeys *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                    `json:"detail,omitempty"`
+			RepullListingId *int                                                       `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex201JSONResponseBodyDataSigningKeysStatus `json:"status,omitempty"`
+			Title           *string                                                    `json:"title,omitempty"`
+		} `json:"signingKeys,omitempty"`
+		StartedAt *time.Time `json:"startedAt,omitempty"`
+		Summary   *struct {
+			Bookings *struct {
+				Linked  *int `json:"linked,omitempty"`
+				Read    *int `json:"read,omitempty"`
+				Waiting *int `json:"waiting,omitempty"`
+			} `json:"bookings,omitempty"`
+			Channels *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"channels,omitempty"`
+			Properties *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"properties,omitempty"`
+			RatePlans *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"ratePlans,omitempty"`
+			RoomTypes *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"roomTypes,omitempty"`
+			SigningKeys *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"signingKeys,omitempty"`
+			Webhooks *struct {
+				Created     *int `json:"created,omitempty"`
+				Matched     *int `json:"matched,omitempty"`
+				NeedsAction *int `json:"needsAction,omitempty"`
+			} `json:"webhooks,omitempty"`
+		} `json:"summary,omitempty"`
+		Warnings *[]string `json:"warnings,omitempty"`
+		Webhooks *[]struct {
+			// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+			ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+			// Detail How it was matched, or what to do.
+			Detail          *string                                                 `json:"detail,omitempty"`
+			RepullListingId *int                                                    `json:"repullListingId,omitempty"`
+			Status          *ImportFromChannex201JSONResponseBodyDataWebhooksStatus `json:"status,omitempty"`
+			Title           *string                                                 `json:"title,omitempty"`
+		} `json:"webhooks,omitempty"`
+	} `json:"data,omitempty"`
+} {
+	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ImportFromChannexClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ImportFromChannexClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ImportFromChannexClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ImportFromChannexClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r ImportFromChannexClientResponse) GetJSON502() *InternalError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r ImportFromChannexClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ImportFromChannexClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ImportFromChannexClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ImportFromChannexClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type DeleteMigrationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -56949,9 +57606,9 @@ func (c *ClientWithResponses) ZeevouConnectCallbackWithResponse(ctx context.Cont
 
 // DeleteConnectionWithResponse Disconnect provider
 //
-// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb` and `booking`.
+// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking` and `vrbo-login`.
 //
-// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
+// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 //
 // **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 //
@@ -57897,7 +58554,7 @@ func (c *ClientWithResponses) SetKvWithResponse(ctx context.Context, key string,
 //
 // Cursor-paginated list of listings owned by the authenticated workspace. Use `pagination.nextCursor` from one response as the `cursor` query param of the next request to walk the full set. `?offset=` is also accepted as a first-class alias for shallow paging (0..10000) — see the `offset` parameter below. Mutually exclusive with `cursor`. Filters: `q` (substring on name/street/city), `status`, `channel`.
 //
-// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Pass `?include=thumbnail` to guarantee `thumbnailUrl` on every returned row — including the reduced inactive ones. Combine comma-separated, e.g. `?include=content,thumbnail`. The default response stays lean; consumers must opt in.
+// **Optional expansions:** Pass `?include=content` to enrich each row with the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.). Both default to `null` per row when the underlying `listings_descriptions` / `listings_details` row is missing — distinct from the field being absent (which signals the expansion was not requested). Pass `?include=thumbnail` to guarantee `thumbnailUrl` on every returned row — including the reduced inactive ones. Pass `rooms`, `policies`, `rules`, `pricing`, `fees`, `taxes` or `photos` for the same sections as `GET /v1/listings/{id}`, loaded for the whole page in one go. Combine comma-separated, e.g. `?include=content,thumbnail`. The default response stays lean; consumers must opt in.
 //
 // **Inactive listings:** by default only active listings are returned. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated, so when `status` asks for inactive ones they carry only `id`, `name`, `status` and `channels` — enough to choose what to activate with `PATCH /v1/listings/{id}`. The `content` and `details` expansions are not applied to them. `?include=thumbnail` is the one exception: it adds `thumbnailUrl` to an inactive row so a single request can render an active/inactive selection screen with pictures, instead of one follow-up call per listing (which an inactive listing would answer with `403 listing_inactive` anyway).
 //
@@ -58097,7 +58754,7 @@ func (c *ClientWithResponses) DeactivateListingWithResponse(ctx context.Context,
 //
 // Fetch a single listing by id. Returns the same shape as one element of the `GET /v1/listings` response, so you can bind the result to the same model. Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403, never reveals the listing's existence.
 //
-// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Combine comma-separated, e.g. `?include=amenities,content,details`. The default response stays lean; consumers must opt in.
+// **Optional expansions:** Pass `?include=amenities` to enrich the response with the listing's amenity rows (`[]` when the listing has none). Pass `?include=content` for the rich content slab (summary, description, space, house rules, etc. — sourced from `listings_descriptions` for the `en` locale; `null` when no row is stored). Pass `?include=details` for the structural slab (bedrooms, bathrooms, person capacity, check-in window, wifi, house manual, etc.; `null` when no row is stored). Pass `?include=rooms` for rooms and beds, `policies` for cancellation, house rules, check-in/out and guest rules, `rules` for stay rules (min/max nights, booking window, notice, preparation time), `pricing` for standing prices and discounts, `fees` and `taxes` for every fee and tax in one shape whatever channel or PMS the listing comes from, and `photos`. Combine comma-separated, e.g. `?include=content,details,rooms,policies,pricing,fees,taxes`. The default response stays lean; consumers must opt in.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -59168,6 +59825,36 @@ func (c *ClientWithResponses) ListMigrationsWithResponse(ctx context.Context, pa
 		return nil, err
 	}
 	return ParseListMigrationsClientResponse(rsp)
+}
+
+// ImportFromChannexWithBodyWithResponse Import from Channex
+//
+// Move a workspace off Channex without changing a single id on your side. Pass your Channex API key: Repull reads your Channex properties, room types, rate plans, webhooks, signing keys, channels and upcoming bookings through Channex's own API (read-only — nothing is written to Channex, and the key is not stored). Each Channex property is matched to your Repull listing or hotel (by Booking.com hotel/room and Airbnb/Vrbo listing ids, then by title and address) or created; every Channex id then resolves, and is returned, unchanged on the Channex-compatible API at `/channex/api/v1`. Webhooks are recreated inactive; activate them with `POST /channex/api/v1/migration/cutover`. Safe to re-run: a run that hits its time budget returns `complete: false` and the next run continues.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/migrations/channex (the `ImportFromChannex` operationId).
+func (c *ClientWithResponses) ImportFromChannexWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ImportFromChannexClientResponse, error) {
+	rsp, err := c.ImportFromChannexWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseImportFromChannexClientResponse(rsp)
+}
+
+// ImportFromChannexWithResponse Import from Channex
+//
+// Move a workspace off Channex without changing a single id on your side. Pass your Channex API key: Repull reads your Channex properties, room types, rate plans, webhooks, signing keys, channels and upcoming bookings through Channex's own API (read-only — nothing is written to Channex, and the key is not stored). Each Channex property is matched to your Repull listing or hotel (by Booking.com hotel/room and Airbnb/Vrbo listing ids, then by title and address) or created; every Channex id then resolves, and is returned, unchanged on the Channex-compatible API at `/channex/api/v1`. Webhooks are recreated inactive; activate them with `POST /channex/api/v1/migration/cutover`. Safe to re-run: a run that hits its time budget returns `complete: false` and the next run continues.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/migrations/channex (the `ImportFromChannex` operationId).
+func (c *ClientWithResponses) ImportFromChannexWithResponse(ctx context.Context, body ImportFromChannexJSONRequestBody, reqEditors ...RequestEditorFn) (*ImportFromChannexClientResponse, error) {
+	rsp, err := c.ImportFromChannex(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseImportFromChannexClientResponse(rsp)
 }
 
 // DeleteMigrationWithResponse End a migration
@@ -72561,6 +73248,304 @@ func ParseListMigrationsClientResponse(rsp *http.Response) (*ListMigrationsClien
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseImportFromChannexClientResponse parses an HTTP response from a ImportFromChannexWithResponse call
+func ParseImportFromChannexClientResponse(rsp *http.Response) (*ImportFromChannexClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ImportFromChannexClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				Channels *[]struct {
+					// Channel Channex adapter code (BookingCom, AirBNB, VRBO…).
+					Channel *string `json:"channel,omitempty"`
+
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                         `json:"detail,omitempty"`
+					Instructions    *string                                                         `json:"instructions,omitempty"`
+					ProviderSwitch  *ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch `json:"providerSwitch,omitempty"`
+					RepullListingId *int                                                            `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex200JSONResponseBodyDataChannelsStatus         `json:"status,omitempty"`
+					Title           *string                                                         `json:"title,omitempty"`
+				} `json:"channels,omitempty"`
+
+				// Complete False when the time budget ran out; run the same request again to continue.
+				Complete    *bool                                                `json:"complete,omitempty"`
+				DryRun      *bool                                                `json:"dryRun,omitempty"`
+				Environment *ImportFromChannex200JSONResponseBodyDataEnvironment `json:"environment,omitempty"`
+				FinishedAt  *time.Time                                           `json:"finishedAt,omitempty"`
+				Id          *openapi_types.UUID                                  `json:"id,omitempty"`
+				NextSteps   *[]string                                            `json:"nextSteps,omitempty"`
+				Properties  *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                   `json:"detail,omitempty"`
+					RepullListingId *int                                                      `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex200JSONResponseBodyDataPropertiesStatus `json:"status,omitempty"`
+					Title           *string                                                   `json:"title,omitempty"`
+				} `json:"properties,omitempty"`
+				RatePlans *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                  `json:"detail,omitempty"`
+					RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex200JSONResponseBodyDataRatePlansStatus `json:"status,omitempty"`
+					Title           *string                                                  `json:"title,omitempty"`
+				} `json:"ratePlans,omitempty"`
+				RoomTypes *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                  `json:"detail,omitempty"`
+					RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex200JSONResponseBodyDataRoomTypesStatus `json:"status,omitempty"`
+					Title           *string                                                  `json:"title,omitempty"`
+				} `json:"roomTypes,omitempty"`
+				SigningKeys *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                    `json:"detail,omitempty"`
+					RepullListingId *int                                                       `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex200JSONResponseBodyDataSigningKeysStatus `json:"status,omitempty"`
+					Title           *string                                                    `json:"title,omitempty"`
+				} `json:"signingKeys,omitempty"`
+				StartedAt *time.Time `json:"startedAt,omitempty"`
+				Summary   *struct {
+					Bookings *struct {
+						Linked  *int `json:"linked,omitempty"`
+						Read    *int `json:"read,omitempty"`
+						Waiting *int `json:"waiting,omitempty"`
+					} `json:"bookings,omitempty"`
+					Channels *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"channels,omitempty"`
+					Properties *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"properties,omitempty"`
+					RatePlans *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"ratePlans,omitempty"`
+					RoomTypes *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"roomTypes,omitempty"`
+					SigningKeys *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"signingKeys,omitempty"`
+					Webhooks *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"webhooks,omitempty"`
+				} `json:"summary,omitempty"`
+				Warnings *[]string `json:"warnings,omitempty"`
+				Webhooks *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                 `json:"detail,omitempty"`
+					RepullListingId *int                                                    `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex200JSONResponseBodyDataWebhooksStatus `json:"status,omitempty"`
+					Title           *string                                                 `json:"title,omitempty"`
+				} `json:"webhooks,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			Data *struct {
+				Channels *[]struct {
+					// Channel Channex adapter code (BookingCom, AirBNB, VRBO…).
+					Channel *string `json:"channel,omitempty"`
+
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                         `json:"detail,omitempty"`
+					Instructions    *string                                                         `json:"instructions,omitempty"`
+					ProviderSwitch  *ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch `json:"providerSwitch,omitempty"`
+					RepullListingId *int                                                            `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex201JSONResponseBodyDataChannelsStatus         `json:"status,omitempty"`
+					Title           *string                                                         `json:"title,omitempty"`
+				} `json:"channels,omitempty"`
+
+				// Complete False when the time budget ran out; run the same request again to continue.
+				Complete    *bool                                                `json:"complete,omitempty"`
+				DryRun      *bool                                                `json:"dryRun,omitempty"`
+				Environment *ImportFromChannex201JSONResponseBodyDataEnvironment `json:"environment,omitempty"`
+				FinishedAt  *time.Time                                           `json:"finishedAt,omitempty"`
+				Id          *openapi_types.UUID                                  `json:"id,omitempty"`
+				NextSteps   *[]string                                            `json:"nextSteps,omitempty"`
+				Properties  *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                   `json:"detail,omitempty"`
+					RepullListingId *int                                                      `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex201JSONResponseBodyDataPropertiesStatus `json:"status,omitempty"`
+					Title           *string                                                   `json:"title,omitempty"`
+				} `json:"properties,omitempty"`
+				RatePlans *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                  `json:"detail,omitempty"`
+					RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex201JSONResponseBodyDataRatePlansStatus `json:"status,omitempty"`
+					Title           *string                                                  `json:"title,omitempty"`
+				} `json:"ratePlans,omitempty"`
+				RoomTypes *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                  `json:"detail,omitempty"`
+					RepullListingId *int                                                     `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex201JSONResponseBodyDataRoomTypesStatus `json:"status,omitempty"`
+					Title           *string                                                  `json:"title,omitempty"`
+				} `json:"roomTypes,omitempty"`
+				SigningKeys *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                    `json:"detail,omitempty"`
+					RepullListingId *int                                                       `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex201JSONResponseBodyDataSigningKeysStatus `json:"status,omitempty"`
+					Title           *string                                                    `json:"title,omitempty"`
+				} `json:"signingKeys,omitempty"`
+				StartedAt *time.Time `json:"startedAt,omitempty"`
+				Summary   *struct {
+					Bookings *struct {
+						Linked  *int `json:"linked,omitempty"`
+						Read    *int `json:"read,omitempty"`
+						Waiting *int `json:"waiting,omitempty"`
+					} `json:"bookings,omitempty"`
+					Channels *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"channels,omitempty"`
+					Properties *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"properties,omitempty"`
+					RatePlans *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"ratePlans,omitempty"`
+					RoomTypes *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"roomTypes,omitempty"`
+					SigningKeys *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"signingKeys,omitempty"`
+					Webhooks *struct {
+						Created     *int `json:"created,omitempty"`
+						Matched     *int `json:"matched,omitempty"`
+						NeedsAction *int `json:"needsAction,omitempty"`
+					} `json:"webhooks,omitempty"`
+				} `json:"summary,omitempty"`
+				Warnings *[]string `json:"warnings,omitempty"`
+				Webhooks *[]struct {
+					// ChannexId The Channex id, which keeps resolving on `/channex/api/v1`.
+					ChannexId *openapi_types.UUID `json:"channexId,omitempty"`
+
+					// Detail How it was matched, or what to do.
+					Detail          *string                                                 `json:"detail,omitempty"`
+					RepullListingId *int                                                    `json:"repullListingId,omitempty"`
+					Status          *ImportFromChannex201JSONResponseBodyDataWebhooksStatus `json:"status,omitempty"`
+					Title           *string                                                 `json:"title,omitempty"`
+				} `json:"webhooks,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 

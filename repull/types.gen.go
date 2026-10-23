@@ -585,16 +585,16 @@ func (e AirbnbListingLifecycleResponseChannel) Valid() bool {
 
 // Defines values for AirbnbPricingWriteRequestFeesAmountType.
 const (
-	Flat    AirbnbPricingWriteRequestFeesAmountType = "flat"
-	Percent AirbnbPricingWriteRequestFeesAmountType = "percent"
+	AirbnbPricingWriteRequestFeesAmountTypeFlat    AirbnbPricingWriteRequestFeesAmountType = "flat"
+	AirbnbPricingWriteRequestFeesAmountTypePercent AirbnbPricingWriteRequestFeesAmountType = "percent"
 )
 
 // Valid indicates whether the value is a known member of the AirbnbPricingWriteRequestFeesAmountType enum.
 func (e AirbnbPricingWriteRequestFeesAmountType) Valid() bool {
 	switch e {
-	case Flat:
+	case AirbnbPricingWriteRequestFeesAmountTypeFlat:
 		return true
-	case Percent:
+	case AirbnbPricingWriteRequestFeesAmountTypePercent:
 		return true
 	default:
 		return false
@@ -1285,6 +1285,21 @@ func (e BookingRoomsRatesResponseSource) Valid() bool {
 	}
 }
 
+// Defines values for BookingUnacknowledgedEventEvent.
+const (
+	BookingUnacknowledgedEventEventBookingUnacknowledged BookingUnacknowledgedEventEvent = "booking.unacknowledged"
+)
+
+// Valid indicates whether the value is a known member of the BookingUnacknowledgedEventEvent enum.
+func (e BookingUnacknowledgedEventEvent) Valid() bool {
+	switch e {
+	case BookingUnacknowledgedEventEventBookingUnacknowledged:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BookingVerifyHotelResponseMissingCapabilities.
 const (
 	BookingVerifyHotelResponseMissingCapabilitiesContent      BookingVerifyHotelResponseMissingCapabilities = "content"
@@ -1351,6 +1366,39 @@ func (e BulkPricingRequestAction) Valid() bool {
 	}
 }
 
+// Defines values for ChannelDegradedEventEvent.
+const (
+	ChannelDegradedEventEventChannelDegraded ChannelDegradedEventEvent = "channel.degraded"
+)
+
+// Valid indicates whether the value is a known member of the ChannelDegradedEventEvent enum.
+func (e ChannelDegradedEventEvent) Valid() bool {
+	switch e {
+	case ChannelDegradedEventEventChannelDegraded:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ChannelDegradedPayloadObjectStatus.
+const (
+	ChannelDegradedPayloadObjectStatusDegraded ChannelDegradedPayloadObjectStatus = "degraded"
+	ChannelDegradedPayloadObjectStatusDown     ChannelDegradedPayloadObjectStatus = "down"
+)
+
+// Valid indicates whether the value is a known member of the ChannelDegradedPayloadObjectStatus enum.
+func (e ChannelDegradedPayloadObjectStatus) Valid() bool {
+	switch e {
+	case ChannelDegradedPayloadObjectStatusDegraded:
+		return true
+	case ChannelDegradedPayloadObjectStatusDown:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ChannelMarketStateItemChannel.
 const (
 	ChannelMarketStateItemChannelAirbnb  ChannelMarketStateItemChannel = "airbnb"
@@ -1387,6 +1435,99 @@ func (e ChannelMarketStateItemState) Valid() bool {
 	case ChannelMarketStateItemStateOnline:
 		return true
 	case ChannelMarketStateItemStateUnchanged:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ChannelSyncFailedEventEvent.
+const (
+	ChannelSyncFailedEventEventChannelSyncFailed ChannelSyncFailedEventEvent = "channel.sync.failed"
+)
+
+// Valid indicates whether the value is a known member of the ChannelSyncFailedEventEvent enum.
+func (e ChannelSyncFailedEventEvent) Valid() bool {
+	switch e {
+	case ChannelSyncFailedEventEventChannelSyncFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ChannelSyncFailurePayloadFailuresKind.
+const (
+	ChannelSyncFailurePayloadFailuresKindAuth        ChannelSyncFailurePayloadFailuresKind = "auth"
+	ChannelSyncFailurePayloadFailuresKindNotMapped   ChannelSyncFailurePayloadFailuresKind = "not_mapped"
+	ChannelSyncFailurePayloadFailuresKindRejected    ChannelSyncFailurePayloadFailuresKind = "rejected"
+	ChannelSyncFailurePayloadFailuresKindUnknown     ChannelSyncFailurePayloadFailuresKind = "unknown"
+	ChannelSyncFailurePayloadFailuresKindUnreachable ChannelSyncFailurePayloadFailuresKind = "unreachable"
+)
+
+// Valid indicates whether the value is a known member of the ChannelSyncFailurePayloadFailuresKind enum.
+func (e ChannelSyncFailurePayloadFailuresKind) Valid() bool {
+	switch e {
+	case ChannelSyncFailurePayloadFailuresKindAuth:
+		return true
+	case ChannelSyncFailurePayloadFailuresKindNotMapped:
+		return true
+	case ChannelSyncFailurePayloadFailuresKindRejected:
+		return true
+	case ChannelSyncFailurePayloadFailuresKindUnknown:
+		return true
+	case ChannelSyncFailurePayloadFailuresKindUnreachable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ChannelSyncFailurePayloadObjectOperation.
+const (
+	ChannelSyncFailurePayloadObjectOperationAvailability ChannelSyncFailurePayloadObjectOperation = "availability"
+	ChannelSyncFailurePayloadObjectOperationContent      ChannelSyncFailurePayloadObjectOperation = "content"
+	ChannelSyncFailurePayloadObjectOperationRate         ChannelSyncFailurePayloadObjectOperation = "rate"
+	ChannelSyncFailurePayloadObjectOperationReservation  ChannelSyncFailurePayloadObjectOperation = "reservation"
+	ChannelSyncFailurePayloadObjectOperationRestriction  ChannelSyncFailurePayloadObjectOperation = "restriction"
+)
+
+// Valid indicates whether the value is a known member of the ChannelSyncFailurePayloadObjectOperation enum.
+func (e ChannelSyncFailurePayloadObjectOperation) Valid() bool {
+	switch e {
+	case ChannelSyncFailurePayloadObjectOperationAvailability:
+		return true
+	case ChannelSyncFailurePayloadObjectOperationContent:
+		return true
+	case ChannelSyncFailurePayloadObjectOperationRate:
+		return true
+	case ChannelSyncFailurePayloadObjectOperationReservation:
+		return true
+	case ChannelSyncFailurePayloadObjectOperationRestriction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ChargePer.
+const (
+	ChargePerGuest      ChargePer = "guest"
+	ChargePerGuestNight ChargePer = "guest_night"
+	ChargePerNight      ChargePer = "night"
+	ChargePerStay       ChargePer = "stay"
+)
+
+// Valid indicates whether the value is a known member of the ChargePer enum.
+func (e ChargePer) Valid() bool {
+	switch e {
+	case ChargePerGuest:
+		return true
+	case ChargePerGuestNight:
+		return true
+	case ChargePerNight:
+		return true
+	case ChargePerStay:
 		return true
 	default:
 		return false
@@ -2080,6 +2221,24 @@ func (e ListingDeletedEventEvent) Valid() bool {
 	}
 }
 
+// Defines values for ListingFeeAmountType.
+const (
+	ListingFeeAmountTypeFlat    ListingFeeAmountType = "flat"
+	ListingFeeAmountTypePercent ListingFeeAmountType = "percent"
+)
+
+// Valid indicates whether the value is a known member of the ListingFeeAmountType enum.
+func (e ListingFeeAmountType) Valid() bool {
+	switch e {
+	case ListingFeeAmountTypeFlat:
+		return true
+	case ListingFeeAmountTypePercent:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingGenerateContentRequestStyle.
 const (
 	Concise      ListingGenerateContentRequestStyle = "concise"
@@ -2506,6 +2665,24 @@ const (
 func (e ListingSuspendedEventEvent) Valid() bool {
 	switch e {
 	case ListingSuspendedEventEventListingSuspended:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingTaxAmountType.
+const (
+	ListingTaxAmountTypeFlat    ListingTaxAmountType = "flat"
+	ListingTaxAmountTypePercent ListingTaxAmountType = "percent"
+)
+
+// Valid indicates whether the value is a known member of the ListingTaxAmountType enum.
+func (e ListingTaxAmountType) Valid() bool {
+	switch e {
+	case ListingTaxAmountTypeFlat:
+		return true
+	case ListingTaxAmountTypePercent:
 		return true
 	default:
 		return false
@@ -3715,6 +3892,21 @@ func (e ReservationRequestUpdatedPayloadRequestStatus) Valid() bool {
 	}
 }
 
+// Defines values for ReservationThreadAssignedEventEvent.
+const (
+	ReservationThreadAssignedEventEventReservationThreadAssigned ReservationThreadAssignedEventEvent = "reservation.thread.assigned"
+)
+
+// Valid indicates whether the value is a known member of the ReservationThreadAssignedEventEvent enum.
+func (e ReservationThreadAssignedEventEvent) Valid() bool {
+	switch e {
+	case ReservationThreadAssignedEventEventReservationThreadAssigned:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationUpdatedEventEvent.
 const (
 	ReservationUpdatedEventEventReservationUpdated ReservationUpdatedEventEvent = "reservation.updated"
@@ -3994,6 +4186,9 @@ const (
 	WebhookEventTypeAccountImportStarted           WebhookEventType = "account.import.started"
 	WebhookEventTypeAiOperationCompleted           WebhookEventType = "ai.operation.completed"
 	WebhookEventTypeAiOperationFailed              WebhookEventType = "ai.operation.failed"
+	WebhookEventTypeBookingUnacknowledged          WebhookEventType = "booking.unacknowledged"
+	WebhookEventTypeChannelDegraded                WebhookEventType = "channel.degraded"
+	WebhookEventTypeChannelSyncFailed              WebhookEventType = "channel.sync.failed"
 	WebhookEventTypeConnectSessionCompleted        WebhookEventType = "connect.session.completed"
 	WebhookEventTypeInquiryCreated                 WebhookEventType = "inquiry.created"
 	WebhookEventTypeInquiryUpdated                 WebhookEventType = "inquiry.updated"
@@ -4017,6 +4212,7 @@ const (
 	WebhookEventTypeReservationMessageUpdated      WebhookEventType = "reservation.message.updated"
 	WebhookEventTypeReservationRequestCreated      WebhookEventType = "reservation.request.created"
 	WebhookEventTypeReservationRequestUpdated      WebhookEventType = "reservation.request.updated"
+	WebhookEventTypeReservationThreadAssigned      WebhookEventType = "reservation.thread.assigned"
 	WebhookEventTypeReservationUpdated             WebhookEventType = "reservation.updated"
 	WebhookEventTypeReviewCreated                  WebhookEventType = "review.created"
 	WebhookEventTypeReviewResponded                WebhookEventType = "review.responded"
@@ -4039,6 +4235,12 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeAiOperationCompleted:
 		return true
 	case WebhookEventTypeAiOperationFailed:
+		return true
+	case WebhookEventTypeBookingUnacknowledged:
+		return true
+	case WebhookEventTypeChannelDegraded:
+		return true
+	case WebhookEventTypeChannelSyncFailed:
 		return true
 	case WebhookEventTypeConnectSessionCompleted:
 		return true
@@ -4085,6 +4287,8 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeReservationRequestCreated:
 		return true
 	case WebhookEventTypeReservationRequestUpdated:
+		return true
+	case WebhookEventTypeReservationThreadAssigned:
 		return true
 	case WebhookEventTypeReservationUpdated:
 		return true
@@ -5325,16 +5529,16 @@ func (e CreateConnectSessionJSONBodyScope) Valid() bool {
 
 // Defines values for SubmitMewsCredentialsJSONBodyCredentialsEnvironment.
 const (
-	Demo       SubmitMewsCredentialsJSONBodyCredentialsEnvironment = "demo"
-	Production SubmitMewsCredentialsJSONBodyCredentialsEnvironment = "production"
+	SubmitMewsCredentialsJSONBodyCredentialsEnvironmentDemo       SubmitMewsCredentialsJSONBodyCredentialsEnvironment = "demo"
+	SubmitMewsCredentialsJSONBodyCredentialsEnvironmentProduction SubmitMewsCredentialsJSONBodyCredentialsEnvironment = "production"
 )
 
 // Valid indicates whether the value is a known member of the SubmitMewsCredentialsJSONBodyCredentialsEnvironment enum.
 func (e SubmitMewsCredentialsJSONBodyCredentialsEnvironment) Valid() bool {
 	switch e {
-	case Demo:
+	case SubmitMewsCredentialsJSONBodyCredentialsEnvironmentDemo:
 		return true
-	case Production:
+	case SubmitMewsCredentialsJSONBodyCredentialsEnvironmentProduction:
 		return true
 	default:
 		return false
@@ -5772,19 +5976,19 @@ func (e GetChannelHealthParamsChannel) Valid() bool {
 
 // Defines values for GetChannelHealth200JSONResponseBodyStatus.
 const (
-	Degraded GetChannelHealth200JSONResponseBodyStatus = "degraded"
-	Down     GetChannelHealth200JSONResponseBodyStatus = "down"
-	Ok       GetChannelHealth200JSONResponseBodyStatus = "ok"
+	GetChannelHealth200JSONResponseBodyStatusDegraded GetChannelHealth200JSONResponseBodyStatus = "degraded"
+	GetChannelHealth200JSONResponseBodyStatusDown     GetChannelHealth200JSONResponseBodyStatus = "down"
+	GetChannelHealth200JSONResponseBodyStatusOk       GetChannelHealth200JSONResponseBodyStatus = "ok"
 )
 
 // Valid indicates whether the value is a known member of the GetChannelHealth200JSONResponseBodyStatus enum.
 func (e GetChannelHealth200JSONResponseBodyStatus) Valid() bool {
 	switch e {
-	case Degraded:
+	case GetChannelHealth200JSONResponseBodyStatusDegraded:
 		return true
-	case Down:
+	case GetChannelHealth200JSONResponseBodyStatusDown:
 		return true
-	case Ok:
+	case GetChannelHealth200JSONResponseBodyStatusOk:
 		return true
 	default:
 		return false
@@ -6031,6 +6235,354 @@ func (e ListMarketBrowseParamsSort) Valid() bool {
 	case ListingsDesc:
 		return true
 	case NameAsc:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannexJSONBodyEnvironment.
+const (
+	ImportFromChannexJSONBodyEnvironmentProduction ImportFromChannexJSONBodyEnvironment = "production"
+	ImportFromChannexJSONBodyEnvironmentStaging    ImportFromChannexJSONBodyEnvironment = "staging"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannexJSONBodyEnvironment enum.
+func (e ImportFromChannexJSONBodyEnvironment) Valid() bool {
+	switch e {
+	case ImportFromChannexJSONBodyEnvironmentProduction:
+		return true
+	case ImportFromChannexJSONBodyEnvironmentStaging:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch.
+const (
+	ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitchRequired    ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch = "required"
+	ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitchSwitched    ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch = "switched"
+	ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitchUnsupported ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch = "unsupported"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch enum.
+func (e ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch) Valid() bool {
+	switch e {
+	case ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitchRequired:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitchSwitched:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitchUnsupported:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex200JSONResponseBodyDataChannelsStatus.
+const (
+	ImportFromChannex200JSONResponseBodyDataChannelsStatusCreated     ImportFromChannex200JSONResponseBodyDataChannelsStatus = "created"
+	ImportFromChannex200JSONResponseBodyDataChannelsStatusMatched     ImportFromChannex200JSONResponseBodyDataChannelsStatus = "matched"
+	ImportFromChannex200JSONResponseBodyDataChannelsStatusNeedsAction ImportFromChannex200JSONResponseBodyDataChannelsStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex200JSONResponseBodyDataChannelsStatus enum.
+func (e ImportFromChannex200JSONResponseBodyDataChannelsStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex200JSONResponseBodyDataChannelsStatusCreated:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataChannelsStatusMatched:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataChannelsStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex200JSONResponseBodyDataEnvironment.
+const (
+	ImportFromChannex200JSONResponseBodyDataEnvironmentProduction ImportFromChannex200JSONResponseBodyDataEnvironment = "production"
+	ImportFromChannex200JSONResponseBodyDataEnvironmentStaging    ImportFromChannex200JSONResponseBodyDataEnvironment = "staging"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex200JSONResponseBodyDataEnvironment enum.
+func (e ImportFromChannex200JSONResponseBodyDataEnvironment) Valid() bool {
+	switch e {
+	case ImportFromChannex200JSONResponseBodyDataEnvironmentProduction:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataEnvironmentStaging:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex200JSONResponseBodyDataPropertiesStatus.
+const (
+	ImportFromChannex200JSONResponseBodyDataPropertiesStatusCreated     ImportFromChannex200JSONResponseBodyDataPropertiesStatus = "created"
+	ImportFromChannex200JSONResponseBodyDataPropertiesStatusMatched     ImportFromChannex200JSONResponseBodyDataPropertiesStatus = "matched"
+	ImportFromChannex200JSONResponseBodyDataPropertiesStatusNeedsAction ImportFromChannex200JSONResponseBodyDataPropertiesStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex200JSONResponseBodyDataPropertiesStatus enum.
+func (e ImportFromChannex200JSONResponseBodyDataPropertiesStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex200JSONResponseBodyDataPropertiesStatusCreated:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataPropertiesStatusMatched:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataPropertiesStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex200JSONResponseBodyDataRatePlansStatus.
+const (
+	ImportFromChannex200JSONResponseBodyDataRatePlansStatusCreated     ImportFromChannex200JSONResponseBodyDataRatePlansStatus = "created"
+	ImportFromChannex200JSONResponseBodyDataRatePlansStatusMatched     ImportFromChannex200JSONResponseBodyDataRatePlansStatus = "matched"
+	ImportFromChannex200JSONResponseBodyDataRatePlansStatusNeedsAction ImportFromChannex200JSONResponseBodyDataRatePlansStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex200JSONResponseBodyDataRatePlansStatus enum.
+func (e ImportFromChannex200JSONResponseBodyDataRatePlansStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex200JSONResponseBodyDataRatePlansStatusCreated:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataRatePlansStatusMatched:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataRatePlansStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex200JSONResponseBodyDataRoomTypesStatus.
+const (
+	ImportFromChannex200JSONResponseBodyDataRoomTypesStatusCreated     ImportFromChannex200JSONResponseBodyDataRoomTypesStatus = "created"
+	ImportFromChannex200JSONResponseBodyDataRoomTypesStatusMatched     ImportFromChannex200JSONResponseBodyDataRoomTypesStatus = "matched"
+	ImportFromChannex200JSONResponseBodyDataRoomTypesStatusNeedsAction ImportFromChannex200JSONResponseBodyDataRoomTypesStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex200JSONResponseBodyDataRoomTypesStatus enum.
+func (e ImportFromChannex200JSONResponseBodyDataRoomTypesStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex200JSONResponseBodyDataRoomTypesStatusCreated:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataRoomTypesStatusMatched:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataRoomTypesStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex200JSONResponseBodyDataSigningKeysStatus.
+const (
+	ImportFromChannex200JSONResponseBodyDataSigningKeysStatusCreated     ImportFromChannex200JSONResponseBodyDataSigningKeysStatus = "created"
+	ImportFromChannex200JSONResponseBodyDataSigningKeysStatusMatched     ImportFromChannex200JSONResponseBodyDataSigningKeysStatus = "matched"
+	ImportFromChannex200JSONResponseBodyDataSigningKeysStatusNeedsAction ImportFromChannex200JSONResponseBodyDataSigningKeysStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex200JSONResponseBodyDataSigningKeysStatus enum.
+func (e ImportFromChannex200JSONResponseBodyDataSigningKeysStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex200JSONResponseBodyDataSigningKeysStatusCreated:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataSigningKeysStatusMatched:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataSigningKeysStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex200JSONResponseBodyDataWebhooksStatus.
+const (
+	ImportFromChannex200JSONResponseBodyDataWebhooksStatusCreated     ImportFromChannex200JSONResponseBodyDataWebhooksStatus = "created"
+	ImportFromChannex200JSONResponseBodyDataWebhooksStatusMatched     ImportFromChannex200JSONResponseBodyDataWebhooksStatus = "matched"
+	ImportFromChannex200JSONResponseBodyDataWebhooksStatusNeedsAction ImportFromChannex200JSONResponseBodyDataWebhooksStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex200JSONResponseBodyDataWebhooksStatus enum.
+func (e ImportFromChannex200JSONResponseBodyDataWebhooksStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex200JSONResponseBodyDataWebhooksStatusCreated:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataWebhooksStatusMatched:
+		return true
+	case ImportFromChannex200JSONResponseBodyDataWebhooksStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch.
+const (
+	ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitchRequired    ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch = "required"
+	ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitchSwitched    ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch = "switched"
+	ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitchUnsupported ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch = "unsupported"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch enum.
+func (e ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch) Valid() bool {
+	switch e {
+	case ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitchRequired:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitchSwitched:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitchUnsupported:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex201JSONResponseBodyDataChannelsStatus.
+const (
+	ImportFromChannex201JSONResponseBodyDataChannelsStatusCreated     ImportFromChannex201JSONResponseBodyDataChannelsStatus = "created"
+	ImportFromChannex201JSONResponseBodyDataChannelsStatusMatched     ImportFromChannex201JSONResponseBodyDataChannelsStatus = "matched"
+	ImportFromChannex201JSONResponseBodyDataChannelsStatusNeedsAction ImportFromChannex201JSONResponseBodyDataChannelsStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex201JSONResponseBodyDataChannelsStatus enum.
+func (e ImportFromChannex201JSONResponseBodyDataChannelsStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex201JSONResponseBodyDataChannelsStatusCreated:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataChannelsStatusMatched:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataChannelsStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex201JSONResponseBodyDataEnvironment.
+const (
+	ImportFromChannex201JSONResponseBodyDataEnvironmentProduction ImportFromChannex201JSONResponseBodyDataEnvironment = "production"
+	ImportFromChannex201JSONResponseBodyDataEnvironmentStaging    ImportFromChannex201JSONResponseBodyDataEnvironment = "staging"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex201JSONResponseBodyDataEnvironment enum.
+func (e ImportFromChannex201JSONResponseBodyDataEnvironment) Valid() bool {
+	switch e {
+	case ImportFromChannex201JSONResponseBodyDataEnvironmentProduction:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataEnvironmentStaging:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex201JSONResponseBodyDataPropertiesStatus.
+const (
+	ImportFromChannex201JSONResponseBodyDataPropertiesStatusCreated     ImportFromChannex201JSONResponseBodyDataPropertiesStatus = "created"
+	ImportFromChannex201JSONResponseBodyDataPropertiesStatusMatched     ImportFromChannex201JSONResponseBodyDataPropertiesStatus = "matched"
+	ImportFromChannex201JSONResponseBodyDataPropertiesStatusNeedsAction ImportFromChannex201JSONResponseBodyDataPropertiesStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex201JSONResponseBodyDataPropertiesStatus enum.
+func (e ImportFromChannex201JSONResponseBodyDataPropertiesStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex201JSONResponseBodyDataPropertiesStatusCreated:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataPropertiesStatusMatched:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataPropertiesStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex201JSONResponseBodyDataRatePlansStatus.
+const (
+	ImportFromChannex201JSONResponseBodyDataRatePlansStatusCreated     ImportFromChannex201JSONResponseBodyDataRatePlansStatus = "created"
+	ImportFromChannex201JSONResponseBodyDataRatePlansStatusMatched     ImportFromChannex201JSONResponseBodyDataRatePlansStatus = "matched"
+	ImportFromChannex201JSONResponseBodyDataRatePlansStatusNeedsAction ImportFromChannex201JSONResponseBodyDataRatePlansStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex201JSONResponseBodyDataRatePlansStatus enum.
+func (e ImportFromChannex201JSONResponseBodyDataRatePlansStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex201JSONResponseBodyDataRatePlansStatusCreated:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataRatePlansStatusMatched:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataRatePlansStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex201JSONResponseBodyDataRoomTypesStatus.
+const (
+	ImportFromChannex201JSONResponseBodyDataRoomTypesStatusCreated     ImportFromChannex201JSONResponseBodyDataRoomTypesStatus = "created"
+	ImportFromChannex201JSONResponseBodyDataRoomTypesStatusMatched     ImportFromChannex201JSONResponseBodyDataRoomTypesStatus = "matched"
+	ImportFromChannex201JSONResponseBodyDataRoomTypesStatusNeedsAction ImportFromChannex201JSONResponseBodyDataRoomTypesStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex201JSONResponseBodyDataRoomTypesStatus enum.
+func (e ImportFromChannex201JSONResponseBodyDataRoomTypesStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex201JSONResponseBodyDataRoomTypesStatusCreated:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataRoomTypesStatusMatched:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataRoomTypesStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex201JSONResponseBodyDataSigningKeysStatus.
+const (
+	ImportFromChannex201JSONResponseBodyDataSigningKeysStatusCreated     ImportFromChannex201JSONResponseBodyDataSigningKeysStatus = "created"
+	ImportFromChannex201JSONResponseBodyDataSigningKeysStatusMatched     ImportFromChannex201JSONResponseBodyDataSigningKeysStatus = "matched"
+	ImportFromChannex201JSONResponseBodyDataSigningKeysStatusNeedsAction ImportFromChannex201JSONResponseBodyDataSigningKeysStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex201JSONResponseBodyDataSigningKeysStatus enum.
+func (e ImportFromChannex201JSONResponseBodyDataSigningKeysStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex201JSONResponseBodyDataSigningKeysStatusCreated:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataSigningKeysStatusMatched:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataSigningKeysStatusNeedsAction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ImportFromChannex201JSONResponseBodyDataWebhooksStatus.
+const (
+	ImportFromChannex201JSONResponseBodyDataWebhooksStatusCreated     ImportFromChannex201JSONResponseBodyDataWebhooksStatus = "created"
+	ImportFromChannex201JSONResponseBodyDataWebhooksStatusMatched     ImportFromChannex201JSONResponseBodyDataWebhooksStatus = "matched"
+	ImportFromChannex201JSONResponseBodyDataWebhooksStatusNeedsAction ImportFromChannex201JSONResponseBodyDataWebhooksStatus = "needs_action"
+)
+
+// Valid indicates whether the value is a known member of the ImportFromChannex201JSONResponseBodyDataWebhooksStatus enum.
+func (e ImportFromChannex201JSONResponseBodyDataWebhooksStatus) Valid() bool {
+	switch e {
+	case ImportFromChannex201JSONResponseBodyDataWebhooksStatusCreated:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataWebhooksStatusMatched:
+		return true
+	case ImportFromChannex201JSONResponseBodyDataWebhooksStatusNeedsAction:
 		return true
 	default:
 		return false
@@ -8733,6 +9285,49 @@ type BookingRoomsRatesResponse struct {
 // BookingRoomsRatesResponseSource Where the rooms came from. `booking` — read live from Booking.com just now. `mirror` — Booking.com returned nothing usable, so these are the rooms and rate plans recorded at the last import; the ids are Booking.com's own and are safe to write against, but they can be stale and `maxPersons`, `policy`, `policyId`, `pricingType` and `isChildRate` come back `null` because only the live feed states them.
 type BookingRoomsRatesResponseSource string
 
+// BookingUnacknowledgedEvent defines model for BookingUnacknowledgedEvent.
+type BookingUnacknowledgedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `booking.unacknowledged`. A booking changed and your system has not acknowledged the change through the revision feed. Sent once per outstanding revision — not once per check — so a booking that keeps waiting does not keep alerting. A booking that changes AGAIN mints a new revision and does alert again, because that is a new thing to acknowledge. Acknowledging the revision stops it.
+	Data BookingUnacknowledgedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event BookingUnacknowledgedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// BookingUnacknowledgedEventEvent The event name. This field is `event`, not `type`.
+type BookingUnacknowledgedEventEvent string
+
+// BookingUnacknowledgedPayload Payload for `booking.unacknowledged`. A booking changed and your system has not acknowledged the change through the revision feed. Sent once per outstanding revision — not once per check — so a booking that keeps waiting does not keep alerting. A booking that changes AGAIN mints a new revision and does alert again, because that is a new thing to acknowledge. Acknowledging the revision stops it.
+type BookingUnacknowledgedPayload struct {
+	// Object Lightweight reservation snapshot delivered as `data.object` on every reservation webhook event. Stable across `reservation.created`, `reservation.updated`, and `reservation.cancelled`. Fetch the full reservation via `GET /v1/reservations/{id}` if you need pricing, guest contact info, or audit history — those are deliberately omitted to keep deliveries small.
+	//
+	// **Stay terms are the one exception to that rule.** `cancellationPolicy`, `checkInTime` and `checkOutTime` ride on every delivery, because the decisions they drive — is a refund owed, when can housekeeping turn the unit over — are made at the moment the webhook lands, not on a follow-up fetch. They are operational parameters of the booking, not contact or payment data. Guest email, payment method and payment reference stay off the snapshot; see `GET /v1/reservations/{id}`.
+	//
+	// All three are `null` when the source channel did not supply them. They are never defaulted: a fabricated policy is worse than a missing one.
+	Object ReservationWebhookObject `json:"object"`
+
+	// OutstandingHours Whole hours since `outstandingSince`, for convenience.
+	OutstandingHours *int `json:"outstandingHours,omitempty"`
+
+	// OutstandingSince When the booking actually changed — NOT when we noticed. Revisions are minted when you first poll the feed, so a mint timestamp would measure how recently you looked rather than how long the booking has waited.
+	OutstandingSince time.Time `json:"outstandingSince"`
+
+	// RevisionId The outstanding revision. Acknowledge this to stop the alert.
+	RevisionId openapi_types.UUID `json:"revisionId"`
+}
+
 // BookingUpstreamFailure Why Booking.com refused one half of a write, in their words. Present on the half that was refused.
 type BookingUpstreamFailure struct {
 	// Body The upstream body, trimmed and capped, for when the parsed reason is not enough.
@@ -8853,6 +9448,47 @@ type CalendarResponse struct {
 	Data *[]CalendarDay `json:"data,omitempty"`
 }
 
+// ChannelDegradedEvent defines model for ChannelDegradedEvent.
+type ChannelDegradedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `channel.degraded`. A connection is failing repeatedly and will stop working. Sent on the transition into degraded or down, not on every health check.
+	Data ChannelDegradedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event     ChannelDegradedEventEvent `json:"event"`
+	EventId   openapi_types.UUID        `json:"eventId"`
+	Timestamp time.Time                 `json:"timestamp"`
+}
+
+// ChannelDegradedEventEvent The event name. This field is `event`, not `type`.
+type ChannelDegradedEventEvent string
+
+// ChannelDegradedPayload Payload for `channel.degraded`. A connection is failing repeatedly and will stop working. Sent on the transition into degraded or down, not on every health check.
+type ChannelDegradedPayload struct {
+	Object struct {
+		CustomerId int `json:"customerId"`
+
+		// Detail What we observed, in the provider's words where possible. A bare "degraded" tells nobody what to fix.
+		Detail *string `json:"detail,omitempty"`
+
+		// ExternalAccountId The provider's own account, host or hotel id.
+		ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+		// Provider Example: booking
+		Provider string                             `json:"provider"`
+		Status   ChannelDegradedPayloadObjectStatus `json:"status"`
+	} `json:"object"`
+	OccurredAt *time.Time `json:"occurredAt,omitempty"`
+}
+
+// ChannelDegradedPayloadObjectStatus defines model for ChannelDegradedPayload.Object.Status.
+type ChannelDegradedPayloadObjectStatus string
+
 // ChannelMarketStateItem What happened on ONE channel item — one Airbnb connection, one Booking.com property, or one VRBO unit. A listing can carry several Airbnb connections (a re-list, or a move between host accounts) and each gets its own entry.
 type ChannelMarketStateItem struct {
 	Channel ChannelMarketStateItemChannel `json:"channel"`
@@ -8913,6 +9549,73 @@ type ChannelMarketStateItemChannel string
 //
 // `unchanged` never means "it was already like that": it means we did not put it there, and it is still in whatever state it was in before the call.
 type ChannelMarketStateItemState string
+
+// ChannelSyncFailedEvent defines model for ChannelSyncFailedEvent.
+type ChannelSyncFailedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `channel.sync.failed`. A push of availability, rates or content to a connected channel did not land.
+	Data ChannelSyncFailurePayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ChannelSyncFailedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId   openapi_types.UUID `json:"eventId"`
+	Timestamp time.Time          `json:"timestamp"`
+}
+
+// ChannelSyncFailedEventEvent The event name. This field is `event`, not `type`.
+type ChannelSyncFailedEventEvent string
+
+// ChannelSyncFailurePayload Payload for `channel.sync.failed`. A push of availability, rates or content to a connected channel did not land.
+type ChannelSyncFailurePayload struct {
+	// Failures One entry per channel mapping that refused the push.
+	Failures []struct {
+		// Channel Example: airbnb
+		Channel *string `json:"channel,omitempty"`
+
+		// ExternalListingId The channel's own id for the room or listing.
+		ExternalListingId *string `json:"externalListingId,omitempty"`
+
+		// Kind `unknown` means we could not classify it — never that the channel refused.
+		Kind *ChannelSyncFailurePayloadFailuresKind `json:"kind,omitempty"`
+
+		// Message The channel's own message, verbatim.
+		Message *string `json:"message,omitempty"`
+	} `json:"failures"`
+	Object struct {
+		CustomerId int `json:"customerId"`
+
+		// From Start of the date range the push covered, when the operation is date-scoped.
+		From      *openapi_types.Date `json:"from,omitempty"`
+		ListingId int                 `json:"listingId"`
+
+		// Operation Which wire failed. A refused rate and a closed connection call for different responses.
+		Operation ChannelSyncFailurePayloadObjectOperation `json:"operation"`
+		To        *openapi_types.Date                      `json:"to,omitempty"`
+
+		// Total true when NO mapping accepted the push. false means some did — the more dangerous case, because the listing is live somewhere and inconsistent.
+		Total bool `json:"total"`
+	} `json:"object"`
+	OccurredAt *time.Time `json:"occurredAt,omitempty"`
+
+	// ReservationId Set when the push was blocking dates for a booking just taken. Those nights are sold on one channel and still open on another — treat as urgent.
+	ReservationId *int `json:"reservationId,omitempty"`
+}
+
+// ChannelSyncFailurePayloadFailuresKind `unknown` means we could not classify it — never that the channel refused.
+type ChannelSyncFailurePayloadFailuresKind string
+
+// ChannelSyncFailurePayloadObjectOperation Which wire failed. A refused rate and a closed connection call for different responses.
+type ChannelSyncFailurePayloadObjectOperation string
+
+// ChargePer How often an amount is charged: once per stay, per night, per guest, or per guest per night.
+type ChargePer string
 
 // ConnectHost Public-facing metadata about the host whose account is linked. Lets clients render an account-level card (avatar + name) instead of just an opaque ID. Email is intentionally NOT exposed for Airbnb — the partner API doesn't return host email.
 type ConnectHost struct {
@@ -9994,6 +10697,9 @@ type Listing struct {
 	// Details **Only present when the caller passes `?include=details`.** Sourced from `listings_details`. `null` when the listing has no details row stored (vs the field being absent — that signals the caller did not opt into the expansion).
 	Details *ListingDetails `json:"details,omitempty"`
 
+	// Fees **Only present with `?include=fees`.** Every fee, the cleaning fee included, whatever channel or PMS it came from. `[]` when none.
+	Fees *[]ListingFee `json:"fees,omitempty"`
+
 	// Hotel The hotel the listing belongs to: a hotel PMS hotel (Cloudbeds, Mews) or a Booking.com property with several room types or rooms. `null` for a standalone home. `GET /v1/hotels/{id}` lists its room types.
 	Hotel *struct {
 		// Id A Repull hotel id, or `booking:<hotelId>` for a Booking.com property.
@@ -10015,11 +10721,29 @@ type Listing struct {
 	// Example: I - Stafford Apartment
 	Name *string `json:"name,omitempty"`
 
+	// Photos **Only present with `?include=photos`.** The listing photos in display order.
+	Photos *[]ListingContentPhoto `json:"photos,omitempty"`
+
+	// Policies **Only present with `?include=policies`.** Cancellation, house rules, check-in and check-out, pets/smoking/events/children, quiet hours, deposit.
+	Policies *ListingPolicies `json:"policies,omitempty"`
+
+	// Pricing **Only present with `?include=pricing`.** Standing prices: base and weekend rate, cleaning and extra-guest fees, deposit, weekly/monthly discounts. `null` when none are stored.
+	Pricing *ListingPricingSettings `json:"pricing,omitempty"`
+
 	// PublicName The title guests see on the channel (e.g. the Airbnb listing title). `name` is the host's internal nickname for the listing; show `publicName` in anything a guest or end user reads. Present on inactive rows too.
 	//
 	// Example: Centre Oxford bright single room D
-	PublicName *string        `json:"publicName,omitempty"`
-	Status     *ListingStatus `json:"status,omitempty"`
+	PublicName *string `json:"publicName,omitempty"`
+
+	// Rooms **Only present with `?include=rooms`.** Each room and its beds. `[]` when none are stored.
+	Rooms *[]ListingRoom `json:"rooms,omitempty"`
+
+	// Rules **Only present with `?include=rules`.** Stay rules: min/max nights, booking window, advance notice, preparation time, and whether booking requests are allowed.
+	Rules  *ListingRules  `json:"rules,omitempty"`
+	Status *ListingStatus `json:"status,omitempty"`
+
+	// Taxes **Only present with `?include=taxes`.** Taxes charged to the guest. `[]` when none.
+	Taxes *[]ListingTax `json:"taxes,omitempty"`
 
 	// ThumbnailUrl Cover photo URL. Always present on an active listing. On an **inactive** one it is present only when the caller passes `?include=thumbnail`; `null` means the listing has no cover photo stored, absent means the expansion was not requested.
 	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
@@ -10188,6 +10912,17 @@ type ListingContent struct {
 	// Title Public listing title as proposed by `POST /v1/listings/{id}/generate-content`. The STORED title is `name` — read that one.
 	Title   *string `json:"title,omitempty"`
 	Transit *string `json:"transit,omitempty"`
+}
+
+// ListingContentPhoto defines model for ListingContentPhoto.
+type ListingContentPhoto struct {
+	Caption      *string `json:"caption,omitempty"`
+	Category     *string `json:"category,omitempty"`
+	Height       *int    `json:"height,omitempty"`
+	SortOrder    *int    `json:"sortOrder,omitempty"`
+	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
+	Url          *string `json:"url,omitempty"`
+	Width        *int    `json:"width,omitempty"`
 }
 
 // ListingContentUpdateRequest Canonical PMS-owned listing content. Every field is optional — this is a partial update, only the fields you send are written; absent fields are left untouched. This is a LOCAL write only: it does NOT push to Airbnb/Booking.com. Distribution is a separate explicit publish step. `photos` are ingested by URL and attached to the listing in order (full-replace by default, or append via `photosMode`).
@@ -10734,6 +11469,37 @@ type ListingDetails struct {
 	YearBuilt    *int    `json:"yearBuilt,omitempty"`
 }
 
+// ListingFee A fee on top of the nightly rate, the cleaning fee included. One shape for every channel and PMS.
+type ListingFee struct {
+	// Amount In the listing currency when `amountType` is `flat`; a percent when `percent`.
+	//
+	// Example: 35
+	Amount     *float32              `json:"amount,omitempty"`
+	AmountType *ListingFeeAmountType `json:"amountType,omitempty"`
+
+	// ChargedPer How often an amount is charged: once per stay, per night, per guest, or per guest per night.
+	ChargedPer *ChargePer `json:"chargedPer,omitempty"`
+
+	// Name Example: Damage Waiver
+	Name *string `json:"name,omitempty"`
+
+	// Optional Offered to the guest (an add-on) rather than always charged.
+	Optional *bool `json:"optional,omitempty"`
+
+	// Source Where it was read from: `airbnb`, `guesty`, …
+	//
+	// Example: guesty
+	Source *string `json:"source,omitempty"`
+
+	// Type `cleaning`, `pet`, `linen`, `resort`, `management`, `community`, or the source's own kind.
+	//
+	// Example: cleaning
+	Type *string `json:"type,omitempty"`
+}
+
+// ListingFeeAmountType defines model for ListingFee.AmountType.
+type ListingFeeAmountType string
+
 // ListingGenerateContentRequest defines model for ListingGenerateContentRequest.
 type ListingGenerateContentRequest struct {
 	// Persist Save the generated content to the listing (so subsequent publishes pick it up).
@@ -10859,6 +11625,47 @@ type ListingPhotosResponse struct {
 	Photos    *[]ListingPhoto `json:"photos,omitempty"`
 }
 
+// ListingPolicies defines model for ListingPolicies.
+type ListingPolicies struct {
+	AllowsChildren *bool `json:"allowsChildren,omitempty"`
+	AllowsEvents   *bool `json:"allowsEvents,omitempty"`
+	AllowsInfants  *bool `json:"allowsInfants,omitempty"`
+	AllowsPets     *bool `json:"allowsPets,omitempty"`
+	AllowsSmoking  *bool `json:"allowsSmoking,omitempty"`
+
+	// CancellationPolicy Example: flexible
+	CancellationPolicy *string `json:"cancellationPolicy,omitempty"`
+	CheckIn            *struct {
+		// From Example: 15:00
+		From         *string `json:"from,omitempty"`
+		Instructions *string `json:"instructions,omitempty"`
+
+		// Method `lockbox`, `smartlock`, `keypad`, `doorman`, `host_greets`, `building_staff`, `other`.
+		//
+		// Example: lockbox
+		Method *string `json:"method,omitempty"`
+
+		// Until Example: 22:00
+		Until *string `json:"until,omitempty"`
+	} `json:"checkIn,omitempty"`
+	CheckOut *struct {
+		// Until Example: 11:00
+		Until *string `json:"until,omitempty"`
+	} `json:"checkOut,omitempty"`
+	ChildrenMinAge *int    `json:"childrenMinAge,omitempty"`
+	HouseRules     *string `json:"houseRules,omitempty"`
+	QuietHours     *struct {
+		// End Example: 07:00
+		End *string `json:"end,omitempty"`
+
+		// Start Example: 22:00
+		Start *string `json:"start,omitempty"`
+	} `json:"quietHours,omitempty"`
+
+	// SecurityDeposit In the listing currency.
+	SecurityDeposit *float32 `json:"securityDeposit,omitempty"`
+}
+
 // ListingPricingApplyRequest defines model for ListingPricingApplyRequest.
 type ListingPricingApplyRequest struct {
 	Action ListingPricingApplyRequestAction `json:"action"`
@@ -10971,6 +11778,28 @@ type ListingPricingResponse struct {
 	} `json:"listing,omitempty"`
 	ListingId       *string                         `json:"listingId,omitempty"`
 	Recommendations *[]ListingPricingRecommendation `json:"recommendations,omitempty"`
+}
+
+// ListingPricingSettings The listing's standing prices. Nightly rates per date are on `GET /v1/availability/{propertyId}`.
+type ListingPricingSettings struct {
+	// BasePrice Default nightly rate.
+	BasePrice   *float32 `json:"basePrice,omitempty"`
+	CleaningFee *float32 `json:"cleaningFee,omitempty"`
+
+	// Currency Example: GBP
+	Currency *string `json:"currency,omitempty"`
+
+	// ExtraGuestFee Per extra guest per night, above `guestsIncluded`.
+	ExtraGuestFee  *float32 `json:"extraGuestFee,omitempty"`
+	GuestsIncluded *int     `json:"guestsIncluded,omitempty"`
+
+	// MonthlyDiscountPercent Percent off for 28+ nights.
+	MonthlyDiscountPercent *float32 `json:"monthlyDiscountPercent,omitempty"`
+	SecurityDeposit        *float32 `json:"securityDeposit,omitempty"`
+	WeekendPrice           *float32 `json:"weekendPrice,omitempty"`
+
+	// WeeklyDiscountPercent Percent off for 7+ nights: `10` is 10%.
+	WeeklyDiscountPercent *float32 `json:"weeklyDiscountPercent,omitempty"`
 }
 
 // ListingPricingStrategy Strategy that constrains the Atlas pricing model for one listing.
@@ -11244,6 +12073,45 @@ type ListingReactivatedEvent struct {
 // ListingReactivatedEventEvent The event name. This field is `event`, not `type`.
 type ListingReactivatedEventEvent string
 
+// ListingRoom defines model for ListingRoom.
+type ListingRoom struct {
+	Beds *[]struct {
+		// Quantity Example: 1
+		Quantity *int `json:"quantity,omitempty"`
+
+		// Type Example: queen_bed
+		Type *string `json:"type,omitempty"`
+	} `json:"beds,omitempty"`
+	IsPrivate *bool   `json:"isPrivate,omitempty"`
+	Name      *string `json:"name,omitempty"`
+
+	// Number Position among rooms of the same type (bedroom 1, 2, …).
+	Number *int `json:"number,omitempty"`
+
+	// Type Room kind, Airbnb spelling: `bedroom`, `living_room`, `full_bathroom`, `kitchen`, …
+	//
+	// Example: bedroom
+	Type *string `json:"type,omitempty"`
+}
+
+// ListingRules defines model for ListingRules.
+type ListingRules struct {
+	// AdvanceNoticeHours Hours of notice required before check-in.
+	AdvanceNoticeHours *int `json:"advanceNoticeHours,omitempty"`
+
+	// AllowsBookingRequests Whether guests may send a booking request inside the notice window.
+	AllowsBookingRequests *bool `json:"allowsBookingRequests,omitempty"`
+
+	// BookingWindowDays How far ahead a guest can book. `null` when unlimited or not set.
+	BookingWindowDays *int    `json:"bookingWindowDays,omitempty"`
+	InstantBook       *string `json:"instantBook,omitempty"`
+	MaxNights         *int    `json:"maxNights,omitempty"`
+	MinNights         *int    `json:"minNights,omitempty"`
+
+	// PreparationDays Nights blocked between stays.
+	PreparationDays *int `json:"preparationDays,omitempty"`
+}
+
 // ListingSegment One Atlas DNA segment (e.g. `upscale-modern-2br`) with share + ADR aggregates across the scoped comp set or market.
 type ListingSegment struct {
 	AvgAdrInSegment *float32 `json:"avgAdrInSegment,omitempty"`
@@ -11366,6 +12234,36 @@ type ListingSuspensionPayload struct {
 	// Example: quality_standards
 	Reason *string `json:"reason,omitempty"`
 }
+
+// ListingTax A tax charged to the guest. One shape for every channel and PMS.
+type ListingTax struct {
+	// Amount Example: 20
+	Amount     *float32              `json:"amount,omitempty"`
+	AmountType *ListingTaxAmountType `json:"amountType,omitempty"`
+
+	// AppliesTo What it is charged on (`accommodation`, `cleaning`, other fee types). `null`: the whole stay.
+	AppliesTo *[]string `json:"appliesTo,omitempty"`
+
+	// ChargedPer How often an amount is charged: once per stay, per night, per guest, or per guest per night.
+	ChargedPer *ChargePer `json:"chargedPer,omitempty"`
+
+	// Included Already included in the price rather than added on top.
+	Included *bool `json:"included,omitempty"`
+
+	// Name Example: VAT
+	Name *string `json:"name,omitempty"`
+
+	// Source `airbnb` (host-remitted), `airbnb_collected` (Airbnb collects and remits), `guesty`, …
+	Source *string `json:"source,omitempty"`
+
+	// Type `vat`, `vat_gst`, `city_tax`, `transient_occupancy_tax`, …
+	//
+	// Example: vat
+	Type *string `json:"type,omitempty"`
+}
+
+// ListingTaxAmountType defines model for ListingTax.AmountType.
+type ListingTaxAmountType string
 
 // ListingUpdatedEvent defines model for ListingUpdatedEvent.
 type ListingUpdatedEvent struct {
@@ -14042,6 +14940,45 @@ type ReservationRequestUpdatedPayload struct {
 // Example: accepted
 type ReservationRequestUpdatedPayloadRequestStatus string
 
+// ReservationThreadAssignedEvent defines model for ReservationThreadAssignedEvent.
+type ReservationThreadAssignedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `reservation.thread.assigned`. A message thread was attached to a booking. Threads are often born orphaned — a guest messages about a booking whose import has not landed — and adopted when the reservation arrives.
+	Data ReservationThreadAssignedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event     ReservationThreadAssignedEventEvent `json:"event"`
+	EventId   openapi_types.UUID                  `json:"eventId"`
+	Timestamp time.Time                           `json:"timestamp"`
+}
+
+// ReservationThreadAssignedEventEvent The event name. This field is `event`, not `type`.
+type ReservationThreadAssignedEventEvent string
+
+// ReservationThreadAssignedPayload Payload for `reservation.thread.assigned`. A message thread was attached to a booking. Threads are often born orphaned — a guest messages about a booking whose import has not landed — and adopted when the reservation arrives.
+type ReservationThreadAssignedPayload struct {
+	Object struct {
+		CustomerId int `json:"customerId"`
+
+		// ExternalThreadId The channel's own conversation id.
+		ExternalThreadId *string `json:"externalThreadId,omitempty"`
+		ListingId        *int    `json:"listingId,omitempty"`
+
+		// PreviousReservationId What the thread pointed at before. Null on the common orphan-adoption case; set when a thread moved between bookings.
+		PreviousReservationId *int `json:"previousReservationId,omitempty"`
+		ReservationId         int  `json:"reservationId"`
+
+		// ThreadId Repull conversation id.
+		ThreadId string `json:"threadId"`
+	} `json:"object"`
+	OccurredAt *time.Time `json:"occurredAt,omitempty"`
+}
+
 // ReservationUpdateRequest At least one field is required. Guest identity, pricing, `status`, `platform` and notes are rejected by name — see the operation description for why each is excluded.
 type ReservationUpdateRequest struct {
 	// CheckIn Example: 2026-10-02
@@ -16259,12 +17196,12 @@ type CreateConnectSessionJSONBody struct {
 	// IncludeRequestOnly Also list PMSes Repull doesn't connect yet (`status: request-only` in `GET /v1/connect/providers?includeRequestOnly=true`), plus an Other PMS card. Picking one opens a form that collects the host's contact and access details for the Repull team and ends with "A team member will contact you". No connection is made: the redirect carries `status=requested&provider=<id>`, and no `connect.session.completed` webhook fires. Naming a request-only id in `allowedProviders` offers it without this flag.
 	IncludeRequestOnly *bool `json:"includeRequestOnly,omitempty"`
 
-	// Locale Optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`). When set it pins the language for the whole flow, overriding the workspace `default_language`. Unknown codes are ignored and the page falls back to the workspace default, then `Accept-Language`, then `en`. The end user can still override per-visit with a `?locale=` query param on the hosted page.
+	// Locale Optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`, `de`, `es`, `it`, `nl`). When set it pins the language for the whole flow, overriding the workspace `default_language`. Unknown codes are ignored and the page falls back to the workspace default, then `Accept-Language`, then `en`. The end user can still override per-visit with a `?locale=` query param on the hosted page.
 	//
 	// Example: fr
 	Locale *string `json:"locale,omitempty"`
 
-	// Mapping Where the channel's units get linked to listings. `hosted` (default): after a Vrbo or Booking.com Extranet sign-in, Connect shows a mapping step and returns to `redirectUrl` when it's confirmed. `api`: Connect skips that step and finishes right after sign-in. The connection reaches you in the `connect.session.completed` webhook (and as `connectionId` in the popup message), its handle is `vrbo:{connectionId}` or `booking_extranet:{connectionId}`; you list the units with `GET /v1/connections/{id}/units` and link them with `POST /v1/connections/{id}/mappings`. Nothing is imported until you post the mappings. Other providers ignore it.
+	// Mapping Where the channel's units get linked to listings. `hosted` (default): after a Vrbo or Booking.com Extranet sign-in, Connect shows a mapping step and returns to `redirectUrl` when it's confirmed. `api`: Connect skips that step and finishes right after sign-in. The connection reaches you in the `connect.session.completed` webhook as `account.externalAccountId` (its `connectionId` is null for these two), and as `connectionId` in the popup message and `accountId` on the redirect, all the same id; its handle is `vrbo:{id}` or `booking_extranet:{id}`; you list the units with `GET /v1/connections/{id}/units` and link them with `POST /v1/connections/{id}/mappings`. Nothing is imported until you post the mappings. Other providers ignore it.
 	Mapping *CreateConnectSessionJSONBodyMapping `json:"mapping,omitempty"`
 
 	// Purpose `migrate` starts a Repull Migrate session: the property manager connects their current PMS (or channel) and their data is copied into a new workspace of theirs, which you read with `X-Workspace-Id`. The hosted pages use migration wording, and after connecting they show the import's progress.
@@ -16643,7 +17580,7 @@ type CreateConnectionJSONBody struct {
 	// AccessType Airbnb only — selects the OAuth scope set. 'read_only' grants read-only scopes; 'messaging' (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's reviews_write) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; 'full_access' (default) grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The hosted consent screen normally lets the host pick a tier; passing `accessType` explicitly fixes the tier and hides that choice, so the host can only continue with the tier you requested. Omit it to let the host choose.
 	AccessType *CreateConnectionJSONBodyAccessType `json:"accessType,omitempty"`
 
-	// Locale Airbnb only — optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`); unknown codes are ignored and resolution falls back to the workspace `default_language`, then `Accept-Language`, then `en`.
+	// Locale Airbnb and Booking.com — optional UI language for the hosted Connect pages. Accepts any supported locale code (currently `en`, `fr`, `de`, `es`, `it`, `nl`); unknown codes are ignored and resolution falls back to the workspace `default_language`, then `Accept-Language`, then `en`.
 	//
 	// Example: fr
 	Locale *string `json:"locale,omitempty"`
@@ -17099,7 +18036,7 @@ type ListListingsParams struct {
 	// Channel Restrict to listings published on the given channel (`airbnb`, `booking`, `vrbo`, etc.). Joins through `listing_platform_links` and matches active links only.
 	Channel *string `form:"channel,omitempty" json:"channel,omitempty"`
 
-	// Include Comma-separated optional expansions. Currently supported: `content`, `details`, `thumbnail`. `thumbnail` guarantees `thumbnailUrl` on every row and is the only expansion that applies to inactive listings. Unknown values return 422 with a `valid_values` envelope. (Note: `amenities` is not yet supported on the list endpoint — use the detail endpoint to fetch amenity rows for a single listing.)
+	// Include Comma-separated optional expansions. Currently supported: `content`, `details`, `thumbnail`, `rooms`, `policies`, `rules`, `pricing`, `fees`, `taxes`, `photos` (the last seven are described on `GET /v1/listings/{id}`; read for the whole page at once). `thumbnail` guarantees `thumbnailUrl` on every row and is the only expansion that applies to inactive listings. Unknown values return 422 with a `valid_values` envelope. (Note: `amenities` is not yet supported on the list endpoint — use the detail endpoint to fetch amenity rows for a single listing.)
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
@@ -17111,7 +18048,7 @@ type ListListingsParamsStatus string
 
 // GetListingParams defines parameters for GetListing.
 type GetListingParams struct {
-	// Include Comma-separated optional expansions. Currently supported: `amenities`, `content`, `details`. Unknown values return 422 with a `valid_values` envelope.
+	// Include Comma-separated optional expansions. Currently supported: `amenities`, `content`, `details`, `rooms`, `policies`, `rules`, `pricing`, `fees`, `taxes`, `photos`. Unknown values return 422 with a `valid_values` envelope.
 	Include *string `form:"include,omitempty" json:"include,omitempty"`
 
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
@@ -17299,6 +18236,69 @@ type ListMigrationsParams struct {
 	// Cursor `pagination.nextCursor` from the previous page.
 	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
 }
+
+// ImportFromChannexJSONBody defines parameters for ImportFromChannex.
+type ImportFromChannexJSONBody struct {
+	// ApiKey Your Channex API key (the `user-api-key` header value). Used for this request only.
+	ApiKey string `json:"apiKey"`
+
+	// DryRun Match and report without writing anything.
+	DryRun *bool `json:"dryRun,omitempty"`
+
+	// Environment `production` reads app.channex.io, `staging` reads staging.channex.io.
+	Environment *ImportFromChannexJSONBodyEnvironment `json:"environment,omitempty"`
+}
+
+// ImportFromChannexJSONBodyEnvironment defines parameters for ImportFromChannex.
+type ImportFromChannexJSONBodyEnvironment string
+
+// ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch defines parameters for ImportFromChannex.
+type ImportFromChannex200JSONResponseBodyDataChannelsProviderSwitch string
+
+// ImportFromChannex200JSONResponseBodyDataChannelsStatus defines parameters for ImportFromChannex.
+type ImportFromChannex200JSONResponseBodyDataChannelsStatus string
+
+// ImportFromChannex200JSONResponseBodyDataEnvironment defines parameters for ImportFromChannex.
+type ImportFromChannex200JSONResponseBodyDataEnvironment string
+
+// ImportFromChannex200JSONResponseBodyDataPropertiesStatus defines parameters for ImportFromChannex.
+type ImportFromChannex200JSONResponseBodyDataPropertiesStatus string
+
+// ImportFromChannex200JSONResponseBodyDataRatePlansStatus defines parameters for ImportFromChannex.
+type ImportFromChannex200JSONResponseBodyDataRatePlansStatus string
+
+// ImportFromChannex200JSONResponseBodyDataRoomTypesStatus defines parameters for ImportFromChannex.
+type ImportFromChannex200JSONResponseBodyDataRoomTypesStatus string
+
+// ImportFromChannex200JSONResponseBodyDataSigningKeysStatus defines parameters for ImportFromChannex.
+type ImportFromChannex200JSONResponseBodyDataSigningKeysStatus string
+
+// ImportFromChannex200JSONResponseBodyDataWebhooksStatus defines parameters for ImportFromChannex.
+type ImportFromChannex200JSONResponseBodyDataWebhooksStatus string
+
+// ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch defines parameters for ImportFromChannex.
+type ImportFromChannex201JSONResponseBodyDataChannelsProviderSwitch string
+
+// ImportFromChannex201JSONResponseBodyDataChannelsStatus defines parameters for ImportFromChannex.
+type ImportFromChannex201JSONResponseBodyDataChannelsStatus string
+
+// ImportFromChannex201JSONResponseBodyDataEnvironment defines parameters for ImportFromChannex.
+type ImportFromChannex201JSONResponseBodyDataEnvironment string
+
+// ImportFromChannex201JSONResponseBodyDataPropertiesStatus defines parameters for ImportFromChannex.
+type ImportFromChannex201JSONResponseBodyDataPropertiesStatus string
+
+// ImportFromChannex201JSONResponseBodyDataRatePlansStatus defines parameters for ImportFromChannex.
+type ImportFromChannex201JSONResponseBodyDataRatePlansStatus string
+
+// ImportFromChannex201JSONResponseBodyDataRoomTypesStatus defines parameters for ImportFromChannex.
+type ImportFromChannex201JSONResponseBodyDataRoomTypesStatus string
+
+// ImportFromChannex201JSONResponseBodyDataSigningKeysStatus defines parameters for ImportFromChannex.
+type ImportFromChannex201JSONResponseBodyDataSigningKeysStatus string
+
+// ImportFromChannex201JSONResponseBodyDataWebhooksStatus defines parameters for ImportFromChannex.
+type ImportFromChannex201JSONResponseBodyDataWebhooksStatus string
 
 // CheckMigrationCutoverJSONBody defines parameters for CheckMigrationCutover.
 type CheckMigrationCutoverJSONBody struct {
@@ -18082,6 +19082,9 @@ type PublishListingToBookingJSONRequestBody = ListingPublishBookingRequest
 
 // PullListingFromAirbnbJSONRequestBody defines body for PullListingFromAirbnb for application/json ContentType.
 type PullListingFromAirbnbJSONRequestBody = ListingPullAirbnbRequest
+
+// ImportFromChannexJSONRequestBody defines body for ImportFromChannex for application/json ContentType.
+type ImportFromChannexJSONRequestBody ImportFromChannexJSONBody
 
 // CheckMigrationCutoverJSONRequestBody defines body for CheckMigrationCutover for application/json ContentType.
 type CheckMigrationCutoverJSONRequestBody CheckMigrationCutoverJSONBody
@@ -20434,6 +21437,142 @@ func (t *WebhookEvent) MergeReservationRequestUpdatedEvent(v ReservationRequestU
 	return err
 }
 
+// AsBookingUnacknowledgedEvent returns the union data inside the WebhookEvent as a BookingUnacknowledgedEvent
+func (t WebhookEvent) AsBookingUnacknowledgedEvent() (BookingUnacknowledgedEvent, error) {
+	var body BookingUnacknowledgedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingUnacknowledgedEvent overwrites any union data inside the WebhookEvent as the provided BookingUnacknowledgedEvent
+func (t *WebhookEvent) FromBookingUnacknowledgedEvent(v BookingUnacknowledgedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"booking.unacknowledged"}`))
+	t.union = b
+	return err
+}
+
+// MergeBookingUnacknowledgedEvent performs a merge with any union data inside the WebhookEvent, using the provided BookingUnacknowledgedEvent
+func (t *WebhookEvent) MergeBookingUnacknowledgedEvent(v BookingUnacknowledgedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"booking.unacknowledged"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsChannelSyncFailedEvent returns the union data inside the WebhookEvent as a ChannelSyncFailedEvent
+func (t WebhookEvent) AsChannelSyncFailedEvent() (ChannelSyncFailedEvent, error) {
+	var body ChannelSyncFailedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromChannelSyncFailedEvent overwrites any union data inside the WebhookEvent as the provided ChannelSyncFailedEvent
+func (t *WebhookEvent) FromChannelSyncFailedEvent(v ChannelSyncFailedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"channel.sync.failed"}`))
+	t.union = b
+	return err
+}
+
+// MergeChannelSyncFailedEvent performs a merge with any union data inside the WebhookEvent, using the provided ChannelSyncFailedEvent
+func (t *WebhookEvent) MergeChannelSyncFailedEvent(v ChannelSyncFailedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"channel.sync.failed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsChannelDegradedEvent returns the union data inside the WebhookEvent as a ChannelDegradedEvent
+func (t WebhookEvent) AsChannelDegradedEvent() (ChannelDegradedEvent, error) {
+	var body ChannelDegradedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromChannelDegradedEvent overwrites any union data inside the WebhookEvent as the provided ChannelDegradedEvent
+func (t *WebhookEvent) FromChannelDegradedEvent(v ChannelDegradedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"channel.degraded"}`))
+	t.union = b
+	return err
+}
+
+// MergeChannelDegradedEvent performs a merge with any union data inside the WebhookEvent, using the provided ChannelDegradedEvent
+func (t *WebhookEvent) MergeChannelDegradedEvent(v ChannelDegradedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"channel.degraded"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReservationThreadAssignedEvent returns the union data inside the WebhookEvent as a ReservationThreadAssignedEvent
+func (t WebhookEvent) AsReservationThreadAssignedEvent() (ReservationThreadAssignedEvent, error) {
+	var body ReservationThreadAssignedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationThreadAssignedEvent overwrites any union data inside the WebhookEvent as the provided ReservationThreadAssignedEvent
+func (t *WebhookEvent) FromReservationThreadAssignedEvent(v ReservationThreadAssignedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.thread.assigned"}`))
+	t.union = b
+	return err
+}
+
+// MergeReservationThreadAssignedEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationThreadAssignedEvent
+func (t *WebhookEvent) MergeReservationThreadAssignedEvent(v ReservationThreadAssignedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.thread.assigned"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsInquiryCreatedEvent returns the union data inside the WebhookEvent as a InquiryCreatedEvent
 func (t WebhookEvent) AsInquiryCreatedEvent() (InquiryCreatedEvent, error) {
 	var body InquiryCreatedEvent
@@ -21278,6 +22417,12 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsAiOperationCompletedEvent()
 	case "ai.operation.failed":
 		return t.AsAiOperationFailedEvent()
+	case "booking.unacknowledged":
+		return t.AsBookingUnacknowledgedEvent()
+	case "channel.degraded":
+		return t.AsChannelDegradedEvent()
+	case "channel.sync.failed":
+		return t.AsChannelSyncFailedEvent()
 	case "connect.session.completed":
 		return t.AsConnectSessionCompletedEvent()
 	case "inquiry.created":
@@ -21324,6 +22469,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsReservationRequestCreatedEvent()
 	case "reservation.request.updated":
 		return t.AsReservationRequestUpdatedEvent()
+	case "reservation.thread.assigned":
+		return t.AsReservationThreadAssignedEvent()
 	case "reservation.updated":
 		return t.AsReservationUpdatedEvent()
 	case "review.created":

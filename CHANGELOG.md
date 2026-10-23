@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.34] - 2026-10-23
+
+### Added
+- Listing expansions on `ListListings` / `GetListing`: set `Include` to `"rooms,policies,rules,pricing,fees,taxes,photos"` (comma-separated, combinable with `content` / `details`). `Listing` gains `Rooms` (`*[]ListingRoom`), `Policies` (`*ListingPolicies`), `Rules` (`*ListingRules`), `Pricing` (`*ListingPricingSettings`), `Fees` (`*[]ListingFee`), `Taxes` (`*[]ListingTax`) and `Photos` (`*[]ListingContentPhoto`). Fees and taxes carry `ChargedPer` (`ChargePer`: `stay`, `night`, `guest`, `guest_night`); rules carry `AllowsBookingRequests` and `InstantBook`.
+
+### Changed
+- Regenerated from the live spec (also picks up `POST /v1/migrations/channex` and the `booking.unacknowledged`, `channel.degraded`, `channel.sync.failed` and `reservation.thread.assigned` webhook events).
+
 ## [0.2.33] - 2026-10-22
 
 ### Added
