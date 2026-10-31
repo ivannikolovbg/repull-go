@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.35] - 2026-10-31
+
+### Added
+- `Reservation.AccessCodes` (`*[]ReservationAccessCode`): door codes from the PMS's lock manager (Guesty Locks Manager) — `Code`, `Type` (`guest` / `backup` / `other`), `Status`, `ValidFrom`, `ValidUntil`, `Locks`, `Source`, `UpdatedAt`. nil when codes are not read for the reservation.
+- `Reservation.PmsReservationId`: the PMS's own reservation id (e.g. Guesty `_id`).
+- `ListingChannel.Account`: which connected account each listing channel belongs to; `account.disconnected` payloads carry the account's `Listings`.
+- `SubmitCiirusCredentials` (`POST /v1/connect/ciirus`).
+
+### Changed
+- Regenerated from the live spec.
+
 ## [0.2.34] - 2026-10-23
 
 ### Added

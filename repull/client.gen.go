@@ -2488,6 +2488,52 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connect/bookingsync/credentials (the `SubmitBookingsyncCredentials` operationId).
 	SubmitBookingsyncCredentials(ctx context.Context, body SubmitBookingsyncCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SubmitCiirusCredentialsWithBody Submit CiiRUS credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for CiiRUS with the property manager's CiiRUS API username and password.
+	//
+	// **What syncs.** Units become listings (with descriptions, photos, amenities, rooms and house rules); reservations (with their charge and tax breakdown and payments) and reviews are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in CiiRUS — see `capabilities.reservations` on `GET /v1/connect/ciirus`. Guest messages are not available through CiiRUS's API.
+	//
+	// **Where the credentials come from.** The CiiRUS API Explorer gives the API username and password after signing in with the CiiRUS MC username and company password; CiiRUS support can also issue them. Credentials that see several suppliers (management companies) also need `managementCompanyUserId`.
+	//
+	// **IP whitelist.** CiiRUS only accepts calls from whitelisted IP addresses, and answers a wrong password and a non-whitelisted address the same way. When this returns `invalid_credentials` with correct credentials, ask CiiRUS support to whitelist Repull for the API user.
+	//
+	// The credentials are validated against CiiRUS before anything is stored, so invalid ones return `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+	//
+	// CiiRUS has no webhooks: after the first sync, reservation changes are picked up by polling about once a minute.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing CiiRUS connection — the `pmsConnectionId` stays the same.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/ciirus/credentials (the `SubmitCiirusCredentials` operationId).
+	SubmitCiirusCredentialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitCiirusCredentials Submit CiiRUS credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for CiiRUS with the property manager's CiiRUS API username and password.
+	//
+	// **What syncs.** Units become listings (with descriptions, photos, amenities, rooms and house rules); reservations (with their charge and tax breakdown and payments) and reviews are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in CiiRUS — see `capabilities.reservations` on `GET /v1/connect/ciirus`. Guest messages are not available through CiiRUS's API.
+	//
+	// **Where the credentials come from.** The CiiRUS API Explorer gives the API username and password after signing in with the CiiRUS MC username and company password; CiiRUS support can also issue them. Credentials that see several suppliers (management companies) also need `managementCompanyUserId`.
+	//
+	// **IP whitelist.** CiiRUS only accepts calls from whitelisted IP addresses, and answers a wrong password and a non-whitelisted address the same way. When this returns `invalid_credentials` with correct credentials, ask CiiRUS support to whitelist Repull for the API user.
+	//
+	// The credentials are validated against CiiRUS before anything is stored, so invalid ones return `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+	//
+	// CiiRUS has no webhooks: after the first sync, reservation changes are picked up by polling about once a minute.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing CiiRUS connection — the `pmsConnectionId` stays the same.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/ciirus/credentials (the `SubmitCiirusCredentials` operationId).
+	SubmitCiirusCredentials(ctx context.Context, body SubmitCiirusCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SubmitCloudbedsCredentialsWithBody Submit Cloudbeds credentials for a Connect session
 	//
 	// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
@@ -2910,13 +2956,15 @@ type ClientInterface interface {
 
 	// DeleteConnection Disconnect provider
 	//
-	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking` and `vrbo-login`.
+	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking`, `vrbo-login` and every PMS (`guesty`, `hostaway`, `hospitable`, …).
 	//
 	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 	//
 	// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 	//
 	// The change is all or nothing. For Airbnb, the host can also revoke access on Airbnb's side (Account → Privacy & sharing → Connected apps); that alone does not update this workspace, so call this endpoint as well.
+	//
+	// **PMS.** A workspace has one connection per PMS, so no `accountId` is needed. Disconnecting stops syncing, clears the stored credentials and deactivates the connection's listings; nothing is deleted, and reservations and messages stay. The response also carries `connectionId`. The PMS's own webhook subscription is left in place, because the same PMS account can be connected to another workspace (such as a Repull Migrate workspace). Reconnect with a new Connect session.
 	//
 	// Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side. That answer depends only on the provider, not on your workspace: an unsupported provider returns `501` whether or not you have a connection to it. `404 not_found` on a supported provider means this workspace has no connection to it (or, with `accountId`, that the account is not connected here).
 	//
@@ -3089,7 +3137,7 @@ type ClientInterface interface {
 
 	// GetConversation Get conversation detail
 	//
-	// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks.
+	// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks. On an inquiry (no reservation yet) `guest` carries the first name Airbnb shares with the inquiry; contacts such as the phone number arrive once the guest books.
 	//
 	// A conversation that belongs to an inactive listing (by the thread's listing or its reservation's listing) returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 	//
@@ -4530,7 +4578,7 @@ type ClientInterface interface {
 	//
 	// ### Where the booking is made
 	//
-	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track, CiiRUS): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
 	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -4564,6 +4612,7 @@ type ClientInterface interface {
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+	// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -4590,7 +4639,7 @@ type ClientInterface interface {
 	//
 	// ### Where the booking is made
 	//
-	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track, CiiRUS): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
 	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -4624,6 +4673,7 @@ type ClientInterface interface {
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+	// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -4671,6 +4721,7 @@ type ClientInterface interface {
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+	// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -4710,6 +4761,7 @@ type ClientInterface interface {
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+	// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -9212,6 +9264,72 @@ func (c *Client) SubmitBookingsyncCredentials(ctx context.Context, body SubmitBo
 	return c.Client.Do(req)
 }
 
+// SubmitCiirusCredentialsWithBody Submit CiiRUS credentials for a Connect session
+//
+// Completes a credentials-pattern connection for CiiRUS with the property manager's CiiRUS API username and password.
+//
+// **What syncs.** Units become listings (with descriptions, photos, amenities, rooms and house rules); reservations (with their charge and tax breakdown and payments) and reviews are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in CiiRUS — see `capabilities.reservations` on `GET /v1/connect/ciirus`. Guest messages are not available through CiiRUS's API.
+//
+// **Where the credentials come from.** The CiiRUS API Explorer gives the API username and password after signing in with the CiiRUS MC username and company password; CiiRUS support can also issue them. Credentials that see several suppliers (management companies) also need `managementCompanyUserId`.
+//
+// **IP whitelist.** CiiRUS only accepts calls from whitelisted IP addresses, and answers a wrong password and a non-whitelisted address the same way. When this returns `invalid_credentials` with correct credentials, ask CiiRUS support to whitelist Repull for the API user.
+//
+// The credentials are validated against CiiRUS before anything is stored, so invalid ones return `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+//
+// CiiRUS has no webhooks: after the first sync, reservation changes are picked up by polling about once a minute.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing CiiRUS connection — the `pmsConnectionId` stays the same.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/ciirus/credentials (the `SubmitCiirusCredentials` operationId).
+func (c *Client) SubmitCiirusCredentialsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitCiirusCredentialsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitCiirusCredentials Submit CiiRUS credentials for a Connect session
+//
+// Completes a credentials-pattern connection for CiiRUS with the property manager's CiiRUS API username and password.
+//
+// **What syncs.** Units become listings (with descriptions, photos, amenities, rooms and house rules); reservations (with their charge and tax breakdown and payments) and reviews are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in CiiRUS — see `capabilities.reservations` on `GET /v1/connect/ciirus`. Guest messages are not available through CiiRUS's API.
+//
+// **Where the credentials come from.** The CiiRUS API Explorer gives the API username and password after signing in with the CiiRUS MC username and company password; CiiRUS support can also issue them. Credentials that see several suppliers (management companies) also need `managementCompanyUserId`.
+//
+// **IP whitelist.** CiiRUS only accepts calls from whitelisted IP addresses, and answers a wrong password and a non-whitelisted address the same way. When this returns `invalid_credentials` with correct credentials, ask CiiRUS support to whitelist Repull for the API user.
+//
+// The credentials are validated against CiiRUS before anything is stored, so invalid ones return `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+//
+// CiiRUS has no webhooks: after the first sync, reservation changes are picked up by polling about once a minute.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing CiiRUS connection — the `pmsConnectionId` stays the same.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/ciirus/credentials (the `SubmitCiirusCredentials` operationId).
+func (c *Client) SubmitCiirusCredentials(ctx context.Context, body SubmitCiirusCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitCiirusCredentialsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // SubmitCloudbedsCredentialsWithBody Submit Cloudbeds credentials for a Connect session
 //
 // Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
@@ -9954,13 +10072,15 @@ func (c *Client) ZeevouConnectCallback(ctx context.Context, params *ZeevouConnec
 
 // DeleteConnection Disconnect provider
 //
-// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking` and `vrbo-login`.
+// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking`, `vrbo-login` and every PMS (`guesty`, `hostaway`, `hospitable`, …).
 //
 // **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 //
 // **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 //
 // The change is all or nothing. For Airbnb, the host can also revoke access on Airbnb's side (Account → Privacy & sharing → Connected apps); that alone does not update this workspace, so call this endpoint as well.
+//
+// **PMS.** A workspace has one connection per PMS, so no `accountId` is needed. Disconnecting stops syncing, clears the stored credentials and deactivates the connection's listings; nothing is deleted, and reservations and messages stay. The response also carries `connectionId`. The PMS's own webhook subscription is left in place, because the same PMS account can be connected to another workspace (such as a Repull Migrate workspace). Reconnect with a new Connect session.
 //
 // Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side. That answer depends only on the provider, not on your workspace: an unsupported provider returns `501` whether or not you have a connection to it. `404 not_found` on a supported provider means this workspace has no connection to it (or, with `accountId`, that the account is not connected here).
 //
@@ -10283,7 +10403,7 @@ func (c *Client) ListConversations(ctx context.Context, params *ListConversation
 
 // GetConversation Get conversation detail
 //
-// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks.
+// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks. On an inquiry (no reservation yet) `guest` carries the first name Airbnb shares with the inquiry; contacts such as the phone number arrive once the guest books.
 //
 // A conversation that belongs to an inactive listing (by the thread's listing or its reservation's listing) returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 //
@@ -12814,7 +12934,7 @@ func (c *Client) ListReservations(ctx context.Context, params *ListReservationsP
 //
 // ### Where the booking is made
 //
-// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track, CiiRUS): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 // - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
 // `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -12848,6 +12968,7 @@ func (c *Client) ListReservations(ctx context.Context, params *ListReservationsP
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 // | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -12884,7 +13005,7 @@ func (c *Client) CreateReservationWithBody(ctx context.Context, params *CreateRe
 //
 // ### Where the booking is made
 //
-// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track, CiiRUS): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 // - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
 // `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -12918,6 +13039,7 @@ func (c *Client) CreateReservationWithBody(ctx context.Context, params *CreateRe
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 // | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -12975,6 +13097,7 @@ func (c *Client) CreateReservation(ctx context.Context, params *CreateReservatio
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 // | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -13024,6 +13147,7 @@ func (c *Client) QuoteReservationWithBody(ctx context.Context, params *QuoteRese
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 // | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -19570,6 +19694,46 @@ func NewSubmitBookingsyncCredentialsRequestWithBody(server string, contentType s
 	}
 
 	operationPath := fmt.Sprintf("/v1/connect/bookingsync/credentials")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSubmitCiirusCredentialsRequest calls the generic SubmitCiirusCredentials builder with application/json body
+func NewSubmitCiirusCredentialsRequest(server string, body SubmitCiirusCredentialsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSubmitCiirusCredentialsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSubmitCiirusCredentialsRequestWithBody constructs an http.Request for the SubmitCiirusCredentials method, with any body, and a specified content type
+func NewSubmitCiirusCredentialsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/ciirus/credentials")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -30450,6 +30614,52 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connect/bookingsync/credentials (the `SubmitBookingsyncCredentials` operationId).
 	SubmitBookingsyncCredentialsWithResponse(ctx context.Context, body SubmitBookingsyncCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitBookingsyncCredentialsClientResponse, error)
 
+	// SubmitCiirusCredentialsWithBodyWithResponse Submit CiiRUS credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for CiiRUS with the property manager's CiiRUS API username and password.
+	//
+	// **What syncs.** Units become listings (with descriptions, photos, amenities, rooms and house rules); reservations (with their charge and tax breakdown and payments) and reviews are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in CiiRUS — see `capabilities.reservations` on `GET /v1/connect/ciirus`. Guest messages are not available through CiiRUS's API.
+	//
+	// **Where the credentials come from.** The CiiRUS API Explorer gives the API username and password after signing in with the CiiRUS MC username and company password; CiiRUS support can also issue them. Credentials that see several suppliers (management companies) also need `managementCompanyUserId`.
+	//
+	// **IP whitelist.** CiiRUS only accepts calls from whitelisted IP addresses, and answers a wrong password and a non-whitelisted address the same way. When this returns `invalid_credentials` with correct credentials, ask CiiRUS support to whitelist Repull for the API user.
+	//
+	// The credentials are validated against CiiRUS before anything is stored, so invalid ones return `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+	//
+	// CiiRUS has no webhooks: after the first sync, reservation changes are picked up by polling about once a minute.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing CiiRUS connection — the `pmsConnectionId` stays the same.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/ciirus/credentials (the `SubmitCiirusCredentials` operationId).
+	SubmitCiirusCredentialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitCiirusCredentialsClientResponse, error)
+
+	// SubmitCiirusCredentialsWithResponse Submit CiiRUS credentials for a Connect session
+	//
+	// Completes a credentials-pattern connection for CiiRUS with the property manager's CiiRUS API username and password.
+	//
+	// **What syncs.** Units become listings (with descriptions, photos, amenities, rooms and house rules); reservations (with their charge and tax breakdown and payments) and reviews are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in CiiRUS — see `capabilities.reservations` on `GET /v1/connect/ciirus`. Guest messages are not available through CiiRUS's API.
+	//
+	// **Where the credentials come from.** The CiiRUS API Explorer gives the API username and password after signing in with the CiiRUS MC username and company password; CiiRUS support can also issue them. Credentials that see several suppliers (management companies) also need `managementCompanyUserId`.
+	//
+	// **IP whitelist.** CiiRUS only accepts calls from whitelisted IP addresses, and answers a wrong password and a non-whitelisted address the same way. When this returns `invalid_credentials` with correct credentials, ask CiiRUS support to whitelist Repull for the API user.
+	//
+	// The credentials are validated against CiiRUS before anything is stored, so invalid ones return `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+	//
+	// CiiRUS has no webhooks: after the first sync, reservation changes are picked up by polling about once a minute.
+	//
+	// Reconnecting replaces the stored credentials on the workspace's existing CiiRUS connection — the `pmsConnectionId` stays the same.
+	//
+	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/ciirus/credentials (the `SubmitCiirusCredentials` operationId).
+	SubmitCiirusCredentialsWithResponse(ctx context.Context, body SubmitCiirusCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitCiirusCredentialsClientResponse, error)
+
 	// SubmitCloudbedsCredentialsWithBodyWithResponse Submit Cloudbeds credentials for a Connect session
 	//
 	// Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
@@ -30884,13 +31094,15 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteConnectionWithResponse Disconnect provider
 	//
-	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking` and `vrbo-login`.
+	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking`, `vrbo-login` and every PMS (`guesty`, `hostaway`, `hospitable`, …).
 	//
 	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 	//
 	// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 	//
 	// The change is all or nothing. For Airbnb, the host can also revoke access on Airbnb's side (Account → Privacy & sharing → Connected apps); that alone does not update this workspace, so call this endpoint as well.
+	//
+	// **PMS.** A workspace has one connection per PMS, so no `accountId` is needed. Disconnecting stops syncing, clears the stored credentials and deactivates the connection's listings; nothing is deleted, and reservations and messages stay. The response also carries `connectionId`. The PMS's own webhook subscription is left in place, because the same PMS account can be connected to another workspace (such as a Repull Migrate workspace). Reconnect with a new Connect session.
 	//
 	// Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side. That answer depends only on the provider, not on your workspace: an unsupported provider returns `501` whether or not you have a connection to it. `404 not_found` on a supported provider means this workspace has no connection to it (or, with `accountId`, that the account is not connected here).
 	//
@@ -31077,7 +31289,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetConversationWithResponse Get conversation detail
 	//
-	// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks.
+	// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks. On an inquiry (no reservation yet) `guest` carries the first name Airbnb shares with the inquiry; contacts such as the phone number arrive once the guest books.
 	//
 	// A conversation that belongs to an inactive listing (by the thread's listing or its reservation's listing) returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 	//
@@ -32620,7 +32832,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// ### Where the booking is made
 	//
-	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track, CiiRUS): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
 	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -32654,6 +32866,7 @@ type ClientWithResponsesInterface interface {
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+	// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -32680,7 +32893,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// ### Where the booking is made
 	//
-	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+	// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track, CiiRUS): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 	// - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 	//
 	// `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -32714,6 +32927,7 @@ type ClientWithResponsesInterface interface {
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+	// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -32761,6 +32975,7 @@ type ClientWithResponsesInterface interface {
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+	// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -32800,6 +33015,7 @@ type ClientWithResponsesInterface interface {
 	// | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 	// | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 	// | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+	// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 	//
 	// Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 	//
@@ -41808,6 +42024,146 @@ func (r SubmitBookingsyncCredentialsClientResponse) ContentType() string {
 	return ""
 }
 
+type SubmitCiirusCredentialsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AccountInfo *struct {
+			// AccountName The supplier's company name.
+			AccountName *string `json:"accountName,omitempty"`
+
+			// SupplierId The CiiRUS supplier (management company) id the connection reads.
+			//
+			// Example: 42330
+			SupplierId *string `json:"supplierId,omitempty"`
+		} `json:"accountInfo,omitempty"`
+		Connected *bool `json:"connected,omitempty"`
+
+		// Created False when an existing connection was updated.
+		Created *bool `json:"created,omitempty"`
+
+		// FirstSync Whether the first import of listings and reservations was queued. When it was not, the connection still stands and polling syncs it.
+		FirstSync *struct {
+			Error  *string `json:"error,omitempty"`
+			Queued *bool   `json:"queued,omitempty"`
+		} `json:"firstSync,omitempty"`
+
+		// PmsConnectionId Id of the stored connection.
+		PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+		// Provider Example: ciirus
+		Provider  *string `json:"provider,omitempty"`
+		SessionId *string `json:"sessionId,omitempty"`
+
+		// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+		//
+		// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+		WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SubmitCiirusCredentialsClientResponse) GetJSON200() *struct {
+	AccountInfo *struct {
+		// AccountName The supplier's company name.
+		AccountName *string `json:"accountName,omitempty"`
+
+		// SupplierId The CiiRUS supplier (management company) id the connection reads.
+		//
+		// Example: 42330
+		SupplierId *string `json:"supplierId,omitempty"`
+	} `json:"accountInfo,omitempty"`
+	Connected *bool `json:"connected,omitempty"`
+
+	// Created False when an existing connection was updated.
+	Created *bool `json:"created,omitempty"`
+
+	// FirstSync Whether the first import of listings and reservations was queued. When it was not, the connection still stands and polling syncs it.
+	FirstSync *struct {
+		Error  *string `json:"error,omitempty"`
+		Queued *bool   `json:"queued,omitempty"`
+	} `json:"firstSync,omitempty"`
+
+	// PmsConnectionId Id of the stored connection.
+	PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+	// Provider Example: ciirus
+	Provider  *string `json:"provider,omitempty"`
+	SessionId *string `json:"sessionId,omitempty"`
+
+	// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+	//
+	// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SubmitCiirusCredentialsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SubmitCiirusCredentialsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SubmitCiirusCredentialsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SubmitCiirusCredentialsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r SubmitCiirusCredentialsClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r SubmitCiirusCredentialsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SubmitCiirusCredentialsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SubmitCiirusCredentialsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SubmitCiirusCredentialsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SubmitCloudbedsCredentialsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -46182,6 +46538,17 @@ type ListInquiriesClientResponse struct {
 				// Currency Example: USD
 				Currency *string `json:"currency,omitempty"`
 			} `json:"expectedPayout"`
+
+			// Guest Who asked. Airbnb shares only the guest’s first name before they book; the last name and phone number arrive on the reservation (`GET /v1/reservations/{id}`) once they do.
+			Guest struct {
+				// FirstName Example: Ximena
+				FirstName *string `json:"firstName,omitempty"`
+
+				// Id Repull guest id.
+				//
+				// Example: 365763
+				Id *string `json:"id,omitempty"`
+			} `json:"guest"`
 			Guests struct {
 				// Adults Example: 2
 				Adults *int `json:"adults,omitempty"`
@@ -46259,6 +46626,17 @@ func (r ListInquiriesClientResponse) GetJSON200() *struct {
 			// Currency Example: USD
 			Currency *string `json:"currency,omitempty"`
 		} `json:"expectedPayout"`
+
+		// Guest Who asked. Airbnb shares only the guest’s first name before they book; the last name and phone number arrive on the reservation (`GET /v1/reservations/{id}`) once they do.
+		Guest struct {
+			// FirstName Example: Ximena
+			FirstName *string `json:"firstName,omitempty"`
+
+			// Id Repull guest id.
+			//
+			// Example: 365763
+			Id *string `json:"id,omitempty"`
+		} `json:"guest"`
 		Guests struct {
 			// Adults Example: 2
 			Adults *int `json:"adults,omitempty"`
@@ -56980,6 +57358,64 @@ func (c *ClientWithResponses) SubmitBookingsyncCredentialsWithResponse(ctx conte
 	return ParseSubmitBookingsyncCredentialsClientResponse(rsp)
 }
 
+// SubmitCiirusCredentialsWithBodyWithResponse Submit CiiRUS credentials for a Connect session
+//
+// Completes a credentials-pattern connection for CiiRUS with the property manager's CiiRUS API username and password.
+//
+// **What syncs.** Units become listings (with descriptions, photos, amenities, rooms and house rules); reservations (with their charge and tax breakdown and payments) and reviews are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in CiiRUS — see `capabilities.reservations` on `GET /v1/connect/ciirus`. Guest messages are not available through CiiRUS's API.
+//
+// **Where the credentials come from.** The CiiRUS API Explorer gives the API username and password after signing in with the CiiRUS MC username and company password; CiiRUS support can also issue them. Credentials that see several suppliers (management companies) also need `managementCompanyUserId`.
+//
+// **IP whitelist.** CiiRUS only accepts calls from whitelisted IP addresses, and answers a wrong password and a non-whitelisted address the same way. When this returns `invalid_credentials` with correct credentials, ask CiiRUS support to whitelist Repull for the API user.
+//
+// The credentials are validated against CiiRUS before anything is stored, so invalid ones return `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+//
+// CiiRUS has no webhooks: after the first sync, reservation changes are picked up by polling about once a minute.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing CiiRUS connection — the `pmsConnectionId` stays the same.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/ciirus/credentials (the `SubmitCiirusCredentials` operationId).
+func (c *ClientWithResponses) SubmitCiirusCredentialsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitCiirusCredentialsClientResponse, error) {
+	rsp, err := c.SubmitCiirusCredentialsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitCiirusCredentialsClientResponse(rsp)
+}
+
+// SubmitCiirusCredentialsWithResponse Submit CiiRUS credentials for a Connect session
+//
+// Completes a credentials-pattern connection for CiiRUS with the property manager's CiiRUS API username and password.
+//
+// **What syncs.** Units become listings (with descriptions, photos, amenities, rooms and house rules); reservations (with their charge and tax breakdown and payments) and reviews are imported, then polled for changes. Bookings can be created, quoted, changed and cancelled in CiiRUS — see `capabilities.reservations` on `GET /v1/connect/ciirus`. Guest messages are not available through CiiRUS's API.
+//
+// **Where the credentials come from.** The CiiRUS API Explorer gives the API username and password after signing in with the CiiRUS MC username and company password; CiiRUS support can also issue them. Credentials that see several suppliers (management companies) also need `managementCompanyUserId`.
+//
+// **IP whitelist.** CiiRUS only accepts calls from whitelisted IP addresses, and answers a wrong password and a non-whitelisted address the same way. When this returns `invalid_credentials` with correct credentials, ask CiiRUS support to whitelist Repull for the API user.
+//
+// The credentials are validated against CiiRUS before anything is stored, so invalid ones return `invalid_credentials` rather than creating a dead connection. On success only the credential fields below are stored, and the first sync of listings and reservations is queued.
+//
+// CiiRUS has no webhooks: after the first sync, reservation changes are picked up by polling about once a minute.
+//
+// Reconnecting replaces the stored credentials on the workspace's existing CiiRUS connection — the `pmsConnectionId` stays the same.
+//
+// No API key required when called with a `sessionId` — the session is the capability token.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/ciirus/credentials (the `SubmitCiirusCredentials` operationId).
+func (c *ClientWithResponses) SubmitCiirusCredentialsWithResponse(ctx context.Context, body SubmitCiirusCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitCiirusCredentialsClientResponse, error) {
+	rsp, err := c.SubmitCiirusCredentials(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitCiirusCredentialsClientResponse(rsp)
+}
+
 // SubmitCloudbedsCredentialsWithBodyWithResponse Submit Cloudbeds credentials for a Connect session
 //
 // Completes a credentials-pattern connection for Cloudbeds with a property (or organization) API key, created in Cloudbeds under Apps & Marketplace → API Credentials.
@@ -57606,13 +58042,15 @@ func (c *ClientWithResponses) ZeevouConnectCallbackWithResponse(ctx context.Cont
 
 // DeleteConnectionWithResponse Disconnect provider
 //
-// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking` and `vrbo-login`.
+// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking`, `vrbo-login` and every PMS (`guesty`, `hostaway`, `hospitable`, …).
 //
 // **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 //
 // **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 //
 // The change is all or nothing. For Airbnb, the host can also revoke access on Airbnb's side (Account → Privacy & sharing → Connected apps); that alone does not update this workspace, so call this endpoint as well.
+//
+// **PMS.** A workspace has one connection per PMS, so no `accountId` is needed. Disconnecting stops syncing, clears the stored credentials and deactivates the connection's listings; nothing is deleted, and reservations and messages stay. The response also carries `connectionId`. The PMS's own webhook subscription is left in place, because the same PMS account can be connected to another workspace (such as a Repull Migrate workspace). Reconnect with a new Connect session.
 //
 // Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side. That answer depends only on the provider, not on your workspace: an unsupported provider returns `501` whether or not you have a connection to it. `404 not_found` on a supported provider means this workspace has no connection to it (or, with `accountId`, that the account is not connected here).
 //
@@ -57889,7 +58327,7 @@ func (c *ClientWithResponses) ListConversationsWithResponse(ctx context.Context,
 
 // GetConversationWithResponse Get conversation detail
 //
-// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks.
+// Returns one thread (the same shape as the list-row `Conversation`) plus expanded `host` (from `airbnb_hosts` for the thread's `host_id`) and `guest` (resolved via the thread's `reservation_id`, with up to 50 contacts) blocks. On an inquiry (no reservation yet) `guest` carries the first name Airbnb shares with the inquiry; contacts such as the phone number arrive once the guest books.
 //
 // A conversation that belongs to an inactive listing (by the thread's listing or its reservation's listing) returns `403 listing_inactive`. Inactive listings keep syncing; activate the listing to use it here.
 //
@@ -60086,7 +60524,7 @@ func (c *ClientWithResponses) ListReservationsWithResponse(ctx context.Context, 
 //
 // ### Where the booking is made
 //
-// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track, CiiRUS): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 // - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
 // `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -60120,6 +60558,7 @@ func (c *ClientWithResponses) ListReservationsWithResponse(ctx context.Context, 
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 // | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -60152,7 +60591,7 @@ func (c *ClientWithResponses) CreateReservationWithBodyWithResponse(ctx context.
 //
 // ### Where the booking is made
 //
-// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
+// - **A listing managed in a connected PMS** (Mews, Cloudbeds, Hostaway, Guesty, Beds24, BookingSync, Lodgify, Smoobu, Hospitable, iGMS, OwnerRez, Track, CiiRUS): the booking is created **in the PMS first**, then recorded in Repull from the PMS's own record, so the next sync lands on the same confirmation code and nothing is duplicated. A booking is **never** created only in Repull for such a listing — the PMS would keep selling the dates. What the PMS cannot do is refused (`422 pms_write_unsupported`), never faked. The PMS checks availability: taken dates answer `409 pms_unavailable`.
 // - **Any other listing**: a direct booking made in Repull, with everything that hangs off one — the guest, the conversation, the calendar block and the `reservation.created` fan-out that issues the door code and starts the messaging automations. Priced by the listing's own rates; **availability is NOT checked** (call `GET /v1/availability/{propertyId}` first if that matters).
 //
 // `GET /v1/listings/{id}` → `capabilities.reservations` says which applies to a listing and exactly what it supports (`create`, `modify`, `cancel`, `quote`, `customPrice`, plus `notes`).
@@ -60186,6 +60625,7 @@ func (c *ClientWithResponses) CreateReservationWithBodyWithResponse(ctx context.
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 // | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -60239,6 +60679,7 @@ func (c *ClientWithResponses) CreateReservationWithResponse(ctx context.Context,
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 // | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -60284,6 +60725,7 @@ func (c *ClientWithResponses) QuoteReservationWithBodyWithResponse(ctx context.C
 // | iGMS | ✓ | ✓ | ✓ | – | ✓ (required) | iGMS direct bookings only; a price is required; no tentative holds. |
 // | OwnerRez | ✓ | ✓ | – | ✓ | – | No cancel through OwnerRez's API; priced by the property's own rates; needs the `full` scope. |
 // | Track | ✓ | ✓ | ✓ | ✓ | ✓ | Track decides Hold vs Confirmed from the property's channel mode; a set price on a Channel Key needs "Allow Custom Pricing"; a unit change needs `moveReasonId` on the connection; a date change re-prices at Track's current rates. |
+// | CiiRUS | ✓ | ✓ | ✓ | ✓ | ✓ | A set price is the rent, with CiiRUS adding its taxes; no tentative holds. |
 //
 // Every PMS except Cloudbeds refuses group bookings, and every vacation-rental PMS refuses to change or cancel a booking that came from a channel (Airbnb, Booking.com, Vrbo…) — that is done on the channel.
 //
@@ -67514,6 +67956,99 @@ func ParseSubmitBookingsyncCredentialsClientResponse(rsp *http.Response) (*Submi
 	return response, nil
 }
 
+// ParseSubmitCiirusCredentialsClientResponse parses an HTTP response from a SubmitCiirusCredentialsWithResponse call
+func ParseSubmitCiirusCredentialsClientResponse(rsp *http.Response) (*SubmitCiirusCredentialsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SubmitCiirusCredentialsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AccountInfo *struct {
+				// AccountName The supplier's company name.
+				AccountName *string `json:"accountName,omitempty"`
+
+				// SupplierId The CiiRUS supplier (management company) id the connection reads.
+				//
+				// Example: 42330
+				SupplierId *string `json:"supplierId,omitempty"`
+			} `json:"accountInfo,omitempty"`
+			Connected *bool `json:"connected,omitempty"`
+
+			// Created False when an existing connection was updated.
+			Created *bool `json:"created,omitempty"`
+
+			// FirstSync Whether the first import of listings and reservations was queued. When it was not, the connection still stands and polling syncs it.
+			FirstSync *struct {
+				Error  *string `json:"error,omitempty"`
+				Queued *bool   `json:"queued,omitempty"`
+			} `json:"firstSync,omitempty"`
+
+			// PmsConnectionId Id of the stored connection.
+			PmsConnectionId *string `json:"pmsConnectionId,omitempty"`
+
+			// Provider Example: ciirus
+			Provider  *string `json:"provider,omitempty"`
+			SessionId *string `json:"sessionId,omitempty"`
+
+			// WritePolicy What the app may change in a connected PMS. Hotel PMSs (Cloudbeds, Mews) start with every `calendar` switch off, because the PMS owns its room inventory; every other PMS starts with everything on. Reading from the PMS is never affected.
+			//
+			// Example: {"calendar":{"availability":false,"rates":true,"restrictions":false},"reservations":{"api":true,"dashboard":true,"website":true}}
+			WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseSubmitCloudbedsCredentialsClientResponse parses an HTTP response from a SubmitCloudbedsCredentialsWithResponse call
 func ParseSubmitCloudbedsCredentialsClientResponse(rsp *http.Response) (*SubmitCloudbedsCredentialsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -70505,6 +71040,17 @@ func ParseListInquiriesClientResponse(rsp *http.Response) (*ListInquiriesClientR
 					// Currency Example: USD
 					Currency *string `json:"currency,omitempty"`
 				} `json:"expectedPayout"`
+
+				// Guest Who asked. Airbnb shares only the guest’s first name before they book; the last name and phone number arrive on the reservation (`GET /v1/reservations/{id}`) once they do.
+				Guest struct {
+					// FirstName Example: Ximena
+					FirstName *string `json:"firstName,omitempty"`
+
+					// Id Repull guest id.
+					//
+					// Example: 365763
+					Id *string `json:"id,omitempty"`
+				} `json:"guest"`
 				Guests struct {
 					// Adults Example: 2
 					Adults *int `json:"adults,omitempty"`

@@ -3547,6 +3547,27 @@ func (e ReservationStatusDetail) Valid() bool {
 	}
 }
 
+// Defines values for ReservationAccessCodeType.
+const (
+	ReservationAccessCodeTypeBackup ReservationAccessCodeType = "backup"
+	ReservationAccessCodeTypeGuest  ReservationAccessCodeType = "guest"
+	ReservationAccessCodeTypeOther  ReservationAccessCodeType = "other"
+)
+
+// Valid indicates whether the value is a known member of the ReservationAccessCodeType enum.
+func (e ReservationAccessCodeType) Valid() bool {
+	switch e {
+	case ReservationAccessCodeTypeBackup:
+		return true
+	case ReservationAccessCodeTypeGuest:
+		return true
+	case ReservationAccessCodeTypeOther:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationAlterationCreatedEventEvent.
 const (
 	ReservationAlterationCreatedEventEventReservationAlterationCreated ReservationAlterationCreatedEventEvent = "reservation.alteration.created"
@@ -7208,6 +7229,15 @@ type AccountDisconnectedPayload struct {
 	// DisconnectedAt Example: 2026-05-01T17:00:00.000Z
 	DisconnectedAt *time.Time `json:"disconnectedAt,omitempty"`
 
+	// Listings The listings this account holds in your workspace — the ones that stop syncing until it is reconnected. Identity only; inactive listings included. Matches `channels[].account` on `GET /v1/listings`. Empty when the account has no listings here.
+	Listings *[]struct {
+		// Id Example: 4118
+		Id *int `json:"id,omitempty"`
+
+		// Name Example: Ocean View Villa
+		Name *string `json:"name,omitempty"`
+	} `json:"listings,omitempty"`
+
 	// Provider Example: airbnb
 	Provider *string `json:"provider,omitempty"`
 
@@ -7669,10 +7699,10 @@ type AirbnbCalendarOperation struct {
 	// EndDate Inclusive range end, YYYY-MM-DD, on or after `start_date`.
 	EndDate *openapi_types.Date `json:"end_date,omitempty"`
 
-	// MaxNights Maximum length of stay for the date(s); no lower than `min_nights`.
+	// MaxNights Maximum length of stay for the date(s), 1–1125 and no lower than `min_nights`. Send `-1` to drop the date's own maximum so it follows the listing default again (`default_max_nights`).
 	MaxNights *int `json:"max_nights,omitempty"`
 
-	// MinNights Minimum length of stay for the date(s).
+	// MinNights Minimum length of stay for the date(s), 1–1125. Send `-1` to drop the date's own minimum so it follows the listing default again (`default_min_nights`). `0` and `null` do not clear it.
 	MinNights *int    `json:"min_nights,omitempty"`
 	Notes     *string `json:"notes,omitempty"`
 
@@ -10599,6 +10629,12 @@ type InquiryWebhookObject struct {
 		Amount   *float32 `json:"amount,omitempty"`
 		Currency *string  `json:"currency,omitempty"`
 	} `json:"expectedPayout,omitempty"`
+
+	// Guest Who asked. Airbnb shares only the first name before the guest books.
+	Guest *struct {
+		FirstName *string `json:"firstName,omitempty"`
+		Id        *string `json:"id,omitempty"`
+	} `json:"guest,omitempty"`
 	Guests *struct {
 		Adults   *int `json:"adults,omitempty"`
 		Children *int `json:"children,omitempty"`
@@ -10823,7 +10859,9 @@ type ListingAmenity struct {
 
 // ListingChannel Per-platform connection for a listing — one row per channel the listing is published to.
 type ListingChannel struct {
-	Active *bool `json:"active,omitempty"`
+	// Account The connected account this listing belongs to on this channel — for Airbnb the host account (`externalAccountId` is the Airbnb host id). The same account `account.disconnected` names, so a disconnect can be matched to its listings. Null when it cannot be resolved.
+	Account *RecordAccount `json:"account,omitempty"`
+	Active  *bool          `json:"active,omitempty"`
 
 	// ExternalId ID in the platform (Airbnb listing id, Booking room id, etc.)
 	ExternalId *string `json:"externalId,omitempty"`
@@ -12324,7 +12362,9 @@ type ListingWebhookObject struct {
 
 	// Channels Which channels this listing is on and whether each still accepts writes. `syncEnabled: false` means the channel refuses every write for this listing — the difference between a failing integration and a suspended listing.
 	Channels *[]struct {
-		Active *bool `json:"active,omitempty"`
+		// Account The connected account this listing belongs to on this channel — for Airbnb the host account (`externalAccountId` is the Airbnb host id). The same account `account.disconnected` names, so a disconnect can be matched to its listings. Null when it cannot be resolved.
+		Account *RecordAccount `json:"account,omitempty"`
+		Active  *bool          `json:"active,omitempty"`
 
 		// ExternalId Example: 21466093
 		ExternalId *string `json:"externalId,omitempty"`
@@ -13878,6 +13918,9 @@ type RepullPingPayload struct {
 //
 // The canonical (post-2026-05) shape uses nested `primaryGuest`, `occupancy`, `financials` blocks. The legacy flat fields (`guestId`, `totalPrice`, `currency`, `guestDetails`) remain populated for back-compat and are marked `deprecated` here. New consumers should read from the nested blocks; existing consumers continue to work unchanged.
 type Reservation struct {
+	// AccessCodes Door codes for the stay from the PMS's lock manager (today: Guesty Locks Manager), refreshed about every 30 minutes for stays checking in within 14 days that have not checked out. `null` when the reservation's codes are not read from a PMS. `[]` when they are and there is none yet, and for a cancelled stay.
+	AccessCodes *[]ReservationAccessCode `json:"accessCodes,omitempty"`
+
 	// Account The connected account this reservation belongs to. List endpoint.
 	Account *RecordAccount `json:"account,omitempty"`
 
@@ -13968,6 +14011,11 @@ type Reservation struct {
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	Platform *ReservationPlatform `json:"platform,omitempty"`
 
+	// PmsReservationId The PMS's own id for this reservation (for example Guesty's reservation `_id`), so you can look it up in the PMS. `null` when the reservation did not come from a PMS.
+	//
+	// Example: 6a0374cd5eeb88f1381f9ac1
+	PmsReservationId *string `json:"pmsReservationId,omitempty"`
+
 	// PrimaryGuest Inline guest summary. May be undefined for owner-blocks / pre-arrival rows.
 	PrimaryGuest *ReservationPrimaryGuest `json:"primaryGuest,omitempty"`
 
@@ -14036,6 +14084,65 @@ type ReservationStatus string
 //
 // Example: declined
 type ReservationStatusDetail string
+
+// ReservationAccessCode One door code for a stay, as the PMS reported it.
+type ReservationAccessCode struct {
+	// Code The code to enter on the lock.
+	//
+	// Example: 482913
+	Code string `json:"code"`
+
+	// Locks The locks the code opens.
+	Locks []struct {
+		// Id The lock's id in the PMS.
+		//
+		// Example: 64f0c1aa2b3c4d5e6f708192
+		Id string `json:"id"`
+
+		// Name Example: Front door
+		Name *string `json:"name"`
+
+		// Provider The lock brand, as the PMS names it.
+		//
+		// Example: schlage
+		Provider *string `json:"provider"`
+	} `json:"locks"`
+
+	// Source The PMS the code was read from.
+	//
+	// Example: guesty
+	Source string `json:"source"`
+
+	// Status The PMS's status for the code, lower-cased.
+	//
+	// Example: active
+	Status *string `json:"status"`
+
+	// Type `guest`: the code to give the guest. `backup`: give it only if the guest code fails; Guesty may change a backup code read before check-in day.
+	//
+	// Example: guest
+	Type ReservationAccessCodeType `json:"type"`
+
+	// UpdatedAt When the codes were last read from the PMS.
+	//
+	// Example: 2026-10-31T14:30:00.000Z
+	UpdatedAt *time.Time `json:"updatedAt"`
+
+	// ValidFrom When the code starts working. `null` when the PMS gives no window.
+	//
+	// Example: 2026-11-01T20:00:00.000Z
+	ValidFrom *time.Time `json:"validFrom"`
+
+	// ValidUntil When the code stops working. `null` when the PMS gives no window.
+	//
+	// Example: 2026-11-05T15:00:00.000Z
+	ValidUntil *time.Time `json:"validUntil"`
+}
+
+// ReservationAccessCodeType `guest`: the code to give the guest. `backup`: give it only if the guest code fails; Guesty may change a backup code read before check-in day.
+//
+// Example: guest
+type ReservationAccessCodeType string
 
 // ReservationAlterationCreatedEvent defines model for ReservationAlterationCreatedEvent.
 type ReservationAlterationCreatedEvent struct {
@@ -17308,6 +17415,31 @@ type SubmitBookingsyncCredentialsJSONBody struct {
 	SessionId *string `json:"sessionId,omitempty"`
 }
 
+// SubmitCiirusCredentialsJSONBody defines parameters for SubmitCiirusCredentials.
+type SubmitCiirusCredentialsJSONBody struct {
+	// Credentials The CiiRUS API username and password.
+	Credentials struct {
+		// ApiPassword CiiRUS API password.
+		ApiPassword string `json:"apiPassword"`
+
+		// ApiUsername CiiRUS API username, from the CiiRUS API Explorer or CiiRUS support.
+		ApiUsername string `json:"apiUsername"`
+
+		// ManagementCompanyUserId The CiiRUS supplier (management company) id, the MCUserID. Only needed when the credentials see several suppliers.
+		//
+		// Example: 42330
+		ManagementCompanyUserId *int `json:"managementCompanyUserId,omitempty"`
+	} `json:"credentials"`
+
+	// SessionId Connect session id from `POST /v1/connect/ciirus`. Omit when calling with your API key.
+	SessionId *string `json:"sessionId,omitempty"`
+
+	// WritePolicy Optional: what the app may change in CiiRUS, set before the first sync. Same shape as `PATCH /v1/connect/{provider}/write-policy`; switches you leave out keep the provider default (everything on).
+	//
+	// Example: {"reservations":{"api":false}}
+	WritePolicy *map[string]interface{} `json:"writePolicy,omitempty"`
+}
+
 // SubmitCloudbedsCredentialsJSONBody defines parameters for SubmitCloudbedsCredentials.
 type SubmitCloudbedsCredentialsJSONBody struct {
 	// Credentials A Cloudbeds API key (starts with `cbat_`).
@@ -18953,6 +19085,9 @@ type VerifyBookingHotelJSONRequestBody = BookingVerifyHotelRequest
 
 // SubmitBookingsyncCredentialsJSONRequestBody defines body for SubmitBookingsyncCredentials for application/json ContentType.
 type SubmitBookingsyncCredentialsJSONRequestBody SubmitBookingsyncCredentialsJSONBody
+
+// SubmitCiirusCredentialsJSONRequestBody defines body for SubmitCiirusCredentials for application/json ContentType.
+type SubmitCiirusCredentialsJSONRequestBody SubmitCiirusCredentialsJSONBody
 
 // SubmitCloudbedsCredentialsJSONRequestBody defines body for SubmitCloudbedsCredentials for application/json ContentType.
 type SubmitCloudbedsCredentialsJSONRequestBody SubmitCloudbedsCredentialsJSONBody
