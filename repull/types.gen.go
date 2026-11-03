@@ -10752,13 +10752,20 @@ type Listing struct {
 	// Id Repull listing id
 	Id *string `json:"id,omitempty"`
 
-	// Kind `room_type` when the listing sells several identical units (a hotel room type: `unitCount` > 1) or is a hotel PMS room type; `home` otherwise. See the Hotels & multi-unit guide.
+	// Kind `room_type` when the listing sells several units (a hotel room type or a Guesty multi-unit listing: `unitCount` > 1) or is a hotel PMS room type; `home` otherwise. See the Hotels & multi-unit guide.
 	Kind *ListingKind `json:"kind,omitempty"`
 
 	// Name The host's internal nickname for the listing.
 	//
 	// Example: I - Stafford Apartment
 	Name *string `json:"name,omitempty"`
+
+	// Parent The multi-unit listing this listing is one unit of (a Guesty multi-unit listing's unit, which has its own calendar and stays). The parent lists it in `units[]` with this listing's id as `units[].listingId`. `null` otherwise.
+	Parent *struct {
+		// Id Repull listing id of the multi-unit listing.
+		Id   *string `json:"id,omitempty"`
+		Name *string `json:"name,omitempty"`
+	} `json:"parent,omitempty"`
 
 	// Photos **Only present with `?include=photos`.** The listing photos in display order.
 	Photos *[]ListingContentPhoto `json:"photos,omitempty"`
@@ -10787,18 +10794,25 @@ type Listing struct {
 	// ThumbnailUrl Cover photo URL. Always present on an active listing. On an **inactive** one it is present only when the caller passes `?include=thumbnail`; `null` means the listing has no cover photo stored, absent means the expansion was not requested.
 	ThumbnailUrl *string `json:"thumbnailUrl,omitempty"`
 
-	// UnitCount How many identical units (rooms) this listing sells: the hotel PMS rooms of the room type, the room count on Booking.com, or 1 for a home. Rooms left per night are `availableUnits` on `GET /v1/availability/{propertyId}`.
+	// UnitCount How many units (rooms) this listing sells: the hotel PMS rooms of the room type, the units of a Guesty multi-unit listing, the room count on Booking.com, or 1 for a home. Units left per night are `availableUnits` on `GET /v1/availability/{propertyId}`, and which unit is free is `units` there.
 	UnitCount *int `json:"unitCount,omitempty"`
 
-	// Units `GET /v1/listings/{id}` only. The physical rooms under a hotel-model listing (a Mews or Cloudbeds room type); empty for a single home. Same items as `GET /v1/listings/{id}/units`.
+	// Units `GET /v1/listings/{id}` only. The units under the listing: a Mews or Cloudbeds room type's rooms, or a Guesty multi-unit listing's units; empty for a single home. Same items as `GET /v1/listings/{id}/units`.
 	Units *[]struct {
 		Active             *bool   `json:"active,omitempty"`
 		Floor              *string `json:"floor,omitempty"`
 		HousekeepingStatus *string `json:"housekeepingStatus,omitempty"`
-		Id                 *string `json:"id,omitempty"`
-		Name               *string `json:"name,omitempty"`
-		ParentId           *string `json:"parentId,omitempty"`
-		Source             *string `json:"source,omitempty"`
+
+		// Id Unit id — what `reservation.unit.id` and the per-night `units[].id` on availability refer to.
+		Id *string `json:"id,omitempty"`
+
+		// ListingId The unit's own Repull listing id when the unit is a listing too (a Guesty multi-unit listing's units, each with its own calendar), else `null`.
+		ListingId *string `json:"listingId,omitempty"`
+		Name      *string `json:"name,omitempty"`
+		ParentId  *string `json:"parentId,omitempty"`
+
+		// Source The PMS the unit comes from: `cloudbeds`, `mews`, `guesty`, …
+		Source *string `json:"source,omitempty"`
 	} `json:"units,omitempty"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
@@ -10806,7 +10820,7 @@ type Listing struct {
 // ListingHotelSource defines model for Listing.Hotel.Source.
 type ListingHotelSource string
 
-// ListingKind `room_type` when the listing sells several identical units (a hotel room type: `unitCount` > 1) or is a hotel PMS room type; `home` otherwise. See the Hotels & multi-unit guide.
+// ListingKind `room_type` when the listing sells several units (a hotel room type or a Guesty multi-unit listing: `unitCount` > 1) or is a hotel PMS room type; `home` otherwise. See the Hotels & multi-unit guide.
 type ListingKind string
 
 // ListingStatus defines model for Listing.Status.
@@ -13784,7 +13798,7 @@ type PropertyAvailabilityDay struct {
 	// Available Whether the property is bookable on this date. `false` when the calendar marks the date booked or blocked. Only dates we actually hold a calendar row for appear in `days`, so this is never a guess — a date with no data is listed in `coverage.missingDates` instead.
 	Available bool `json:"available"`
 
-	// AvailableUnits Units still sellable that night. 1 or 0 for a single home. For a hotel-model listing (a Mews or Cloudbeds room type) the rooms of that type left, e.g. 3 of 5 — see `GET /v1/listings/{id}/units`. `available` is false whenever this is 0.
+	// AvailableUnits Units still sellable that night. 1 or 0 for a single home. For a listing with units (a Mews or Cloudbeds room type, a Guesty multi-unit listing) the units left, e.g. 3 of 5 — see `GET /v1/listings/{id}/units`. `available` is false whenever this is 0.
 	//
 	// Example: 1
 	AvailableUnits int `json:"availableUnits"`
@@ -13803,6 +13817,24 @@ type PropertyAvailabilityDay struct {
 	//
 	// Example: 245
 	Price float32 `json:"price"`
+
+	// Units Only on a listing with units (a Mews or Cloudbeds room type, a Guesty multi-unit listing): each active unit and whether it is free that night. A unit is taken when a stay is on it, a room block covers it, or (for a unit that is a listing of its own) its own calendar is closed. Ids are the listing's `units[].id` and a reservation's `unit.id`.
+	//
+	// Example: [{"available":true,"id":"unit_a"},{"available":false,"id":"unit_b"}]
+	Units *[]PropertyAvailabilityUnit `json:"units,omitempty"`
+}
+
+// PropertyAvailabilityUnit One unit on one night.
+type PropertyAvailabilityUnit struct {
+	// Available Whether this unit is free that night.
+	//
+	// Example: false
+	Available bool `json:"available"`
+
+	// Id The unit id: `units[].id` on the listing, `unit.id` on a reservation.
+	//
+	// Example: unit_b
+	Id string `json:"id"`
 }
 
 // PropertyListResponse defines model for PropertyListResponse.
@@ -14048,7 +14080,7 @@ type Reservation struct {
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	TotalPrice *string `json:"totalPrice,omitempty"`
 
-	// Unit The physical room the stay was assigned, for a hotel-model PMS (Mews, Cloudbeds) where the listing is a room type. `null` when no room is assigned yet, and for every listing that is a single home.
+	// Unit The unit the stay is on: the room assigned by a hotel-model PMS (Mews, Cloudbeds) where the listing is a room type, or the unit of a Guesty multi-unit listing (the stay's `listingId` is then that unit's own listing). Matches the listing's `units[].id` and the per-night `units` on availability. `null` when no unit is assigned yet, and for every listing that is a single home.
 	Unit *struct {
 		// Id The room id, as listed by `GET /v1/listings/{id}/units`.
 		Id *string `json:"id,omitempty"`
