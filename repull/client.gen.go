@@ -124,7 +124,7 @@ type ClientInterface interface {
 
 	// GetAvailability Get property availability
 	//
-	// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the rooms of the type left for a hotel-model listing (a Mews or Cloudbeds room type).
+	// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the units left for a listing with units (a Mews or Cloudbeds room type, a Guesty multi-unit listing). On such a listing each day also carries `units: [{ id, available }]` — which unit is free that night, with the ids of the listing's `units[]` and a reservation's `unit`.
 	//
 	// The `from` and `to` query params are **required** (ISO `YYYY-MM-DD`, inclusive) — omitting or malforming either returns 422. The window is capped at 366 days; longer ranges are truncated to the first 366 days.
 	//
@@ -4379,11 +4379,14 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/listings/{id}/segments (the `GetListingSegments` operationId).
 	GetListingSegments(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListListingUnits List a listing's units (rooms)
+	// ListListingUnits List a listing's units
 	//
-	// The physical rooms under a listing. For a hotel-model PMS (Mews, Cloudbeds) a listing is a room type: prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+	// The units under a listing.
 	//
-	// Any other listing is a single home, which is its own unit, and returns an empty list.
+	// - **Hotel-model PMS (Mews, Cloudbeds):** the listing is a room type and these are its physical rooms. Prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+	// - **Guesty multi-unit listing:** the listing is the parent channels sell, and these are its units. Each unit is also a listing of its own (`listingId`), with its own calendar and stays; a stay on a unit carries `reservation.unit`.
+	//
+	// Which unit is free on which night: `units` per day on `GET /v1/availability/{propertyId}`. Any other listing is a single home, which is its own unit, and returns an empty list.
 	//
 	// Corresponds with GET /v1/listings/{id}/units (the `ListListingUnits` operationId).
 	ListListingUnits(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5343,7 +5346,7 @@ func (c *Client) BatchUpdateAvailability(ctx context.Context, body BatchUpdateAv
 
 // GetAvailability Get property availability
 //
-// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the rooms of the type left for a hotel-model listing (a Mews or Cloudbeds room type).
+// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the units left for a listing with units (a Mews or Cloudbeds room type, a Guesty multi-unit listing). On such a listing each day also carries `units: [{ id, available }]` — which unit is free that night, with the ids of the listing's `units[]` and a reservation's `unit`.
 //
 // The `from` and `to` query params are **required** (ISO `YYYY-MM-DD`, inclusive) — omitting or malforming either returns 422. The window is capped at 366 days; longer ranges are truncated to the first 366 days.
 //
@@ -12525,11 +12528,14 @@ func (c *Client) GetListingSegments(ctx context.Context, id int, params *GetList
 	return c.Client.Do(req)
 }
 
-// ListListingUnits List a listing's units (rooms)
+// ListListingUnits List a listing's units
 //
-// The physical rooms under a listing. For a hotel-model PMS (Mews, Cloudbeds) a listing is a room type: prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+// The units under a listing.
 //
-// Any other listing is a single home, which is its own unit, and returns an empty list.
+// - **Hotel-model PMS (Mews, Cloudbeds):** the listing is a room type and these are its physical rooms. Prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+// - **Guesty multi-unit listing:** the listing is the parent channels sell, and these are its units. Each unit is also a listing of its own (`listingId`), with its own calendar and stays; a stay on a unit carries `reservation.unit`.
+//
+// Which unit is free on which night: `units` per day on `GET /v1/availability/{propertyId}`. Any other listing is a single home, which is its own unit, and returns an empty list.
 //
 // Corresponds with GET /v1/listings/{id}/units (the `ListListingUnits` operationId).
 func (c *Client) ListListingUnits(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -28142,7 +28148,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetAvailabilityWithResponse Get property availability
 	//
-	// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the rooms of the type left for a hotel-model listing (a Mews or Cloudbeds room type).
+	// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the units left for a listing with units (a Mews or Cloudbeds room type, a Guesty multi-unit listing). On such a listing each day also carries `units: [{ id, available }]` — which unit is free that night, with the ids of the listing's `units[]` and a reservation's `unit`.
 	//
 	// The `from` and `to` query params are **required** (ISO `YYYY-MM-DD`, inclusive) — omitting or malforming either returns 422. The window is capped at 366 days; longer ranges are truncated to the first 366 days.
 	//
@@ -32603,11 +32609,14 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/listings/{id}/segments (the `GetListingSegments` operationId).
 	GetListingSegmentsWithResponse(ctx context.Context, id int, params *GetListingSegmentsParams, reqEditors ...RequestEditorFn) (*GetListingSegmentsClientResponse, error)
 
-	// ListListingUnitsWithResponse List a listing's units (rooms)
+	// ListListingUnitsWithResponse List a listing's units
 	//
-	// The physical rooms under a listing. For a hotel-model PMS (Mews, Cloudbeds) a listing is a room type: prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+	// The units under a listing.
 	//
-	// Any other listing is a single home, which is its own unit, and returns an empty list.
+	// - **Hotel-model PMS (Mews, Cloudbeds):** the listing is a room type and these are its physical rooms. Prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+	// - **Guesty multi-unit listing:** the listing is the parent channels sell, and these are its units. Each unit is also a listing of its own (`listingId`), with its own calendar and stays; a stay on a unit carries `reservation.unit`.
+	//
+	// Which unit is free on which night: `units` per day on `GET /v1/availability/{propertyId}`. Any other listing is a single home, which is its own unit, and returns an empty list.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -49754,8 +49763,11 @@ type ListListingUnitsClientResponse struct {
 			// HousekeepingStatus The PMS's housekeeping state, verbatim (e.g. `Dirty`, `Clean`, `Inspected`).
 			HousekeepingStatus *string `json:"housekeepingStatus,omitempty"`
 
-			// Id The PMS's id for the room; `reservation.unit.id` refers to it.
+			// Id The PMS's id for the unit; `reservation.unit.id` and the per-night `units[].id` on `GET /v1/availability/{propertyId}` refer to it.
 			Id *string `json:"id,omitempty"`
+
+			// ListingId The unit's own Repull listing id when the unit is a listing too (a Guesty multi-unit listing's units, each with its own calendar and stays), else null.
+			ListingId *string `json:"listingId,omitempty"`
 
 			// Name Example: 101
 			Name *string `json:"name,omitempty"`
@@ -49763,7 +49775,9 @@ type ListListingUnitsClientResponse struct {
 			// ParentId A sub-space's parent room (a bed in a dorm), else null.
 			ParentId *string `json:"parentId,omitempty"`
 
-			// Source Example: mews
+			// Source The PMS the unit comes from: `cloudbeds`, `mews`, `guesty`, …
+			//
+			// Example: mews
 			Source *string `json:"source,omitempty"`
 		} `json:"data,omitempty"`
 
@@ -49788,8 +49802,11 @@ func (r ListListingUnitsClientResponse) GetJSON200() *struct {
 		// HousekeepingStatus The PMS's housekeeping state, verbatim (e.g. `Dirty`, `Clean`, `Inspected`).
 		HousekeepingStatus *string `json:"housekeepingStatus,omitempty"`
 
-		// Id The PMS's id for the room; `reservation.unit.id` refers to it.
+		// Id The PMS's id for the unit; `reservation.unit.id` and the per-night `units[].id` on `GET /v1/availability/{propertyId}` refer to it.
 		Id *string `json:"id,omitempty"`
+
+		// ListingId The unit's own Repull listing id when the unit is a listing too (a Guesty multi-unit listing's units, each with its own calendar and stays), else null.
+		ListingId *string `json:"listingId,omitempty"`
 
 		// Name Example: 101
 		Name *string `json:"name,omitempty"`
@@ -49797,7 +49814,9 @@ func (r ListListingUnitsClientResponse) GetJSON200() *struct {
 		// ParentId A sub-space's parent room (a bed in a dorm), else null.
 		ParentId *string `json:"parentId,omitempty"`
 
-		// Source Example: mews
+		// Source The PMS the unit comes from: `cloudbeds`, `mews`, `guesty`, …
+		//
+		// Example: mews
 		Source *string `json:"source,omitempty"`
 	} `json:"data,omitempty"`
 
@@ -53948,7 +53967,7 @@ func (c *ClientWithResponses) BatchUpdateAvailabilityWithResponse(ctx context.Co
 
 // GetAvailabilityWithResponse Get property availability
 //
-// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the rooms of the type left for a hotel-model listing (a Mews or Cloudbeds room type).
+// Channel-agnostic day-by-day availability calendar for a property over a date window. Returns a thin per-date shape — `{ date, available, price, minNights, availableUnits }` — projected from the property calendar. `availableUnits` is 1 or 0 for a single home, and the units left for a listing with units (a Mews or Cloudbeds room type, a Guesty multi-unit listing). On such a listing each day also carries `units: [{ id, available }]` — which unit is free that night, with the ids of the listing's `units[]` and a reservation's `unit`.
 //
 // The `from` and `to` query params are **required** (ISO `YYYY-MM-DD`, inclusive) — omitting or malforming either returns 422. The window is capped at 366 days; longer ranges are truncated to the first 366 days.
 //
@@ -60169,11 +60188,14 @@ func (c *ClientWithResponses) GetListingSegmentsWithResponse(ctx context.Context
 	return ParseGetListingSegmentsClientResponse(rsp)
 }
 
-// ListListingUnitsWithResponse List a listing's units (rooms)
+// ListListingUnitsWithResponse List a listing's units
 //
-// The physical rooms under a listing. For a hotel-model PMS (Mews, Cloudbeds) a listing is a room type: prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+// The units under a listing.
 //
-// Any other listing is a single home, which is its own unit, and returns an empty list.
+// - **Hotel-model PMS (Mews, Cloudbeds):** the listing is a room type and these are its physical rooms. Prices, restrictions and availability are set on the room type, and each reservation is assigned one of these rooms (`reservation.unit.id`). A room can belong to more than one room type.
+// - **Guesty multi-unit listing:** the listing is the parent channels sell, and these are its units. Each unit is also a listing of its own (`listingId`), with its own calendar and stays; a stay on a unit carries `reservation.unit`.
+//
+// Which unit is free on which night: `units` per day on `GET /v1/availability/{propertyId}`. Any other listing is a single home, which is its own unit, and returns an empty list.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -73550,8 +73572,11 @@ func ParseListListingUnitsClientResponse(rsp *http.Response) (*ListListingUnitsC
 				// HousekeepingStatus The PMS's housekeeping state, verbatim (e.g. `Dirty`, `Clean`, `Inspected`).
 				HousekeepingStatus *string `json:"housekeepingStatus,omitempty"`
 
-				// Id The PMS's id for the room; `reservation.unit.id` refers to it.
+				// Id The PMS's id for the unit; `reservation.unit.id` and the per-night `units[].id` on `GET /v1/availability/{propertyId}` refer to it.
 				Id *string `json:"id,omitempty"`
+
+				// ListingId The unit's own Repull listing id when the unit is a listing too (a Guesty multi-unit listing's units, each with its own calendar and stays), else null.
+				ListingId *string `json:"listingId,omitempty"`
 
 				// Name Example: 101
 				Name *string `json:"name,omitempty"`
@@ -73559,7 +73584,9 @@ func ParseListListingUnitsClientResponse(rsp *http.Response) (*ListListingUnitsC
 				// ParentId A sub-space's parent room (a bed in a dorm), else null.
 				ParentId *string `json:"parentId,omitempty"`
 
-				// Source Example: mews
+				// Source The PMS the unit comes from: `cloudbeds`, `mews`, `guesty`, …
+				//
+				// Example: mews
 				Source *string `json:"source,omitempty"`
 			} `json:"data,omitempty"`
 
