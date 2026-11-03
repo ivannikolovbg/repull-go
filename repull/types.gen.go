@@ -6000,6 +6000,7 @@ const (
 	GetChannelHealth200JSONResponseBodyStatusDegraded GetChannelHealth200JSONResponseBodyStatus = "degraded"
 	GetChannelHealth200JSONResponseBodyStatusDown     GetChannelHealth200JSONResponseBodyStatus = "down"
 	GetChannelHealth200JSONResponseBodyStatusOk       GetChannelHealth200JSONResponseBodyStatus = "ok"
+	GetChannelHealth200JSONResponseBodyStatusUnknown  GetChannelHealth200JSONResponseBodyStatus = "unknown"
 )
 
 // Valid indicates whether the value is a known member of the GetChannelHealth200JSONResponseBodyStatus enum.
@@ -6010,6 +6011,8 @@ func (e GetChannelHealth200JSONResponseBodyStatus) Valid() bool {
 	case GetChannelHealth200JSONResponseBodyStatusDown:
 		return true
 	case GetChannelHealth200JSONResponseBodyStatusOk:
+		return true
+	case GetChannelHealth200JSONResponseBodyStatusUnknown:
 		return true
 	default:
 		return false
