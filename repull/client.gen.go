@@ -2241,6 +2241,8 @@ type ClientInterface interface {
 	//
 	// Returns every PMS and OTA connection in the workspace, each with its `status`.
 	//
+	// **One entry per Booking.com Extranet hotel login.** Each hotel that invites the Repull user connects as its own login, with its own `externalAccountId` (handle `booking_extranet:{externalAccountId}`). A new hotel adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each hotel's listings, reservations, conversations and reviews stay under its own login (filter them with `?account=booking_extranet:{externalAccountId}`).
+	//
 	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
 	//
 	// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
@@ -3167,7 +3169,7 @@ type ClientInterface interface {
 	//
 	// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
 	//
-	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
@@ -3204,7 +3206,7 @@ type ClientInterface interface {
 	//
 	// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
 	//
-	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
@@ -8800,6 +8802,8 @@ func (c *Client) ListVrboReservations(ctx context.Context, params *ListVrboReser
 //
 // Returns every PMS and OTA connection in the workspace, each with its `status`.
 //
+// **One entry per Booking.com Extranet hotel login.** Each hotel that invites the Repull user connects as its own login, with its own `externalAccountId` (handle `booking_extranet:{externalAccountId}`). A new hotel adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each hotel's listings, reservations, conversations and reviews stay under its own login (filter them with `?account=booking_extranet:{externalAccountId}`).
+//
 // **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
 //
 // - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
@@ -10456,7 +10460,7 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 //
 // Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
 //
-// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
@@ -10503,7 +10507,7 @@ func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, pa
 //
 // Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
 //
-// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
@@ -30365,6 +30369,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns every PMS and OTA connection in the workspace, each with its `status`.
 	//
+	// **One entry per Booking.com Extranet hotel login.** Each hotel that invites the Repull user connects as its own login, with its own `externalAccountId` (handle `booking_extranet:{externalAccountId}`). A new hotel adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each hotel's listings, reservations, conversations and reviews stay under its own login (filter them with `?account=booking_extranet:{externalAccountId}`).
+	//
 	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
 	//
 	// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
@@ -31329,7 +31335,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
 	//
-	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
@@ -31366,7 +31372,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
 	//
-	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
@@ -37973,6 +37979,8 @@ type SendAirbnbMessageClientResponse struct {
 	JSON500 *InternalError
 	// JSON502 the response for an HTTP 502 `application/json` response
 	JSON502 *AirbnbUpstreamError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
 }
 
 // GetJSON201 returns the response for an HTTP 201 `application/json` response
@@ -38013,6 +38021,11 @@ func (r SendAirbnbMessageClientResponse) GetJSON500() *InternalError {
 // GetJSON502 returns the response for an HTTP 502 `application/json` response
 func (r SendAirbnbMessageClientResponse) GetJSON502() *AirbnbUpstreamError {
 	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r SendAirbnbMessageClientResponse) GetJSON503() *Error {
+	return r.JSON503
 }
 
 // GetBody returns the raw response body bytes
@@ -56990,6 +57003,8 @@ func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Conte
 //
 // Returns every PMS and OTA connection in the workspace, each with its `status`.
 //
+// **One entry per Booking.com Extranet hotel login.** Each hotel that invites the Repull user connects as its own login, with its own `externalAccountId` (handle `booking_extranet:{externalAccountId}`). A new hotel adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each hotel's listings, reservations, conversations and reviews stay under its own login (filter them with `?account=booking_extranet:{externalAccountId}`).
+//
 // **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
 //
 // - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
@@ -58392,7 +58407,7 @@ func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.C
 //
 // Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
 //
-// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
@@ -58435,7 +58450,7 @@ func (c *ClientWithResponses) SendConversationMessageWithBodyWithResponse(ctx co
 //
 // Airbnb rejects guest messages containing a link, an email address or a phone number, and names the offending text. When that happens the offending fragment is stripped and the remainder is re-sent once, which means **the guest receives a message that is not the one you wrote**. Reporting that as a plain success would be a lie, so every response carries `contentRewritten`; when it is `true`, `deliveredContent` is the text that actually reached the guest. Check it before assuming your message went out verbatim.
 //
-// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`.
+// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
@@ -64912,6 +64927,13 @@ func ParseSendAirbnbMessageClientResponse(rsp *http.Response) (*SendAirbnbMessag
 			return nil, err
 		}
 		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 

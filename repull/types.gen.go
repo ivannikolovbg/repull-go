@@ -9950,7 +9950,7 @@ type ConnectionListResponse struct {
 
 // Conversation Channel-agnostic message thread between the host workspace and a guest. Returned by `GET /v1/conversations`. The `id` is the internal Repull thread id (integer) — pass it back as the `{id}` path param on detail / messages calls.
 type Conversation struct {
-	// Account The connected account this conversation belongs to. List endpoint.
+	// Account The connected account this conversation belongs to, the same block as the message webhooks. On the list and on `GET /v1/conversations/{id}`.
 	Account   *RecordAccount `json:"account,omitempty"`
 	CreatedAt *time.Time     `json:"createdAt,omitempty"`
 
@@ -10008,7 +10008,7 @@ type ConversationCapabilitiesOfferPrice string
 
 // ConversationDetail Returned by `GET /v1/conversations/{id}`. Extends the list-row `Conversation` shape with expanded `host` + `guest` blocks so SDK consumers can render thread headers without an extra round-trip.
 type ConversationDetail struct {
-	// Account The connected account this conversation belongs to. List endpoint.
+	// Account The connected account this conversation belongs to, the same block as the message webhooks. On the list and on `GET /v1/conversations/{id}`.
 	Account *RecordAccount `json:"account,omitempty"`
 
 	// Capabilities What the inquiry actions can do on this conversation right now — one set of endpoints for every channel, so an app shows the right actions instead of learning from a `422`. All `false` / `null` when nothing applies (a booked or closed inquiry, Booking.com, direct, an Airbnb inquiry relayed by a PMS).
@@ -10754,6 +10754,16 @@ type Listing struct {
 
 	// Kind `room_type` when the listing sells several units (a hotel room type or a Guesty multi-unit listing: `unitCount` > 1) or is a hotel PMS room type; `home` otherwise. See the Hotels & multi-unit guide.
 	Kind *ListingKind `json:"kind,omitempty"`
+
+	// Latitude `GET /v1/listings/{id}` only. Map pin latitude in decimal degrees, as a string; the same value as `GET /v1/properties/{id}`. Null when the listing has no coordinates.
+	//
+	// Example: 25.7617
+	Latitude *string `json:"latitude,omitempty"`
+
+	// Longitude `GET /v1/listings/{id}` only. Map pin longitude in decimal degrees, as a string; the same value as `GET /v1/properties/{id}`. Null when the listing has no coordinates.
+	//
+	// Example: -80.1918
+	Longitude *string `json:"longitude,omitempty"`
 
 	// Name The host's internal nickname for the listing.
 	//
