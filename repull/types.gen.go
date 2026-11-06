@@ -316,6 +316,48 @@ func (e AiOperationFailedEventEvent) Valid() bool {
 	}
 }
 
+// Defines values for AirbnbAccessAccountsRole.
+const (
+	AirbnbAccessAccountsRoleCohost  AirbnbAccessAccountsRole = "cohost"
+	AirbnbAccessAccountsRoleOwner   AirbnbAccessAccountsRole = "owner"
+	AirbnbAccessAccountsRoleUnknown AirbnbAccessAccountsRole = "unknown"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbAccessAccountsRole enum.
+func (e AirbnbAccessAccountsRole) Valid() bool {
+	switch e {
+	case AirbnbAccessAccountsRoleCohost:
+		return true
+	case AirbnbAccessAccountsRoleOwner:
+		return true
+	case AirbnbAccessAccountsRoleUnknown:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AirbnbAccessAccountsState.
+const (
+	AirbnbAccessAccountsStateConnected      AirbnbAccessAccountsState = "connected"
+	AirbnbAccessAccountsStateDisconnected   AirbnbAccessAccountsState = "disconnected"
+	AirbnbAccessAccountsStateNeverConnected AirbnbAccessAccountsState = "never_connected"
+)
+
+// Valid indicates whether the value is a known member of the AirbnbAccessAccountsState enum.
+func (e AirbnbAccessAccountsState) Valid() bool {
+	switch e {
+	case AirbnbAccessAccountsStateConnected:
+		return true
+	case AirbnbAccessAccountsStateDisconnected:
+		return true
+	case AirbnbAccessAccountsStateNeverConnected:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AirbnbAvailabilityWriteRequestType.
 const (
 	AirbnbAvailabilityWriteRequestTypeCalendar AirbnbAvailabilityWriteRequestType = "calendar"
@@ -7509,6 +7551,35 @@ type AiOperationFailedPayload struct {
 	Type *string `json:"type,omitempty"`
 }
 
+// AirbnbAccess defines model for AirbnbAccess.
+type AirbnbAccess struct {
+	Accounts []struct {
+		// Account What `account` on a send takes.
+		//
+		// Example: airbnb:228981432
+		Account        string     `json:"account"`
+		DisconnectedAt *time.Time `json:"disconnectedAt"`
+
+		// Name Example: Team Co-Host
+		Name *string                  `json:"name"`
+		Role AirbnbAccessAccountsRole `json:"role"`
+
+		// State `connected` can act now; `disconnected` was connected to this workspace; `never_connected` is on the listing but was never connected here.
+		State AirbnbAccessAccountsState `json:"state"`
+	} `json:"accounts"`
+
+	// DefaultAccount The account that acts when none is named: the conversation's own account while connected, else the listing's owner, else a connected co-host. Null when none is connected.
+	//
+	// Example: airbnb:483175841
+	DefaultAccount *string `json:"defaultAccount"`
+}
+
+// AirbnbAccessAccountsRole defines model for AirbnbAccess.Accounts.Role.
+type AirbnbAccessAccountsRole string
+
+// AirbnbAccessAccountsState `connected` can act now; `disconnected` was connected to this workspace; `never_connected` is on the listing but was never connected here.
+type AirbnbAccessAccountsState string
+
 // AirbnbAccountFreshness Freshness of ONE connected Airbnb account. Freshness is a property of an account, not of a workspace: one host's token expiring says nothing about another host's data.
 type AirbnbAccountFreshness struct {
 	// AccountId Airbnb host id, as a string (they exceed 2^53). The same value `?account_id=` accepts and `GET /v1/connect/airbnb` returns as `accounts[].externalAccountId`.
@@ -9951,8 +10022,11 @@ type ConnectionListResponse struct {
 // Conversation Channel-agnostic message thread between the host workspace and a guest. Returned by `GET /v1/conversations`. The `id` is the internal Repull thread id (integer) — pass it back as the `{id}` path param on detail / messages calls.
 type Conversation struct {
 	// Account The connected account this conversation belongs to, the same block as the message webhooks. On the list and on `GET /v1/conversations/{id}`.
-	Account   *RecordAccount `json:"account,omitempty"`
-	CreatedAt *time.Time     `json:"createdAt,omitempty"`
+	Account *RecordAccount `json:"account,omitempty"`
+
+	// AirbnbAccess Airbnb conversations, on `GET /v1/conversations/{id}`: every account on the listing (owner and co-hosts) with its state, and `defaultAccount` — the one a send uses when `account` is not given. Pass any connected one as `account` on `POST /v1/conversations/{id}/messages` to send as it.
+	AirbnbAccess *AirbnbAccess `json:"airbnbAccess,omitempty"`
+	CreatedAt    *time.Time    `json:"createdAt,omitempty"`
 
 	// ExternalThreadId The source channel's own thread id (Airbnb thread id, Booking conversation id, …). Pass this as the `{threadId}` path param on `POST /v1/channels/airbnb/messaging/{threadId}/messages` to reply — it is the bridge from a unified conversation straight to the provider-specific send call. `null` when the thread has no external id yet (e.g. a website/email thread).
 	ExternalThreadId *string    `json:"externalThreadId,omitempty"`
@@ -10010,6 +10084,9 @@ type ConversationCapabilitiesOfferPrice string
 type ConversationDetail struct {
 	// Account The connected account this conversation belongs to, the same block as the message webhooks. On the list and on `GET /v1/conversations/{id}`.
 	Account *RecordAccount `json:"account,omitempty"`
+
+	// AirbnbAccess Airbnb conversations, on `GET /v1/conversations/{id}`: every account on the listing (owner and co-hosts) with its state, and `defaultAccount` — the one a send uses when `account` is not given. Pass any connected one as `account` on `POST /v1/conversations/{id}/messages` to send as it.
+	AirbnbAccess *AirbnbAccess `json:"airbnbAccess,omitempty"`
 
 	// Capabilities What the inquiry actions can do on this conversation right now — one set of endpoints for every channel, so an app shows the right actions instead of learning from a `422`. All `false` / `null` when nothing applies (a booked or closed inquiry, Booking.com, direct, an Airbnb inquiry relayed by a PMS).
 	//
@@ -10713,6 +10790,9 @@ type Listing struct {
 		// Example: 2700 Northwest 2nd Avenue
 		Street *string `json:"street,omitempty"`
 	} `json:"address,omitempty"`
+
+	// AirbnbAccess Airbnb listings: every account on the listing (owner and co-hosts), whether each is connected, and which one acts by default. `defaultAccount: null` means no connected account can reach the listing — connect one of `accounts`.
+	AirbnbAccess *AirbnbAccess `json:"airbnbAccess,omitempty"`
 
 	// Amenities Amenity rows for the listing. **Only present when the caller passes `?include=amenities`.** Empty array (`[]`) when the listing has no amenity rows.
 	Amenities *[]ListingAmenity `json:"amenities,omitempty"`
@@ -15608,6 +15688,11 @@ type SendMessagePart struct {
 // | Booking.com | JPEG, PNG | 10 MB | 5 | **required** — all files ride on the one text message |
 // | VRBO, SMS, email, direct-booking site chat | — | — | — | `422 attachments_not_supported`; nothing is sent |
 type SendMessageRequest struct {
+	// Account Airbnb conversations: send as exactly this connected account — the listing's owner or one of its co-hosts — e.g. your team co-host. Never swapped for another account: if it is disconnected or not on the listing, nothing is sent and the error says why. Omit it and the conversation's own account sends while it is connected, otherwise the listing's owner, otherwise a connected co-host. Connected accounts are on `GET /v1/connect`.
+	//
+	// Example: airbnb:483175841
+	Account *string `json:"account,omitempty"`
+
 	// Attachments Files to send. See the per-channel table above. On a conversation a connected PMS relays, files go through the PMS — `422 pms_write_unsupported` when its API cannot send them (`capabilities.pms.conversations.attachments` on `GET /v1/connect/{provider}`).
 	Attachments *[]SendMessageAttachment `json:"attachments,omitempty"`
 
