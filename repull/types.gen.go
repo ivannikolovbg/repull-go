@@ -970,6 +970,27 @@ func (e BookingConnectRoomsResponseStatus) Valid() bool {
 	}
 }
 
+// Defines values for BookingDerivedPricingWriteResponseApplied.
+const (
+	BookingDerivedPricingWriteResponseAppliedMismatch   BookingDerivedPricingWriteResponseApplied = "mismatch"
+	BookingDerivedPricingWriteResponseAppliedUnverified BookingDerivedPricingWriteResponseApplied = "unverified"
+	BookingDerivedPricingWriteResponseAppliedVerified   BookingDerivedPricingWriteResponseApplied = "verified"
+)
+
+// Valid indicates whether the value is a known member of the BookingDerivedPricingWriteResponseApplied enum.
+func (e BookingDerivedPricingWriteResponseApplied) Valid() bool {
+	switch e {
+	case BookingDerivedPricingWriteResponseAppliedMismatch:
+		return true
+	case BookingDerivedPricingWriteResponseAppliedUnverified:
+		return true
+	case BookingDerivedPricingWriteResponseAppliedVerified:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BookingPricingUpdateResponseApplied.
 const (
 	BookingPricingUpdateResponseAppliedMismatch   BookingPricingUpdateResponseApplied = "mismatch"
@@ -1303,6 +1324,33 @@ func (e BookingRestrictionVerificationRowField) Valid() bool {
 	case MinStay:
 		return true
 	case MinStayArrival:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingRestrictionWriteResponseApplied.
+const (
+	BookingRestrictionWriteResponseAppliedAcknowledged BookingRestrictionWriteResponseApplied = "acknowledged"
+	BookingRestrictionWriteResponseAppliedMismatch     BookingRestrictionWriteResponseApplied = "mismatch"
+	BookingRestrictionWriteResponseAppliedRejected     BookingRestrictionWriteResponseApplied = "rejected"
+	BookingRestrictionWriteResponseAppliedUnverified   BookingRestrictionWriteResponseApplied = "unverified"
+	BookingRestrictionWriteResponseAppliedVerified     BookingRestrictionWriteResponseApplied = "verified"
+)
+
+// Valid indicates whether the value is a known member of the BookingRestrictionWriteResponseApplied enum.
+func (e BookingRestrictionWriteResponseApplied) Valid() bool {
+	switch e {
+	case BookingRestrictionWriteResponseAppliedAcknowledged:
+		return true
+	case BookingRestrictionWriteResponseAppliedMismatch:
+		return true
+	case BookingRestrictionWriteResponseAppliedRejected:
+		return true
+	case BookingRestrictionWriteResponseAppliedUnverified:
+		return true
+	case BookingRestrictionWriteResponseAppliedVerified:
 		return true
 	default:
 		return false
@@ -3055,12 +3103,15 @@ func (e PayoutCompletedPayloadChannel) Valid() bool {
 // Defines values for PlanNoticeCode.
 const (
 	ListingsHeldBack PlanNoticeCode = "listings_held_back"
+	ListingsOverPlan PlanNoticeCode = "listings_over_plan"
 )
 
 // Valid indicates whether the value is a known member of the PlanNoticeCode enum.
 func (e PlanNoticeCode) Valid() bool {
 	switch e {
 	case ListingsHeldBack:
+		return true
+	case ListingsOverPlan:
 		return true
 	default:
 		return false
@@ -8735,6 +8786,8 @@ type BookingAvailabilityUpdate struct {
 type BookingAvailabilityUpdateStatus string
 
 // BookingAvailabilityUpdateRequest Body for `PUT /v1/channels/booking/availability`. `type` selects which of Booking.com's writes to perform. Date ranges are inclusive at both ends everywhere in this body.
+//
+// Example: {"property_id":"17610853","type":"derived-pricing","updates":[{"leadingOccupancy":3,"occupancies":[{"additional":-12.01,"persons":2},{"additional":-12.01,"persons":1}],"rateId":"70596570","roomId":"1761085301"}]}
 type BookingAvailabilityUpdateRequest struct {
 	// PropertyId Booking.com hotel/property id (numeric; accepted as int or numeric string).
 	PropertyId BookingAvailabilityUpdateRequest_PropertyId `json:"property_id"`
@@ -8742,10 +8795,10 @@ type BookingAvailabilityUpdateRequest struct {
 	// Type `rates` → nightly prices (+ any restrictions sent with them), written at an explicit `occupancy`; `availability` → inventory, stop-sell and restrictions; `derived-pricing` → occupancy-derived pricing rules. A rates update may not carry `roomsToSell`: inventory is an `availability` write.
 	Type BookingAvailabilityUpdateRequestType `json:"type"`
 
-	// Updates For `type: "rates"` each item is a `BookingPricingRateUpdate`; for `type: "availability"` a `BookingAvailabilityUpdate`; for `type: "derived-pricing"` a derived-price rule set.
+	// Updates For `type: "rates"` each item is a `BookingPricingRateUpdate`; for `type: "availability"` a `BookingAvailabilityUpdate`; for `type: "derived-pricing"` a `BookingDerivedPricingUpdate`.
 	Updates []BookingAvailabilityUpdateRequest_Updates_Item `json:"updates"`
 
-	// Verify Only for `type: "rates"`. Default `true`: after the write the affected nights are read back off Booking.com so `applied` can say `verified` or `mismatch`. Send `false` to skip the read (one fewer Booking.com call); the response then reports `applied: "unverified"`.
+	// Verify Default `true`, for every `type`: after the write Repull reads the result back off Booking.com so `applied` says `verified` or `mismatch` — prices and restrictions per night (`rates`, `availability`), the rule set per rate plan (`derived-pricing`). Send `false` to skip the read; `applied` is then `unverified` (`acknowledged` for a restriction-only `availability` write).
 	Verify *bool `json:"verify,omitempty"`
 }
 
@@ -8825,6 +8878,88 @@ type BookingConversation struct {
 // BookingConversationListResponse defines model for BookingConversationListResponse.
 type BookingConversationListResponse = []BookingConversation
 
+// BookingDerivedPricingUpdate Occupancy-based pricing for one rate plan (Booking.com "derived prices"). The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests; each rule prices a smaller (or other) party relative to it, on every night — date-specific prices included.
+//
+// **A write replaces the rate plan's whole rule set.** Rules you leave out are removed. Send `"occupancies": []` to remove every rule (all party sizes then pay the leading price).
+//
+// Read the rules back with `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`); this write also reads them back itself unless you send `verify: false`.
+type BookingDerivedPricingUpdate struct {
+	// LeadingOccupancy The party size the nightly price is for. Must equal the rate plan's `maxPersons` (`GET /v1/channels/booking/properties/{id}/rooms`): Booking.com accepts a different value and then drops every nightly price on the rate plan, so any other value is refused with `422`.
+	//
+	// Example: 3
+	LeadingOccupancy int `json:"leadingOccupancy"`
+
+	// Occupancies The rules, one per party size. `rules` is accepted as an alias. Empty removes every rule.
+	//
+	// Example: [{"additional":-12.01,"persons":2},{"additional":-12.01,"persons":1}]
+	Occupancies []BookingOccupancyRule `json:"occupancies"`
+
+	// RateId Booking.com rate-plan id. Its `pricingType` must be `RLO` or `OBP`.
+	//
+	// Example: 70596570
+	RateId string `json:"rateId"`
+
+	// RoomId Booking.com room id.
+	//
+	// Example: 1761085301
+	RoomId string `json:"roomId"`
+}
+
+// BookingDerivedPricingWriteResponse Returned by `PUT /v1/channels/booking/availability` with `type: "derived-pricing"`.
+type BookingDerivedPricingWriteResponse struct {
+	// Applied `verified` — read back, each rate plan holds exactly the rules sent. `mismatch` — read back and they differ (`verification.rows`). `unverified` — `verify: false`, or the read failed. A refusal is `422 booking_rejected`, not a 200.
+	Applied *BookingDerivedPricingWriteResponseApplied `json:"applied,omitempty"`
+
+	// Booking Booking.com's answer, verbatim.
+	Booking    *map[string]interface{} `json:"booking,omitempty"`
+	PropertyId *string                 `json:"propertyId,omitempty"`
+
+	// Rates Per rate plan, the rules it holds now (as read back; as sent when unverified).
+	Rates *[]struct {
+		LeadingOccupancy *int                    `json:"leadingOccupancy,omitempty"`
+		Occupancies      *[]BookingOccupancyRule `json:"occupancies,omitempty"`
+		RateId           *string                 `json:"rateId,omitempty"`
+		RoomId           *string                 `json:"roomId,omitempty"`
+	} `json:"rates,omitempty"`
+	Requested    *int `json:"requested,omitempty"`
+	Verification *struct {
+		Error      *string `json:"error,omitempty"`
+		Matched    *int    `json:"matched,omitempty"`
+		Mismatched *int    `json:"mismatched,omitempty"`
+		Ran        *bool   `json:"ran,omitempty"`
+		Rows       *[]struct {
+			Booking  *[]BookingOccupancyRule `json:"booking,omitempty"`
+			Expected *[]BookingOccupancyRule `json:"expected,omitempty"`
+			Match    *bool                   `json:"match,omitempty"`
+			RateId   *string                 `json:"rateId,omitempty"`
+			RoomId   *string                 `json:"roomId,omitempty"`
+		} `json:"rows,omitempty"`
+		SkippedReason *string `json:"skippedReason,omitempty"`
+	} `json:"verification,omitempty"`
+}
+
+// BookingDerivedPricingWriteResponseApplied `verified` — read back, each rate plan holds exactly the rules sent. `mismatch` — read back and they differ (`verification.rows`). `unverified` — `verify: false`, or the read failed. A refusal is `422 booking_rejected`, not a 200.
+type BookingDerivedPricingWriteResponseApplied string
+
+// BookingOccupancyRule One occupancy rule: the price for a party of `persons`, relative to the leading-occupancy price. Send exactly one of `additional` or `percentage`.
+type BookingOccupancyRule struct {
+	// Additional Signed amount added to the leading-occupancy price, in the rate plan's currency. `-12.01` = 12.01 less.
+	//
+	// Example: -12.01
+	Additional *float32 `json:"additional,omitempty"`
+
+	// Percentage Signed percent change from the leading-occupancy price. `-10` = 10% less, `5` = 5% more. (Booking.com's own feeds show the result as a multiplier, `90.0`; Repull reads it back as `-10`.)
+	Percentage *float32 `json:"percentage,omitempty"`
+
+	// Persons The party size this rule prices. Must differ from `leadingOccupancy` and be no more than the room holds.
+	//
+	// Example: 2
+	Persons int `json:"persons"`
+
+	// Round Ask Booking.com to round the derived price. Default `false`.
+	Round *bool `json:"round,omitempty"`
+}
+
 // BookingPricingRateUpdate A single (room, rate-plan, date-range) price update. The amount is written against the party size in `occupancy`, for every night from `dateRange.start` to `dateRange.end` inclusive.
 type BookingPricingRateUpdate struct {
 	// Currency Currency the rate plan is sold in.
@@ -8888,20 +9023,20 @@ type BookingPricingRateUpdateRestrictions struct {
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	MaxAdvanceRes *string `json:"maxAdvanceRes,omitempty"`
 
-	// MaxStay Maximum length of stay.
+	// MaxStay Stay-through maximum length of stay — no stay covering these nights may be longer. `1`–`90`; `0` removes the maximum. Above `90` returns `422 restriction_out_of_range`: Booking.com acknowledges a larger value and then stores no maximum, so send `0` for "no limit".
 	MaxStay *int `json:"maxStay,omitempty"`
 
-	// MaxStayArrival Arrival-based maximum length of stay.
+	// MaxStayArrival Arrival-based maximum length of stay — the longest stay that may START on these nights. `1`–`90`; `0` removes the maximum. Above `90` (for example `365`) returns `422 restriction_out_of_range`: Booking.com acknowledges it and then stores no maximum (`0`), so send `0` for "no limit".
 	MaxStayArrival *int `json:"maxStayArrival,omitempty"`
 
 	// MinAdvanceRes Refused, for the same reason as `exactStayArrival` — returns `422 restriction_not_supported`. Set the minimum advance-reservation window on the rate plan in the Booking.com Extranet.
 	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	MinAdvanceRes *string `json:"minAdvanceRes,omitempty"`
 
-	// MinStay Minimum length of stay. Booking.com stores a 1-night minimum as no minimum at all, so `minStay: 1` reads back as `0` and is reported as applied.
+	// MinStay Stay-through minimum length of stay — every stay that covers these nights must be at least this long. `1`–`91`; `0` removes the minimum. Booking.com stores a 1-night minimum as no minimum at all, so `minStay: 1` reads back as `0` and is reported as applied. Above `91` returns `422 restriction_out_of_range` (Booking.com would store 91).
 	MinStay *int `json:"minStay,omitempty"`
 
-	// MinStayArrival Arrival-based minimum length of stay — applies to stays that START on these nights, rather than any stay covering them.
+	// MinStayArrival Arrival-based minimum length of stay — applies to stays that START on these nights, rather than any stay covering them. `1`–`91`; `0` removes it. Above `91` returns `422 restriction_out_of_range`.
 	MinStayArrival *int `json:"minStayArrival,omitempty"`
 }
 
@@ -9172,10 +9307,15 @@ type BookingRateWriteVerification struct {
 	Mismatched *int    `json:"mismatched,omitempty"`
 
 	// Ran Whether the read-back happened.
-	Ran  *bool                              `json:"ran,omitempty"`
+	Ran *bool `json:"ran,omitempty"`
+
+	// Rows One row per night. When a write covers more than 62 rows, only the nights that did NOT match are listed and `rowsOmitted` counts the rest — `matched` and `mismatched` always cover every night.
 	Rows *[]BookingRateWriteVerificationRow `json:"rows,omitempty"`
 
-	// SkippedReason Why it did not: `not_requested` (you sent `verify: false`), `span_too_long`, `all_dates_beyond_booking_horizon`, `read_back_failed`, `nothing_to_verify`.
+	// RowsOmitted Matching nights left out of `rows` on a long write. Absent when every row is listed.
+	RowsOmitted *int `json:"rowsOmitted,omitempty"`
+
+	// SkippedReason Why it did not: `not_requested` (you sent `verify: false`), `all_dates_beyond_booking_horizon`, `read_back_failed`, `nothing_to_verify`. Every night of a write is read back, however long the range (a year is read in 31-day chunks, in parallel).
 	SkippedReason *string `json:"skippedReason,omitempty"`
 }
 
@@ -9276,13 +9416,18 @@ type BookingRestrictionRequestRow struct {
 
 // BookingRestrictionVerification The restriction read-back. It runs out of the SAME call that reads the prices back, so proving a restriction costs no extra request.
 type BookingRestrictionVerification struct {
-	Error      *string                              `json:"error,omitempty"`
-	Matched    *int                                 `json:"matched,omitempty"`
-	Mismatched *int                                 `json:"mismatched,omitempty"`
-	Ran        *bool                                `json:"ran,omitempty"`
-	Rows       *[]BookingRestrictionVerificationRow `json:"rows,omitempty"`
+	Error      *string `json:"error,omitempty"`
+	Matched    *int    `json:"matched,omitempty"`
+	Mismatched *int    `json:"mismatched,omitempty"`
+	Ran        *bool   `json:"ran,omitempty"`
 
-	// SkippedReason `not_requested` (no restrictions were sent, `verify: false`, or Booking.com refused them), `span_too_long`, `all_dates_beyond_booking_horizon`, `read_back_failed`, `nothing_to_verify`.
+	// Rows One row per (night, restriction). Above 62 rows only the non-matching ones are listed; `rowsOmitted` counts the rest.
+	Rows *[]BookingRestrictionVerificationRow `json:"rows,omitempty"`
+
+	// RowsOmitted Matching rows left out of `rows` on a long write.
+	RowsOmitted *int `json:"rowsOmitted,omitempty"`
+
+	// SkippedReason `not_requested` (no restrictions were sent, `verify: false`, or Booking.com refused them), `all_dates_beyond_booking_horizon`, `read_back_failed`, `nothing_to_verify`.
 	SkippedReason *string `json:"skippedReason,omitempty"`
 
 	// Unreported Restrictions Booking.com's read-back did not mention either way. Counted apart from `mismatched`: an unknown is not a failure.
@@ -9328,6 +9473,30 @@ type BookingRestrictionVerificationRow_Expected struct {
 // BookingRestrictionVerificationRowField defines model for BookingRestrictionVerificationRow.Field.
 type BookingRestrictionVerificationRowField string
 
+// BookingRestrictionWriteResponse Returned by `PUT /v1/channels/booking/availability` for a restriction-only `type: "availability"` write (and as `restrictions` beside `inventory` when the write also changed inventory).
+type BookingRestrictionWriteResponse struct {
+	// Applied `verified` — read back, Booking.com holds every restriction sent. `mismatch` — read back, some differ (`verification.rows`). `rejected` — Booking.com refused it (`rejection`). `unverified` — the read-back could not run. `acknowledged` — you sent `verify: false`: Booking.com took the request and nothing was read back.
+	Applied *BookingRestrictionWriteResponseApplied `json:"applied,omitempty"`
+
+	// Booking Booking.com's answer, verbatim.
+	Booking *map[string]interface{}         `json:"booking,omitempty"`
+	Dates   *[]BookingRestrictionRequestRow `json:"dates,omitempty"`
+	Errors  *[]map[string]interface{}       `json:"errors,omitempty"`
+	Fields  *[]string                       `json:"fields,omitempty"`
+
+	// Rejection Why Booking.com refused one half of a write, in their words. Present on the half that was refused.
+	Rejection *BookingUpstreamFailure `json:"rejection,omitempty"`
+
+	// Requested How many updates carried a restriction.
+	Requested *int `json:"requested,omitempty"`
+
+	// Verification The restriction read-back. It runs out of the SAME call that reads the prices back, so proving a restriction costs no extra request.
+	Verification *BookingRestrictionVerification `json:"verification,omitempty"`
+}
+
+// BookingRestrictionWriteResponseApplied `verified` — read back, Booking.com holds every restriction sent. `mismatch` — read back, some differ (`verification.rows`). `rejected` — Booking.com refused it (`rejection`). `unverified` — the read-back could not run. `acknowledged` — you sent `verify: false`: Booking.com took the request and nothing was read back.
+type BookingRestrictionWriteResponseApplied string
+
 // BookingRoomMapping A single room→listing assignment. Pass `listingId: null` to explicitly UNMAP a room (e.g. "skip this room for now") — this also removes the corresponding `listing_platform_links` row. Pass `create: true` instead of a `listingId` to have a listing created for the room, which is what a customer onboarding from Booking.com first needs, since they have no listings to map to yet.
 type BookingRoomMapping struct {
 	// Create Create a new listing for this room and map it, instead of binding an existing one. Mutually exclusive with `listingId` — sending both is rejected with 400 rather than silently resolved. Idempotent: a room that is already mapped keeps its existing listing and no duplicate is created.
@@ -9364,6 +9533,9 @@ type BookingRoomsRatesResponse struct {
 
 			// MaxPersons The party size this rate plan prices. A rate amount must be written at this number: above it Booking.com declines the price in silence, below it answers 400. Null when `source` is `mirror`.
 			MaxPersons *int `json:"maxPersons,omitempty"`
+
+			// OccupancyPricing The occupancy rules this rate plan holds on Booking.com — what `PUT /v1/channels/booking/availability` with `type: "derived-pricing"` writes, in the same terms (`percentage: -10` is 10% less). Empty when the rate plan has none; `null` when `source` is `mirror`. The price for a party of `persons` is the nightly price plus `additional` (or changed by `percentage`), on every night.
+			OccupancyPricing *[]BookingOccupancyRule `json:"occupancyPricing,omitempty"`
 
 			// Policy Cancellation policy name.
 			Policy   *string `json:"policy,omitempty"`
@@ -13318,15 +13490,22 @@ type PayoutCompletedPayloadChannel string
 
 // PlanNotice Added to the body of EVERY JSON response (success or error, except bare arrays and 5xx) while the workspace is connected to more listings than its plan lets it use — so a developer reading any payload, or an AI assistant relaying it, sees it. Connect keeps every listing it finds, but on a capped plan only as many as the plan allows are active; the rest are held back inactive and keep syncing. The same responses also carry the `X-Repull-Listings-Held-Back` and `X-Repull-Active-Listing-Limit` headers. Using a held-back listing answers `403 listing_inactive` with `reason: "plan_limit"`. Tell the user: they can see the held-back listings with `GET /v1/listings?status=all`, choose which are active with `POST /v1/listings/status`, or upgrade.
 type PlanNotice struct {
+	// ActiveListingCount Active listings right now. Only when the code is "listings_over_plan".
+	//
+	// Example: 12
+	ActiveListingCount *int `json:"activeListingCount,omitempty"`
+
 	// ActiveListingLimit The plan's cap on active listings.
 	//
 	// Example: 3
 	ActiveListingLimit *int `json:"activeListingLimit"`
 
 	// BillingUrl Example: https://repull.dev/dashboard/billing
-	BillingUrl string         `json:"billingUrl"`
-	Code       PlanNoticeCode `json:"code"`
-	Fix        string         `json:"fix"`
+	BillingUrl string `json:"billingUrl"`
+
+	// Code "listings_held_back": some connected listings are held inactive by the plan. "listings_over_plan": more listings are active than the plan includes (after a downgrade). Neither blocks any call.
+	Code PlanNoticeCode `json:"code"`
+	Fix  string         `json:"fix"`
 
 	// ListingsHeldBack Connected listings kept inactive because of the plan.
 	//
@@ -13337,7 +13516,7 @@ type PlanNotice struct {
 	Message string `json:"message"`
 }
 
-// PlanNoticeCode defines model for PlanNotice.Code.
+// PlanNoticeCode "listings_held_back": some connected listings are held inactive by the plan. "listings_over_plan": more listings are active than the plan includes (after a downgrade). Neither blocks any call.
 type PlanNoticeCode string
 
 // PmsCapabilities What the API does through a connected PMS beyond reservation writes, read from the same connector table the router uses — a `false` flag is a `422 pms_write_unsupported` naming the PMS.
@@ -17143,6 +17322,11 @@ type GetBookingAvailabilityParams struct {
 
 	// RoomLevel Defaults to `true`: availability per room, which is how Booking.com keeps inventory. Send `false` for the per-rate read — its `roomsToSell` is often 0 for rooms that are on sale.
 	RoomLevel *bool `form:"room_level,omitempty" json:"room_level,omitempty"`
+}
+
+// UpdateBookingAvailability200JSONResponseBody defines parameters for UpdateBookingAvailability.
+type UpdateBookingAvailability200JSONResponseBody struct {
+	union json.RawMessage
 }
 
 // GetBookingChargesParams defines parameters for GetBookingCharges.
@@ -21104,6 +21288,32 @@ func (t *BookingAvailabilityUpdateRequest_Updates_Item) MergeBookingAvailability
 	return err
 }
 
+// AsBookingDerivedPricingUpdate returns the union data inside the BookingAvailabilityUpdateRequest_Updates_Item as a BookingDerivedPricingUpdate
+func (t BookingAvailabilityUpdateRequest_Updates_Item) AsBookingDerivedPricingUpdate() (BookingDerivedPricingUpdate, error) {
+	var body BookingDerivedPricingUpdate
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingDerivedPricingUpdate overwrites any union data inside the BookingAvailabilityUpdateRequest_Updates_Item as the provided BookingDerivedPricingUpdate
+func (t *BookingAvailabilityUpdateRequest_Updates_Item) FromBookingDerivedPricingUpdate(v BookingDerivedPricingUpdate) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingDerivedPricingUpdate performs a merge with any union data inside the BookingAvailabilityUpdateRequest_Updates_Item, using the provided BookingDerivedPricingUpdate
+func (t *BookingAvailabilityUpdateRequest_Updates_Item) MergeBookingDerivedPricingUpdate(v BookingDerivedPricingUpdate) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t BookingAvailabilityUpdateRequest_Updates_Item) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -23577,6 +23787,94 @@ func (t SendAirbnbMessage201JSONResponseBody) MarshalJSON() ([]byte, error) {
 }
 
 func (t *SendAirbnbMessage201JSONResponseBody) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsBookingPricingUpdateResponse returns the union data inside the UpdateBookingAvailability200JSONResponseBody as a BookingPricingUpdateResponse
+func (t UpdateBookingAvailability200JSONResponseBody) AsBookingPricingUpdateResponse() (BookingPricingUpdateResponse, error) {
+	var body BookingPricingUpdateResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingPricingUpdateResponse overwrites any union data inside the UpdateBookingAvailability200JSONResponseBody as the provided BookingPricingUpdateResponse
+func (t *UpdateBookingAvailability200JSONResponseBody) FromBookingPricingUpdateResponse(v BookingPricingUpdateResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingPricingUpdateResponse performs a merge with any union data inside the UpdateBookingAvailability200JSONResponseBody, using the provided BookingPricingUpdateResponse
+func (t *UpdateBookingAvailability200JSONResponseBody) MergeBookingPricingUpdateResponse(v BookingPricingUpdateResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBookingRestrictionWriteResponse returns the union data inside the UpdateBookingAvailability200JSONResponseBody as a BookingRestrictionWriteResponse
+func (t UpdateBookingAvailability200JSONResponseBody) AsBookingRestrictionWriteResponse() (BookingRestrictionWriteResponse, error) {
+	var body BookingRestrictionWriteResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingRestrictionWriteResponse overwrites any union data inside the UpdateBookingAvailability200JSONResponseBody as the provided BookingRestrictionWriteResponse
+func (t *UpdateBookingAvailability200JSONResponseBody) FromBookingRestrictionWriteResponse(v BookingRestrictionWriteResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingRestrictionWriteResponse performs a merge with any union data inside the UpdateBookingAvailability200JSONResponseBody, using the provided BookingRestrictionWriteResponse
+func (t *UpdateBookingAvailability200JSONResponseBody) MergeBookingRestrictionWriteResponse(v BookingRestrictionWriteResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBookingDerivedPricingWriteResponse returns the union data inside the UpdateBookingAvailability200JSONResponseBody as a BookingDerivedPricingWriteResponse
+func (t UpdateBookingAvailability200JSONResponseBody) AsBookingDerivedPricingWriteResponse() (BookingDerivedPricingWriteResponse, error) {
+	var body BookingDerivedPricingWriteResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBookingDerivedPricingWriteResponse overwrites any union data inside the UpdateBookingAvailability200JSONResponseBody as the provided BookingDerivedPricingWriteResponse
+func (t *UpdateBookingAvailability200JSONResponseBody) FromBookingDerivedPricingWriteResponse(v BookingDerivedPricingWriteResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBookingDerivedPricingWriteResponse performs a merge with any union data inside the UpdateBookingAvailability200JSONResponseBody, using the provided BookingDerivedPricingWriteResponse
+func (t *UpdateBookingAvailability200JSONResponseBody) MergeBookingDerivedPricingWriteResponse(v BookingDerivedPricingWriteResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateBookingAvailability200JSONResponseBody) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateBookingAvailability200JSONResponseBody) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

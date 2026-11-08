@@ -1560,7 +1560,7 @@ type ClientInterface interface {
 	//
 	// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
 	// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
-	// - `derived-pricing` — occupancy-derived pricing rules.
+	// - `derived-pricing` — occupancy-based pricing: what a smaller party pays relative to the nightly price (see below).
 	//
 	// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
 	//
@@ -1568,9 +1568,13 @@ type ClientInterface interface {
 	//
 	// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
 	//
+	// **Length-of-stay limits.** Booking.com keeps a maximum stay of 1–90 nights and a minimum of 1–91; `0` removes the limit. A value outside that is refused with `422 restriction_out_of_range` naming the field — Booking.com would acknowledge it and then store something else (a `maxStayArrival` of 365 is stored as no maximum), so send `0` for "no limit". `minStay`/`maxStay` are stay-through limits (any stay covering the night); `minStayArrival`/`maxStayArrival` apply only to stays that start on the night.
+	//
+	// **Occupancy-based pricing (`type: "derived-pricing"`).** The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests (the rate plan's `maxPersons`). Each item in `occupancies` prices another party size relative to it: `additional` is a signed amount in the rate currency, `percentage` a signed percent. The rule applies to every night, date-specific prices included. A write replaces the rate plan's whole rule set; `"occupancies": []` removes every rule. Example — EUR 12.01 off for 1 and 2 guests on a 3-guest rate: `{"type":"derived-pricing","property_id":"17610853","updates":[{"roomId":"1761085301","rateId":"70596570","leadingOccupancy":3,"occupancies":[{"persons":2,"additional":-12.01},{"persons":1,"additional":-12.01}]}]}`. The rules are read back after the write, and at any time on `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`). A wrong shape is `422 invalid_params` naming the field; a rule Booking.com refuses is `422 booking_rejected` with its code.
+	//
 	// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
 	//
-	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A restriction-only `availability` write is read back the same way. Every night is read, however long the range. A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
 	//
 	// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 	//
@@ -1589,7 +1593,7 @@ type ClientInterface interface {
 	//
 	// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
 	// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
-	// - `derived-pricing` — occupancy-derived pricing rules.
+	// - `derived-pricing` — occupancy-based pricing: what a smaller party pays relative to the nightly price (see below).
 	//
 	// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
 	//
@@ -1597,9 +1601,13 @@ type ClientInterface interface {
 	//
 	// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
 	//
+	// **Length-of-stay limits.** Booking.com keeps a maximum stay of 1–90 nights and a minimum of 1–91; `0` removes the limit. A value outside that is refused with `422 restriction_out_of_range` naming the field — Booking.com would acknowledge it and then store something else (a `maxStayArrival` of 365 is stored as no maximum), so send `0` for "no limit". `minStay`/`maxStay` are stay-through limits (any stay covering the night); `minStayArrival`/`maxStayArrival` apply only to stays that start on the night.
+	//
+	// **Occupancy-based pricing (`type: "derived-pricing"`).** The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests (the rate plan's `maxPersons`). Each item in `occupancies` prices another party size relative to it: `additional` is a signed amount in the rate currency, `percentage` a signed percent. The rule applies to every night, date-specific prices included. A write replaces the rate plan's whole rule set; `"occupancies": []` removes every rule. Example — EUR 12.01 off for 1 and 2 guests on a 3-guest rate: `{"type":"derived-pricing","property_id":"17610853","updates":[{"roomId":"1761085301","rateId":"70596570","leadingOccupancy":3,"occupancies":[{"persons":2,"additional":-12.01},{"persons":1,"additional":-12.01}]}]}`. The rules are read back after the write, and at any time on `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`). A wrong shape is `422 invalid_params` naming the field; a rule Booking.com refuses is `422 booking_rejected` with its code.
+	//
 	// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
 	//
-	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A restriction-only `availability` write is read back the same way. Every night is read, however long the range. A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
 	//
 	// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 	//
@@ -3691,7 +3699,7 @@ type ClientInterface interface {
 	//
 	// Deactivate a listing — sets it inactive and excludes it from Repull. This is a **soft** operation: the listing row is KEPT (never hard-deleted) and the upstream channel (Airbnb / Hospitable / Booking.com) is NEVER touched. Repull only mutates its own copy.
 	//
-	// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. This is the primary self-serve way for a free-tier customer to trim back under the plan-listings cap — `DELETE` is served even when the account is over the cap (a 402-locked account can still call it). To bring a listing back, use `PATCH` with `{ "active": true }`.
+	// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. It is the self-serve way to choose which listings count toward your plan. To bring a listing back, use `PATCH` with `{ "active": true }`.
 	//
 	// Idempotent: deactivating an already-inactive listing returns 200.
 	//
@@ -7765,7 +7773,7 @@ func (c *Client) GetBookingAvailability(ctx context.Context, params *GetBookingA
 //
 // - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
 // - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
-// - `derived-pricing` — occupancy-derived pricing rules.
+// - `derived-pricing` — occupancy-based pricing: what a smaller party pays relative to the nightly price (see below).
 //
 // **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
 //
@@ -7773,9 +7781,13 @@ func (c *Client) GetBookingAvailability(ctx context.Context, params *GetBookingA
 //
 // **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
 //
+// **Length-of-stay limits.** Booking.com keeps a maximum stay of 1–90 nights and a minimum of 1–91; `0` removes the limit. A value outside that is refused with `422 restriction_out_of_range` naming the field — Booking.com would acknowledge it and then store something else (a `maxStayArrival` of 365 is stored as no maximum), so send `0` for "no limit". `minStay`/`maxStay` are stay-through limits (any stay covering the night); `minStayArrival`/`maxStayArrival` apply only to stays that start on the night.
+//
+// **Occupancy-based pricing (`type: "derived-pricing"`).** The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests (the rate plan's `maxPersons`). Each item in `occupancies` prices another party size relative to it: `additional` is a signed amount in the rate currency, `percentage` a signed percent. The rule applies to every night, date-specific prices included. A write replaces the rate plan's whole rule set; `"occupancies": []` removes every rule. Example — EUR 12.01 off for 1 and 2 guests on a 3-guest rate: `{"type":"derived-pricing","property_id":"17610853","updates":[{"roomId":"1761085301","rateId":"70596570","leadingOccupancy":3,"occupancies":[{"persons":2,"additional":-12.01},{"persons":1,"additional":-12.01}]}]}`. The rules are read back after the write, and at any time on `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`). A wrong shape is `422 invalid_params` naming the field; a rule Booking.com refuses is `422 booking_rejected` with its code.
+//
 // **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
 //
-// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A restriction-only `availability` write is read back the same way. Every night is read, however long the range. A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
 //
 // Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 //
@@ -7804,7 +7816,7 @@ func (c *Client) UpdateBookingAvailabilityWithBody(ctx context.Context, contentT
 //
 // - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
 // - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
-// - `derived-pricing` — occupancy-derived pricing rules.
+// - `derived-pricing` — occupancy-based pricing: what a smaller party pays relative to the nightly price (see below).
 //
 // **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
 //
@@ -7812,9 +7824,13 @@ func (c *Client) UpdateBookingAvailabilityWithBody(ctx context.Context, contentT
 //
 // **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
 //
+// **Length-of-stay limits.** Booking.com keeps a maximum stay of 1–90 nights and a minimum of 1–91; `0` removes the limit. A value outside that is refused with `422 restriction_out_of_range` naming the field — Booking.com would acknowledge it and then store something else (a `maxStayArrival` of 365 is stored as no maximum), so send `0` for "no limit". `minStay`/`maxStay` are stay-through limits (any stay covering the night); `minStayArrival`/`maxStayArrival` apply only to stays that start on the night.
+//
+// **Occupancy-based pricing (`type: "derived-pricing"`).** The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests (the rate plan's `maxPersons`). Each item in `occupancies` prices another party size relative to it: `additional` is a signed amount in the rate currency, `percentage` a signed percent. The rule applies to every night, date-specific prices included. A write replaces the rate plan's whole rule set; `"occupancies": []` removes every rule. Example — EUR 12.01 off for 1 and 2 guests on a 3-guest rate: `{"type":"derived-pricing","property_id":"17610853","updates":[{"roomId":"1761085301","rateId":"70596570","leadingOccupancy":3,"occupancies":[{"persons":2,"additional":-12.01},{"persons":1,"additional":-12.01}]}]}`. The rules are read back after the write, and at any time on `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`). A wrong shape is `422 invalid_params` naming the field; a rule Booking.com refuses is `422 booking_rejected` with its code.
+//
 // **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
 //
-// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A restriction-only `availability` write is read back the same way. Every night is read, however long the range. A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
 //
 // Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 //
@@ -11382,7 +11398,7 @@ func (c *Client) SetListingsStatus(ctx context.Context, body SetListingsStatusJS
 //
 // Deactivate a listing — sets it inactive and excludes it from Repull. This is a **soft** operation: the listing row is KEPT (never hard-deleted) and the upstream channel (Airbnb / Hospitable / Booking.com) is NEVER touched. Repull only mutates its own copy.
 //
-// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. This is the primary self-serve way for a free-tier customer to trim back under the plan-listings cap — `DELETE` is served even when the account is over the cap (a 402-locked account can still call it). To bring a listing back, use `PATCH` with `{ "active": true }`.
+// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. It is the self-serve way to choose which listings count toward your plan. To bring a listing back, use `PATCH` with `{ "active": true }`.
 //
 // Idempotent: deactivating an already-inactive listing returns 200.
 //
@@ -29660,7 +29676,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
 	// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
-	// - `derived-pricing` — occupancy-derived pricing rules.
+	// - `derived-pricing` — occupancy-based pricing: what a smaller party pays relative to the nightly price (see below).
 	//
 	// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
 	//
@@ -29668,9 +29684,13 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
 	//
+	// **Length-of-stay limits.** Booking.com keeps a maximum stay of 1–90 nights and a minimum of 1–91; `0` removes the limit. A value outside that is refused with `422 restriction_out_of_range` naming the field — Booking.com would acknowledge it and then store something else (a `maxStayArrival` of 365 is stored as no maximum), so send `0` for "no limit". `minStay`/`maxStay` are stay-through limits (any stay covering the night); `minStayArrival`/`maxStayArrival` apply only to stays that start on the night.
+	//
+	// **Occupancy-based pricing (`type: "derived-pricing"`).** The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests (the rate plan's `maxPersons`). Each item in `occupancies` prices another party size relative to it: `additional` is a signed amount in the rate currency, `percentage` a signed percent. The rule applies to every night, date-specific prices included. A write replaces the rate plan's whole rule set; `"occupancies": []` removes every rule. Example — EUR 12.01 off for 1 and 2 guests on a 3-guest rate: `{"type":"derived-pricing","property_id":"17610853","updates":[{"roomId":"1761085301","rateId":"70596570","leadingOccupancy":3,"occupancies":[{"persons":2,"additional":-12.01},{"persons":1,"additional":-12.01}]}]}`. The rules are read back after the write, and at any time on `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`). A wrong shape is `422 invalid_params` naming the field; a rule Booking.com refuses is `422 booking_rejected` with its code.
+	//
 	// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
 	//
-	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A restriction-only `availability` write is read back the same way. Every night is read, however long the range. A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
 	//
 	// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 	//
@@ -29689,7 +29709,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
 	// - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
-	// - `derived-pricing` — occupancy-derived pricing rules.
+	// - `derived-pricing` — occupancy-based pricing: what a smaller party pays relative to the nightly price (see below).
 	//
 	// **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
 	//
@@ -29697,9 +29717,13 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
 	//
+	// **Length-of-stay limits.** Booking.com keeps a maximum stay of 1–90 nights and a minimum of 1–91; `0` removes the limit. A value outside that is refused with `422 restriction_out_of_range` naming the field — Booking.com would acknowledge it and then store something else (a `maxStayArrival` of 365 is stored as no maximum), so send `0` for "no limit". `minStay`/`maxStay` are stay-through limits (any stay covering the night); `minStayArrival`/`maxStayArrival` apply only to stays that start on the night.
+	//
+	// **Occupancy-based pricing (`type: "derived-pricing"`).** The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests (the rate plan's `maxPersons`). Each item in `occupancies` prices another party size relative to it: `additional` is a signed amount in the rate currency, `percentage` a signed percent. The rule applies to every night, date-specific prices included. A write replaces the rate plan's whole rule set; `"occupancies": []` removes every rule. Example — EUR 12.01 off for 1 and 2 guests on a 3-guest rate: `{"type":"derived-pricing","property_id":"17610853","updates":[{"roomId":"1761085301","rateId":"70596570","leadingOccupancy":3,"occupancies":[{"persons":2,"additional":-12.01},{"persons":1,"additional":-12.01}]}]}`. The rules are read back after the write, and at any time on `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`). A wrong shape is `422 invalid_params` naming the field; a rule Booking.com refuses is `422 booking_rejected` with its code.
+	//
 	// **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
 	//
-	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+	// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A restriction-only `availability` write is read back the same way. Every night is read, however long the range. A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
 	//
 	// Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 	//
@@ -31893,7 +31917,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Deactivate a listing — sets it inactive and excludes it from Repull. This is a **soft** operation: the listing row is KEPT (never hard-deleted) and the upstream channel (Airbnb / Hospitable / Booking.com) is NEVER touched. Repull only mutates its own copy.
 	//
-	// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. This is the primary self-serve way for a free-tier customer to trim back under the plan-listings cap — `DELETE` is served even when the account is over the cap (a 402-locked account can still call it). To bring a listing back, use `PATCH` with `{ "active": true }`.
+	// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. It is the self-serve way to choose which listings count toward your plan. To bring a listing back, use `PATCH` with `{ "active": true }`.
 	//
 	// Idempotent: deactivating an already-inactive listing returns 200.
 	//
@@ -39553,7 +39577,7 @@ type UpdateBookingAvailabilityClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *BookingPricingUpdateResponse
+	JSON200 *UpdateBookingAvailability200JSONResponseBody
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -39573,7 +39597,7 @@ type UpdateBookingAvailabilityClientResponse struct {
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r UpdateBookingAvailabilityClientResponse) GetJSON200() *BookingPricingUpdateResponse {
+func (r UpdateBookingAvailabilityClientResponse) GetJSON200() *UpdateBookingAvailability200JSONResponseBody {
 	return r.JSON200
 }
 
@@ -56079,7 +56103,7 @@ func (c *ClientWithResponses) GetBookingAvailabilityWithResponse(ctx context.Con
 //
 // - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
 // - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
-// - `derived-pricing` — occupancy-derived pricing rules.
+// - `derived-pricing` — occupancy-based pricing: what a smaller party pays relative to the nightly price (see below).
 //
 // **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
 //
@@ -56087,9 +56111,13 @@ func (c *ClientWithResponses) GetBookingAvailabilityWithResponse(ctx context.Con
 //
 // **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
 //
+// **Length-of-stay limits.** Booking.com keeps a maximum stay of 1–90 nights and a minimum of 1–91; `0` removes the limit. A value outside that is refused with `422 restriction_out_of_range` naming the field — Booking.com would acknowledge it and then store something else (a `maxStayArrival` of 365 is stored as no maximum), so send `0` for "no limit". `minStay`/`maxStay` are stay-through limits (any stay covering the night); `minStayArrival`/`maxStayArrival` apply only to stays that start on the night.
+//
+// **Occupancy-based pricing (`type: "derived-pricing"`).** The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests (the rate plan's `maxPersons`). Each item in `occupancies` prices another party size relative to it: `additional` is a signed amount in the rate currency, `percentage` a signed percent. The rule applies to every night, date-specific prices included. A write replaces the rate plan's whole rule set; `"occupancies": []` removes every rule. Example — EUR 12.01 off for 1 and 2 guests on a 3-guest rate: `{"type":"derived-pricing","property_id":"17610853","updates":[{"roomId":"1761085301","rateId":"70596570","leadingOccupancy":3,"occupancies":[{"persons":2,"additional":-12.01},{"persons":1,"additional":-12.01}]}]}`. The rules are read back after the write, and at any time on `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`). A wrong shape is `422 invalid_params` naming the field; a rule Booking.com refuses is `422 booking_rejected` with its code.
+//
 // **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
 //
-// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A restriction-only `availability` write is read back the same way. Every night is read, however long the range. A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
 //
 // Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 //
@@ -56114,7 +56142,7 @@ func (c *ClientWithResponses) UpdateBookingAvailabilityWithBodyWithResponse(ctx 
 //
 // - `rates` — nightly prices, plus any length-of-stay / arrival restrictions sent with them.
 // - `availability` — inventory (`availableRooms`), the stop-sell flag (`closed`), and restrictions. Omit `availableRooms` and `closed` for a restriction-only write.
-// - `derived-pricing` — occupancy-derived pricing rules.
+// - `derived-pricing` — occupancy-based pricing: what a smaller party pays relative to the nightly price (see below).
 //
 // **Dates are inclusive at both ends.** `{ "start": "2026-11-04", "end": "2026-11-04" }` is exactly one night.
 //
@@ -56122,9 +56150,13 @@ func (c *ClientWithResponses) UpdateBookingAvailabilityWithBodyWithResponse(ctx 
 //
 // **Restrictions are sent in the same call, on their own wire.** A price and a minimum stay are two writes on Booking.com's side. Send them together and the response reports each separately: `price` and `restrictions` carry their own state, their own read-back, and — when refused — Booking.com's own reason. The top-level `applied` is `partial` when they disagree, so a price that landed is never reported as a failure. `minStay`, `maxStay`, `minStayArrival`, `maxStayArrival`, `closedToArrival` and `closedToDeparture` are written; `exactStayArrival`, `minAdvanceRes` and `maxAdvanceRes` are refused with `422 restriction_not_supported` because Booking.com's notification has no element for them — set those on the rate plan in the Extranet. Nothing you send is ever silently ignored.
 //
+// **Length-of-stay limits.** Booking.com keeps a maximum stay of 1–90 nights and a minimum of 1–91; `0` removes the limit. A value outside that is refused with `422 restriction_out_of_range` naming the field — Booking.com would acknowledge it and then store something else (a `maxStayArrival` of 365 is stored as no maximum), so send `0` for "no limit". `minStay`/`maxStay` are stay-through limits (any stay covering the night); `minStayArrival`/`maxStayArrival` apply only to stays that start on the night.
+//
+// **Occupancy-based pricing (`type: "derived-pricing"`).** The nightly price you write with `type: "rates"` is the price for `leadingOccupancy` guests (the rate plan's `maxPersons`). Each item in `occupancies` prices another party size relative to it: `additional` is a signed amount in the rate currency, `percentage` a signed percent. The rule applies to every night, date-specific prices included. A write replaces the rate plan's whole rule set; `"occupancies": []` removes every rule. Example — EUR 12.01 off for 1 and 2 guests on a 3-guest rate: `{"type":"derived-pricing","property_id":"17610853","updates":[{"roomId":"1761085301","rateId":"70596570","leadingOccupancy":3,"occupancies":[{"persons":2,"additional":-12.01},{"persons":1,"additional":-12.01}]}]}`. The rules are read back after the write, and at any time on `GET /v1/channels/booking/properties/{id}/rooms` (`rates[].occupancyPricing`). A wrong shape is `422 invalid_params` naming the field; a rule Booking.com refuses is `422 booking_rejected` with its code.
+//
 // **Inventory is not part of a rate update.** `roomsToSell` on a `rates` update returns `422 inventory_not_in_rate_update`; send it as `type: "availability"` instead.
 //
-// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
+// **The response says what is known.** Booking.com acknowledges a write with no per-date status, so the nights are read back — prices and restrictions out of the same read: `applied` is `verified`, `mismatch`, `partial`, `rejected` or `unverified` (send `verify: false` to skip the read-back). A restriction-only `availability` write is read back the same way. Every night is read, however long the range. A bare acknowledgement is never reported as "all updates applied". Booking.com stores a 1-night minimum as no minimum, so `minStay: 1` reads back as `0` and still counts as applied.
 //
 // Restrictions never leak across channels — this endpoint writes only to Booking.com. When Booking.com refuses a write outright, their own reason comes back as `422 booking_rejected` with `booking_ruid`; a genuine outage on their side is `502 booking_error`.
 //
@@ -59205,7 +59237,7 @@ func (c *ClientWithResponses) SetListingsStatusWithResponse(ctx context.Context,
 //
 // Deactivate a listing — sets it inactive and excludes it from Repull. This is a **soft** operation: the listing row is KEPT (never hard-deleted) and the upstream channel (Airbnb / Hospitable / Booking.com) is NEVER touched. Repull only mutates its own copy.
 //
-// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. This is the primary self-serve way for a free-tier customer to trim back under the plan-listings cap — `DELETE` is served even when the account is over the cap (a 402-locked account can still call it). To bring a listing back, use `PATCH` with `{ "active": true }`.
+// Equivalent to `PATCH /v1/listings/{id}` with `{ "active": false }`. It is the self-serve way to choose which listings count toward your plan. To bring a listing back, use `PATCH` with `{ "active": true }`.
 //
 // Idempotent: deactivating an already-inactive listing returns 200.
 //
@@ -66094,7 +66126,7 @@ func ParseUpdateBookingAvailabilityClientResponse(rsp *http.Response) (*UpdateBo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest BookingPricingUpdateResponse
+		var dest UpdateBookingAvailability200JSONResponseBody
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
