@@ -2,17 +2,17 @@
 
 > Go SDK for Repull. Generated from OpenAPI. Context-first.
 
-The official Go SDK for [api.repull.dev](https://api.repull.dev) — the unified
-API for vacation-rental tech (50+ PMS platforms, Airbnb / Booking.com / VRBO /
-Plumguide channels, AI ops, white-label OAuth).
+The official Go SDK for [Repull](https://repull.dev) — one API for
+vacation-rental tech: Airbnb, Booking.com, Vrbo and more channels, plus 15 PMS
+platforms, behind one key, with white-label Connect for linking your users'
+accounts.
 
-> **Status:** v0.2.11 — alpha. `pkg.go.dev` listing pending (auto-publishes on
-> first import).
+Reference: [pkg.go.dev/github.com/ivannikolovbg/repull-go/repull](https://pkg.go.dev/github.com/ivannikolovbg/repull-go/repull).
 
 ## Install
 
 ```bash
-go get github.com/ivannikolovbg/repull-go@v0.2.11
+go get github.com/ivannikolovbg/repull-go@latest
 ```
 
 Requires Go 1.24+.
@@ -146,9 +146,9 @@ resp, err := client.ListReservationsWithResponse(ctx, &repull.ListReservationsPa
 
 ## Status
 
-v0.2.11 — alpha. The API surface tracks `https://api.repull.dev/api/repull/openapi.json`
-1:1 and may break before 1.0. Open an issue if you hit drift between the
-generated client and the live API — both are still settling.
+The generated client tracks `https://api.repull.dev/openapi.json` 1:1. Pre-1.0,
+minor versions may rename generated identifiers when the spec changes. Open an
+issue if you hit drift between the generated client and the live API.
 
 ---
 
