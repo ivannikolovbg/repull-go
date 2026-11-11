@@ -3880,6 +3880,21 @@ func (e ReservationMessageReceivedEventEvent) Valid() bool {
 	}
 }
 
+// Defines values for ReservationMessageReceivedPayloadDirection.
+const (
+	ReservationMessageReceivedPayloadDirectionInbound ReservationMessageReceivedPayloadDirection = "inbound"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageReceivedPayloadDirection enum.
+func (e ReservationMessageReceivedPayloadDirection) Valid() bool {
+	switch e {
+	case ReservationMessageReceivedPayloadDirectionInbound:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationMessageSentEventEvent.
 const (
 	ReservationMessageSentEventEventReservationMessageSent ReservationMessageSentEventEvent = "reservation.message.sent"
@@ -15135,7 +15150,7 @@ type ReservationMessageReactionPayload struct {
 	// Channel Example: airbnb
 	Channel *string `json:"channel,omitempty"`
 
-	// ExternalMessageId Example: 33532605539
+	// ExternalMessageId Example: 32877308873
 	ExternalMessageId *string `json:"externalMessageId,omitempty"`
 
 	// ExternalThreadId Example: 2648057088
@@ -15201,7 +15216,7 @@ type ReservationMessageReadPayload struct {
 	// Channel Example: airbnb
 	Channel *string `json:"channel,omitempty"`
 
-	// ExternalMessageId Example: 33532605539
+	// ExternalMessageId Example: 32877308873
 	ExternalMessageId *string `json:"externalMessageId,omitempty"`
 
 	// ExternalThreadId Example: 2648057088
@@ -15238,7 +15253,7 @@ type ReservationMessageReceivedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread.
+	// Data Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread: from the guest, a co-traveler, the booker, or Airbnb Support (`from.type: "airbnb"`). The whole message, the same as `GET /v1/conversations/{threadId}/messages` returns it, plus where it belongs. Dedupe on `externalMessageId` (or `messageId`).
 	Data ReservationMessageReceivedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -15254,8 +15269,10 @@ type ReservationMessageReceivedEvent struct {
 // ReservationMessageReceivedEventEvent The event name. This field is `event`, not `type`.
 type ReservationMessageReceivedEventEvent string
 
-// ReservationMessageReceivedPayload Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread.
+// ReservationMessageReceivedPayload Payload for `reservation.message.received`. A new inbound message arrived on a reservation thread: from the guest, a co-traveler, the booker, or Airbnb Support (`from.type: "airbnb"`). The whole message, the same as `GET /v1/conversations/{threadId}/messages` returns it, plus where it belongs. Dedupe on `externalMessageId` (or `messageId`).
 type ReservationMessageReceivedPayload struct {
+	AiGenerated *bool `json:"aiGenerated,omitempty"`
+
 	// Attachments Files the guest sent (photos, videos, documents), same shape as `GET /v1/conversations/{id}/messages`. Empty array when there are none.
 	Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
 
@@ -15263,11 +15280,34 @@ type ReservationMessageReceivedPayload struct {
 	//
 	// Example: Hi! What time can we check in?
 	Body *string `json:"body,omitempty"`
-	From *struct {
+
+	// Channel The channel the message came through: `airbnb`, `booking`, `vrbo`, …
+	//
+	// Example: airbnb
+	Channel *string `json:"channel,omitempty"`
+
+	// ConfirmationCode The reservation's confirmation code on the channel. `null` when there is no reservation.
+	//
+	// Example: HMEXAMPLE1
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+
+	// Direction Always `inbound` on this event.
+	Direction *ReservationMessageReceivedPayloadDirection `json:"direction,omitempty"`
+
+	// ExternalMessageId The channel's own message id. Stable across retries and backfill: dedupe on it.
+	//
+	// Example: 32837172376
+	ExternalMessageId *string `json:"externalMessageId,omitempty"`
+
+	// ExternalThreadId The channel's own thread id (Airbnb thread id, Booking.com conversation id). Same as `externalThreadId` on `GET /v1/conversations/{id}`.
+	//
+	// Example: 2603530383
+	ExternalThreadId *string `json:"externalThreadId,omitempty"`
+	From             *struct {
 		// Name Example: Alex Morgan
 		Name *string `json:"name,omitempty"`
 
-		// Type Message author (guest, host, system).
+		// Type Who wrote it: `guest`, `booker`, `cotraveler`, or `airbnb` (Airbnb Support writing on the thread).
 		//
 		// Example: guest
 		Type *string `json:"type,omitempty"`
@@ -15276,17 +15316,57 @@ type ReservationMessageReceivedPayload struct {
 	// HotelId Booking.com only: the hotel (property) id of the conversation's listing. Absent on other channels. A Booking.com Extranet login can cover several hotels, so use this to route the message.
 	//
 	// Example: 10433861
-	HotelId *string `json:"hotelId,omitempty"`
+	HotelId     *string `json:"hotelId,omitempty"`
+	IsAutomated *bool   `json:"isAutomated,omitempty"`
 
-	// ReservationId Example: 215906
+	// ListingId The Repull listing the conversation is about.
+	//
+	// Example: 5668
+	ListingId *int `json:"listingId,omitempty"`
+
+	// MessageId Repull message id, as `GET /v1/conversations/{id}/messages` returns it (`id`).
+	//
+	// Example: 1847801
+	MessageId *string `json:"messageId,omitempty"`
+
+	// ReservationId The reservation the conversation belongs to. `null` for an inquiry, or a message that arrived before its booking was imported (`reservation.thread.assigned` fires when it is attached).
+	//
+	// Example: 215906
 	ReservationId *int `json:"reservationId,omitempty"`
 
-	// SentAt Example: 2026-05-01T15:00:00.000Z
+	// Revision Orders two deliveries about the same message without parsing the body.
+	//
+	// Example: 2026-05-01T15:00:00.000Z
+	Revision     *time.Time `json:"revision,omitempty"`
+	SenderAvatar *string    `json:"senderAvatar,omitempty"`
+
+	// SenderName Example: Alex Morgan
+	SenderName *string `json:"senderName,omitempty"`
+
+	// SenderType Sender role as stored, the same as `senderType` on `GET /v1/conversations/{id}/messages`.
+	//
+	// Example: guest
+	SenderType *string `json:"senderType,omitempty"`
+
+	// SentAt When the message was sent on the channel.
+	//
+	// Example: 2026-05-01T15:00:00.000Z
 	SentAt *time.Time `json:"sentAt,omitempty"`
 
-	// ThreadId Example: thr_01HX5XPQ2K
+	// Status Stored delivery state. Usually `null` on inbound messages (`GET /v1/conversations/{id}/messages` shows them as `received`).
+	Status *string `json:"status,omitempty"`
+
+	// ThreadId The Repull conversation id: the numeric id, as a string. Pass it as `{id}` to `GET /v1/conversations/{id}` and `GET /v1/conversations/{id}/messages`.
+	//
+	// Example: 532457
 	ThreadId *string `json:"threadId,omitempty"`
+
+	// TranslatedBody English translation, when one has been computed.
+	TranslatedBody *string `json:"translatedBody,omitempty"`
 }
+
+// ReservationMessageReceivedPayloadDirection Always `inbound` on this event.
+type ReservationMessageReceivedPayloadDirection string
 
 // ReservationMessageSentEvent defines model for ReservationMessageSentEvent.
 type ReservationMessageSentEvent struct {
@@ -15319,14 +15399,22 @@ type ReservationMessageSentPayload struct {
 	Body        *string                          `json:"body,omitempty"`
 
 	// Channel Example: airbnb
-	Channel   *string                                 `json:"channel,omitempty"`
-	Direction *ReservationMessageSentPayloadDirection `json:"direction,omitempty"`
+	Channel *string `json:"channel,omitempty"`
+
+	// ConfirmationCode Example: HMJTFCEDFB
+	ConfirmationCode *string                                 `json:"confirmationCode,omitempty"`
+	Direction        *ReservationMessageSentPayloadDirection `json:"direction,omitempty"`
 
 	// ExternalMessageId The channel's own message id. Dedupe on it.
 	//
 	// Example: 32877308873
 	ExternalMessageId *string `json:"externalMessageId,omitempty"`
-	From              *struct {
+
+	// ExternalThreadId The channel's own thread id.
+	//
+	// Example: 2648057088
+	ExternalThreadId *string `json:"externalThreadId,omitempty"`
+	From             *struct {
 		Name *string `json:"name,omitempty"`
 
 		// Type `host` or `co-host`.
@@ -15341,6 +15429,9 @@ type ReservationMessageSentPayload struct {
 	HotelId     *string `json:"hotelId,omitempty"`
 	IsAutomated *bool   `json:"isAutomated,omitempty"`
 
+	// ListingId Example: 23893
+	ListingId *int `json:"listingId,omitempty"`
+
 	// MessageId Repull message id, as `GET /v1/conversations/{id}/messages` returns it.
 	//
 	// Example: 1854462
@@ -15348,13 +15439,29 @@ type ReservationMessageSentPayload struct {
 
 	// ReservationId Example: 235970
 	ReservationId *int       `json:"reservationId,omitempty"`
-	SentAt        *time.Time `json:"sentAt,omitempty"`
+	Revision      *time.Time `json:"revision,omitempty"`
+	SenderAvatar  *string    `json:"senderAvatar,omitempty"`
+	SenderName    *string    `json:"senderName,omitempty"`
+
+	// SenderType Sender role as stored, the same as on `GET /v1/conversations/{id}/messages` (`user` for a message sent through Repull).
+	//
+	// Example: host
+	SenderType *string    `json:"senderType,omitempty"`
+	SentAt     *time.Time `json:"sentAt,omitempty"`
 
 	// Source `channel`: sent in the channel's own app (e.g. the Airbnb app). `repull`: sent through Repull — the API, the dashboard, an automation or AI.
 	Source *ReservationMessageSentPayloadSource `json:"source,omitempty"`
 
-	// ThreadId Example: 900301
-	ThreadId *string `json:"threadId,omitempty"`
+	// Status Delivery state: `sending`, `sent` or `failed`, as on `GET /v1/conversations/{id}/messages`. `null` for a message sent in the channel's app.
+	//
+	// Example: sent
+	Status *string `json:"status,omitempty"`
+
+	// ThreadId The Repull conversation id (numeric, as a string), for `GET /v1/conversations/{id}`.
+	//
+	// Example: 900301
+	ThreadId       *string `json:"threadId,omitempty"`
+	TranslatedBody *string `json:"translatedBody,omitempty"`
 }
 
 // ReservationMessageSentPayloadDirection defines model for ReservationMessageSentPayload.Direction.
@@ -15389,19 +15496,28 @@ type ReservationMessageUpdatedEventEvent string
 
 // ReservationMessageUpdatedPayload Payload for `reservation.message.updated`: a message was edited on the channel. `body` is the new text; `previousBody` what it replaced. Read receipts and reactions do not fire it: they have their own events, `reservation.message.read` and `reservation.message.reaction`.
 type ReservationMessageUpdatedPayload struct {
+	AiGenerated *bool                            `json:"aiGenerated,omitempty"`
+	Attachments *[]ConversationMessageAttachment `json:"attachments,omitempty"`
+
 	// Body The text after the edit.
 	Body *string `json:"body,omitempty"`
 
 	// Channel Example: airbnb
-	Channel   *string                                    `json:"channel,omitempty"`
-	Direction *ReservationMessageUpdatedPayloadDirection `json:"direction,omitempty"`
+	Channel *string `json:"channel,omitempty"`
+
+	// ConfirmationCode Example: HMJTFCEDFB
+	ConfirmationCode *string                                    `json:"confirmationCode,omitempty"`
+	Direction        *ReservationMessageUpdatedPayloadDirection `json:"direction,omitempty"`
 
 	// EditedAt When the edit was made, as the channel reports it. Also the event's `revision`.
 	EditedAt *time.Time `json:"editedAt,omitempty"`
 
 	// ExternalMessageId Example: 32877308873
 	ExternalMessageId *string `json:"externalMessageId,omitempty"`
-	From              *struct {
+
+	// ExternalThreadId Example: 2648057088
+	ExternalThreadId *string `json:"externalThreadId,omitempty"`
+	From             *struct {
 		Name *string `json:"name,omitempty"`
 
 		// Type Example: host
@@ -15411,7 +15527,11 @@ type ReservationMessageUpdatedPayload struct {
 	// HotelId Booking.com only: the hotel (property) id of the conversation's listing. Absent on other channels. A Booking.com Extranet login can cover several hotels, so use this to route the message.
 	//
 	// Example: 10433861
-	HotelId *string `json:"hotelId,omitempty"`
+	HotelId     *string `json:"hotelId,omitempty"`
+	IsAutomated *bool   `json:"isAutomated,omitempty"`
+
+	// ListingId Example: 23893
+	ListingId *int `json:"listingId,omitempty"`
 
 	// MessageId Example: 1854462
 	MessageId *string `json:"messageId,omitempty"`
@@ -15422,11 +15542,21 @@ type ReservationMessageUpdatedPayload struct {
 	// ReservationId Example: 235970
 	ReservationId *int `json:"reservationId,omitempty"`
 
+	// Revision Same as `editedAt`.
+	Revision     *time.Time `json:"revision,omitempty"`
+	SenderAvatar *string    `json:"senderAvatar,omitempty"`
+	SenderName   *string    `json:"senderName,omitempty"`
+	SenderType   *string    `json:"senderType,omitempty"`
+
 	// SentAt When the message was first sent.
 	SentAt *time.Time `json:"sentAt,omitempty"`
+	Status *string    `json:"status,omitempty"`
 
-	// ThreadId Example: 900301
-	ThreadId *string `json:"threadId,omitempty"`
+	// ThreadId The Repull conversation id (numeric, as a string), for `GET /v1/conversations/{id}`.
+	//
+	// Example: 900301
+	ThreadId       *string `json:"threadId,omitempty"`
+	TranslatedBody *string `json:"translatedBody,omitempty"`
 }
 
 // ReservationMessageUpdatedPayloadDirection defines model for ReservationMessageUpdatedPayload.Direction.
