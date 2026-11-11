@@ -1708,6 +1708,66 @@ func (e ConnectSessionPurpose) Valid() bool {
 	}
 }
 
+// Defines values for ConnectSessionAbandonedEventEvent.
+const (
+	ConnectSessionAbandonedEventEventConnectSessionAbandoned ConnectSessionAbandonedEventEvent = "connect.session.abandoned"
+)
+
+// Valid indicates whether the value is a known member of the ConnectSessionAbandonedEventEvent enum.
+func (e ConnectSessionAbandonedEventEvent) Valid() bool {
+	switch e {
+	case ConnectSessionAbandonedEventEventConnectSessionAbandoned:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectSessionAbandonedPayloadReason.
+const (
+	ConnectSessionAbandonedPayloadReasonCredentialsRejected     ConnectSessionAbandonedPayloadReason = "credentials_rejected"
+	ConnectSessionAbandonedPayloadReasonFailed                  ConnectSessionAbandonedPayloadReason = "failed"
+	ConnectSessionAbandonedPayloadReasonMappingNotFinished      ConnectSessionAbandonedPayloadReason = "mapping_not_finished"
+	ConnectSessionAbandonedPayloadReasonNotFinished             ConnectSessionAbandonedPayloadReason = "not_finished"
+	ConnectSessionAbandonedPayloadReasonProviderApprovalPending ConnectSessionAbandonedPayloadReason = "provider_approval_pending"
+)
+
+// Valid indicates whether the value is a known member of the ConnectSessionAbandonedPayloadReason enum.
+func (e ConnectSessionAbandonedPayloadReason) Valid() bool {
+	switch e {
+	case ConnectSessionAbandonedPayloadReasonCredentialsRejected:
+		return true
+	case ConnectSessionAbandonedPayloadReasonFailed:
+		return true
+	case ConnectSessionAbandonedPayloadReasonMappingNotFinished:
+		return true
+	case ConnectSessionAbandonedPayloadReasonNotFinished:
+		return true
+	case ConnectSessionAbandonedPayloadReasonProviderApprovalPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectSessionAbandonedPayloadStatus.
+const (
+	ConnectSessionAbandonedPayloadStatusAwaitingRoomMapping ConnectSessionAbandonedPayloadStatus = "awaiting_room_mapping"
+	ConnectSessionAbandonedPayloadStatusExpired             ConnectSessionAbandonedPayloadStatus = "expired"
+)
+
+// Valid indicates whether the value is a known member of the ConnectSessionAbandonedPayloadStatus enum.
+func (e ConnectSessionAbandonedPayloadStatus) Valid() bool {
+	switch e {
+	case ConnectSessionAbandonedPayloadStatusAwaitingRoomMapping:
+		return true
+	case ConnectSessionAbandonedPayloadStatusExpired:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ConnectSessionCompletedEventEvent.
 const (
 	ConnectSessionCompletedEventEventConnectSessionCompleted ConnectSessionCompletedEventEvent = "connect.session.completed"
@@ -4366,6 +4426,7 @@ const (
 	WebhookEventTypeBookingUnacknowledged          WebhookEventType = "booking.unacknowledged"
 	WebhookEventTypeChannelDegraded                WebhookEventType = "channel.degraded"
 	WebhookEventTypeChannelSyncFailed              WebhookEventType = "channel.sync.failed"
+	WebhookEventTypeConnectSessionAbandoned        WebhookEventType = "connect.session.abandoned"
 	WebhookEventTypeConnectSessionCompleted        WebhookEventType = "connect.session.completed"
 	WebhookEventTypeInquiryCreated                 WebhookEventType = "inquiry.created"
 	WebhookEventTypeInquiryUpdated                 WebhookEventType = "inquiry.updated"
@@ -4420,6 +4481,8 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeChannelDegraded:
 		return true
 	case WebhookEventTypeChannelSyncFailed:
+		return true
+	case WebhookEventTypeConnectSessionAbandoned:
 		return true
 	case WebhookEventTypeConnectSessionCompleted:
 		return true
@@ -10205,6 +10268,74 @@ type ConnectSession struct {
 // ConnectSessionPurpose Present only on a Repull Migrate session.
 type ConnectSessionPurpose string
 
+// ConnectSessionAbandonedEvent defines model for ConnectSessionAbandonedEvent.
+type ConnectSessionAbandonedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `connect.session.abandoned`. A user opened a Connect session and never finished it — the link ran out, or the account was connected but its rooms were never mapped. Use `state` or `sessionId` to find your user, `reason` and `nextStep` to decide what to send them (usually a new Connect link). Sent once per session, only for sessions opened in the last 7 days.
+	Data ConnectSessionAbandonedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ConnectSessionAbandonedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ConnectSessionAbandonedEventEvent The event name. This field is `event`, not `type`.
+type ConnectSessionAbandonedEventEvent string
+
+// ConnectSessionAbandonedPayload Payload for `connect.session.abandoned`. A user opened a Connect session and never finished it — the link ran out, or the account was connected but its rooms were never mapped. Use `state` or `sessionId` to find your user, `reason` and `nextStep` to decide what to send them (usually a new Connect link). Sent once per session, only for sessions opened in the last 7 days.
+type ConnectSessionAbandonedPayload struct {
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+	// ExternalAccountId Booking.com: the Hotel ID the user entered while waiting for the Extranet approval.
+	//
+	// Example: 17168363
+	ExternalAccountId *string    `json:"externalAccountId,omitempty"`
+	LastActivityAt    *time.Time `json:"lastActivityAt,omitempty"`
+
+	// LastErrorCode The last error the user hit on the Connect page, e.g. `invalid_credentials`, `awaiting_designation`.
+	//
+	// Example: awaiting_designation
+	LastErrorCode *string `json:"lastErrorCode,omitempty"`
+
+	// NextStep What to tell the user, in plain English.
+	NextStep *string `json:"nextStep,omitempty"`
+
+	// Provider Channel or PMS the user picked: airbnb, booking, booking_extranet, vrbo, hostaway, …
+	//
+	// Example: booking
+	Provider *string `json:"provider,omitempty"`
+
+	// Reason `not_finished`: opened and left. `credentials_rejected`: the provider refused the key or token the user entered. `provider_approval_pending`: Booking.com never confirmed the property in the Extranet. `mapping_not_finished`: connected, rooms not mapped. `failed`: another error, see `lastErrorCode`.
+	Reason *ConnectSessionAbandonedPayloadReason `json:"reason,omitempty"`
+
+	// SessionId Example: cs_abc123
+	SessionId *string `json:"sessionId,omitempty"`
+
+	// State The `state` you passed when creating the session.
+	//
+	// Example: user_8421
+	State *string `json:"state,omitempty"`
+
+	// Status `expired`: the link ran out before the user finished. `awaiting_room_mapping`: the account is connected; its rooms were never matched to listings.
+	Status *ConnectSessionAbandonedPayloadStatus `json:"status,omitempty"`
+}
+
+// ConnectSessionAbandonedPayloadReason `not_finished`: opened and left. `credentials_rejected`: the provider refused the key or token the user entered. `provider_approval_pending`: Booking.com never confirmed the property in the Extranet. `mapping_not_finished`: connected, rooms not mapped. `failed`: another error, see `lastErrorCode`.
+type ConnectSessionAbandonedPayloadReason string
+
+// ConnectSessionAbandonedPayloadStatus `expired`: the link ran out before the user finished. `awaiting_room_mapping`: the account is connected; its rooms were never matched to listings.
+type ConnectSessionAbandonedPayloadStatus string
+
 // ConnectSessionCompletedEvent defines model for ConnectSessionCompletedEvent.
 type ConnectSessionCompletedEvent struct {
 	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
@@ -13753,6 +13884,11 @@ type PlanNotice struct {
 	// BillingUrl Example: https://repull.dev/dashboard/billing
 	BillingUrl string `json:"billingUrl"`
 
+	// CheckoutUrl Opens Starter checkout at `starterMonthlyPrice`. Present up to 100 listings.
+	//
+	// Example: https://repull.dev/dashboard/billing?upgrade=starter
+	CheckoutUrl *string `json:"checkoutUrl,omitempty"`
+
 	// Code "listings_held_back": some connected listings are held inactive by the plan. "listings_over_plan": more listings are active than the plan includes (after a downgrade). Neither blocks any call.
 	Code PlanNoticeCode `json:"code"`
 	Fix  string         `json:"fix"`
@@ -13762,8 +13898,18 @@ type PlanNotice struct {
 	// Example: 40
 	ListingsHeldBack int `json:"listingsHeldBack"`
 
-	// Message Example: 40 more connected listings are held inactive because your plan allows 3 active listings. They stay connected and keep syncing.
+	// Message Example: 40 more connected listings are held inactive because your plan allows 3 active listings. They stay connected and keep syncing. Starter serves all 43 for $264 a month: https://repull.dev/dashboard/billing?upgrade=starter
 	Message string `json:"message"`
+
+	// StarterListings On a free plan: the listings Starter would serve and bill, active plus held back, across the plan's workspaces.
+	//
+	// Example: 43
+	StarterListings *int `json:"starterListings,omitempty"`
+
+	// StarterMonthlyPrice Starter's monthly price in USD for `starterListings` — exactly what checkout charges. Present up to 100 listings; above that the message says how to ask for a plan.
+	//
+	// Example: 264
+	StarterMonthlyPrice *float32 `json:"starterMonthlyPrice,omitempty"`
 }
 
 // PlanNoticeCode "listings_held_back": some connected listings are held inactive by the plan. "listings_over_plan": more listings are active than the plan includes (after a downgrade). Neither blocks any call.
@@ -22986,6 +23132,40 @@ func (t *WebhookEvent) MergeConnectSessionCompletedEvent(v ConnectSessionComplet
 	return err
 }
 
+// AsConnectSessionAbandonedEvent returns the union data inside the WebhookEvent as a ConnectSessionAbandonedEvent
+func (t WebhookEvent) AsConnectSessionAbandonedEvent() (ConnectSessionAbandonedEvent, error) {
+	var body ConnectSessionAbandonedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConnectSessionAbandonedEvent overwrites any union data inside the WebhookEvent as the provided ConnectSessionAbandonedEvent
+func (t *WebhookEvent) FromConnectSessionAbandonedEvent(v ConnectSessionAbandonedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"connect.session.abandoned"}`))
+	t.union = b
+	return err
+}
+
+// MergeConnectSessionAbandonedEvent performs a merge with any union data inside the WebhookEvent, using the provided ConnectSessionAbandonedEvent
+func (t *WebhookEvent) MergeConnectSessionAbandonedEvent(v ConnectSessionAbandonedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"connect.session.abandoned"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsAccountDisconnectedEvent returns the union data inside the WebhookEvent as a AccountDisconnectedEvent
 func (t WebhookEvent) AsAccountDisconnectedEvent() (AccountDisconnectedEvent, error) {
 	var body AccountDisconnectedEvent
@@ -23530,6 +23710,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsChannelDegradedEvent()
 	case "channel.sync.failed":
 		return t.AsChannelSyncFailedEvent()
+	case "connect.session.abandoned":
+		return t.AsConnectSessionAbandonedEvent()
 	case "connect.session.completed":
 		return t.AsConnectSessionCompletedEvent()
 	case "inquiry.created":
