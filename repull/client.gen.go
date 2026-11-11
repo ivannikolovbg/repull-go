@@ -1220,8 +1220,10 @@ type ClientInterface interface {
 	//
 	// - `edit` — replace message text (requires `message`).
 	// - `unsend` — retract the message.
-	// - `read` — mark the message as read.
-	// - `react` — add a reaction (requires `reaction`).
+	// - `read` — mark the message as read on Airbnb, as the host. Airbnb accepts it (it has been used in production); whether and when the guest sees it as read is up to Airbnb and is not confirmed yet. Your side's read state on each guest message is `hostReadAt` on `GET /v1/conversations/{id}/messages`.
+	// - `react` — add a reaction (requires `reaction`, e.g. `"👍"`). Airbnb decides which reactions it accepts: a refusal is `422 reaction_not_supported` naming the field, with Airbnb's reason. Removing a reaction is not available yet.
+	//
+	// Reactions and read receipts from the guest's side arrive on each message (`reactions`, `readAt`) and as the `reservation.message.reaction` and `reservation.message.read` webhooks.
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
@@ -1238,8 +1240,10 @@ type ClientInterface interface {
 	//
 	// - `edit` — replace message text (requires `message`).
 	// - `unsend` — retract the message.
-	// - `read` — mark the message as read.
-	// - `react` — add a reaction (requires `reaction`).
+	// - `read` — mark the message as read on Airbnb, as the host. Airbnb accepts it (it has been used in production); whether and when the guest sees it as read is up to Airbnb and is not confirmed yet. Your side's read state on each guest message is `hostReadAt` on `GET /v1/conversations/{id}/messages`.
+	// - `react` — add a reaction (requires `reaction`, e.g. `"👍"`). Airbnb decides which reactions it accepts: a refusal is `422 reaction_not_supported` naming the field, with Airbnb's reason. Removing a reaction is not available yet.
+	//
+	// Reactions and read receipts from the guest's side arrive on each message (`reactions`, `readAt`) and as the `reservation.message.reaction` and `reservation.message.read` webhooks.
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
@@ -3791,7 +3795,7 @@ type ClientInterface interface {
 	//
 	// **Local write only — NOT a channel publish.** This mutates Repull's own copy of the content. It does NOT push to Airbnb / Booking.com; it marks the channels dirty so a later publish knows what changed. Distribution stays a separate explicit step.
 	//
-	// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
+	// **Photos:** `photos` is a list of hosted image URLs (or structured refs) saved to the listing in order: a full replacement by default, or added after the existing ones with `photosMode: "append"`. A publish sends them to the channels. An array with no valid http(s) URL is reported in `deferred` and the existing photos are left alone.
 	//
 	// Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 	//
@@ -3814,7 +3818,7 @@ type ClientInterface interface {
 	//
 	// **Local write only — NOT a channel publish.** This mutates Repull's own copy of the content. It does NOT push to Airbnb / Booking.com; it marks the channels dirty so a later publish knows what changed. Distribution stays a separate explicit step.
 	//
-	// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
+	// **Photos:** `photos` is a list of hosted image URLs (or structured refs) saved to the listing in order: a full replacement by default, or added after the existing ones with `photosMode: "append"`. A publish sends them to the channels. An array with no valid http(s) URL is reported in `deferred` and the existing photos are left alone.
 	//
 	// Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 	//
@@ -3855,6 +3859,7 @@ type ClientInterface interface {
 	//
 	// - **Airbnb** — one markup per listing.
 	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 	//
 	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 	//
@@ -3869,10 +3874,13 @@ type ClientInterface interface {
 	//
 	// - **Airbnb** — one markup per listing.
 	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 	//
 	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 	//
 	// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+	//
+	// On Vrbo the markup belongs to the connected Vrbo account, so setting it reprices every listing linked on that account (`affectedListingIds`). A listing linked on more than one account names one with `accountId`, else `409 ambiguous_vrbo_account`; a listing not linked to Vrbo is `409 listing_not_on_vrbo`.
 	//
 	// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
 	//
@@ -3889,10 +3897,13 @@ type ClientInterface interface {
 	//
 	// - **Airbnb** — one markup per listing.
 	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 	//
 	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 	//
 	// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+	//
+	// On Vrbo the markup belongs to the connected Vrbo account, so setting it reprices every listing linked on that account (`affectedListingIds`). A listing linked on more than one account names one with `accountId`, else `409 ambiguous_vrbo_account`; a listing not linked to Vrbo is `409 listing_not_on_vrbo`.
 	//
 	// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
 	//
@@ -4332,6 +4343,47 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
 	PublishListingToBooking(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVrboPublishJob Progress of a Vrbo listing creation
+	//
+	// Each step Vrbo has finished, Vrbo's reason when it failed, the new Vrbo listing number once published, and photos Vrbo's review refused. When Vrbo has published the listing, this read links the new unit to the listing with calendar sync on and queues the whole calendar — poll until `linked` is true. A job is remembered while it runs and for a while after; an unknown job is `404` (publish again to resume).
+	//
+	// Corresponds with GET /v1/listings/{id}/publish/vrbo (the `GetVrboPublishJob` operationId).
+	GetVrboPublishJob(ctx context.Context, id int, params *GetVrboPublishJobParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PublishListingToVrboWithBody Create a listing on Vrbo
+	//
+	// Creates the listing on Vrbo in the host's connected Vrbo account, from the listing's content: title and description, property type, rooms and beds, amenities, photos, house rules (guests, minimum age, children, pets, smoking, events), check-in and check-out times, minimum stay, advance notice and booking window, the nightly price, cleaning, pet and extra-guest fees, the cancellation policy and the licence number. Vrbo's automatic new-listing discount is turned off so the listing sells at your prices.
+	//
+	// **It is a job.** Vrbo's onboarding takes 5–15 minutes (photos go up one at a time), so this answers `202` with `job.jobId`. Poll `GET /v1/listings/{id}/publish/vrbo?jobId=` for each finished step. When Vrbo has published the listing, that read links the new Vrbo unit to the listing with calendar sync on and queues the whole calendar (prices, availability, minimum stay) to Vrbo: **keep polling until `linked` is true.**
+	//
+	// **Which account.** A workspace with one Vrbo account needs nothing. With several, name it with `accountId` (`"vrbo:13"`, as the connection id). An account connected with messaging access is refused with `403 vrbo_messaging_access`.
+	//
+	// **Missing content** (street address, city, photos, nightly price, description) is refused with `422 listing_incomplete` naming what is missing. A listing already linked to a Vrbo unit is `409 listing_already_on_vrbo`. A run that failed part-way leaves an unpublished Vrbo property: publishing again completes it instead of creating a second one.
+	//
+	// This creates a Vrbo listing. Prices, availability and minimum stay on an existing one change through `PUT /v1/availability/{propertyId}`; other content of an existing Vrbo listing is edited on Vrbo.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/vrbo (the `PublishListingToVrbo` operationId).
+	PublishListingToVrboWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PublishListingToVrbo Create a listing on Vrbo
+	//
+	// Creates the listing on Vrbo in the host's connected Vrbo account, from the listing's content: title and description, property type, rooms and beds, amenities, photos, house rules (guests, minimum age, children, pets, smoking, events), check-in and check-out times, minimum stay, advance notice and booking window, the nightly price, cleaning, pet and extra-guest fees, the cancellation policy and the licence number. Vrbo's automatic new-listing discount is turned off so the listing sells at your prices.
+	//
+	// **It is a job.** Vrbo's onboarding takes 5–15 minutes (photos go up one at a time), so this answers `202` with `job.jobId`. Poll `GET /v1/listings/{id}/publish/vrbo?jobId=` for each finished step. When Vrbo has published the listing, that read links the new Vrbo unit to the listing with calendar sync on and queues the whole calendar (prices, availability, minimum stay) to Vrbo: **keep polling until `linked` is true.**
+	//
+	// **Which account.** A workspace with one Vrbo account needs nothing. With several, name it with `accountId` (`"vrbo:13"`, as the connection id). An account connected with messaging access is refused with `403 vrbo_messaging_access`.
+	//
+	// **Missing content** (street address, city, photos, nightly price, description) is refused with `422 listing_incomplete` naming what is missing. A listing already linked to a Vrbo unit is `409 listing_already_on_vrbo`. A run that failed part-way leaves an unpublished Vrbo property: publishing again completes it instead of creating a second one.
+	//
+	// This creates a Vrbo listing. Prices, availability and minimum stay on an existing one change through `PUT /v1/availability/{propertyId}`; other content of an existing Vrbo listing is edited on Vrbo.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/vrbo (the `PublishListingToVrbo` operationId).
+	PublishListingToVrbo(ctx context.Context, id int, body PublishListingToVrboJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PullListingFromAirbnbWithBody Refresh a listing from Airbnb
 	//
@@ -4786,6 +4838,19 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
 	QuoteReservation(ctx context.Context, params *QuoteReservationParams, body QuoteReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetReservationSummary Summarize reservations for a period
+	//
+	// Bookings, nights, revenue, payout, average nightly rate, occupancy and cancellations for a period, in one small response — optionally grouped by `month`, `listing` and/or `channel`. Use it for reporting instead of paging through `GET /v1/reservations`.
+	//
+	// **Counting (`basis`):** `stay` (default) counts the nights that fall inside `from`–`to` and splits each reservation’s money across its nights, so a stay crossing the window or a month edge brings only its share. `check_in` and `booked` count whole reservations by their check-in or booking date.
+	//
+	// **Pace (`as_of`):** keeps only what was on the books at the end of that day — booked by then and not yet cancelled. To compare the next three months with the same months last year like for like, ask for last year’s window with `as_of` set to today’s date one year ago.
+	//
+	// Owner stays are reported apart and never count as revenue or occupancy. Pending requests are counted in `pending` only. Reservations on inactive listings are left out.
+	//
+	// Corresponds with GET /v1/reservations/summary (the `GetReservationSummary` operationId).
+	GetReservationSummary(ctx context.Context, params *GetReservationSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetReservation Get reservation details
 	//
@@ -7192,8 +7257,10 @@ func (c *Client) SendAirbnbMessage(ctx context.Context, threadId string, body Se
 //
 // - `edit` — replace message text (requires `message`).
 // - `unsend` — retract the message.
-// - `read` — mark the message as read.
-// - `react` — add a reaction (requires `reaction`).
+// - `read` — mark the message as read on Airbnb, as the host. Airbnb accepts it (it has been used in production); whether and when the guest sees it as read is up to Airbnb and is not confirmed yet. Your side's read state on each guest message is `hostReadAt` on `GET /v1/conversations/{id}/messages`.
+// - `react` — add a reaction (requires `reaction`, e.g. `"👍"`). Airbnb decides which reactions it accepts: a refusal is `422 reaction_not_supported` naming the field, with Airbnb's reason. Removing a reaction is not available yet.
+//
+// Reactions and read receipts from the guest's side arrive on each message (`reactions`, `readAt`) and as the `reservation.message.reaction` and `reservation.message.read` webhooks.
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
@@ -7220,8 +7287,10 @@ func (c *Client) UpdateAirbnbMessageWithBody(ctx context.Context, threadId strin
 //
 // - `edit` — replace message text (requires `message`).
 // - `unsend` — retract the message.
-// - `read` — mark the message as read.
-// - `react` — add a reaction (requires `reaction`).
+// - `read` — mark the message as read on Airbnb, as the host. Airbnb accepts it (it has been used in production); whether and when the guest sees it as read is up to Airbnb and is not confirmed yet. Your side's read state on each guest message is `hostReadAt` on `GET /v1/conversations/{id}/messages`.
+// - `react` — add a reaction (requires `reaction`, e.g. `"👍"`). Airbnb decides which reactions it accepts: a refusal is `422 reaction_not_supported` naming the field, with Airbnb's reason. Removing a reaction is not available yet.
+//
+// Reactions and read receipts from the guest's side arrive on each message (`reactions`, `readAt`) and as the `reservation.message.reaction` and `reservation.message.read` webhooks.
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
@@ -11550,7 +11619,7 @@ func (c *Client) ListListingComps(ctx context.Context, id int, params *ListListi
 //
 // **Local write only — NOT a channel publish.** This mutates Repull's own copy of the content. It does NOT push to Airbnb / Booking.com; it marks the channels dirty so a later publish knows what changed. Distribution stays a separate explicit step.
 //
-// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
+// **Photos:** `photos` is a list of hosted image URLs (or structured refs) saved to the listing in order: a full replacement by default, or added after the existing ones with `photosMode: "append"`. A publish sends them to the channels. An array with no valid http(s) URL is reported in `deferred` and the existing photos are left alone.
 //
 // Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 //
@@ -11583,7 +11652,7 @@ func (c *Client) UpdateListingContentWithBody(ctx context.Context, id int, param
 //
 // **Local write only — NOT a channel publish.** This mutates Repull's own copy of the content. It does NOT push to Airbnb / Booking.com; it marks the channels dirty so a later publish knows what changed. Distribution stays a separate explicit step.
 //
-// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
+// **Photos:** `photos` is a list of hosted image URLs (or structured refs) saved to the listing in order: a full replacement by default, or added after the existing ones with `photosMode: "append"`. A publish sends them to the channels. An array with no valid http(s) URL is reported in `deferred` and the existing photos are left alone.
 //
 // Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 //
@@ -11654,6 +11723,7 @@ func (c *Client) GenerateListingContent(ctx context.Context, id int, body Genera
 //
 // - **Airbnb** — one markup per listing.
 // - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 //
 // Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 //
@@ -11678,10 +11748,13 @@ func (c *Client) GetListingMarkups(ctx context.Context, id string, reqEditors ..
 //
 // - **Airbnb** — one markup per listing.
 // - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 //
 // Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 //
 // On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+//
+// On Vrbo the markup belongs to the connected Vrbo account, so setting it reprices every listing linked on that account (`affectedListingIds`). A listing linked on more than one account names one with `accountId`, else `409 ambiguous_vrbo_account`; a listing not linked to Vrbo is `409 listing_not_on_vrbo`.
 //
 // `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
 //
@@ -11708,10 +11781,13 @@ func (c *Client) SetListingMarkupWithBody(ctx context.Context, id string, conten
 //
 // - **Airbnb** — one markup per listing.
 // - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 //
 // Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 //
 // On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+//
+// On Vrbo the markup belongs to the connected Vrbo account, so setting it reprices every listing linked on that account (`affectedListingIds`). A listing linked on more than one account names one with `accountId`, else `409 ambiguous_vrbo_account`; a listing not linked to Vrbo is `409 listing_not_on_vrbo`.
 //
 // `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
 //
@@ -12462,6 +12538,77 @@ func (c *Client) PublishListingToBooking(ctx context.Context, id int, params *Pu
 	return c.Client.Do(req)
 }
 
+// GetVrboPublishJob Progress of a Vrbo listing creation
+//
+// Each step Vrbo has finished, Vrbo's reason when it failed, the new Vrbo listing number once published, and photos Vrbo's review refused. When Vrbo has published the listing, this read links the new unit to the listing with calendar sync on and queues the whole calendar — poll until `linked` is true. A job is remembered while it runs and for a while after; an unknown job is `404` (publish again to resume).
+//
+// Corresponds with GET /v1/listings/{id}/publish/vrbo (the `GetVrboPublishJob` operationId).
+func (c *Client) GetVrboPublishJob(ctx context.Context, id int, params *GetVrboPublishJobParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVrboPublishJobRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PublishListingToVrboWithBody Create a listing on Vrbo
+//
+// Creates the listing on Vrbo in the host's connected Vrbo account, from the listing's content: title and description, property type, rooms and beds, amenities, photos, house rules (guests, minimum age, children, pets, smoking, events), check-in and check-out times, minimum stay, advance notice and booking window, the nightly price, cleaning, pet and extra-guest fees, the cancellation policy and the licence number. Vrbo's automatic new-listing discount is turned off so the listing sells at your prices.
+//
+// **It is a job.** Vrbo's onboarding takes 5–15 minutes (photos go up one at a time), so this answers `202` with `job.jobId`. Poll `GET /v1/listings/{id}/publish/vrbo?jobId=` for each finished step. When Vrbo has published the listing, that read links the new Vrbo unit to the listing with calendar sync on and queues the whole calendar (prices, availability, minimum stay) to Vrbo: **keep polling until `linked` is true.**
+//
+// **Which account.** A workspace with one Vrbo account needs nothing. With several, name it with `accountId` (`"vrbo:13"`, as the connection id). An account connected with messaging access is refused with `403 vrbo_messaging_access`.
+//
+// **Missing content** (street address, city, photos, nightly price, description) is refused with `422 listing_incomplete` naming what is missing. A listing already linked to a Vrbo unit is `409 listing_already_on_vrbo`. A run that failed part-way leaves an unpublished Vrbo property: publishing again completes it instead of creating a second one.
+//
+// This creates a Vrbo listing. Prices, availability and minimum stay on an existing one change through `PUT /v1/availability/{propertyId}`; other content of an existing Vrbo listing is edited on Vrbo.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/listings/{id}/publish/vrbo (the `PublishListingToVrbo` operationId).
+func (c *Client) PublishListingToVrboWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingToVrboRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PublishListingToVrbo Create a listing on Vrbo
+//
+// Creates the listing on Vrbo in the host's connected Vrbo account, from the listing's content: title and description, property type, rooms and beds, amenities, photos, house rules (guests, minimum age, children, pets, smoking, events), check-in and check-out times, minimum stay, advance notice and booking window, the nightly price, cleaning, pet and extra-guest fees, the cancellation policy and the licence number. Vrbo's automatic new-listing discount is turned off so the listing sells at your prices.
+//
+// **It is a job.** Vrbo's onboarding takes 5–15 minutes (photos go up one at a time), so this answers `202` with `job.jobId`. Poll `GET /v1/listings/{id}/publish/vrbo?jobId=` for each finished step. When Vrbo has published the listing, that read links the new Vrbo unit to the listing with calendar sync on and queues the whole calendar (prices, availability, minimum stay) to Vrbo: **keep polling until `linked` is true.**
+//
+// **Which account.** A workspace with one Vrbo account needs nothing. With several, name it with `accountId` (`"vrbo:13"`, as the connection id). An account connected with messaging access is refused with `403 vrbo_messaging_access`.
+//
+// **Missing content** (street address, city, photos, nightly price, description) is refused with `422 listing_incomplete` naming what is missing. A listing already linked to a Vrbo unit is `409 listing_already_on_vrbo`. A run that failed part-way leaves an unpublished Vrbo property: publishing again completes it instead of creating a second one.
+//
+// This creates a Vrbo listing. Prices, availability and minimum stay on an existing one change through `PUT /v1/availability/{propertyId}`; other content of an existing Vrbo listing is edited on Vrbo.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/{id}/publish/vrbo (the `PublishListingToVrbo` operationId).
+func (c *Client) PublishListingToVrbo(ctx context.Context, id int, body PublishListingToVrboJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingToVrboRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // PullListingFromAirbnbWithBody Refresh a listing from Airbnb
 //
 // Re-read this listing from Airbnb and update your stored copy, then report what was refreshed and when. The mirror image of `POST /v1/listings/{id}/publish/airbnb`.
@@ -13186,6 +13333,29 @@ func (c *Client) QuoteReservationWithBody(ctx context.Context, params *QuoteRese
 // Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
 func (c *Client) QuoteReservation(ctx context.Context, params *QuoteReservationParams, body QuoteReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewQuoteReservationRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetReservationSummary Summarize reservations for a period
+//
+// Bookings, nights, revenue, payout, average nightly rate, occupancy and cancellations for a period, in one small response — optionally grouped by `month`, `listing` and/or `channel`. Use it for reporting instead of paging through `GET /v1/reservations`.
+//
+// **Counting (`basis`):** `stay` (default) counts the nights that fall inside `from`–`to` and splits each reservation’s money across its nights, so a stay crossing the window or a month edge brings only its share. `check_in` and `booked` count whole reservations by their check-in or booking date.
+//
+// **Pace (`as_of`):** keeps only what was on the books at the end of that day — booked by then and not yet cancelled. To compare the next three months with the same months last year like for like, ask for last year’s window with `as_of` set to today’s date one year ago.
+//
+// Owner stays are reported apart and never count as revenue or occupancy. Pending requests are counted in `pending` only. Reservations on inactive listings are left out.
+//
+// Corresponds with GET /v1/reservations/summary (the `GetReservationSummary` operationId).
+func (c *Client) GetReservationSummary(ctx context.Context, params *GetReservationSummaryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetReservationSummaryRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -24693,6 +24863,110 @@ func NewPublishListingToBookingRequestWithBody(server string, id int, params *Pu
 	return req, nil
 }
 
+// NewGetVrboPublishJobRequest constructs an http.Request for the GetVrboPublishJob method
+func NewGetVrboPublishJobRequest(server string, id int, params *GetVrboPublishJobParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/publish/vrbo", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "jobId", params.JobId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPublishListingToVrboRequest calls the generic PublishListingToVrbo builder with application/json body
+func NewPublishListingToVrboRequest(server string, id int, body PublishListingToVrboJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPublishListingToVrboRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPublishListingToVrboRequestWithBody constructs an http.Request for the PublishListingToVrbo method, with any body, and a specified content type
+func NewPublishListingToVrboRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/publish/vrbo", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewPullListingFromAirbnbRequest calls the generic PullListingFromAirbnb builder with application/json body
 func NewPullListingFromAirbnbRequest(server string, id int, body PullListingFromAirbnbJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -26242,6 +26516,136 @@ func NewQuoteReservationRequestWithBody(server string, params *QuoteReservationP
 			req.Header.Set("X-Account-Id", headerParam0)
 		}
 
+	}
+
+	return req, nil
+}
+
+// NewGetReservationSummaryRequest constructs an http.Request for the GetReservationSummary method
+func NewGetReservationSummaryRequest(server string, params *GetReservationSummaryParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/reservations/summary")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Account != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account", *params.Account, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "from", params.From, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "to", params.To, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.Basis != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "basis", *params.Basis, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.GroupBy != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "group_by", *params.GroupBy, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.AsOf != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "as_of", *params.AsOf, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Platform != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "platform", *params.Platform, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
 	}
 
 	return req, nil
@@ -29316,8 +29720,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// - `edit` — replace message text (requires `message`).
 	// - `unsend` — retract the message.
-	// - `read` — mark the message as read.
-	// - `react` — add a reaction (requires `reaction`).
+	// - `read` — mark the message as read on Airbnb, as the host. Airbnb accepts it (it has been used in production); whether and when the guest sees it as read is up to Airbnb and is not confirmed yet. Your side's read state on each guest message is `hostReadAt` on `GET /v1/conversations/{id}/messages`.
+	// - `react` — add a reaction (requires `reaction`, e.g. `"👍"`). Airbnb decides which reactions it accepts: a refusal is `422 reaction_not_supported` naming the field, with Airbnb's reason. Removing a reaction is not available yet.
+	//
+	// Reactions and read receipts from the guest's side arrive on each message (`reactions`, `readAt`) and as the `reservation.message.reaction` and `reservation.message.read` webhooks.
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
@@ -29334,8 +29740,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// - `edit` — replace message text (requires `message`).
 	// - `unsend` — retract the message.
-	// - `read` — mark the message as read.
-	// - `react` — add a reaction (requires `reaction`).
+	// - `read` — mark the message as read on Airbnb, as the host. Airbnb accepts it (it has been used in production); whether and when the guest sees it as read is up to Airbnb and is not confirmed yet. Your side's read state on each guest message is `hostReadAt` on `GET /v1/conversations/{id}/messages`.
+	// - `react` — add a reaction (requires `reaction`, e.g. `"👍"`). Airbnb decides which reactions it accepts: a refusal is `422 reaction_not_supported` naming the field, with Airbnb's reason. Removing a reaction is not available yet.
+	//
+	// Reactions and read receipts from the guest's side arrive on each message (`reactions`, `readAt`) and as the `reservation.message.reaction` and `reservation.message.read` webhooks.
 	//
 	// Requires a connected Airbnb host, else `404 no_connection`.
 	//
@@ -32017,7 +32425,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Local write only — NOT a channel publish.** This mutates Repull's own copy of the content. It does NOT push to Airbnb / Booking.com; it marks the channels dirty so a later publish knows what changed. Distribution stays a separate explicit step.
 	//
-	// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
+	// **Photos:** `photos` is a list of hosted image URLs (or structured refs) saved to the listing in order: a full replacement by default, or added after the existing ones with `photosMode: "append"`. A publish sends them to the channels. An array with no valid http(s) URL is reported in `deferred` and the existing photos are left alone.
 	//
 	// Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 	//
@@ -32040,7 +32448,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Local write only — NOT a channel publish.** This mutates Repull's own copy of the content. It does NOT push to Airbnb / Booking.com; it marks the channels dirty so a later publish knows what changed. Distribution stays a separate explicit step.
 	//
-	// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
+	// **Photos:** `photos` is a list of hosted image URLs (or structured refs) saved to the listing in order: a full replacement by default, or added after the existing ones with `photosMode: "append"`. A publish sends them to the channels. An array with no valid http(s) URL is reported in `deferred` and the existing photos are left alone.
 	//
 	// Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 	//
@@ -32081,6 +32489,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// - **Airbnb** — one markup per listing.
 	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 	//
 	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 	//
@@ -32097,10 +32506,13 @@ type ClientWithResponsesInterface interface {
 	//
 	// - **Airbnb** — one markup per listing.
 	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 	//
 	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 	//
 	// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+	//
+	// On Vrbo the markup belongs to the connected Vrbo account, so setting it reprices every listing linked on that account (`affectedListingIds`). A listing linked on more than one account names one with `accountId`, else `409 ambiguous_vrbo_account`; a listing not linked to Vrbo is `409 listing_not_on_vrbo`.
 	//
 	// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
 	//
@@ -32117,10 +32529,13 @@ type ClientWithResponsesInterface interface {
 	//
 	// - **Airbnb** — one markup per listing.
 	// - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+	// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 	//
 	// Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 	//
 	// On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+	//
+	// On Vrbo the markup belongs to the connected Vrbo account, so setting it reprices every listing linked on that account (`affectedListingIds`). A listing linked on more than one account names one with `accountId`, else `409 ambiguous_vrbo_account`; a listing not linked to Vrbo is `409 listing_not_on_vrbo`.
 	//
 	// `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
 	//
@@ -32580,6 +32995,49 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
 	PublishListingToBookingWithResponse(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error)
+
+	// GetVrboPublishJobWithResponse Progress of a Vrbo listing creation
+	//
+	// Each step Vrbo has finished, Vrbo's reason when it failed, the new Vrbo listing number once published, and photos Vrbo's review refused. When Vrbo has published the listing, this read links the new unit to the listing with calendar sync on and queues the whole calendar — poll until `linked` is true. A job is remembered while it runs and for a while after; an unknown job is `404` (publish again to resume).
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/listings/{id}/publish/vrbo (the `GetVrboPublishJob` operationId).
+	GetVrboPublishJobWithResponse(ctx context.Context, id int, params *GetVrboPublishJobParams, reqEditors ...RequestEditorFn) (*GetVrboPublishJobClientResponse, error)
+
+	// PublishListingToVrboWithBodyWithResponse Create a listing on Vrbo
+	//
+	// Creates the listing on Vrbo in the host's connected Vrbo account, from the listing's content: title and description, property type, rooms and beds, amenities, photos, house rules (guests, minimum age, children, pets, smoking, events), check-in and check-out times, minimum stay, advance notice and booking window, the nightly price, cleaning, pet and extra-guest fees, the cancellation policy and the licence number. Vrbo's automatic new-listing discount is turned off so the listing sells at your prices.
+	//
+	// **It is a job.** Vrbo's onboarding takes 5–15 minutes (photos go up one at a time), so this answers `202` with `job.jobId`. Poll `GET /v1/listings/{id}/publish/vrbo?jobId=` for each finished step. When Vrbo has published the listing, that read links the new Vrbo unit to the listing with calendar sync on and queues the whole calendar (prices, availability, minimum stay) to Vrbo: **keep polling until `linked` is true.**
+	//
+	// **Which account.** A workspace with one Vrbo account needs nothing. With several, name it with `accountId` (`"vrbo:13"`, as the connection id). An account connected with messaging access is refused with `403 vrbo_messaging_access`.
+	//
+	// **Missing content** (street address, city, photos, nightly price, description) is refused with `422 listing_incomplete` naming what is missing. A listing already linked to a Vrbo unit is `409 listing_already_on_vrbo`. A run that failed part-way leaves an unpublished Vrbo property: publishing again completes it instead of creating a second one.
+	//
+	// This creates a Vrbo listing. Prices, availability and minimum stay on an existing one change through `PUT /v1/availability/{propertyId}`; other content of an existing Vrbo listing is edited on Vrbo.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/vrbo (the `PublishListingToVrbo` operationId).
+	PublishListingToVrboWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishListingToVrboClientResponse, error)
+
+	// PublishListingToVrboWithResponse Create a listing on Vrbo
+	//
+	// Creates the listing on Vrbo in the host's connected Vrbo account, from the listing's content: title and description, property type, rooms and beds, amenities, photos, house rules (guests, minimum age, children, pets, smoking, events), check-in and check-out times, minimum stay, advance notice and booking window, the nightly price, cleaning, pet and extra-guest fees, the cancellation policy and the licence number. Vrbo's automatic new-listing discount is turned off so the listing sells at your prices.
+	//
+	// **It is a job.** Vrbo's onboarding takes 5–15 minutes (photos go up one at a time), so this answers `202` with `job.jobId`. Poll `GET /v1/listings/{id}/publish/vrbo?jobId=` for each finished step. When Vrbo has published the listing, that read links the new Vrbo unit to the listing with calendar sync on and queues the whole calendar (prices, availability, minimum stay) to Vrbo: **keep polling until `linked` is true.**
+	//
+	// **Which account.** A workspace with one Vrbo account needs nothing. With several, name it with `accountId` (`"vrbo:13"`, as the connection id). An account connected with messaging access is refused with `403 vrbo_messaging_access`.
+	//
+	// **Missing content** (street address, city, photos, nightly price, description) is refused with `422 listing_incomplete` naming what is missing. A listing already linked to a Vrbo unit is `409 listing_already_on_vrbo`. A run that failed part-way leaves an unpublished Vrbo property: publishing again completes it instead of creating a second one.
+	//
+	// This creates a Vrbo listing. Prices, availability and minimum stay on an existing one change through `PUT /v1/availability/{propertyId}`; other content of an existing Vrbo listing is edited on Vrbo.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/vrbo (the `PublishListingToVrbo` operationId).
+	PublishListingToVrboWithResponse(ctx context.Context, id int, body PublishListingToVrboJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToVrboClientResponse, error)
 
 	// PullListingFromAirbnbWithBodyWithResponse Refresh a listing from Airbnb
 	//
@@ -33066,6 +33524,21 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/reservations/quote (the `QuoteReservation` operationId).
 	QuoteReservationWithResponse(ctx context.Context, params *QuoteReservationParams, body QuoteReservationJSONRequestBody, reqEditors ...RequestEditorFn) (*QuoteReservationClientResponse, error)
+
+	// GetReservationSummaryWithResponse Summarize reservations for a period
+	//
+	// Bookings, nights, revenue, payout, average nightly rate, occupancy and cancellations for a period, in one small response — optionally grouped by `month`, `listing` and/or `channel`. Use it for reporting instead of paging through `GET /v1/reservations`.
+	//
+	// **Counting (`basis`):** `stay` (default) counts the nights that fall inside `from`–`to` and splits each reservation’s money across its nights, so a stay crossing the window or a month edge brings only its share. `check_in` and `booked` count whole reservations by their check-in or booking date.
+	//
+	// **Pace (`as_of`):** keeps only what was on the books at the end of that day — booked by then and not yet cancelled. To compare the next three months with the same months last year like for like, ask for last year’s window with `as_of` set to today’s date one year ago.
+	//
+	// Owner stays are reported apart and never count as revenue or occupancy. Pending requests are counted in `pending` only. Reservations on inactive listings are left out.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/reservations/summary (the `GetReservationSummary` operationId).
+	GetReservationSummaryWithResponse(ctx context.Context, params *GetReservationSummaryParams, reqEditors ...RequestEditorFn) (*GetReservationSummaryClientResponse, error)
 
 	// GetReservationWithResponse Get reservation details
 	//
@@ -48045,7 +48518,22 @@ type GetListingMarkupsClientResponse struct {
 		} `json:"booking,omitempty"`
 
 		// Id Repull listing id.
-		Id *string `json:"id,omitempty"`
+		Id   *string `json:"id,omitempty"`
+		Vrbo *[]struct {
+			// AccountId The Vrbo account, as its connection id (`vrbo:13`).
+			AccountId *string `json:"accountId,omitempty"`
+
+			// ListingIds Listings in this workspace linked on this Vrbo account — all share this markup.
+			ListingIds *[]string `json:"listingIds,omitempty"`
+
+			// MarkupPercent Percent added on Vrbo, for every listing linked on this account.
+			//
+			// Example: 20
+			MarkupPercent *float32 `json:"markupPercent,omitempty"`
+
+			// VrboListingNumber The Vrbo listing number this listing is linked to.
+			VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+		} `json:"vrbo,omitempty"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -48080,7 +48568,22 @@ func (r GetListingMarkupsClientResponse) GetJSON200() *struct {
 	} `json:"booking,omitempty"`
 
 	// Id Repull listing id.
-	Id *string `json:"id,omitempty"`
+	Id   *string `json:"id,omitempty"`
+	Vrbo *[]struct {
+		// AccountId The Vrbo account, as its connection id (`vrbo:13`).
+		AccountId *string `json:"accountId,omitempty"`
+
+		// ListingIds Listings in this workspace linked on this Vrbo account — all share this markup.
+		ListingIds *[]string `json:"listingIds,omitempty"`
+
+		// MarkupPercent Percent added on Vrbo, for every listing linked on this account.
+		//
+		// Example: 20
+		MarkupPercent *float32 `json:"markupPercent,omitempty"`
+
+		// VrboListingNumber The Vrbo listing number this listing is linked to.
+		VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+	} `json:"vrbo,omitempty"`
 } {
 	return r.JSON200
 }
@@ -49613,6 +50116,307 @@ func (r PublishListingToBookingClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r PublishListingToBookingClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetVrboPublishJobClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Channel *GetVrboPublishJob200JSONResponseBodyChannel `json:"channel,omitempty"`
+		Job     *struct {
+			// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
+			AccountId *int `json:"accountId,omitempty"`
+
+			// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
+			Adjustments *[]string `json:"adjustments,omitempty"`
+
+			// Error Vrbo's reason when `status` is `failed`.
+			Error *string `json:"error,omitempty"`
+
+			// JobId Pass to `GET /v1/listings/{id}/publish/vrbo?jobId=`.
+			JobId *string `json:"jobId,omitempty"`
+
+			// Linked The new Vrbo unit is linked to the listing with calendar sync on, and the whole calendar has been queued to Vrbo.
+			Linked    *bool `json:"linked,omitempty"`
+			ListingId *int  `json:"listingId,omitempty"`
+
+			// PropertyId The Vrbo property being built. Send it back as `propertyId` to finish a run that failed part-way.
+			PropertyId *string `json:"propertyId,omitempty"`
+
+			// RejectedPhotos Photos Vrbo's review refused (position in the listing's order, and Vrbo's reason).
+			RejectedPhotos *[]struct {
+				Photo  *int    `json:"photo,omitempty"`
+				Reason *string `json:"reason,omitempty"`
+			} `json:"rejectedPhotos,omitempty"`
+
+			// ResumedPropertyId POST only: set when an unfinished Vrbo property of this listing is completed instead of starting a new one.
+			ResumedPropertyId *string                                        `json:"resumedPropertyId,omitempty"`
+			Status            *GetVrboPublishJob200JSONResponseBodyJobStatus `json:"status,omitempty"`
+
+			// Steps Steps Vrbo has finished, in order: create, amenities, property type, rooms, photos, headline + description, house rules, rate, booking options, publish, fees, cancellation policy, …
+			Steps *[]string `json:"steps,omitempty"`
+
+			// VrboListingNumber The new Vrbo listing number, once Vrbo has published it.
+			VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+		} `json:"job,omitempty"`
+		ListingId *int `json:"listingId,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetVrboPublishJobClientResponse) GetJSON200() *struct {
+	Channel *GetVrboPublishJob200JSONResponseBodyChannel `json:"channel,omitempty"`
+	Job     *struct {
+		// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
+		AccountId *int `json:"accountId,omitempty"`
+
+		// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
+		Adjustments *[]string `json:"adjustments,omitempty"`
+
+		// Error Vrbo's reason when `status` is `failed`.
+		Error *string `json:"error,omitempty"`
+
+		// JobId Pass to `GET /v1/listings/{id}/publish/vrbo?jobId=`.
+		JobId *string `json:"jobId,omitempty"`
+
+		// Linked The new Vrbo unit is linked to the listing with calendar sync on, and the whole calendar has been queued to Vrbo.
+		Linked    *bool `json:"linked,omitempty"`
+		ListingId *int  `json:"listingId,omitempty"`
+
+		// PropertyId The Vrbo property being built. Send it back as `propertyId` to finish a run that failed part-way.
+		PropertyId *string `json:"propertyId,omitempty"`
+
+		// RejectedPhotos Photos Vrbo's review refused (position in the listing's order, and Vrbo's reason).
+		RejectedPhotos *[]struct {
+			Photo  *int    `json:"photo,omitempty"`
+			Reason *string `json:"reason,omitempty"`
+		} `json:"rejectedPhotos,omitempty"`
+
+		// ResumedPropertyId POST only: set when an unfinished Vrbo property of this listing is completed instead of starting a new one.
+		ResumedPropertyId *string                                        `json:"resumedPropertyId,omitempty"`
+		Status            *GetVrboPublishJob200JSONResponseBodyJobStatus `json:"status,omitempty"`
+
+		// Steps Steps Vrbo has finished, in order: create, amenities, property type, rooms, photos, headline + description, house rules, rate, booking options, publish, fees, cancellation policy, …
+		Steps *[]string `json:"steps,omitempty"`
+
+		// VrboListingNumber The new Vrbo listing number, once Vrbo has published it.
+		VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+	} `json:"job,omitempty"`
+	ListingId *int `json:"listingId,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetVrboPublishJobClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetVrboPublishJobClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetVrboPublishJobClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r GetVrboPublishJobClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVrboPublishJobClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVrboPublishJobClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVrboPublishJobClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type PublishListingToVrboClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON202 the response for an HTTP 202 `application/json` response
+	JSON202 *struct {
+		Channel *PublishListingToVrbo202JSONResponseBodyChannel `json:"channel,omitempty"`
+		Job     *struct {
+			// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
+			AccountId *int `json:"accountId,omitempty"`
+
+			// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
+			Adjustments *[]string `json:"adjustments,omitempty"`
+
+			// Error Vrbo's reason when `status` is `failed`.
+			Error *string `json:"error,omitempty"`
+
+			// JobId Pass to `GET /v1/listings/{id}/publish/vrbo?jobId=`.
+			JobId *string `json:"jobId,omitempty"`
+
+			// Linked The new Vrbo unit is linked to the listing with calendar sync on, and the whole calendar has been queued to Vrbo.
+			Linked    *bool `json:"linked,omitempty"`
+			ListingId *int  `json:"listingId,omitempty"`
+
+			// PropertyId The Vrbo property being built. Send it back as `propertyId` to finish a run that failed part-way.
+			PropertyId *string `json:"propertyId,omitempty"`
+
+			// RejectedPhotos Photos Vrbo's review refused (position in the listing's order, and Vrbo's reason).
+			RejectedPhotos *[]struct {
+				Photo  *int    `json:"photo,omitempty"`
+				Reason *string `json:"reason,omitempty"`
+			} `json:"rejectedPhotos,omitempty"`
+
+			// ResumedPropertyId POST only: set when an unfinished Vrbo property of this listing is completed instead of starting a new one.
+			ResumedPropertyId *string                                           `json:"resumedPropertyId,omitempty"`
+			Status            *PublishListingToVrbo202JSONResponseBodyJobStatus `json:"status,omitempty"`
+
+			// Steps Steps Vrbo has finished, in order: create, amenities, property type, rooms, photos, headline + description, house rules, rate, booking options, publish, fees, cancellation policy, …
+			Steps *[]string `json:"steps,omitempty"`
+
+			// VrboListingNumber The new Vrbo listing number, once Vrbo has published it.
+			VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+		} `json:"job,omitempty"`
+		ListingId *int `json:"listingId,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON202 returns the response for an HTTP 202 `application/json` response
+func (r PublishListingToVrboClientResponse) GetJSON202() *struct {
+	Channel *PublishListingToVrbo202JSONResponseBodyChannel `json:"channel,omitempty"`
+	Job     *struct {
+		// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
+		AccountId *int `json:"accountId,omitempty"`
+
+		// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
+		Adjustments *[]string `json:"adjustments,omitempty"`
+
+		// Error Vrbo's reason when `status` is `failed`.
+		Error *string `json:"error,omitempty"`
+
+		// JobId Pass to `GET /v1/listings/{id}/publish/vrbo?jobId=`.
+		JobId *string `json:"jobId,omitempty"`
+
+		// Linked The new Vrbo unit is linked to the listing with calendar sync on, and the whole calendar has been queued to Vrbo.
+		Linked    *bool `json:"linked,omitempty"`
+		ListingId *int  `json:"listingId,omitempty"`
+
+		// PropertyId The Vrbo property being built. Send it back as `propertyId` to finish a run that failed part-way.
+		PropertyId *string `json:"propertyId,omitempty"`
+
+		// RejectedPhotos Photos Vrbo's review refused (position in the listing's order, and Vrbo's reason).
+		RejectedPhotos *[]struct {
+			Photo  *int    `json:"photo,omitempty"`
+			Reason *string `json:"reason,omitempty"`
+		} `json:"rejectedPhotos,omitempty"`
+
+		// ResumedPropertyId POST only: set when an unfinished Vrbo property of this listing is completed instead of starting a new one.
+		ResumedPropertyId *string                                           `json:"resumedPropertyId,omitempty"`
+		Status            *PublishListingToVrbo202JSONResponseBodyJobStatus `json:"status,omitempty"`
+
+		// Steps Steps Vrbo has finished, in order: create, amenities, property type, rooms, photos, headline + description, house rules, rate, booking options, publish, fees, cancellation policy, …
+		Steps *[]string `json:"steps,omitempty"`
+
+		// VrboListingNumber The new Vrbo listing number, once Vrbo has published it.
+		VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+	} `json:"job,omitempty"`
+	ListingId *int `json:"listingId,omitempty"`
+} {
+	return r.JSON202
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r PublishListingToVrboClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r PublishListingToVrboClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r PublishListingToVrboClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r PublishListingToVrboClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r PublishListingToVrboClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r PublishListingToVrboClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r PublishListingToVrboClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r PublishListingToVrboClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PublishListingToVrboClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PublishListingToVrboClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -51659,6 +52463,461 @@ func (r QuoteReservationClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r QuoteReservationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetReservationSummaryClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		AsOf  *openapi_types.Date                           `json:"asOf"`
+		Basis GetReservationSummary200JSONResponseBodyBasis `json:"basis"`
+
+		// From Example: 2026-11-10
+		From    openapi_types.Date                                `json:"from"`
+		GroupBy []GetReservationSummary200JSONResponseBodyGroupBy `json:"groupBy"`
+		Groups  []struct {
+			// AvailableNights Active listings × days in the period (one listing per row when grouped by `listing`).
+			//
+			// Example: 1716
+			AvailableNights *float32 `json:"availableNights,omitempty"`
+
+			// AverageLeadTimeDays Days between booking and check-in.
+			//
+			// Example: 41
+			AverageLeadTimeDays *float32 `json:"averageLeadTimeDays,omitempty"`
+
+			// AverageNightlyRate Accommodation per night (revenue per night when the accommodation subtotal is unknown).
+			//
+			// Example: 178.5
+			AverageNightlyRate *float32 `json:"averageNightlyRate,omitempty"`
+
+			// AverageStayNights Example: 5.2
+			AverageStayNights *float32 `json:"averageStayNights,omitempty"`
+
+			// Cancelled Example: 18
+			Cancelled int `json:"cancelled"`
+
+			// CancelledRevenue Example: 18250.4
+			CancelledRevenue *float32 `json:"cancelledRevenue,omitempty"`
+
+			// Channel Present when grouped by `channel`.
+			//
+			// Example: airbnb
+			Channel *string `json:"channel,omitempty"`
+
+			// Currency Money is never added across currencies: a period with two currencies has one row per currency.
+			//
+			// Example: CAD
+			Currency *string `json:"currency"`
+
+			// ListingId Present when grouped by `listing`.
+			//
+			// Example: 4011
+			ListingId *string `json:"listingId,omitempty"`
+
+			// ListingName Present when grouped by `listing`.
+			//
+			// Example: Lakeside Cabin
+			ListingName *string `json:"listingName,omitempty"`
+
+			// Month Present when grouped by `month` (YYYY-MM).
+			//
+			// Example: 2026-12
+			Month *string `json:"month,omitempty"`
+
+			// Nights Guest nights counted.
+			//
+			// Example: 1104
+			Nights int `json:"nights"`
+
+			// Occupancy Guest nights / available nights, 0–1. Only with `basis=stay`, and not when grouped by `channel`. Blocked nights are not subtracted from availability.
+			//
+			// Example: 0.6431
+			Occupancy *float32 `json:"occupancy,omitempty"`
+
+			// OwnerNights Example: 12
+			OwnerNights int `json:"ownerNights"`
+
+			// OwnerStays Example: 3
+			OwnerStays int `json:"ownerStays"`
+
+			// Payout What the host receives (`financials.host.revenue`), for reservations where it is known.
+			//
+			// Example: 18250.4
+			Payout float32 `json:"payout"`
+
+			// Pending Requests awaiting an answer; not in revenue or nights.
+			//
+			// Example: 2
+			Pending int `json:"pending"`
+
+			// Reservations Guest stays with at least one night counted (owner stays are in `ownerStays`).
+			//
+			// Example: 212
+			Reservations int `json:"reservations"`
+
+			// ReservationsWithPayout How many reservations `payout` covers.
+			ReservationsWithPayout *int `json:"reservationsWithPayout,omitempty"`
+
+			// Revenue What guests paid (`financials.totalPrice`). With `basis=stay`, a stay that crosses the window or a month edge brings only the share of its nights inside.
+			//
+			// Example: 18250.4
+			Revenue float32 `json:"revenue"`
+		} `json:"groups"`
+
+		// ListingCount Active listings covered (the occupancy denominator).
+		//
+		// Example: 19
+		ListingCount int `json:"listingCount"`
+
+		// To Example: 2027-02-09
+		To     openapi_types.Date `json:"to"`
+		Totals []struct {
+			// AvailableNights Active listings × days in the period (one listing per row when grouped by `listing`).
+			//
+			// Example: 1716
+			AvailableNights *float32 `json:"availableNights,omitempty"`
+
+			// AverageLeadTimeDays Days between booking and check-in.
+			//
+			// Example: 41
+			AverageLeadTimeDays *float32 `json:"averageLeadTimeDays,omitempty"`
+
+			// AverageNightlyRate Accommodation per night (revenue per night when the accommodation subtotal is unknown).
+			//
+			// Example: 178.5
+			AverageNightlyRate *float32 `json:"averageNightlyRate,omitempty"`
+
+			// AverageStayNights Example: 5.2
+			AverageStayNights *float32 `json:"averageStayNights,omitempty"`
+
+			// Cancelled Example: 18
+			Cancelled int `json:"cancelled"`
+
+			// CancelledRevenue Example: 18250.4
+			CancelledRevenue *float32 `json:"cancelledRevenue,omitempty"`
+
+			// Channel Present when grouped by `channel`.
+			//
+			// Example: airbnb
+			Channel *string `json:"channel,omitempty"`
+
+			// Currency Money is never added across currencies: a period with two currencies has one row per currency.
+			//
+			// Example: CAD
+			Currency *string `json:"currency"`
+
+			// ListingId Present when grouped by `listing`.
+			//
+			// Example: 4011
+			ListingId *string `json:"listingId,omitempty"`
+
+			// ListingName Present when grouped by `listing`.
+			//
+			// Example: Lakeside Cabin
+			ListingName *string `json:"listingName,omitempty"`
+
+			// Month Present when grouped by `month` (YYYY-MM).
+			//
+			// Example: 2026-12
+			Month *string `json:"month,omitempty"`
+
+			// Nights Guest nights counted.
+			//
+			// Example: 1104
+			Nights int `json:"nights"`
+
+			// Occupancy Guest nights / available nights, 0–1. Only with `basis=stay`, and not when grouped by `channel`. Blocked nights are not subtracted from availability.
+			//
+			// Example: 0.6431
+			Occupancy *float32 `json:"occupancy,omitempty"`
+
+			// OwnerNights Example: 12
+			OwnerNights int `json:"ownerNights"`
+
+			// OwnerStays Example: 3
+			OwnerStays int `json:"ownerStays"`
+
+			// Payout What the host receives (`financials.host.revenue`), for reservations where it is known.
+			//
+			// Example: 18250.4
+			Payout float32 `json:"payout"`
+
+			// Pending Requests awaiting an answer; not in revenue or nights.
+			//
+			// Example: 2
+			Pending int `json:"pending"`
+
+			// Reservations Guest stays with at least one night counted (owner stays are in `ownerStays`).
+			//
+			// Example: 212
+			Reservations int `json:"reservations"`
+
+			// ReservationsWithPayout How many reservations `payout` covers.
+			ReservationsWithPayout *int `json:"reservationsWithPayout,omitempty"`
+
+			// Revenue What guests paid (`financials.totalPrice`). With `basis=stay`, a stay that crosses the window or a month edge brings only the share of its nights inside.
+			//
+			// Example: 18250.4
+			Revenue float32 `json:"revenue"`
+		} `json:"totals"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetReservationSummaryClientResponse) GetJSON200() *struct {
+	AsOf  *openapi_types.Date                           `json:"asOf"`
+	Basis GetReservationSummary200JSONResponseBodyBasis `json:"basis"`
+
+	// From Example: 2026-11-10
+	From    openapi_types.Date                                `json:"from"`
+	GroupBy []GetReservationSummary200JSONResponseBodyGroupBy `json:"groupBy"`
+	Groups  []struct {
+		// AvailableNights Active listings × days in the period (one listing per row when grouped by `listing`).
+		//
+		// Example: 1716
+		AvailableNights *float32 `json:"availableNights,omitempty"`
+
+		// AverageLeadTimeDays Days between booking and check-in.
+		//
+		// Example: 41
+		AverageLeadTimeDays *float32 `json:"averageLeadTimeDays,omitempty"`
+
+		// AverageNightlyRate Accommodation per night (revenue per night when the accommodation subtotal is unknown).
+		//
+		// Example: 178.5
+		AverageNightlyRate *float32 `json:"averageNightlyRate,omitempty"`
+
+		// AverageStayNights Example: 5.2
+		AverageStayNights *float32 `json:"averageStayNights,omitempty"`
+
+		// Cancelled Example: 18
+		Cancelled int `json:"cancelled"`
+
+		// CancelledRevenue Example: 18250.4
+		CancelledRevenue *float32 `json:"cancelledRevenue,omitempty"`
+
+		// Channel Present when grouped by `channel`.
+		//
+		// Example: airbnb
+		Channel *string `json:"channel,omitempty"`
+
+		// Currency Money is never added across currencies: a period with two currencies has one row per currency.
+		//
+		// Example: CAD
+		Currency *string `json:"currency"`
+
+		// ListingId Present when grouped by `listing`.
+		//
+		// Example: 4011
+		ListingId *string `json:"listingId,omitempty"`
+
+		// ListingName Present when grouped by `listing`.
+		//
+		// Example: Lakeside Cabin
+		ListingName *string `json:"listingName,omitempty"`
+
+		// Month Present when grouped by `month` (YYYY-MM).
+		//
+		// Example: 2026-12
+		Month *string `json:"month,omitempty"`
+
+		// Nights Guest nights counted.
+		//
+		// Example: 1104
+		Nights int `json:"nights"`
+
+		// Occupancy Guest nights / available nights, 0–1. Only with `basis=stay`, and not when grouped by `channel`. Blocked nights are not subtracted from availability.
+		//
+		// Example: 0.6431
+		Occupancy *float32 `json:"occupancy,omitempty"`
+
+		// OwnerNights Example: 12
+		OwnerNights int `json:"ownerNights"`
+
+		// OwnerStays Example: 3
+		OwnerStays int `json:"ownerStays"`
+
+		// Payout What the host receives (`financials.host.revenue`), for reservations where it is known.
+		//
+		// Example: 18250.4
+		Payout float32 `json:"payout"`
+
+		// Pending Requests awaiting an answer; not in revenue or nights.
+		//
+		// Example: 2
+		Pending int `json:"pending"`
+
+		// Reservations Guest stays with at least one night counted (owner stays are in `ownerStays`).
+		//
+		// Example: 212
+		Reservations int `json:"reservations"`
+
+		// ReservationsWithPayout How many reservations `payout` covers.
+		ReservationsWithPayout *int `json:"reservationsWithPayout,omitempty"`
+
+		// Revenue What guests paid (`financials.totalPrice`). With `basis=stay`, a stay that crosses the window or a month edge brings only the share of its nights inside.
+		//
+		// Example: 18250.4
+		Revenue float32 `json:"revenue"`
+	} `json:"groups"`
+
+	// ListingCount Active listings covered (the occupancy denominator).
+	//
+	// Example: 19
+	ListingCount int `json:"listingCount"`
+
+	// To Example: 2027-02-09
+	To     openapi_types.Date `json:"to"`
+	Totals []struct {
+		// AvailableNights Active listings × days in the period (one listing per row when grouped by `listing`).
+		//
+		// Example: 1716
+		AvailableNights *float32 `json:"availableNights,omitempty"`
+
+		// AverageLeadTimeDays Days between booking and check-in.
+		//
+		// Example: 41
+		AverageLeadTimeDays *float32 `json:"averageLeadTimeDays,omitempty"`
+
+		// AverageNightlyRate Accommodation per night (revenue per night when the accommodation subtotal is unknown).
+		//
+		// Example: 178.5
+		AverageNightlyRate *float32 `json:"averageNightlyRate,omitempty"`
+
+		// AverageStayNights Example: 5.2
+		AverageStayNights *float32 `json:"averageStayNights,omitempty"`
+
+		// Cancelled Example: 18
+		Cancelled int `json:"cancelled"`
+
+		// CancelledRevenue Example: 18250.4
+		CancelledRevenue *float32 `json:"cancelledRevenue,omitempty"`
+
+		// Channel Present when grouped by `channel`.
+		//
+		// Example: airbnb
+		Channel *string `json:"channel,omitempty"`
+
+		// Currency Money is never added across currencies: a period with two currencies has one row per currency.
+		//
+		// Example: CAD
+		Currency *string `json:"currency"`
+
+		// ListingId Present when grouped by `listing`.
+		//
+		// Example: 4011
+		ListingId *string `json:"listingId,omitempty"`
+
+		// ListingName Present when grouped by `listing`.
+		//
+		// Example: Lakeside Cabin
+		ListingName *string `json:"listingName,omitempty"`
+
+		// Month Present when grouped by `month` (YYYY-MM).
+		//
+		// Example: 2026-12
+		Month *string `json:"month,omitempty"`
+
+		// Nights Guest nights counted.
+		//
+		// Example: 1104
+		Nights int `json:"nights"`
+
+		// Occupancy Guest nights / available nights, 0–1. Only with `basis=stay`, and not when grouped by `channel`. Blocked nights are not subtracted from availability.
+		//
+		// Example: 0.6431
+		Occupancy *float32 `json:"occupancy,omitempty"`
+
+		// OwnerNights Example: 12
+		OwnerNights int `json:"ownerNights"`
+
+		// OwnerStays Example: 3
+		OwnerStays int `json:"ownerStays"`
+
+		// Payout What the host receives (`financials.host.revenue`), for reservations where it is known.
+		//
+		// Example: 18250.4
+		Payout float32 `json:"payout"`
+
+		// Pending Requests awaiting an answer; not in revenue or nights.
+		//
+		// Example: 2
+		Pending int `json:"pending"`
+
+		// Reservations Guest stays with at least one night counted (owner stays are in `ownerStays`).
+		//
+		// Example: 212
+		Reservations int `json:"reservations"`
+
+		// ReservationsWithPayout How many reservations `payout` covers.
+		ReservationsWithPayout *int `json:"reservationsWithPayout,omitempty"`
+
+		// Revenue What guests paid (`financials.totalPrice`). With `basis=stay`, a stay that crosses the window or a month edge brings only the share of its nights inside.
+		//
+		// Example: 18250.4
+		Revenue float32 `json:"revenue"`
+	} `json:"totals"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetReservationSummaryClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetReservationSummaryClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetReservationSummaryClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetReservationSummaryClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetReservationSummaryClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetReservationSummaryClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetReservationSummaryClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetReservationSummaryClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -55596,8 +56855,10 @@ func (c *ClientWithResponses) SendAirbnbMessageWithResponse(ctx context.Context,
 //
 // - `edit` — replace message text (requires `message`).
 // - `unsend` — retract the message.
-// - `read` — mark the message as read.
-// - `react` — add a reaction (requires `reaction`).
+// - `read` — mark the message as read on Airbnb, as the host. Airbnb accepts it (it has been used in production); whether and when the guest sees it as read is up to Airbnb and is not confirmed yet. Your side's read state on each guest message is `hostReadAt` on `GET /v1/conversations/{id}/messages`.
+// - `react` — add a reaction (requires `reaction`, e.g. `"👍"`). Airbnb decides which reactions it accepts: a refusal is `422 reaction_not_supported` naming the field, with Airbnb's reason. Removing a reaction is not available yet.
+//
+// Reactions and read receipts from the guest's side arrive on each message (`reactions`, `readAt`) and as the `reservation.message.reaction` and `reservation.message.read` webhooks.
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
@@ -55620,8 +56881,10 @@ func (c *ClientWithResponses) UpdateAirbnbMessageWithBodyWithResponse(ctx contex
 //
 // - `edit` — replace message text (requires `message`).
 // - `unsend` — retract the message.
-// - `read` — mark the message as read.
-// - `react` — add a reaction (requires `reaction`).
+// - `read` — mark the message as read on Airbnb, as the host. Airbnb accepts it (it has been used in production); whether and when the guest sees it as read is up to Airbnb and is not confirmed yet. Your side's read state on each guest message is `hostReadAt` on `GET /v1/conversations/{id}/messages`.
+// - `react` — add a reaction (requires `reaction`, e.g. `"👍"`). Airbnb decides which reactions it accepts: a refusal is `422 reaction_not_supported` naming the field, with Airbnb's reason. Removing a reaction is not available yet.
+//
+// Reactions and read receipts from the guest's side arrive on each message (`reactions`, `readAt`) and as the `reservation.message.reaction` and `reservation.message.read` webhooks.
 //
 // Requires a connected Airbnb host, else `404 no_connection`.
 //
@@ -59373,7 +60636,7 @@ func (c *ClientWithResponses) ListListingCompsWithResponse(ctx context.Context, 
 //
 // **Local write only — NOT a channel publish.** This mutates Repull's own copy of the content. It does NOT push to Airbnb / Booking.com; it marks the channels dirty so a later publish knows what changed. Distribution stays a separate explicit step.
 //
-// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
+// **Photos:** `photos` is a list of hosted image URLs (or structured refs) saved to the listing in order: a full replacement by default, or added after the existing ones with `photosMode: "append"`. A publish sends them to the channels. An array with no valid http(s) URL is reported in `deferred` and the existing photos are left alone.
 //
 // Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 //
@@ -59402,7 +60665,7 @@ func (c *ClientWithResponses) UpdateListingContentWithBodyWithResponse(ctx conte
 //
 // **Local write only — NOT a channel publish.** This mutates Repull's own copy of the content. It does NOT push to Airbnb / Booking.com; it marks the channels dirty so a later publish knows what changed. Distribution stays a separate explicit step.
 //
-// **Photos are deferred:** a provided `photos` array is echoed back in the `deferred` field and NOT persisted (media ingestion is a follow-up).
+// **Photos:** `photos` is a list of hosted image URLs (or structured refs) saved to the listing in order: a full replacement by default, or added after the existing ones with `photosMode: "append"`. A publish sends them to the channels. An array with no valid http(s) URL is reported in `deferred` and the existing photos are left alone.
 //
 // Cross-tenant access (a listing that belongs to a different workspace) returns 404 — never 403. This endpoint is served even when the account is over the plan-listings cap, since editing content on a listing you already own never grows the portfolio.
 //
@@ -59461,6 +60724,7 @@ func (c *ClientWithResponses) GenerateListingContentWithResponse(ctx context.Con
 //
 // - **Airbnb** — one markup per listing.
 // - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 //
 // Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 //
@@ -59483,10 +60747,13 @@ func (c *ClientWithResponses) GetListingMarkupsWithResponse(ctx context.Context,
 //
 // - **Airbnb** — one markup per listing.
 // - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 //
 // Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 //
 // On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+//
+// On Vrbo the markup belongs to the connected Vrbo account, so setting it reprices every listing linked on that account (`affectedListingIds`). A listing linked on more than one account names one with `accountId`, else `409 ambiguous_vrbo_account`; a listing not linked to Vrbo is `409 listing_not_on_vrbo`.
 //
 // `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
 //
@@ -59509,10 +60776,13 @@ func (c *ClientWithResponses) SetListingMarkupWithBodyWithResponse(ctx context.C
 //
 // - **Airbnb** — one markup per listing.
 // - **Booking.com** — one markup per **property**, shared by every listing priced through it (`listingIds` names them).
+// - **Vrbo** — one markup per connected **Vrbo account**, shared by every listing linked on it (`listingIds` names them). Prices reach Vrbo through its calendar queue.
 //
 // Returns `404 not_found` for a listing that does not exist or is not in this workspace, and `403 listing_inactive` for an inactive one.
 //
 // On Booking.com the markup belongs to the property, so setting it reprices every listing on that property (`affectedListingIds`). A listing on more than one property must name one with `hotelId`; without it the request is refused with `409 ambiguous_booking_mapping` listing the candidates, rather than repricing a property it guessed.
+//
+// On Vrbo the markup belongs to the connected Vrbo account, so setting it reprices every listing linked on that account (`affectedListingIds`). A listing linked on more than one account names one with `accountId`, else `409 ambiguous_vrbo_account`; a listing not linked to Vrbo is `409 listing_not_on_vrbo`.
 //
 // `markupPercent` is a percentage — `15` for 15%. A value between 0 and 1 is refused as a probable fraction, with the number to send instead.
 //
@@ -60157,6 +61427,67 @@ func (c *ClientWithResponses) PublishListingToBookingWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParsePublishListingToBookingClientResponse(rsp)
+}
+
+// GetVrboPublishJobWithResponse Progress of a Vrbo listing creation
+//
+// Each step Vrbo has finished, Vrbo's reason when it failed, the new Vrbo listing number once published, and photos Vrbo's review refused. When Vrbo has published the listing, this read links the new unit to the listing with calendar sync on and queues the whole calendar — poll until `linked` is true. A job is remembered while it runs and for a while after; an unknown job is `404` (publish again to resume).
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/listings/{id}/publish/vrbo (the `GetVrboPublishJob` operationId).
+func (c *ClientWithResponses) GetVrboPublishJobWithResponse(ctx context.Context, id int, params *GetVrboPublishJobParams, reqEditors ...RequestEditorFn) (*GetVrboPublishJobClientResponse, error) {
+	rsp, err := c.GetVrboPublishJob(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVrboPublishJobClientResponse(rsp)
+}
+
+// PublishListingToVrboWithBodyWithResponse Create a listing on Vrbo
+//
+// Creates the listing on Vrbo in the host's connected Vrbo account, from the listing's content: title and description, property type, rooms and beds, amenities, photos, house rules (guests, minimum age, children, pets, smoking, events), check-in and check-out times, minimum stay, advance notice and booking window, the nightly price, cleaning, pet and extra-guest fees, the cancellation policy and the licence number. Vrbo's automatic new-listing discount is turned off so the listing sells at your prices.
+//
+// **It is a job.** Vrbo's onboarding takes 5–15 minutes (photos go up one at a time), so this answers `202` with `job.jobId`. Poll `GET /v1/listings/{id}/publish/vrbo?jobId=` for each finished step. When Vrbo has published the listing, that read links the new Vrbo unit to the listing with calendar sync on and queues the whole calendar (prices, availability, minimum stay) to Vrbo: **keep polling until `linked` is true.**
+//
+// **Which account.** A workspace with one Vrbo account needs nothing. With several, name it with `accountId` (`"vrbo:13"`, as the connection id). An account connected with messaging access is refused with `403 vrbo_messaging_access`.
+//
+// **Missing content** (street address, city, photos, nightly price, description) is refused with `422 listing_incomplete` naming what is missing. A listing already linked to a Vrbo unit is `409 listing_already_on_vrbo`. A run that failed part-way leaves an unpublished Vrbo property: publishing again completes it instead of creating a second one.
+//
+// This creates a Vrbo listing. Prices, availability and minimum stay on an existing one change through `PUT /v1/availability/{propertyId}`; other content of an existing Vrbo listing is edited on Vrbo.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/publish/vrbo (the `PublishListingToVrbo` operationId).
+func (c *ClientWithResponses) PublishListingToVrboWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishListingToVrboClientResponse, error) {
+	rsp, err := c.PublishListingToVrboWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePublishListingToVrboClientResponse(rsp)
+}
+
+// PublishListingToVrboWithResponse Create a listing on Vrbo
+//
+// Creates the listing on Vrbo in the host's connected Vrbo account, from the listing's content: title and description, property type, rooms and beds, amenities, photos, house rules (guests, minimum age, children, pets, smoking, events), check-in and check-out times, minimum stay, advance notice and booking window, the nightly price, cleaning, pet and extra-guest fees, the cancellation policy and the licence number. Vrbo's automatic new-listing discount is turned off so the listing sells at your prices.
+//
+// **It is a job.** Vrbo's onboarding takes 5–15 minutes (photos go up one at a time), so this answers `202` with `job.jobId`. Poll `GET /v1/listings/{id}/publish/vrbo?jobId=` for each finished step. When Vrbo has published the listing, that read links the new Vrbo unit to the listing with calendar sync on and queues the whole calendar (prices, availability, minimum stay) to Vrbo: **keep polling until `linked` is true.**
+//
+// **Which account.** A workspace with one Vrbo account needs nothing. With several, name it with `accountId` (`"vrbo:13"`, as the connection id). An account connected with messaging access is refused with `403 vrbo_messaging_access`.
+//
+// **Missing content** (street address, city, photos, nightly price, description) is refused with `422 listing_incomplete` naming what is missing. A listing already linked to a Vrbo unit is `409 listing_already_on_vrbo`. A run that failed part-way leaves an unpublished Vrbo property: publishing again completes it instead of creating a second one.
+//
+// This creates a Vrbo listing. Prices, availability and minimum stay on an existing one change through `PUT /v1/availability/{propertyId}`; other content of an existing Vrbo listing is edited on Vrbo.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/publish/vrbo (the `PublishListingToVrbo` operationId).
+func (c *ClientWithResponses) PublishListingToVrboWithResponse(ctx context.Context, id int, body PublishListingToVrboJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToVrboClientResponse, error) {
+	rsp, err := c.PublishListingToVrbo(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePublishListingToVrboClientResponse(rsp)
 }
 
 // PullListingFromAirbnbWithBodyWithResponse Refresh a listing from Airbnb
@@ -60811,6 +62142,27 @@ func (c *ClientWithResponses) QuoteReservationWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseQuoteReservationClientResponse(rsp)
+}
+
+// GetReservationSummaryWithResponse Summarize reservations for a period
+//
+// Bookings, nights, revenue, payout, average nightly rate, occupancy and cancellations for a period, in one small response — optionally grouped by `month`, `listing` and/or `channel`. Use it for reporting instead of paging through `GET /v1/reservations`.
+//
+// **Counting (`basis`):** `stay` (default) counts the nights that fall inside `from`–`to` and splits each reservation’s money across its nights, so a stay crossing the window or a month edge brings only its share. `check_in` and `booked` count whole reservations by their check-in or booking date.
+//
+// **Pace (`as_of`):** keeps only what was on the books at the end of that day — booked by then and not yet cancelled. To compare the next three months with the same months last year like for like, ask for last year’s window with `as_of` set to today’s date one year ago.
+//
+// Owner stays are reported apart and never count as revenue or occupancy. Pending requests are counted in `pending` only. Reservations on inactive listings are left out.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/reservations/summary (the `GetReservationSummary` operationId).
+func (c *ClientWithResponses) GetReservationSummaryWithResponse(ctx context.Context, params *GetReservationSummaryParams, reqEditors ...RequestEditorFn) (*GetReservationSummaryClientResponse, error) {
+	rsp, err := c.GetReservationSummary(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetReservationSummaryClientResponse(rsp)
 }
 
 // GetReservationWithResponse Get reservation details
@@ -72144,7 +73496,22 @@ func ParseGetListingMarkupsClientResponse(rsp *http.Response) (*GetListingMarkup
 			} `json:"booking,omitempty"`
 
 			// Id Repull listing id.
-			Id *string `json:"id,omitempty"`
+			Id   *string `json:"id,omitempty"`
+			Vrbo *[]struct {
+				// AccountId The Vrbo account, as its connection id (`vrbo:13`).
+				AccountId *string `json:"accountId,omitempty"`
+
+				// ListingIds Listings in this workspace linked on this Vrbo account — all share this markup.
+				ListingIds *[]string `json:"listingIds,omitempty"`
+
+				// MarkupPercent Percent added on Vrbo, for every listing linked on this account.
+				//
+				// Example: 20
+				MarkupPercent *float32 `json:"markupPercent,omitempty"`
+
+				// VrboListingNumber The Vrbo listing number this listing is linked to.
+				VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+			} `json:"vrbo,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -73434,6 +74801,199 @@ func ParsePublishListingToBookingClientResponse(rsp *http.Response) (*PublishLis
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVrboPublishJobClientResponse parses an HTTP response from a GetVrboPublishJobWithResponse call
+func ParseGetVrboPublishJobClientResponse(rsp *http.Response) (*GetVrboPublishJobClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVrboPublishJobClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Channel *GetVrboPublishJob200JSONResponseBodyChannel `json:"channel,omitempty"`
+			Job     *struct {
+				// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
+				AccountId *int `json:"accountId,omitempty"`
+
+				// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
+				Adjustments *[]string `json:"adjustments,omitempty"`
+
+				// Error Vrbo's reason when `status` is `failed`.
+				Error *string `json:"error,omitempty"`
+
+				// JobId Pass to `GET /v1/listings/{id}/publish/vrbo?jobId=`.
+				JobId *string `json:"jobId,omitempty"`
+
+				// Linked The new Vrbo unit is linked to the listing with calendar sync on, and the whole calendar has been queued to Vrbo.
+				Linked    *bool `json:"linked,omitempty"`
+				ListingId *int  `json:"listingId,omitempty"`
+
+				// PropertyId The Vrbo property being built. Send it back as `propertyId` to finish a run that failed part-way.
+				PropertyId *string `json:"propertyId,omitempty"`
+
+				// RejectedPhotos Photos Vrbo's review refused (position in the listing's order, and Vrbo's reason).
+				RejectedPhotos *[]struct {
+					Photo  *int    `json:"photo,omitempty"`
+					Reason *string `json:"reason,omitempty"`
+				} `json:"rejectedPhotos,omitempty"`
+
+				// ResumedPropertyId POST only: set when an unfinished Vrbo property of this listing is completed instead of starting a new one.
+				ResumedPropertyId *string                                        `json:"resumedPropertyId,omitempty"`
+				Status            *GetVrboPublishJob200JSONResponseBodyJobStatus `json:"status,omitempty"`
+
+				// Steps Steps Vrbo has finished, in order: create, amenities, property type, rooms, photos, headline + description, house rules, rate, booking options, publish, fees, cancellation policy, …
+				Steps *[]string `json:"steps,omitempty"`
+
+				// VrboListingNumber The new Vrbo listing number, once Vrbo has published it.
+				VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+			} `json:"job,omitempty"`
+			ListingId *int `json:"listingId,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePublishListingToVrboClientResponse parses an HTTP response from a PublishListingToVrboWithResponse call
+func ParsePublishListingToVrboClientResponse(rsp *http.Response) (*PublishListingToVrboClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PublishListingToVrboClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest struct {
+			Channel *PublishListingToVrbo202JSONResponseBodyChannel `json:"channel,omitempty"`
+			Job     *struct {
+				// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
+				AccountId *int `json:"accountId,omitempty"`
+
+				// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
+				Adjustments *[]string `json:"adjustments,omitempty"`
+
+				// Error Vrbo's reason when `status` is `failed`.
+				Error *string `json:"error,omitempty"`
+
+				// JobId Pass to `GET /v1/listings/{id}/publish/vrbo?jobId=`.
+				JobId *string `json:"jobId,omitempty"`
+
+				// Linked The new Vrbo unit is linked to the listing with calendar sync on, and the whole calendar has been queued to Vrbo.
+				Linked    *bool `json:"linked,omitempty"`
+				ListingId *int  `json:"listingId,omitempty"`
+
+				// PropertyId The Vrbo property being built. Send it back as `propertyId` to finish a run that failed part-way.
+				PropertyId *string `json:"propertyId,omitempty"`
+
+				// RejectedPhotos Photos Vrbo's review refused (position in the listing's order, and Vrbo's reason).
+				RejectedPhotos *[]struct {
+					Photo  *int    `json:"photo,omitempty"`
+					Reason *string `json:"reason,omitempty"`
+				} `json:"rejectedPhotos,omitempty"`
+
+				// ResumedPropertyId POST only: set when an unfinished Vrbo property of this listing is completed instead of starting a new one.
+				ResumedPropertyId *string                                           `json:"resumedPropertyId,omitempty"`
+				Status            *PublishListingToVrbo202JSONResponseBodyJobStatus `json:"status,omitempty"`
+
+				// Steps Steps Vrbo has finished, in order: create, amenities, property type, rooms, photos, headline + description, house rules, rate, booking options, publish, fees, cancellation policy, …
+				Steps *[]string `json:"steps,omitempty"`
+
+				// VrboListingNumber The new Vrbo listing number, once Vrbo has published it.
+				VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+			} `json:"job,omitempty"`
+			ListingId *int `json:"listingId,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -74889,6 +76449,253 @@ func ParseQuoteReservationClientResponse(rsp *http.Response) (*QuoteReservationC
 			return nil, err
 		}
 		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetReservationSummaryClientResponse parses an HTTP response from a GetReservationSummaryWithResponse call
+func ParseGetReservationSummaryClientResponse(rsp *http.Response) (*GetReservationSummaryClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetReservationSummaryClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AsOf  *openapi_types.Date                           `json:"asOf"`
+			Basis GetReservationSummary200JSONResponseBodyBasis `json:"basis"`
+
+			// From Example: 2026-11-10
+			From    openapi_types.Date                                `json:"from"`
+			GroupBy []GetReservationSummary200JSONResponseBodyGroupBy `json:"groupBy"`
+			Groups  []struct {
+				// AvailableNights Active listings × days in the period (one listing per row when grouped by `listing`).
+				//
+				// Example: 1716
+				AvailableNights *float32 `json:"availableNights,omitempty"`
+
+				// AverageLeadTimeDays Days between booking and check-in.
+				//
+				// Example: 41
+				AverageLeadTimeDays *float32 `json:"averageLeadTimeDays,omitempty"`
+
+				// AverageNightlyRate Accommodation per night (revenue per night when the accommodation subtotal is unknown).
+				//
+				// Example: 178.5
+				AverageNightlyRate *float32 `json:"averageNightlyRate,omitempty"`
+
+				// AverageStayNights Example: 5.2
+				AverageStayNights *float32 `json:"averageStayNights,omitempty"`
+
+				// Cancelled Example: 18
+				Cancelled int `json:"cancelled"`
+
+				// CancelledRevenue Example: 18250.4
+				CancelledRevenue *float32 `json:"cancelledRevenue,omitempty"`
+
+				// Channel Present when grouped by `channel`.
+				//
+				// Example: airbnb
+				Channel *string `json:"channel,omitempty"`
+
+				// Currency Money is never added across currencies: a period with two currencies has one row per currency.
+				//
+				// Example: CAD
+				Currency *string `json:"currency"`
+
+				// ListingId Present when grouped by `listing`.
+				//
+				// Example: 4011
+				ListingId *string `json:"listingId,omitempty"`
+
+				// ListingName Present when grouped by `listing`.
+				//
+				// Example: Lakeside Cabin
+				ListingName *string `json:"listingName,omitempty"`
+
+				// Month Present when grouped by `month` (YYYY-MM).
+				//
+				// Example: 2026-12
+				Month *string `json:"month,omitempty"`
+
+				// Nights Guest nights counted.
+				//
+				// Example: 1104
+				Nights int `json:"nights"`
+
+				// Occupancy Guest nights / available nights, 0–1. Only with `basis=stay`, and not when grouped by `channel`. Blocked nights are not subtracted from availability.
+				//
+				// Example: 0.6431
+				Occupancy *float32 `json:"occupancy,omitempty"`
+
+				// OwnerNights Example: 12
+				OwnerNights int `json:"ownerNights"`
+
+				// OwnerStays Example: 3
+				OwnerStays int `json:"ownerStays"`
+
+				// Payout What the host receives (`financials.host.revenue`), for reservations where it is known.
+				//
+				// Example: 18250.4
+				Payout float32 `json:"payout"`
+
+				// Pending Requests awaiting an answer; not in revenue or nights.
+				//
+				// Example: 2
+				Pending int `json:"pending"`
+
+				// Reservations Guest stays with at least one night counted (owner stays are in `ownerStays`).
+				//
+				// Example: 212
+				Reservations int `json:"reservations"`
+
+				// ReservationsWithPayout How many reservations `payout` covers.
+				ReservationsWithPayout *int `json:"reservationsWithPayout,omitempty"`
+
+				// Revenue What guests paid (`financials.totalPrice`). With `basis=stay`, a stay that crosses the window or a month edge brings only the share of its nights inside.
+				//
+				// Example: 18250.4
+				Revenue float32 `json:"revenue"`
+			} `json:"groups"`
+
+			// ListingCount Active listings covered (the occupancy denominator).
+			//
+			// Example: 19
+			ListingCount int `json:"listingCount"`
+
+			// To Example: 2027-02-09
+			To     openapi_types.Date `json:"to"`
+			Totals []struct {
+				// AvailableNights Active listings × days in the period (one listing per row when grouped by `listing`).
+				//
+				// Example: 1716
+				AvailableNights *float32 `json:"availableNights,omitempty"`
+
+				// AverageLeadTimeDays Days between booking and check-in.
+				//
+				// Example: 41
+				AverageLeadTimeDays *float32 `json:"averageLeadTimeDays,omitempty"`
+
+				// AverageNightlyRate Accommodation per night (revenue per night when the accommodation subtotal is unknown).
+				//
+				// Example: 178.5
+				AverageNightlyRate *float32 `json:"averageNightlyRate,omitempty"`
+
+				// AverageStayNights Example: 5.2
+				AverageStayNights *float32 `json:"averageStayNights,omitempty"`
+
+				// Cancelled Example: 18
+				Cancelled int `json:"cancelled"`
+
+				// CancelledRevenue Example: 18250.4
+				CancelledRevenue *float32 `json:"cancelledRevenue,omitempty"`
+
+				// Channel Present when grouped by `channel`.
+				//
+				// Example: airbnb
+				Channel *string `json:"channel,omitempty"`
+
+				// Currency Money is never added across currencies: a period with two currencies has one row per currency.
+				//
+				// Example: CAD
+				Currency *string `json:"currency"`
+
+				// ListingId Present when grouped by `listing`.
+				//
+				// Example: 4011
+				ListingId *string `json:"listingId,omitempty"`
+
+				// ListingName Present when grouped by `listing`.
+				//
+				// Example: Lakeside Cabin
+				ListingName *string `json:"listingName,omitempty"`
+
+				// Month Present when grouped by `month` (YYYY-MM).
+				//
+				// Example: 2026-12
+				Month *string `json:"month,omitempty"`
+
+				// Nights Guest nights counted.
+				//
+				// Example: 1104
+				Nights int `json:"nights"`
+
+				// Occupancy Guest nights / available nights, 0–1. Only with `basis=stay`, and not when grouped by `channel`. Blocked nights are not subtracted from availability.
+				//
+				// Example: 0.6431
+				Occupancy *float32 `json:"occupancy,omitempty"`
+
+				// OwnerNights Example: 12
+				OwnerNights int `json:"ownerNights"`
+
+				// OwnerStays Example: 3
+				OwnerStays int `json:"ownerStays"`
+
+				// Payout What the host receives (`financials.host.revenue`), for reservations where it is known.
+				//
+				// Example: 18250.4
+				Payout float32 `json:"payout"`
+
+				// Pending Requests awaiting an answer; not in revenue or nights.
+				//
+				// Example: 2
+				Pending int `json:"pending"`
+
+				// Reservations Guest stays with at least one night counted (owner stays are in `ownerStays`).
+				//
+				// Example: 212
+				Reservations int `json:"reservations"`
+
+				// ReservationsWithPayout How many reservations `payout` covers.
+				ReservationsWithPayout *int `json:"reservationsWithPayout,omitempty"`
+
+				// Revenue What guests paid (`financials.totalPrice`). With `basis=stay`, a stay that crosses the window or a month edge brings only the share of its nights inside.
+				//
+				// Example: 18250.4
+				Revenue float32 `json:"revenue"`
+			} `json:"totals"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 

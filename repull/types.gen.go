@@ -3817,6 +3817,54 @@ func (e ReservationCreatedEventEvent) Valid() bool {
 	}
 }
 
+// Defines values for ReservationMessageReactionEventEvent.
+const (
+	ReservationMessageReactionEventEventReservationMessageReaction ReservationMessageReactionEventEvent = "reservation.message.reaction"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageReactionEventEvent enum.
+func (e ReservationMessageReactionEventEvent) Valid() bool {
+	switch e {
+	case ReservationMessageReactionEventEventReservationMessageReaction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationMessageReactionPayloadAction.
+const (
+	Added   ReservationMessageReactionPayloadAction = "added"
+	Removed ReservationMessageReactionPayloadAction = "removed"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageReactionPayloadAction enum.
+func (e ReservationMessageReactionPayloadAction) Valid() bool {
+	switch e {
+	case Added:
+		return true
+	case Removed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReservationMessageReadEventEvent.
+const (
+	ReservationMessageReadEventEventReservationMessageRead ReservationMessageReadEventEvent = "reservation.message.read"
+)
+
+// Valid indicates whether the value is a known member of the ReservationMessageReadEventEvent enum.
+func (e ReservationMessageReadEventEvent) Valid() bool {
+	switch e {
+	case ReservationMessageReadEventEventReservationMessageRead:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ReservationMessageReceivedEventEvent.
 const (
 	ReservationMessageReceivedEventEventReservationMessageReceived ReservationMessageReceivedEventEvent = "reservation.message.received"
@@ -4321,6 +4369,8 @@ const (
 	WebhookEventTypeReservationAlterationResponded WebhookEventType = "reservation.alteration.responded"
 	WebhookEventTypeReservationCancelled           WebhookEventType = "reservation.cancelled"
 	WebhookEventTypeReservationCreated             WebhookEventType = "reservation.created"
+	WebhookEventTypeReservationMessageReaction     WebhookEventType = "reservation.message.reaction"
+	WebhookEventTypeReservationMessageRead         WebhookEventType = "reservation.message.read"
 	WebhookEventTypeReservationMessageReceived     WebhookEventType = "reservation.message.received"
 	WebhookEventTypeReservationMessageSent         WebhookEventType = "reservation.message.sent"
 	WebhookEventTypeReservationMessageUpdated      WebhookEventType = "reservation.message.updated"
@@ -4391,6 +4441,10 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeReservationCancelled:
 		return true
 	case WebhookEventTypeReservationCreated:
+		return true
+	case WebhookEventTypeReservationMessageReaction:
+		return true
+	case WebhookEventTypeReservationMessageRead:
 		return true
 	case WebhookEventTypeReservationMessageReceived:
 		return true
@@ -6308,6 +6362,7 @@ func (e GetListingCalendarSync200JSONResponseBodyChannelsStatus) Valid() bool {
 const (
 	SetListingMarkupJSONBodyChannelAirbnb  SetListingMarkupJSONBodyChannel = "airbnb"
 	SetListingMarkupJSONBodyChannelBooking SetListingMarkupJSONBodyChannel = "booking"
+	SetListingMarkupJSONBodyChannelVrbo    SetListingMarkupJSONBodyChannel = "vrbo"
 )
 
 // Valid indicates whether the value is a known member of the SetListingMarkupJSONBodyChannel enum.
@@ -6316,6 +6371,80 @@ func (e SetListingMarkupJSONBodyChannel) Valid() bool {
 	case SetListingMarkupJSONBodyChannelAirbnb:
 		return true
 	case SetListingMarkupJSONBodyChannelBooking:
+		return true
+	case SetListingMarkupJSONBodyChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboPublishJob200JSONResponseBodyChannel.
+const (
+	GetVrboPublishJob200JSONResponseBodyChannelVrbo GetVrboPublishJob200JSONResponseBodyChannel = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboPublishJob200JSONResponseBodyChannel enum.
+func (e GetVrboPublishJob200JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case GetVrboPublishJob200JSONResponseBodyChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboPublishJob200JSONResponseBodyJobStatus.
+const (
+	GetVrboPublishJob200JSONResponseBodyJobStatusDone    GetVrboPublishJob200JSONResponseBodyJobStatus = "done"
+	GetVrboPublishJob200JSONResponseBodyJobStatusFailed  GetVrboPublishJob200JSONResponseBodyJobStatus = "failed"
+	GetVrboPublishJob200JSONResponseBodyJobStatusRunning GetVrboPublishJob200JSONResponseBodyJobStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboPublishJob200JSONResponseBodyJobStatus enum.
+func (e GetVrboPublishJob200JSONResponseBodyJobStatus) Valid() bool {
+	switch e {
+	case GetVrboPublishJob200JSONResponseBodyJobStatusDone:
+		return true
+	case GetVrboPublishJob200JSONResponseBodyJobStatusFailed:
+		return true
+	case GetVrboPublishJob200JSONResponseBodyJobStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublishListingToVrbo202JSONResponseBodyChannel.
+const (
+	PublishListingToVrbo202JSONResponseBodyChannelVrbo PublishListingToVrbo202JSONResponseBodyChannel = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the PublishListingToVrbo202JSONResponseBodyChannel enum.
+func (e PublishListingToVrbo202JSONResponseBodyChannel) Valid() bool {
+	switch e {
+	case PublishListingToVrbo202JSONResponseBodyChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublishListingToVrbo202JSONResponseBodyJobStatus.
+const (
+	PublishListingToVrbo202JSONResponseBodyJobStatusDone    PublishListingToVrbo202JSONResponseBodyJobStatus = "done"
+	PublishListingToVrbo202JSONResponseBodyJobStatusFailed  PublishListingToVrbo202JSONResponseBodyJobStatus = "failed"
+	PublishListingToVrbo202JSONResponseBodyJobStatusRunning PublishListingToVrbo202JSONResponseBodyJobStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the PublishListingToVrbo202JSONResponseBodyJobStatus enum.
+func (e PublishListingToVrbo202JSONResponseBodyJobStatus) Valid() bool {
+	switch e {
+	case PublishListingToVrbo202JSONResponseBodyJobStatusDone:
+		return true
+	case PublishListingToVrbo202JSONResponseBodyJobStatusFailed:
+		return true
+	case PublishListingToVrbo202JSONResponseBodyJobStatusRunning:
 		return true
 	default:
 		return false
@@ -6811,6 +6940,69 @@ func (e ListReservationsParamsStatus) Valid() bool {
 	}
 }
 
+// Defines values for GetReservationSummaryParamsBasis.
+const (
+	GetReservationSummaryParamsBasisBooked  GetReservationSummaryParamsBasis = "booked"
+	GetReservationSummaryParamsBasisCheckIn GetReservationSummaryParamsBasis = "check_in"
+	GetReservationSummaryParamsBasisStay    GetReservationSummaryParamsBasis = "stay"
+)
+
+// Valid indicates whether the value is a known member of the GetReservationSummaryParamsBasis enum.
+func (e GetReservationSummaryParamsBasis) Valid() bool {
+	switch e {
+	case GetReservationSummaryParamsBasisBooked:
+		return true
+	case GetReservationSummaryParamsBasisCheckIn:
+		return true
+	case GetReservationSummaryParamsBasisStay:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetReservationSummary200JSONResponseBodyBasis.
+const (
+	GetReservationSummary200JSONResponseBodyBasisBooked  GetReservationSummary200JSONResponseBodyBasis = "booked"
+	GetReservationSummary200JSONResponseBodyBasisCheckIn GetReservationSummary200JSONResponseBodyBasis = "check_in"
+	GetReservationSummary200JSONResponseBodyBasisStay    GetReservationSummary200JSONResponseBodyBasis = "stay"
+)
+
+// Valid indicates whether the value is a known member of the GetReservationSummary200JSONResponseBodyBasis enum.
+func (e GetReservationSummary200JSONResponseBodyBasis) Valid() bool {
+	switch e {
+	case GetReservationSummary200JSONResponseBodyBasisBooked:
+		return true
+	case GetReservationSummary200JSONResponseBodyBasisCheckIn:
+		return true
+	case GetReservationSummary200JSONResponseBodyBasisStay:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetReservationSummary200JSONResponseBodyGroupBy.
+const (
+	GetReservationSummary200JSONResponseBodyGroupByChannel GetReservationSummary200JSONResponseBodyGroupBy = "channel"
+	GetReservationSummary200JSONResponseBodyGroupByListing GetReservationSummary200JSONResponseBodyGroupBy = "listing"
+	GetReservationSummary200JSONResponseBodyGroupByMonth   GetReservationSummary200JSONResponseBodyGroupBy = "month"
+)
+
+// Valid indicates whether the value is a known member of the GetReservationSummary200JSONResponseBodyGroupBy enum.
+func (e GetReservationSummary200JSONResponseBodyGroupBy) Valid() bool {
+	switch e {
+	case GetReservationSummary200JSONResponseBodyGroupByChannel:
+		return true
+	case GetReservationSummary200JSONResponseBodyGroupByListing:
+		return true
+	case GetReservationSummary200JSONResponseBodyGroupByMonth:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AcceptReservationRequest200JSONResponseBodyAction.
 const (
 	AcceptReservationRequest200JSONResponseBodyActionAccept  AcceptReservationRequest200JSONResponseBodyAction = "accept"
@@ -7298,7 +7490,7 @@ type AccountDisconnectedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider.
+	// Data Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider. Sent for Airbnb, Booking.com Extranet logins, Vrbo logins and PMS connections (Hostaway, Guesty, Smoobu, Lodgify, Beds24, Hospitable, OwnerRez, iGMS, BookingSync, Track, Mews, Cloudbeds, Zeevou, RentalReady, CiiRUS, …). A PMS connection is reported when the PMS refuses its credentials (API key revoked or invalid, 401/403, token refresh refused); timeouts, rate limits and 5xx errors are retried and never reported. Sent once per disconnect, not on every failed sync. When the connection works again — credentials fixed in the PMS, or reconnected — Repull re-imports the changes made while it was down and sends their `reservation.*` events, so nothing missed has to be fetched by hand.
 	Data AccountDisconnectedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -7314,7 +7506,7 @@ type AccountDisconnectedEvent struct {
 // AccountDisconnectedEventEvent The event name. This field is `event`, not `type`.
 type AccountDisconnectedEventEvent string
 
-// AccountDisconnectedPayload Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider.
+// AccountDisconnectedPayload Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider. Sent for Airbnb, Booking.com Extranet logins, Vrbo logins and PMS connections (Hostaway, Guesty, Smoobu, Lodgify, Beds24, Hospitable, OwnerRez, iGMS, BookingSync, Track, Mews, Cloudbeds, Zeevou, RentalReady, CiiRUS, …). A PMS connection is reported when the PMS refuses its credentials (API key revoked or invalid, 401/403, token refresh refused); timeouts, rate limits and 5xx errors are retried and never reported. Sent once per disconnect, not on every failed sync. When the connection works again — credentials fixed in the PMS, or reconnected — Repull re-imports the changes made while it was down and sends their `reservation.*` events, so nothing missed has to be fetched by hand.
 type AccountDisconnectedPayload struct {
 	// AccountId Example: acc_01HX5XPQ2K
 	AccountId *string `json:"accountId,omitempty"`
@@ -7334,10 +7526,12 @@ type AccountDisconnectedPayload struct {
 		Name *string `json:"name,omitempty"`
 	} `json:"listings,omitempty"`
 
-	// Provider Example: airbnb
+	// Provider Channel or PMS id: `airbnb`, `booking_extranet`, `vrbo`, or the PMS (`hostaway`, `guesty`, `smoobu`, …).
+	//
+	// Example: airbnb
 	Provider *string `json:"provider,omitempty"`
 
-	// Reason Why the connection was lost. `refresh_token_rejected` — upstream OAuth refresh endpoint returned a hard rejection. `manual_disconnect` — host/admin disconnected via the dashboard. `auth_expired` — credentials aged out without ever being used. `revoked_upstream` — provider notified us the user revoked access.
+	// Reason Why the connection was lost. `refresh_token_rejected` — upstream OAuth refresh endpoint returned a hard rejection. `manual_disconnect` — host/admin disconnected via the dashboard. `auth_expired` — the saved credentials stopped working: an Extranet or Vrbo login was signed out, or a PMS rejected its API key or token (401/403). `revoked_upstream` — provider notified us the user revoked access.
 	//
 	// Example: refresh_token_rejected
 	Reason *AccountDisconnectedPayloadReason `json:"reason,omitempty"`
@@ -7346,7 +7540,7 @@ type AccountDisconnectedPayload struct {
 	WorkspaceId *openapi_types.UUID `json:"workspaceId,omitempty"`
 }
 
-// AccountDisconnectedPayloadReason Why the connection was lost. `refresh_token_rejected` — upstream OAuth refresh endpoint returned a hard rejection. `manual_disconnect` — host/admin disconnected via the dashboard. `auth_expired` — credentials aged out without ever being used. `revoked_upstream` — provider notified us the user revoked access.
+// AccountDisconnectedPayloadReason Why the connection was lost. `refresh_token_rejected` — upstream OAuth refresh endpoint returned a hard rejection. `manual_disconnect` — host/admin disconnected via the dashboard. `auth_expired` — the saved credentials stopped working: an Extranet or Vrbo login was signed out, or a PMS rejected its API key or token (401/403). `revoked_upstream` — provider notified us the user revoked access.
 //
 // Example: refresh_token_rejected
 type AccountDisconnectedPayloadReason string
@@ -12771,10 +12965,15 @@ type MapConnectBookingRoomsRequest struct {
 
 // MapConnectBookingRoomsResponse defines model for MapConnectBookingRoomsResponse.
 type MapConnectBookingRoomsResponse struct {
-	ConnectionId string `json:"connectionId"`
+	// CalendarNote Plain-language explanation of `needsCalendar`, present only when it is non-empty.
+	CalendarNote *string `json:"calendarNote,omitempty"`
+	ConnectionId string  `json:"connectionId"`
 
 	// Mapped Rooms now linked to a listing.
 	Mapped int `json:"mapped"`
+
+	// NeedsCalendar Ids of the listings this call created from Booking.com rooms (`create: true`). They start without a calendar: Booking.com shows those rooms closed and nothing is sent to Booking.com for them until they have one. Give a listing a calendar by setting its prices and availability with `PUT /v1/availability/{propertyId}`, or by mapping the same home from Airbnb so its calendar is used. Rooms mapped to an existing listing are not listed: that listing's calendar is pushed as before.
+	NeedsCalendar []string `json:"needsCalendar"`
 
 	// ReservationsFound How many reservations Booking.com returned for the property. Equal to `reservationsImported` unless some could not be attached to a listing — so `0` here means Booking.com had none. `null` when the sync could not run.
 	ReservationsFound *int `json:"reservationsFound,omitempty"`
@@ -13049,10 +13248,18 @@ type Message struct {
 
 	// ExternalMessageId ID assigned by the source channel (Airbnb message id, Booking message id, etc.). Stable across syncs.
 	ExternalMessageId *string `json:"externalMessageId,omitempty"`
-	Id                *string `json:"id,omitempty"`
+
+	// HostReadAt Inbound messages only: when the host or a co-host first read it on the channel, from the channel's read receipts (Airbnb reports them). `null` for your own messages, on other channels, and until your side has opened the conversation since it arrived.
+	HostReadAt *time.Time `json:"hostReadAt,omitempty"`
+	Id         *string    `json:"id,omitempty"`
 
 	// IsAutomated `true` when the message was sent by an automation (template, schedule, etc.).
-	IsAutomated  *bool      `json:"isAutomated,omitempty"`
+	IsAutomated *bool `json:"isAutomated,omitempty"`
+
+	// Reactions Reactions on this message, oldest first. Airbnb reports them; empty on other channels. Added and removed reactions are sent as `reservation.message.reaction`. To react, `PATCH /v1/channels/airbnb/messaging/{threadId}/messages/{messageId}` with `action: "react"`.
+	Reactions *[]MessageReaction `json:"reactions,omitempty"`
+
+	// ReadAt Who read it depends on `direction`. **Outbound** (your message): when the guest first read it, from the channel's read receipts — Airbnb reports them; on other channels it stays `null`. Changes are sent as `reservation.message.read`. **Inbound** (the guest's message): when your team answered it or marked it handled.
 	ReadAt       *time.Time `json:"readAt,omitempty"`
 	SenderAvatar *string    `json:"senderAvatar,omitempty"`
 	SenderName   *string    `json:"senderName,omitempty"`
@@ -13077,12 +13284,40 @@ type MessageDirection string
 // MessageStatus Delivery state. Inbound messages are `received`. An outbound message is `sending` while it is queued to the channel, `sent` once the channel accepted it, or `failed`. Only `sent` (or `received`) means the guest can see it.
 type MessageStatus string
 
+// MessageActor Who did something on a message.
+type MessageActor struct {
+	// Name Example: Maya
+	Name *string `json:"name,omitempty"`
+
+	// Type `guest`, `cotraveler`, `booker`, `host` or `cohost`. `unknown` when the channel did not say.
+	//
+	// Example: guest
+	Type *string `json:"type,omitempty"`
+}
+
 // MessageListResponse Cursor-paginated message list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page.
 type MessageListResponse struct {
 	Data *[]Message `json:"data,omitempty"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
+}
+
+// MessageReaction One reaction on a message.
+type MessageReaction struct {
+	// At When it was added, as the channel reports it.
+	At *time.Time `json:"at,omitempty"`
+
+	// By Who did something on a message.
+	By *MessageActor `json:"by,omitempty"`
+
+	// Emoji Example: ❤️
+	Emoji *string `json:"emoji,omitempty"`
+
+	// Id The channel's id for this reaction.
+	//
+	// Example: 9e0b945a-b03d-4e28-ad48-5f7fc706a67f
+	Id *string `json:"id,omitempty"`
 }
 
 // Migration One migration: a property manager moved through Repull Migrate, living in its own workspace.
@@ -14301,6 +14536,11 @@ type Reservation struct {
 	// ListingId Internal Repull listing ID this reservation is on.
 	ListingId string `json:"listingId"`
 
+	// ListingName Name of the listing this reservation is on, so a report or message can name it without a second lookup.
+	//
+	// Example: Lakeside Cabin
+	ListingName *string `json:"listingName,omitempty"`
+
 	// Occupancy Normalized guest counts. May be undefined when the source channel did not provide counts.
 	Occupancy *ReservationOccupancy `json:"occupancy,omitempty"`
 
@@ -14864,6 +15104,132 @@ type ReservationListResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
+// ReservationMessageReactionEvent defines model for ReservationMessageReactionEvent.
+type ReservationMessageReactionEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `reservation.message.reaction`: someone on the conversation added or removed a reaction. Airbnb reports reactions; other channels do not fire this event.
+	Data ReservationMessageReactionPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationMessageReactionEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ReservationMessageReactionEventEvent The event name. This field is `event`, not `type`.
+type ReservationMessageReactionEventEvent string
+
+// ReservationMessageReactionPayload Payload for `reservation.message.reaction`: someone on the conversation added or removed a reaction. Airbnb reports reactions; other channels do not fire this event.
+type ReservationMessageReactionPayload struct {
+	Action *ReservationMessageReactionPayloadAction `json:"action,omitempty"`
+
+	// Channel Example: airbnb
+	Channel *string `json:"channel,omitempty"`
+
+	// ExternalMessageId Example: 33532605539
+	ExternalMessageId *string `json:"externalMessageId,omitempty"`
+
+	// ExternalThreadId Example: 2648057088
+	ExternalThreadId *string `json:"externalThreadId,omitempty"`
+
+	// ListingId Example: 23893
+	ListingId *int `json:"listingId,omitempty"`
+
+	// MessageId The message reacted to.
+	//
+	// Example: 1854462
+	MessageId *string `json:"messageId,omitempty"`
+	Reaction  *struct {
+		// At When it was added; for `removed`, when Repull saw it go.
+		At *time.Time `json:"at,omitempty"`
+
+		// By Who did something on a message.
+		By *MessageActor `json:"by,omitempty"`
+
+		// Emoji Example: ❤️
+		Emoji *string `json:"emoji,omitempty"`
+
+		// Id Example: 9e0b945a-b03d-4e28-ad48-5f7fc706a67f
+		Id *string `json:"id,omitempty"`
+	} `json:"reaction,omitempty"`
+
+	// ReservationId Example: 235970
+	ReservationId *int `json:"reservationId,omitempty"`
+
+	// ThreadId Example: 900301
+	ThreadId *string `json:"threadId,omitempty"`
+}
+
+// ReservationMessageReactionPayloadAction defines model for ReservationMessageReactionPayload.Action.
+type ReservationMessageReactionPayloadAction string
+
+// ReservationMessageReadEvent defines model for ReservationMessageReadEvent.
+type ReservationMessageReadEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `reservation.message.read`: the guest read the conversation up to and including `messageId`, a message from your side. Every earlier message in it was read by then too. Airbnb reports read receipts; other channels do not fire this event.
+	Data ReservationMessageReadPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ReservationMessageReadEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ReservationMessageReadEventEvent The event name. This field is `event`, not `type`.
+type ReservationMessageReadEventEvent string
+
+// ReservationMessageReadPayload Payload for `reservation.message.read`: the guest read the conversation up to and including `messageId`, a message from your side. Every earlier message in it was read by then too. Airbnb reports read receipts; other channels do not fire this event.
+type ReservationMessageReadPayload struct {
+	// Channel Example: airbnb
+	Channel *string `json:"channel,omitempty"`
+
+	// ExternalMessageId Example: 33532605539
+	ExternalMessageId *string `json:"externalMessageId,omitempty"`
+
+	// ExternalThreadId Example: 2648057088
+	ExternalThreadId *string `json:"externalThreadId,omitempty"`
+
+	// ListingId Example: 23893
+	ListingId *int `json:"listingId,omitempty"`
+
+	// MessageId The newest message the guest has read. Its `readAt` is now set.
+	//
+	// Example: 1854462
+	MessageId *string `json:"messageId,omitempty"`
+
+	// ReadAt When the guest read it, as the channel reports it.
+	ReadAt *time.Time `json:"readAt,omitempty"`
+
+	// Reader Who did something on a message.
+	Reader *MessageActor `json:"reader,omitempty"`
+
+	// ReservationId Example: 235970
+	ReservationId *int `json:"reservationId,omitempty"`
+
+	// ThreadId The conversation id (`GET /v1/conversations/{id}`).
+	//
+	// Example: 900301
+	ThreadId *string `json:"threadId,omitempty"`
+}
+
 // ReservationMessageReceivedEvent defines model for ReservationMessageReceivedEvent.
 type ReservationMessageReceivedEvent struct {
 	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
@@ -15005,7 +15371,7 @@ type ReservationMessageUpdatedEvent struct {
 	// ApiVersion Example: 2026-04
 	ApiVersion string `json:"apiVersion"`
 
-	// Data Payload for `reservation.message.updated`: a message was edited on the channel. `body` is the new text; `previousBody` what it replaced. Read receipts and reactions do not fire it.
+	// Data Payload for `reservation.message.updated`: a message was edited on the channel. `body` is the new text; `previousBody` what it replaced. Read receipts and reactions do not fire it: they have their own events, `reservation.message.read` and `reservation.message.reaction`.
 	Data ReservationMessageUpdatedPayload `json:"data"`
 
 	// Event The event name. This field is `event`, not `type`.
@@ -15021,7 +15387,7 @@ type ReservationMessageUpdatedEvent struct {
 // ReservationMessageUpdatedEventEvent The event name. This field is `event`, not `type`.
 type ReservationMessageUpdatedEventEvent string
 
-// ReservationMessageUpdatedPayload Payload for `reservation.message.updated`: a message was edited on the channel. `body` is the new text; `previousBody` what it replaced. Read receipts and reactions do not fire it.
+// ReservationMessageUpdatedPayload Payload for `reservation.message.updated`: a message was edited on the channel. `body` is the new text; `previousBody` what it replaced. Read receipts and reactions do not fire it: they have their own events, `reservation.message.read` and `reservation.message.reaction`.
 type ReservationMessageUpdatedPayload struct {
 	// Body The text after the edit.
 	Body *string `json:"body,omitempty"`
@@ -17012,7 +17378,7 @@ type UpdateAirbnbMessageJSONBody struct {
 	// Message New message text. Required when `action` is `edit`.
 	Message *string `json:"message,omitempty"`
 
-	// Reaction Reaction to add. Required when `action` is `react`.
+	// Reaction Reaction to add, e.g. `👍`. Required when `action` is `react`. At most 32 characters; Airbnb decides which reactions it accepts.
 	Reaction *string `json:"reaction,omitempty"`
 }
 
@@ -18537,7 +18903,9 @@ type UpdateListingContentParams struct {
 
 // SetListingMarkupJSONBody defines parameters for SetListingMarkup.
 type SetListingMarkupJSONBody struct {
-	Channel SetListingMarkupJSONBodyChannel `json:"channel"`
+	// AccountId Vrbo account (`vrbo:13`) — required when the listing is linked on more than one.
+	AccountId *string                         `json:"accountId,omitempty"`
+	Channel   SetListingMarkupJSONBodyChannel `json:"channel"`
 
 	// HotelId Booking.com property — required when the listing is on more than one.
 	HotelId *string `json:"hotelId,omitempty"`
@@ -18621,6 +18989,33 @@ type PublishListingToBookingParams struct {
 	// HotelId Booking.com property to publish into, for a listing mapped to more than one. The query-string spelling of the body's `hotelId`, accepted so this route reads the same as every other Booking listing-addressed route. The body wins when both are sent.
 	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
 }
+
+// GetVrboPublishJobParams defines parameters for GetVrboPublishJob.
+type GetVrboPublishJobParams struct {
+	// JobId `job.jobId` from the POST.
+	JobId string `form:"jobId" json:"jobId"`
+}
+
+// GetVrboPublishJob200JSONResponseBodyChannel defines parameters for GetVrboPublishJob.
+type GetVrboPublishJob200JSONResponseBodyChannel string
+
+// GetVrboPublishJob200JSONResponseBodyJobStatus defines parameters for GetVrboPublishJob.
+type GetVrboPublishJob200JSONResponseBodyJobStatus string
+
+// PublishListingToVrboJSONBody defines parameters for PublishListingToVrbo.
+type PublishListingToVrboJSONBody struct {
+	// AccountId The Vrbo account, as its connection id (`"vrbo:13"`) or the bare number. Needed only when the workspace has several.
+	AccountId *string `json:"accountId,omitempty"`
+
+	// PropertyId Finish this unpublished Vrbo property (from a failed run's `job.propertyId`) instead of starting a new one.
+	PropertyId *string `json:"propertyId,omitempty"`
+}
+
+// PublishListingToVrbo202JSONResponseBodyChannel defines parameters for PublishListingToVrbo.
+type PublishListingToVrbo202JSONResponseBodyChannel string
+
+// PublishListingToVrbo202JSONResponseBodyJobStatus defines parameters for PublishListingToVrbo.
+type PublishListingToVrbo202JSONResponseBodyJobStatus string
 
 // GetListingSegmentsParams defines parameters for GetListingSegments.
 type GetListingSegmentsParams struct {
@@ -18952,6 +19347,42 @@ type QuoteReservationParams struct {
 	// XAccountId Restrict the request to one connected account (a Repull connection id, `GET /v1/connect` → `id`). A listing or reservation outside that account answers `404 not_found`. Omit it to act workspace-wide.
 	XAccountId *string `json:"X-Account-Id,omitempty"`
 }
+
+// GetReservationSummaryParams defines parameters for GetReservationSummary.
+type GetReservationSummaryParams struct {
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	Account *Account `form:"account,omitempty" json:"account,omitempty"`
+
+	// From First day of the period.
+	From openapi_types.Date `form:"from" json:"from"`
+
+	// To Last day of the period (inclusive). At most 732 days after `from`.
+	To openapi_types.Date `form:"to" json:"to"`
+
+	// Basis Which date puts a reservation in the period: the nights stayed (`stay`), the check-in date, or the booking date.
+	Basis *GetReservationSummaryParamsBasis `form:"basis,omitempty" json:"basis,omitempty"`
+
+	// GroupBy Up to two of `month`, `listing`, `channel`, comma-separated. Omit for totals only.
+	GroupBy *string `form:"group_by,omitempty" json:"group_by,omitempty"`
+
+	// AsOf Count only what was on the books at the end of this day. A reservation cancelled without a reported cancellation date counts as cancelled.
+	AsOf *openapi_types.Date `form:"as_of,omitempty" json:"as_of,omitempty"`
+
+	// ListingId One listing only.
+	ListingId *int `form:"listing_id,omitempty" json:"listing_id,omitempty"`
+
+	// Platform One channel only.
+	Platform *string `form:"platform,omitempty" json:"platform,omitempty"`
+}
+
+// GetReservationSummaryParamsBasis defines parameters for GetReservationSummary.
+type GetReservationSummaryParamsBasis string
+
+// GetReservationSummary200JSONResponseBodyBasis defines parameters for GetReservationSummary.
+type GetReservationSummary200JSONResponseBodyBasis string
+
+// GetReservationSummary200JSONResponseBodyGroupBy defines parameters for GetReservationSummary.
+type GetReservationSummary200JSONResponseBodyGroupBy string
 
 // GetReservationParams defines parameters for GetReservation.
 type GetReservationParams struct {
@@ -19528,6 +19959,9 @@ type PublishListingToAirbnbJSONRequestBody = ListingPublishAirbnbRequest
 
 // PublishListingToBookingJSONRequestBody defines body for PublishListingToBooking for application/json ContentType.
 type PublishListingToBookingJSONRequestBody = ListingPublishBookingRequest
+
+// PublishListingToVrboJSONRequestBody defines body for PublishListingToVrbo for application/json ContentType.
+type PublishListingToVrboJSONRequestBody PublishListingToVrboJSONBody
 
 // PullListingFromAirbnbJSONRequestBody defines body for PullListingFromAirbnb for application/json ContentType.
 type PullListingFromAirbnbJSONRequestBody = ListingPullAirbnbRequest
@@ -21776,6 +22210,74 @@ func (t *WebhookEvent) MergeReservationMessageUpdatedEvent(v ReservationMessageU
 	return err
 }
 
+// AsReservationMessageReadEvent returns the union data inside the WebhookEvent as a ReservationMessageReadEvent
+func (t WebhookEvent) AsReservationMessageReadEvent() (ReservationMessageReadEvent, error) {
+	var body ReservationMessageReadEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationMessageReadEvent overwrites any union data inside the WebhookEvent as the provided ReservationMessageReadEvent
+func (t *WebhookEvent) FromReservationMessageReadEvent(v ReservationMessageReadEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.read"}`))
+	t.union = b
+	return err
+}
+
+// MergeReservationMessageReadEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationMessageReadEvent
+func (t *WebhookEvent) MergeReservationMessageReadEvent(v ReservationMessageReadEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.read"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsReservationMessageReactionEvent returns the union data inside the WebhookEvent as a ReservationMessageReactionEvent
+func (t WebhookEvent) AsReservationMessageReactionEvent() (ReservationMessageReactionEvent, error) {
+	var body ReservationMessageReactionEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromReservationMessageReactionEvent overwrites any union data inside the WebhookEvent as the provided ReservationMessageReactionEvent
+func (t *WebhookEvent) FromReservationMessageReactionEvent(v ReservationMessageReactionEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.reaction"}`))
+	t.union = b
+	return err
+}
+
+// MergeReservationMessageReactionEvent performs a merge with any union data inside the WebhookEvent, using the provided ReservationMessageReactionEvent
+func (t *WebhookEvent) MergeReservationMessageReactionEvent(v ReservationMessageReactionEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"reservation.message.reaction"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsReservationAlterationCreatedEvent returns the union data inside the WebhookEvent as a ReservationAlterationCreatedEvent
 func (t WebhookEvent) AsReservationAlterationCreatedEvent() (ReservationAlterationCreatedEvent, error) {
 	var body ReservationAlterationCreatedEvent
@@ -22934,6 +23436,10 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsReservationCancelledEvent()
 	case "reservation.created":
 		return t.AsReservationCreatedEvent()
+	case "reservation.message.reaction":
+		return t.AsReservationMessageReactionEvent()
+	case "reservation.message.read":
+		return t.AsReservationMessageReadEvent()
 	case "reservation.message.received":
 		return t.AsReservationMessageReceivedEvent()
 	case "reservation.message.sent":
