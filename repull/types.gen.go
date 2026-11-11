@@ -2005,6 +2005,24 @@ func (e ConversationMessageAttachmentType) Valid() bool {
 	}
 }
 
+// Defines values for ErrorErrorUpgradePlan.
+const (
+	ErrorErrorUpgradePlanCustom  ErrorErrorUpgradePlan = "custom"
+	ErrorErrorUpgradePlanStarter ErrorErrorUpgradePlan = "starter"
+)
+
+// Valid indicates whether the value is a known member of the ErrorErrorUpgradePlan enum.
+func (e ErrorErrorUpgradePlan) Valid() bool {
+	switch e {
+	case ErrorErrorUpgradePlanCustom:
+		return true
+	case ErrorErrorUpgradePlanStarter:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GuestCreateResponseContactsType.
 const (
 	GuestCreateResponseContactsTypeEmail GuestCreateResponseContactsType = "email"
@@ -4590,13 +4608,13 @@ func (e WorkspaceCreatedVia) Valid() bool {
 
 // Defines values for CreateBillingCheckoutJSONBodyPlan.
 const (
-	Starter CreateBillingCheckoutJSONBodyPlan = "starter"
+	CreateBillingCheckoutJSONBodyPlanStarter CreateBillingCheckoutJSONBodyPlan = "starter"
 )
 
 // Valid indicates whether the value is a known member of the CreateBillingCheckoutJSONBodyPlan enum.
 func (e CreateBillingCheckoutJSONBodyPlan) Valid() bool {
 	switch e {
-	case Starter:
+	case CreateBillingCheckoutJSONBodyPlanStarter:
 		return true
 	default:
 		return false
@@ -10808,6 +10826,18 @@ type Error struct {
 		// Example: invalid_params
 		Code string `json:"code"`
 
+		// Credits Pay-as-you-go credits, the alternative to a plan change: past your plan's monthly quota, requests are served while the wallet has a balance. Present with `upgrade`.
+		Credits *struct {
+			// BalanceUsd Your wallet balance; null when you have no wallet.
+			BalanceUsd *float32 `json:"balance_usd"`
+
+			// TopUpUrl Example: https://repull.dev/dashboard/billing
+			TopUpUrl string `json:"top_up_url"`
+
+			// UsdPer1000Requests Example: 1
+			UsdPer1000Requests float32 `json:"usd_per_1000_requests"`
+		} `json:"credits,omitempty"`
+
 		// DidYouMean Suggestion for typos and near-matches. Present when the server can guess the intent.
 		//
 		// Example: check_in_after
@@ -10832,6 +10862,11 @@ type Error struct {
 		//
 		// Example: Pass check_in_after as a string in ISO 8601 format. Example: ?check_in_after=2026-01-15
 		Fix string `json:"fix"`
+
+		// Limit The limit that was reached. Present on quota refusals.
+		//
+		// Example: 1000
+		Limit *int `json:"limit,omitempty"`
 
 		// ListingId The single Repull listing the error is about. Present on `code: "listing_not_api_connected"` (HTTP 403).
 		//
@@ -10867,15 +10902,30 @@ type Error struct {
 		// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 		PreviousCode *string `json:"previous_code,omitempty"`
 
+		// ProjectedMonthlyRequests This month's requests extrapolated to the whole month — the usage `upgrade` was sized for. Present with `upgrade`.
+		//
+		// Example: 2858
+		ProjectedMonthlyRequests *int `json:"projected_monthly_requests,omitempty"`
+
 		// RequestId Opaque per-request id. Mirrors the `x-request-id` response header. Capture it before retrying so logs can be correlated.
 		//
 		// Example: req_01J5X7Y8Z9ABCDEF12345678
 		RequestId string `json:"request_id"`
 
+		// ResetsAt When the refused quota resets. Present on quota refusals.
+		//
+		// Example: 2026-12-01T00:00:00.000Z
+		ResetsAt *time.Time `json:"resets_at,omitempty"`
+
 		// RetryAfter Seconds the client should wait before retrying. Mirrors the `Retry-After` HTTP header. Present on rate-limit responses and on transient upstream failures that are safe to retry.
 		//
 		// Example: 60
 		RetryAfter *int `json:"retry_after,omitempty"`
+
+		// Scope Which limit refused the request: `monthly` (the plan's request quota), `daily` (the daily loop guard), the daily AI quota, or `per_api_key` (the per-minute limiter: wait `Retry-After`, nothing else).
+		//
+		// Example: monthly
+		Scope *string `json:"scope,omitempty"`
 
 		// Support LAST-RESORT contact handle. Only set on errors that genuinely cannot be self-fixed (billing dispute, account-state corruption, OAuth partner intervention). Never fall back to support before trying `fix` and `docs_url`.
 		Support *struct {
@@ -10890,6 +10940,53 @@ type Error struct {
 		//
 		// Example: none
 		SyncCategory *string `json:"sync_category,omitempty"`
+
+		// Tier The plan the request was counted against. Present on quota refusals (`rate_limit_exceeded`, `daily_limit_exceeded`, `credits_exhausted`).
+		//
+		// Example: free
+		Tier *string `json:"tier,omitempty"`
+
+		// Upgrade The cheapest plan that covers your usage. Present on the monthly quota refusal (`rate_limit_exceeded`, `scope: "monthly"`), `credits_exhausted` and `daily_limit_exceeded`. `monthly_price_usd` is exactly what `checkout_url` charges for `listings`. `plan: "custom"` means no self-serve plan covers the usage (already on Starter, more than Starter's quotas, or more than 100 listings): email `contact_email`.
+		Upgrade *struct {
+			// CheckoutUrl Opens checkout for exactly `monthly_price_usd`. Null for `custom`.
+			//
+			// Example: https://repull.dev/dashboard/billing?upgrade=starter
+			CheckoutUrl *string `json:"checkout_url"`
+
+			// ContactEmail Where to ask for a plan when `plan` is `custom`.
+			ContactEmail *openapi_types.Email `json:"contact_email"`
+
+			// DailyRequests The plan's daily request cap. Null for `custom`.
+			//
+			// Example: 25000
+			DailyRequests *int `json:"daily_requests"`
+
+			// Listings Listings the price covers: active plus held back by your plan, across your workspaces.
+			//
+			// Example: 2
+			Listings *int `json:"listings"`
+
+			// MonthlyPriceUsd Monthly price in USD for `listings`: Starter's base plus its per-listing price. Null for `custom`.
+			//
+			// Example: 99
+			MonthlyPriceUsd *float32 `json:"monthly_price_usd"`
+
+			// MonthlyRequests Requests a month the plan includes. Null for `custom`.
+			//
+			// Example: 100000
+			MonthlyRequests *int `json:"monthly_requests"`
+
+			// Name Example: Starter
+			Name string `json:"name"`
+
+			// Plan Example: starter
+			Plan ErrorErrorUpgradePlan `json:"plan"`
+		} `json:"upgrade,omitempty"`
+
+		// Used How much of `limit` is used. Present on quota refusals.
+		//
+		// Example: 1000
+		Used *int `json:"used,omitempty"`
 
 		// ValidParams Sorted list of every query param this endpoint accepts. Present on `code: "unknown_params"` (HTTP 422) so SDK consumers can self-correct without reading docs.
 		//
@@ -10907,6 +11004,9 @@ type Error struct {
 		ValueReceived interface{} `json:"value_received,omitempty"`
 	} `json:"error"`
 }
+
+// ErrorErrorUpgradePlan Example: starter
+type ErrorErrorUpgradePlan string
 
 // Guest Guest list-row shape returned by `GET /v1/guests`. Pre-resolved primary phone/email + display name + cumulative stay aggregates so list UIs can render without a per-row round-trip.
 type Guest struct {
