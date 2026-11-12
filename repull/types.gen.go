@@ -931,6 +931,21 @@ func (e AlterationWebhookObjectStatus) Valid() bool {
 	}
 }
 
+// Defines values for BillingNoticeCode.
+const (
+	PaymentFailed BillingNoticeCode = "payment_failed"
+)
+
+// Valid indicates whether the value is a known member of the BillingNoticeCode enum.
+func (e BillingNoticeCode) Valid() bool {
+	switch e {
+	case PaymentFailed:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BookingAvailabilityUpdateStatus.
 const (
 	BookingAvailabilityUpdateStatusAvailable   BookingAvailabilityUpdateStatus = "available"
@@ -9276,6 +9291,49 @@ type AvailabilityWriteSettings struct {
 	Price *float32 `json:"price,omitempty"`
 }
 
+// BillingNotice Added to the body of every successful (2xx) JSON object response while the plan's last renewal payment failed (the subscription is past_due or unpaid). It never blocks a request: API access keeps working while Stripe retries the card. Tell the user: pay the invoice at `payUrl`, or update the card at `billingUrl`. It disappears once the invoice is paid.
+type BillingNotice struct {
+	// Amount The amount owed, in major units of `currency`.
+	//
+	// Example: 99
+	Amount *float32 `json:"amount"`
+
+	// BillingUrl Example: https://repull.dev/dashboard/billing
+	BillingUrl string `json:"billingUrl"`
+
+	// Code "payment_failed": the last renewal payment failed and is still owed.
+	Code BillingNoticeCode `json:"code"`
+
+	// Currency Lower-case ISO 4217 code.
+	//
+	// Example: usd
+	Currency string `json:"currency"`
+
+	// FailedAt When the payment failed.
+	//
+	// Example: 2026-11-12T14:52:17.000Z
+	FailedAt *time.Time `json:"failedAt"`
+
+	// Fix Example: Pay the invoice at `payUrl`, or update the card at https://repull.dev/dashboard/billing (Manage billing) so the next retry goes through. This notice disappears once it is paid.
+	Fix string `json:"fix"`
+
+	// Message Example: Your $99.00 Repull plan payment failed on Nov 12, 2026. Your API calls keep working. Stripe retries the card automatically on Nov 14, 2026.
+	Message string `json:"message"`
+
+	// NextRetryAt When Stripe retries the card automatically; null when no retry is left.
+	//
+	// Example: 2026-11-14T20:52:16.000Z
+	NextRetryAt *time.Time `json:"nextRetryAt"`
+
+	// PayUrl Stripe's hosted invoice: pay it there with any card.
+	//
+	// Example: https://invoice.stripe.com/i/acct_1TUV6uDYjA8GNo6e/live_abc
+	PayUrl *string `json:"payUrl"`
+}
+
+// BillingNoticeCode "payment_failed": the last renewal payment failed and is still owed.
+type BillingNoticeCode string
+
 // BookingAvailabilityStateResponse Returned by `GET /v1/channels/booking/availability`. Proxies Booking's `getRoomRateAvailability` — current rate / availability / restriction state per room + rate plan for the requested window, keyed by `property_id`. Field set is whatever Booking.com emits (parsed from their XML), so the object is open-ended.
 type BookingAvailabilityStateResponse struct {
 	// PropertyId Booking.com hotel/property id echoed back.
@@ -10807,7 +10865,9 @@ type ConnectionAction struct {
 
 // ConnectionListResponse defines model for ConnectionListResponse.
 type ConnectionListResponse struct {
-	Data *[]Connection `json:"data,omitempty"`
+	// BillingNotice Added to the body of every successful (2xx) JSON object response while the plan's last renewal payment failed (the subscription is past_due or unpaid). It never blocks a request: API access keeps working while Stripe retries the card. Tell the user: pay the invoice at `payUrl`, or update the card at `billingUrl`. It disappears once the invoice is paid.
+	BillingNotice *BillingNotice `json:"billingNotice,omitempty"`
+	Data          *[]Connection  `json:"data,omitempty"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`
@@ -12555,7 +12615,9 @@ type ListingGenerateContentResponse struct {
 
 // ListingListResponse defines model for ListingListResponse.
 type ListingListResponse struct {
-	Data *[]Listing `json:"data,omitempty"`
+	// BillingNotice Added to the body of every successful (2xx) JSON object response while the plan's last renewal payment failed (the subscription is past_due or unpaid). It never blocks a request: API access keeps working while Stripe retries the card. Tell the user: pay the invoice at `payUrl`, or update the card at `billingUrl`. It disappears once the invoice is paid.
+	BillingNotice *BillingNotice `json:"billingNotice,omitempty"`
+	Data          *[]Listing     `json:"data,omitempty"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *CursorPagination `json:"pagination,omitempty"`
@@ -14901,7 +14963,9 @@ type PropertyAvailabilityUnit struct {
 
 // PropertyListResponse defines model for PropertyListResponse.
 type PropertyListResponse struct {
-	Data *[]Property `json:"data,omitempty"`
+	// BillingNotice Added to the body of every successful (2xx) JSON object response while the plan's last renewal payment failed (the subscription is past_due or unpaid). It never blocks a request: API access keeps working while Stripe retries the card. Tell the user: pay the invoice at `payUrl`, or update the card at `billingUrl`. It disappears once the invoice is paid.
+	BillingNotice *BillingNotice `json:"billingNotice,omitempty"`
+	Data          *[]Property    `json:"data,omitempty"`
 
 	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 	Pagination *Pagination `json:"pagination,omitempty"`

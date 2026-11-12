@@ -54517,7 +54517,9 @@ type GetUsageSummaryClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
-		Breakdown *[]struct {
+		// BillingNotice Added to the body of every successful (2xx) JSON object response while the plan's last renewal payment failed (the subscription is past_due or unpaid). It never blocks a request: API access keeps working while Stripe retries the card. Tell the user: pay the invoice at `payUrl`, or update the card at `billingUrl`. It disappears once the invoice is paid.
+		BillingNotice *BillingNotice `json:"billingNotice,omitempty"`
+		Breakdown     *[]struct {
 			AvgLatencyMs *int     `json:"avgLatencyMs,omitempty"`
 			ErrorCount   *int     `json:"errorCount,omitempty"`
 			ErrorRate    *float32 `json:"errorRate,omitempty"`
@@ -54585,7 +54587,9 @@ type GetUsageSummaryClientResponse struct {
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetUsageSummaryClientResponse) GetJSON200() *struct {
-	Breakdown *[]struct {
+	// BillingNotice Added to the body of every successful (2xx) JSON object response while the plan's last renewal payment failed (the subscription is past_due or unpaid). It never blocks a request: API access keeps working while Stripe retries the card. Tell the user: pay the invoice at `payUrl`, or update the card at `billingUrl`. It disappears once the invoice is paid.
+	BillingNotice *BillingNotice `json:"billingNotice,omitempty"`
+	Breakdown     *[]struct {
 		AvgLatencyMs *int     `json:"avgLatencyMs,omitempty"`
 		ErrorCount   *int     `json:"errorCount,omitempty"`
 		ErrorRate    *float32 `json:"errorRate,omitempty"`
@@ -78235,7 +78239,9 @@ func ParseGetUsageSummaryClientResponse(rsp *http.Response) (*GetUsageSummaryCli
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			Breakdown *[]struct {
+			// BillingNotice Added to the body of every successful (2xx) JSON object response while the plan's last renewal payment failed (the subscription is past_due or unpaid). It never blocks a request: API access keeps working while Stripe retries the card. Tell the user: pay the invoice at `payUrl`, or update the card at `billingUrl`. It disappears once the invoice is paid.
+			BillingNotice *BillingNotice `json:"billingNotice,omitempty"`
+			Breakdown     *[]struct {
 				AvgLatencyMs *int     `json:"avgLatencyMs,omitempty"`
 				ErrorCount   *int     `json:"errorCount,omitempty"`
 				ErrorRate    *float32 `json:"errorRate,omitempty"`
