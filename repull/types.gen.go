@@ -286,6 +286,54 @@ func (e AccountImportStartedPayloadTrigger) Valid() bool {
 	}
 }
 
+// Defines values for AccountUnitsAddedEventEvent.
+const (
+	AccountUnitsAddedEventEventAccountUnitsAdded AccountUnitsAddedEventEvent = "account.units.added"
+)
+
+// Valid indicates whether the value is a known member of the AccountUnitsAddedEventEvent enum.
+func (e AccountUnitsAddedEventEvent) Valid() bool {
+	switch e {
+	case AccountUnitsAddedEventEventAccountUnitsAdded:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountUnitsAddedPayloadNextStepsMethod.
+const (
+	GET  AccountUnitsAddedPayloadNextStepsMethod = "GET"
+	POST AccountUnitsAddedPayloadNextStepsMethod = "POST"
+)
+
+// Valid indicates whether the value is a known member of the AccountUnitsAddedPayloadNextStepsMethod enum.
+func (e AccountUnitsAddedPayloadNextStepsMethod) Valid() bool {
+	switch e {
+	case GET:
+		return true
+	case POST:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountUnitsAddedPayloadProvider.
+const (
+	BookingExtranet AccountUnitsAddedPayloadProvider = "booking_extranet"
+)
+
+// Valid indicates whether the value is a known member of the AccountUnitsAddedPayloadProvider enum.
+func (e AccountUnitsAddedPayloadProvider) Valid() bool {
+	switch e {
+	case BookingExtranet:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AiOperationCompletedEventEvent.
 const (
 	AiOperationCompletedEventEventAiOperationCompleted AiOperationCompletedEventEvent = "ai.operation.completed"
@@ -2905,6 +2953,33 @@ func (e ListingUpdatedPayloadArea) Valid() bool {
 	}
 }
 
+// Defines values for MapConnectBookingRoomsResponsePropertyStatusOutcome.
+const (
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeBlocked       MapConnectBookingRoomsResponsePropertyStatusOutcome = "blocked"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeFailed        MapConnectBookingRoomsResponsePropertyStatusOutcome = "failed"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeNotNeeded     MapConnectBookingRoomsResponsePropertyStatusOutcome = "not_needed"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeOpened        MapConnectBookingRoomsResponsePropertyStatusOutcome = "opened"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeStatusUnknown MapConnectBookingRoomsResponsePropertyStatusOutcome = "status_unknown"
+)
+
+// Valid indicates whether the value is a known member of the MapConnectBookingRoomsResponsePropertyStatusOutcome enum.
+func (e MapConnectBookingRoomsResponsePropertyStatusOutcome) Valid() bool {
+	switch e {
+	case MapConnectBookingRoomsResponsePropertyStatusOutcomeBlocked:
+		return true
+	case MapConnectBookingRoomsResponsePropertyStatusOutcomeFailed:
+		return true
+	case MapConnectBookingRoomsResponsePropertyStatusOutcomeNotNeeded:
+		return true
+	case MapConnectBookingRoomsResponsePropertyStatusOutcomeOpened:
+		return true
+	case MapConnectBookingRoomsResponsePropertyStatusOutcomeStatusUnknown:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for MarketMyListingType.
 const (
 	Mine MarketMyListingType = "mine"
@@ -4439,6 +4514,7 @@ const (
 	WebhookEventTypeAccountImportCompleted         WebhookEventType = "account.import.completed"
 	WebhookEventTypeAccountImportFailed            WebhookEventType = "account.import.failed"
 	WebhookEventTypeAccountImportStarted           WebhookEventType = "account.import.started"
+	WebhookEventTypeAccountUnitsAdded              WebhookEventType = "account.units.added"
 	WebhookEventTypeAiOperationCompleted           WebhookEventType = "ai.operation.completed"
 	WebhookEventTypeAiOperationFailed              WebhookEventType = "ai.operation.failed"
 	WebhookEventTypeBookingUnacknowledged          WebhookEventType = "booking.unacknowledged"
@@ -4489,6 +4565,8 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeAccountImportFailed:
 		return true
 	case WebhookEventTypeAccountImportStarted:
+		return true
+	case WebhookEventTypeAccountUnitsAdded:
 		return true
 	case WebhookEventTypeAiOperationCompleted:
 		return true
@@ -7522,6 +7600,51 @@ func (e ListWebhookDeliveriesParamsStatus) Valid() bool {
 	}
 }
 
+// Defines values for DeactivateWorkspace200JSONResponseBodyDataActive.
+const (
+	False DeactivateWorkspace200JSONResponseBodyDataActive = false
+)
+
+// Valid indicates whether the value is a known member of the DeactivateWorkspace200JSONResponseBodyDataActive enum.
+func (e DeactivateWorkspace200JSONResponseBodyDataActive) Valid() bool {
+	switch e {
+	case False:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired.
+const (
+	ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequiredTrue ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired = true
+)
+
+// Valid indicates whether the value is a known member of the ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired enum.
+func (e ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired) Valid() bool {
+	switch e {
+	case ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequiredTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReactivateWorkspace200JSONResponseBodyDataActive.
+const (
+	ReactivateWorkspace200JSONResponseBodyDataActiveTrue ReactivateWorkspace200JSONResponseBodyDataActive = true
+)
+
+// Valid indicates whether the value is a known member of the ReactivateWorkspace200JSONResponseBodyDataActive enum.
+func (e ReactivateWorkspace200JSONResponseBodyDataActive) Valid() bool {
+	switch e {
+	case ReactivateWorkspace200JSONResponseBodyDataActiveTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // AIOperation defines model for AIOperation.
 type AIOperation struct {
 	// Input Operation-specific input data
@@ -7604,10 +7727,14 @@ type AccountDisconnectedEventEvent string
 
 // AccountDisconnectedPayload Payload for `account.disconnected`. A PMS or channel connection was revoked, expired, or rejected by the upstream provider. Sent for Airbnb, Booking.com Extranet logins, Vrbo logins and PMS connections (Hostaway, Guesty, Smoobu, Lodgify, Beds24, Hospitable, OwnerRez, iGMS, BookingSync, Track, Mews, Cloudbeds, Zeevou, RentalReady, CiiRUS, …). A PMS connection is reported when the PMS refuses its credentials (API key revoked or invalid, 401/403, token refresh refused); timeouts, rate limits and 5xx errors are retried and never reported. Sent once per disconnect, not on every failed sync. When the connection works again — credentials fixed in the PMS, or reconnected — Repull re-imports the changes made while it was down and sends their `reservation.*` events, so nothing missed has to be fetched by hand.
 type AccountDisconnectedPayload struct {
-	// AccountId Example: acc_01HX5XPQ2K
+	// AccountId The disconnected account's `externalAccountId` — the platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id.
+	//
+	// Example: 79730216
 	AccountId *string `json:"accountId,omitempty"`
 
-	// ConnectionId Stable connection identifier — alias of accountId for this event variant.
+	// ConnectionId Our connection record id: the `X-Account-Id` value, the same as `account.id`. `null` only when the account has no connection record (e.g. a Vrbo sign-in in a workspace with no Vrbo connection). A string in this event.
+	//
+	// Example: 135
 	ConnectionId *string `json:"connectionId,omitempty"`
 
 	// DisconnectedAt Example: 2026-05-01T17:00:00.000Z
@@ -7798,6 +7925,101 @@ type AccountImportStartedPayload struct {
 
 // AccountImportStartedPayloadTrigger defines model for AccountImportStartedPayload.Trigger.
 type AccountImportStartedPayloadTrigger string
+
+// AccountUnitsAddedEvent A connected login gained a property or room. Map the new units to listings to import their bookings.
+type AccountUnitsAddedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `account.units.added`. A connected Booking.com Extranet login gained a property (the hotel added the same Booking.com user to it) or a room on a property it already had. One event per property; never for the first import of a fresh connection (`connect.session.completed` and `account.import.*` cover that), never twice for the same rooms.
+	Data AccountUnitsAddedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AccountUnitsAddedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// AccountUnitsAddedEventEvent The event name. This field is `event`, not `type`.
+type AccountUnitsAddedEventEvent string
+
+// AccountUnitsAddedPayload Payload for `account.units.added`. A connected Booking.com Extranet login gained a property (the hotel added the same Booking.com user to it) or a room on a property it already had. One event per property; never for the first import of a fresh connection (`connect.session.completed` and `account.import.*` cover that), never twice for the same rooms.
+type AccountUnitsAddedPayload struct {
+	// AccountId The Booking.com account id behind the Extranet login — the same value as `account.externalAccountId`.
+	//
+	// Example: 20123456
+	AccountId *string `json:"accountId"`
+
+	// AddedAt When the sync found the new units.
+	AddedAt time.Time `json:"addedAt"`
+
+	// ConnectionId Our connection record id: the `X-Account-Id` value, the same as `account.id`.
+	//
+	// Example: 482
+	ConnectionId *string `json:"connectionId"`
+
+	// Handle The connection handle the units and mappings endpoints take: `booking_extranet:{accountId}`.
+	//
+	// Example: booking_extranet:20123456
+	Handle string `json:"handle"`
+
+	// Hotels The property the new units belong to.
+	Hotels []struct {
+		// HotelId Booking.com property ID.
+		HotelId string `json:"hotelId"`
+
+		// IsNew `true` when the login had no unit on this property before; `false` when rooms were added to a property it already had.
+		IsNew bool    `json:"isNew"`
+		Name  *string `json:"name"`
+	} `json:"hotels"`
+
+	// NextSteps What to call next: list the units, then map them.
+	NextSteps []struct {
+		Description string                                  `json:"description"`
+		Method      AccountUnitsAddedPayloadNextStepsMethod `json:"method"`
+
+		// Path Example: /v1/connections/booking_extranet:20123456/units
+		Path string `json:"path"`
+	} `json:"nextSteps"`
+
+	// Provider The channel. Today only Booking.com Extranet logins send this event.
+	Provider AccountUnitsAddedPayloadProvider `json:"provider"`
+
+	// Units The new units, as `GET /v1/connections/{id}/units` lists them.
+	Units []struct {
+		// HotelId Booking.com property ID.
+		HotelId string `json:"hotelId"`
+
+		// ListingId The listing the unit is mapped to, when `mapped`.
+		ListingId *int `json:"listingId"`
+
+		// Mapped Whether the unit is already mapped to a listing. New units are almost always unmapped: their bookings, messages and reviews import once you map them.
+		Mapped bool   `json:"mapped"`
+		Name   string `json:"name"`
+
+		// RoomId Booking.com room ID.
+		RoomId *string `json:"roomId"`
+
+		// UnitId The `unit_id` to pass to `POST /v1/connections/{id}/mappings`.
+		UnitId string `json:"unitId"`
+	} `json:"units"`
+
+	// WorkspaceId The workspace the login is connected in.
+	WorkspaceId int `json:"workspaceId"`
+}
+
+// AccountUnitsAddedPayloadNextStepsMethod defines model for AccountUnitsAddedPayload.NextSteps.Method.
+type AccountUnitsAddedPayloadNextStepsMethod string
+
+// AccountUnitsAddedPayloadProvider The channel. Today only Booking.com Extranet logins send this event.
+type AccountUnitsAddedPayloadProvider string
 
 // AiOperationCompletedEvent defines model for AiOperationCompletedEvent.
 type AiOperationCompletedEvent struct {
@@ -10042,7 +10264,7 @@ type ChannelDegradedPayload struct {
 		// Detail What we observed, in the provider's words where possible. A bare "degraded" tells nobody what to fix.
 		Detail *string `json:"detail,omitempty"`
 
-		// ExternalAccountId The provider's own account, host or hotel id.
+		// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id.
 		ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
 		// Provider Example: booking
@@ -10382,17 +10604,19 @@ type ConnectSessionCompletedEventEvent string
 type ConnectSessionCompletedPayload struct {
 	CompletedAt *time.Time `json:"completedAt,omitempty"`
 
-	// ConnectionId Repull connection id, when the account has one (the `X-Account-Id` value).
+	// ConnectionId Our connection record id: the `X-Account-Id` value, the same as `account.id`. `null` only when the account has no connection record (e.g. a Vrbo sign-in in a workspace with no Vrbo connection).
+	//
+	// Example: 482
 	ConnectionId *int `json:"connectionId,omitempty"`
 
-	// ExternalAccountId The provider's own account id — Airbnb host id, Booking.com hotel id, Vrbo account id, or the PMS account.
+	// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id.
 	//
-	// Example: 36
+	// Example: 20123456
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
 	// Provider Channel or PMS: airbnb, booking, booking_extranet, vrbo, hostaway, …
 	//
-	// Example: vrbo
+	// Example: booking_extranet
 	Provider *string                                `json:"provider,omitempty"`
 	Purpose  *ConnectSessionCompletedPayloadPurpose `json:"purpose,omitempty"`
 
@@ -10410,7 +10634,7 @@ type ConnectSessionCompletedPayloadPurpose string
 
 // ConnectStatus Connection status response for a single provider. When `connected` is false, all other fields except `provider` and `host` may be omitted, and `host` is null.
 type ConnectStatus struct {
-	// Accounts Airbnb: every Airbnb account this workspace has connected, including ones since disconnected. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account. Vrbo (`GET /v1/connect/vrbo-login`): every signed-in Vrbo account, each with `accessType` and `import` (a `VrboImportStatus`), plus a top-level `dataFreshness`.
+	// Accounts Airbnb: every Airbnb account this workspace has connected, including ones since disconnected. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account. Vrbo (`GET /v1/connect/vrbo-login`): every signed-in Vrbo account, each with `accessType` and `import` (a `VrboImportStatus`), plus a top-level `dataFreshness`. `externalAccountId` is the platform's own id (Airbnb host id, Vrbo account id; `null` for a Vrbo sign-in whose account id is not captured yet) and `connectionId` our connection record.
 	Accounts *[]struct {
 		// AccessType Vrbo only.
 		AccessType *ConnectStatusAccountsAccessType `json:"accessType,omitempty"`
@@ -10420,10 +10644,15 @@ type ConnectStatus struct {
 		// Example: true
 		Connected *bool `json:"connected,omitempty"`
 
+		// ConnectionId Our connection record (`X-Account-Id`). Airbnb: the workspace's Airbnb connection. Vrbo: the workspace's Vrbo connection, `null` when it has none.
+		//
+		// Example: 135
+		ConnectionId *string `json:"connectionId,omitempty"`
+
 		// Email Vrbo only: the account email.
 		Email *string `json:"email,omitempty"`
 
-		// ExternalAccountId Airbnb host ID, as a string (it can exceed 2^53).
+		// ExternalAccountId Airbnb: the host id, as a string (it can exceed 2^53). Vrbo: Vrbo's own account id; `null` until it is captured at sign-in.
 		//
 		// Example: 79730216
 		ExternalAccountId *string `json:"externalAccountId,omitempty"`
@@ -10455,13 +10684,18 @@ type ConnectStatus struct {
 	} `json:"capabilities,omitempty"`
 
 	// Connected Example: true
-	Connected *bool      `json:"connected,omitempty"`
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	Connected *bool `json:"connected,omitempty"`
+
+	// ConnectionId Same as `id`: our connection record.
+	//
+	// Example: 3
+	ConnectionId *string    `json:"connectionId,omitempty"`
+	CreatedAt    *time.Time `json:"createdAt,omitempty"`
 
 	// DataFreshness Vrbo only: the same freshness envelope the Airbnb read endpoints return, per account and in aggregate. Its reason is never_synced until a mapping is confirmed and importing while upcoming bookings come in.
 	DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
 
-	// ExternalAccountId Provider-side account ID (e.g. the Airbnb host ID).
+	// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id.
 	//
 	// Example: 10000001
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
@@ -10472,7 +10706,7 @@ type ConnectStatus struct {
 	// Host Host metadata, populated for Airbnb when the host row exists. Null for other providers (per-provider enrichment is incremental).
 	Host *ConnectHost `json:"host,omitempty"`
 
-	// Id Repull-side connection ID. Stable across token refreshes.
+	// Id Repull-side connection ID (the `X-Account-Id`). Stable across token refreshes.
 	//
 	// Example: 3
 	Id *string `json:"id,omitempty"`
@@ -10496,9 +10730,13 @@ type ConnectStatusStatus string
 // Connection defines model for Connection.
 type Connection struct {
 	// Action Set when the host must do something before the connection works (e.g. grant the invited Booking.com Extranet user full access). `null` when no action is pending.
-	Action            *ConnectionAction `json:"action,omitempty"`
-	CreatedAt         *time.Time        `json:"createdAt,omitempty"`
-	ExternalAccountId *string           `json:"externalAccountId,omitempty"`
+	Action    *ConnectionAction `json:"action,omitempty"`
+	CreatedAt *time.Time        `json:"createdAt,omitempty"`
+
+	// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id. Use `id` for our record.
+	//
+	// Example: 20123456
+	ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
 	// FixUrl Durable link that reopens the hosted Connect flow bound to this account on the fix screen — send the host here to resolve `action`. Present only when `action.required` is true; `null` otherwise.
 	FixUrl *string `json:"fixUrl,omitempty"`
@@ -10961,7 +11199,7 @@ type Error struct {
 			// Example: 25000
 			DailyRequests *int `json:"daily_requests"`
 
-			// Listings Listings the price covers: active plus held back by your plan, across your workspaces.
+			// Listings Listings the price covers: your active ones, across your workspaces (what checkout bills). Held-back listings are not included; upgrading does not switch them on.
 			//
 			// Example: 2
 			Listings *int `json:"listings"`
@@ -13221,6 +13459,25 @@ type MapConnectBookingRoomsResponse struct {
 	// NeedsCalendar Ids of the listings this call created from Booking.com rooms (`create: true`). They start without a calendar: Booking.com shows those rooms closed and nothing is sent to Booking.com for them until they have one. Give a listing a calendar by setting its prices and availability with `PUT /v1/availability/{propertyId}`, or by mapping the same home from Airbnb so its calendar is used. Rooms mapped to an existing listing are not listed: that listing's calendar is pushed as before.
 	NeedsCalendar []string `json:"needsCalendar"`
 
+	// PropertyNote `propertyStatus.message`, present only when the property is not open.
+	PropertyNote *string `json:"propertyNote,omitempty"`
+
+	// PropertyStatus Whether Booking.com has the property open for bookings. A property still being built on Booking.com is checked and opened as the last Connect step; one that is already open, or that its host closed, is left as it is. `null` when no room was mapped.
+	PropertyStatus *struct {
+		// Blockers Booking.com's own reasons it will not open the property yet.
+		Blockers *[]string `json:"blockers,omitempty"`
+
+		// Message What is wrong and how to fix it, in plain words. Null when the property is open.
+		Message *string `json:"message,omitempty"`
+
+		// Outcome `opened`: it was being built and is now open. `not_needed`: it was already past that stage. `blocked`: Booking.com will not open it yet — see `blockers`. `status_unknown`: its status could not be read. `failed`: Booking.com did not answer the open request.
+		Outcome    *MapConnectBookingRoomsResponsePropertyStatusOutcome `json:"outcome,omitempty"`
+		PropertyId *string                                              `json:"propertyId,omitempty"`
+
+		// StatusBefore Booking.com's status for the property before this step, e.g. `XML: Being built`.
+		StatusBefore *string `json:"statusBefore,omitempty"`
+	} `json:"propertyStatus,omitempty"`
+
 	// ReservationsFound How many reservations Booking.com returned for the property. Equal to `reservationsImported` unless some could not be attached to a listing — so `0` here means Booking.com had none. `null` when the sync could not run.
 	ReservationsFound *int `json:"reservationsFound,omitempty"`
 
@@ -13234,6 +13491,9 @@ type MapConnectBookingRoomsResponse struct {
 	// Unmapped Rooms submitted with `listingId: null` ("don't map"), which are left without a listing.
 	Unmapped *int `json:"unmapped,omitempty"`
 }
+
+// MapConnectBookingRoomsResponsePropertyStatusOutcome `opened`: it was being built and is now open. `not_needed`: it was already past that stage. `blocked`: Booking.com will not open it yet — see `blockers`. `status_unknown`: its status could not be read. `failed`: Booking.com did not answer the open request.
+type MapConnectBookingRoomsResponsePropertyStatusOutcome string
 
 // MarketBrowseCategory defines model for MarketBrowseCategory.
 type MarketBrowseCategory struct {
@@ -13998,17 +14258,17 @@ type PlanNotice struct {
 	// Example: 40
 	ListingsHeldBack int `json:"listingsHeldBack"`
 
-	// Message Example: 40 more connected listings are held inactive because your plan allows 3 active listings. They stay connected and keep syncing. Starter serves all 43 for $264 a month: https://repull.dev/dashboard/billing?upgrade=starter
+	// Message Example: 40 more connected listings are held inactive because your plan allows 3 active listings. They stay connected and keep syncing. Upgrade to Starter ($99 a month, 10 listings included), then choose which listings to switch on: $5 a month per listing from the 11th to the 100th: https://repull.dev/dashboard/billing?upgrade=starter
 	Message string `json:"message"`
 
-	// StarterListings On a free plan: the listings Starter would serve and bill, active plus held back, across the plan's workspaces.
+	// StarterListings On a free plan: the listings Starter checkout bills today, the active ones across the plan's workspaces. Held-back listings are not included: upgrading does not switch them on.
 	//
-	// Example: 43
+	// Example: 3
 	StarterListings *int `json:"starterListings,omitempty"`
 
-	// StarterMonthlyPrice Starter's monthly price in USD for `starterListings` — exactly what checkout charges. Present up to 100 listings; above that the message says how to ask for a plan.
+	// StarterMonthlyPrice Starter's monthly price in USD for `starterListings` — exactly what checkout charges. Each listing switched on afterwards adds Starter's per-listing price ($5 a month from the 11th to the 100th). Present up to 100 connected listings; above that the message says how to ask for a plan.
 	//
-	// Example: 264
+	// Example: 99
 	StarterMonthlyPrice *float32 `json:"starterMonthlyPrice,omitempty"`
 }
 
@@ -14661,19 +14921,19 @@ type Quote struct {
 	WebsiteId *string `json:"websiteId,omitempty"`
 }
 
-// RecordAccount The connected account a record belongs to — keyed exactly like the webhook `account` block and `connect.session.completed`, so one `provider:externalAccountId` key routes reads and events to the same user. `null` when it cannot be resolved (never guessed).
+// RecordAccount The connected account a record belongs to — keyed exactly like the webhook `account` block and `connect.session.completed`, so one `provider:externalAccountId` key routes reads and events to the same user. `null` when it cannot be resolved (never guessed). Until 2027-02-12 the `?account=` filter and connection handles also accept the old Extranet / Vrbo login ids (e.g. `booking_extranet:88`); they are never sent.
 type RecordAccount struct {
-	// ConnectionId Repull connection id (`X-Account-Id`), when the account has one. A string, like every id in API responses.
+	// ConnectionId Our connection record id: the `X-Account-Id` value, the same as `account.id`. `null` only when the account has no connection record (e.g. a Vrbo sign-in in a workspace with no Vrbo connection). A string, like every id in API responses.
 	//
 	// Example: 126
 	ConnectionId *string `json:"connectionId,omitempty"`
 
-	// ExternalAccountId The provider's own account id — Airbnb host id, Booking.com hotel id, Extranet login, Vrbo account, or the PMS account.
+	// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id.
 	//
 	// Example: 79730216
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
-	// HotelId Booking.com only: the hotel (property) id the record belongs to. On a `booking_extranet` account, `externalAccountId` is the login, which can cover several hotels.
+	// HotelId Booking.com only: the hotel (property) id the record belongs to. A `booking_extranet` account (a Booking.com account) can cover several hotels; this says which one.
 	//
 	// Example: 10433861
 	HotelId *string `json:"hotelId,omitempty"`
@@ -16967,12 +17227,14 @@ type WebhookEvent struct {
 
 // WebhookEventAccount Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
 type WebhookEventAccount struct {
-	// ExternalAccountId The provider's own account id.
+	// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id.
 	//
 	// Example: 79730216
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
-	// Id Repull connection id.
+	// Id Our connection record id: the `X-Account-Id` value, the same as `account.id`. `null` only when the account has no connection record (e.g. a Vrbo sign-in in a workspace with no Vrbo connection).
+	//
+	// Example: 135
 	Id *int `json:"id,omitempty"`
 
 	// Provider Example: airbnb
@@ -17050,11 +17312,15 @@ type WebhookSubscriptionStatus string
 
 // Workspace A sub-workspace: one customer of yours, with its own connections, listings and data. Send its `workspaceId` as `X-Workspace-Id` to act on it.
 type Workspace struct {
+	// Active `false` once the workspace was deactivated (`POST /v1/workspaces/{workspaceId}/deactivate`, or a deleted migration). Its data is kept.
 	Active    bool      `json:"active"`
 	CreatedAt time.Time `json:"createdAt"`
 
 	// CreatedVia `connect` — opened by a Connect session; `migrate` — opened by Repull Migrate.
 	CreatedVia *WorkspaceCreatedVia `json:"createdVia,omitempty"`
+
+	// DeactivatedAt When the workspace was deactivated; null while active.
+	DeactivatedAt *time.Time `json:"deactivatedAt,omitempty"`
 
 	// ExternalRef Your own id for this customer, as you sent it.
 	//
@@ -18364,7 +18630,7 @@ type CreateConnectSessionJSONBody struct {
 	// Example: fr
 	Locale *string `json:"locale,omitempty"`
 
-	// Mapping Where the channel's units get linked to listings. `hosted` (default): after a Vrbo or Booking.com Extranet sign-in, Connect shows a mapping step and returns to `redirectUrl` when it's confirmed. `api`: Connect skips that step and finishes right after sign-in. The connection reaches you in the `connect.session.completed` webhook as `account.externalAccountId` (its `connectionId` is null for these two), and as `connectionId` in the popup message and `accountId` on the redirect, all the same id; its handle is `vrbo:{id}` or `booking_extranet:{id}`; you list the units with `GET /v1/connections/{id}/units` and link them with `POST /v1/connections/{id}/mappings`. Nothing is imported until you post the mappings. Other providers ignore it.
+	// Mapping Where the channel's units get linked to listings. `hosted` (default): after a Vrbo or Booking.com Extranet sign-in, Connect shows a mapping step and returns to `redirectUrl` when it's confirmed. `api`: Connect skips that step and finishes right after sign-in. The connection reaches you in the `connect.session.completed` webhook, the popup message and the redirect (`externalAccountId` + `connectionId`): `externalAccountId` is the Vrbo account id or the Booking.com account id, `connectionId` our connection record; its handle is `vrbo:{externalAccountId}` or `booking_extranet:{externalAccountId}`; you list the units with `GET /v1/connections/{id}/units` and link them with `POST /v1/connections/{id}/mappings`. Nothing is imported until you post the mappings. Other providers ignore it.
 	Mapping *CreateConnectSessionJSONBodyMapping `json:"mapping,omitempty"`
 
 	// Purpose `migrate` starts a Repull Migrate session: the property manager connects their current PMS (or channel) and their data is copied into a new workspace of theirs, which you read with `X-Workspace-Id`. The hosted pages use migration wording, and after connecting they show the import's progress.
@@ -18848,7 +19114,7 @@ type ListConnectionUnits200JSONResponseBodyStatus string
 
 // ListConversationsParams defines parameters for ListConversations.
 type ListConversationsParams struct {
-	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. `externalAccountId` is the platform's own id (e.g. `airbnb:79730216`, `booking:17627428`, `booking_extranet:20123456`). The old Extranet / Vrbo login ids (`booking_extranet:88`, `vrbo:46`) still work until 2027-02-12. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
 	Account *Account `form:"account,omitempty" json:"account,omitempty"`
 
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`. Omit to fetch the first page.
@@ -19279,7 +19545,7 @@ type UpdateListingContentParams struct {
 
 // SetListingMarkupJSONBody defines parameters for SetListingMarkup.
 type SetListingMarkupJSONBody struct {
-	// AccountId Vrbo account (`vrbo:13`) — required when the listing is linked on more than one.
+	// AccountId Vrbo account (`vrbo:7001234`, Vrbo's own account id) — required when the listing is linked on more than one. The old sign-in ids (`vrbo:13`) still resolve until 2027-02-12.
 	AccountId *string                         `json:"accountId,omitempty"`
 	Channel   SetListingMarkupJSONBodyChannel `json:"channel"`
 
@@ -19380,7 +19646,7 @@ type GetVrboPublishJob200JSONResponseBodyJobStatus string
 
 // PublishListingToVrboJSONBody defines parameters for PublishListingToVrbo.
 type PublishListingToVrboJSONBody struct {
-	// AccountId The Vrbo account, as its connection id (`"vrbo:13"`) or the bare number. Needed only when the workspace has several.
+	// AccountId The Vrbo account, as its handle (`"vrbo:7001234"`, Vrbo's own account id) or the bare id. Needed only when the workspace has several. The old sign-in ids (`"vrbo:13"`) still resolve until 2027-02-12.
 	AccountId *string `json:"accountId,omitempty"`
 
 	// PropertyId Finish this unpublished Vrbo property (from a failed run's `job.propertyId`) instead of starting a new one.
@@ -19540,7 +19806,7 @@ type RunMigrationImportJSONBodyEntities string
 
 // ListPropertiesParams defines parameters for ListProperties.
 type ListPropertiesParams struct {
-	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. `externalAccountId` is the platform's own id (e.g. `airbnb:79730216`, `booking:17627428`, `booking_extranet:20123456`). The old Extranet / Vrbo login ids (`booking_extranet:88`, `vrbo:46`) still work until 2027-02-12. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
 	Account *Account `form:"account,omitempty" json:"account,omitempty"`
 
 	// Limit Page size (max 100). Requests over the cap return 422.
@@ -19618,7 +19884,7 @@ type GetQuoteParams struct {
 
 // ListReservationsParams defines parameters for ListReservations.
 type ListReservationsParams struct {
-	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. `externalAccountId` is the platform's own id (e.g. `airbnb:79730216`, `booking:17627428`, `booking_extranet:20123456`). The old Extranet / Vrbo login ids (`booking_extranet:88`, `vrbo:46`) still work until 2027-02-12. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
 	Account *Account `form:"account,omitempty" json:"account,omitempty"`
 
 	// Limit Page size (max 100). Requests over the cap return 422.
@@ -19726,7 +19992,7 @@ type QuoteReservationParams struct {
 
 // GetReservationSummaryParams defines parameters for GetReservationSummary.
 type GetReservationSummaryParams struct {
-	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. `externalAccountId` is the platform's own id (e.g. `airbnb:79730216`, `booking:17627428`, `booking_extranet:20123456`). The old Extranet / Vrbo login ids (`booking_extranet:88`, `vrbo:46`) still work until 2027-02-12. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
 	Account *Account `form:"account,omitempty" json:"account,omitempty"`
 
 	// From First day of the period.
@@ -19861,7 +20127,7 @@ type DeclineReservationRequest200JSONResponseBodyStatus string
 
 // ListReviewsParams defines parameters for ListReviews.
 type ListReviewsParams struct {
-	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
+	// Account Only the records of one connected account, as `provider:externalAccountId` — the pair from a webhook `account` block, `connect.session.completed`, or `GET /v1/connect/{provider}` → `accounts`. `externalAccountId` is the platform's own id (e.g. `airbnb:79730216`, `booking:17627428`, `booking_extranet:20123456`). The old Extranet / Vrbo login ids (`booking_extranet:88`, `vrbo:46`) still work until 2027-02-12. A record belongs to an account when it is on that account's listings and on its channel (a PMS account: came in through that PMS). An account with no listings returns an empty page.
 	Account *Account `form:"account,omitempty" json:"account,omitempty"`
 
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
@@ -20046,6 +20312,15 @@ type ListWorkspacesParams struct {
 	// ExternalRef Only the workspace you tagged with this `externalRef` (your own id for the customer).
 	ExternalRef *string `form:"externalRef,omitempty" json:"externalRef,omitempty"`
 }
+
+// DeactivateWorkspace200JSONResponseBodyDataActive defines parameters for DeactivateWorkspace.
+type DeactivateWorkspace200JSONResponseBodyDataActive bool
+
+// ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired defines parameters for ReactivateWorkspace.
+type ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired bool
+
+// ReactivateWorkspace200JSONResponseBodyDataActive defines parameters for ReactivateWorkspace.
+type ReactivateWorkspace200JSONResponseBodyDataActive bool
 
 // BatchUpdateAvailabilityJSONRequestBody defines body for BatchUpdateAvailability for application/json ContentType.
 type BatchUpdateAvailabilityJSONRequestBody = AvailabilityBatchWriteRequest
@@ -23402,6 +23677,40 @@ func (t *WebhookEvent) MergeAccountImportFailedEvent(v AccountImportFailedEvent)
 	return err
 }
 
+// AsAccountUnitsAddedEvent returns the union data inside the WebhookEvent as a AccountUnitsAddedEvent
+func (t WebhookEvent) AsAccountUnitsAddedEvent() (AccountUnitsAddedEvent, error) {
+	var body AccountUnitsAddedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAccountUnitsAddedEvent overwrites any union data inside the WebhookEvent as the provided AccountUnitsAddedEvent
+func (t *WebhookEvent) FromAccountUnitsAddedEvent(v AccountUnitsAddedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.units.added"}`))
+	t.union = b
+	return err
+}
+
+// MergeAccountUnitsAddedEvent performs a merge with any union data inside the WebhookEvent, using the provided AccountUnitsAddedEvent
+func (t *WebhookEvent) MergeAccountUnitsAddedEvent(v AccountUnitsAddedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.units.added"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsReviewCreatedEvent returns the union data inside the WebhookEvent as a ReviewCreatedEvent
 func (t WebhookEvent) AsReviewCreatedEvent() (ReviewCreatedEvent, error) {
 	var body ReviewCreatedEvent
@@ -23800,6 +24109,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsAccountImportFailedEvent()
 	case "account.import.started":
 		return t.AsAccountImportStartedEvent()
+	case "account.units.added":
+		return t.AsAccountUnitsAddedEvent()
 	case "ai.operation.completed":
 		return t.AsAiOperationCompletedEvent()
 	case "ai.operation.failed":

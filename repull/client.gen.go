@@ -2253,7 +2253,9 @@ type ClientInterface interface {
 	//
 	// Returns every PMS and OTA connection in the workspace, each with its `status`.
 	//
-	// **One entry per Booking.com Extranet hotel login.** Each hotel that invites the Repull user connects as its own login, with its own `externalAccountId` (handle `booking_extranet:{externalAccountId}`). A new hotel adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each hotel's listings, reservations, conversations and reviews stay under its own login (filter them with `?account=booking_extranet:{externalAccountId}`).
+	// **Account ids.** `externalAccountId` is the platform's own account id (Airbnb host id, Booking.com hotel id, the Booking.com account id behind an Extranet login, the PMS account id; `null` when the platform does not give us one) and `id` is our connection record, the `X-Account-Id`.
+	//
+	// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 	//
 	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
 	//
@@ -2972,7 +2974,7 @@ type ClientInterface interface {
 	//
 	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking`, `vrbo-login` and every PMS (`guesty`, `hostaway`, `hospitable`, …).
 	//
-	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
+	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's Vrbo account id (`accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`; the old sign-in id still works until 2027-02-12). It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 	//
 	// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 	//
@@ -5367,6 +5369,20 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/workspaces (the `ListWorkspaces` operationId).
 	ListWorkspaces(ctx context.Context, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeactivateWorkspace Deactivate a workspace
+	//
+	// Offboard one of your customers. Disconnects every account still connected in the sub-workspace (Airbnb hosts, Booking.com properties, Vrbo sign-ins, PMSs), deactivates its listings so they stop counting toward your plan, and marks the workspace inactive. Nothing is deleted: its listings, reservations and conversations are kept, and it stays in `GET /v1/workspaces` with `active: false` and `deactivatedAt`. Nothing is changed on the channels themselves. Calling it again is safe. Undo it with `POST /v1/workspaces/{workspaceId}/reactivate`. Workspace names don't have to be unique; the `workspaceId` (or your own `externalRef`) identifies a workspace.
+	//
+	// Corresponds with POST /v1/workspaces/{workspaceId}/deactivate (the `DeactivateWorkspace` operationId).
+	DeactivateWorkspace(ctx context.Context, workspaceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReactivateWorkspace Reactivate a workspace
+	//
+	// Undo `POST /v1/workspaces/{workspaceId}/deactivate`. The workspace is active again and the listings the deactivation switched off are switched back on; listings that were already inactive before it stay inactive. Reactivated listings count toward your plan again, so a reactivation that would exceed your plan's listing cap is refused with `402 listings_limit_exceeded` and nothing changes. Accounts stay disconnected: have your customer reconnect each one through Connect (`POST /v1/connect` with `X-Workspace-Id` set to this workspace). Calling it on an active workspace changes nothing.
+	//
+	// Corresponds with POST /v1/workspaces/{workspaceId}/reactivate (the `ReactivateWorkspace` operationId).
+	ReactivateWorkspace(ctx context.Context, workspaceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 // BatchUpdateAvailabilityWithBody Update availability across many properties
@@ -8887,7 +8903,9 @@ func (c *Client) ListVrboReservations(ctx context.Context, params *ListVrboReser
 //
 // Returns every PMS and OTA connection in the workspace, each with its `status`.
 //
-// **One entry per Booking.com Extranet hotel login.** Each hotel that invites the Repull user connects as its own login, with its own `externalAccountId` (handle `booking_extranet:{externalAccountId}`). A new hotel adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each hotel's listings, reservations, conversations and reviews stay under its own login (filter them with `?account=booking_extranet:{externalAccountId}`).
+// **Account ids.** `externalAccountId` is the platform's own account id (Airbnb host id, Booking.com hotel id, the Booking.com account id behind an Extranet login, the PMS account id; `null` when the platform does not give us one) and `id` is our connection record, the `X-Account-Id`.
+//
+// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 //
 // **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
 //
@@ -10166,7 +10184,7 @@ func (c *Client) ZeevouConnectCallback(ctx context.Context, params *ZeevouConnec
 //
 // Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking`, `vrbo-login` and every PMS (`guesty`, `hostaway`, `hospitable`, …).
 //
-// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
+// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's Vrbo account id (`accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`; the old sign-in id still works until 2027-02-12). It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 //
 // **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 //
@@ -14316,6 +14334,40 @@ func (c *Client) TestFireWebhook(ctx context.Context, id openapi_types.UUID, eve
 // Corresponds with GET /v1/workspaces (the `ListWorkspaces` operationId).
 func (c *Client) ListWorkspaces(ctx context.Context, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListWorkspacesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeactivateWorkspace Deactivate a workspace
+//
+// Offboard one of your customers. Disconnects every account still connected in the sub-workspace (Airbnb hosts, Booking.com properties, Vrbo sign-ins, PMSs), deactivates its listings so they stop counting toward your plan, and marks the workspace inactive. Nothing is deleted: its listings, reservations and conversations are kept, and it stays in `GET /v1/workspaces` with `active: false` and `deactivatedAt`. Nothing is changed on the channels themselves. Calling it again is safe. Undo it with `POST /v1/workspaces/{workspaceId}/reactivate`. Workspace names don't have to be unique; the `workspaceId` (or your own `externalRef`) identifies a workspace.
+//
+// Corresponds with POST /v1/workspaces/{workspaceId}/deactivate (the `DeactivateWorkspace` operationId).
+func (c *Client) DeactivateWorkspace(ctx context.Context, workspaceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeactivateWorkspaceRequest(c.Server, workspaceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ReactivateWorkspace Reactivate a workspace
+//
+// Undo `POST /v1/workspaces/{workspaceId}/deactivate`. The workspace is active again and the listings the deactivation switched off are switched back on; listings that were already inactive before it stay inactive. Reactivated listings count toward your plan again, so a reactivation that would exceed your plan's listing cap is refused with `402 listings_limit_exceeded` and nothing changes. Accounts stay disconnected: have your customer reconnect each one through Connect (`POST /v1/connect` with `X-Workspace-Id` set to this workspace). Calling it on an active workspace changes nothing.
+//
+// Corresponds with POST /v1/workspaces/{workspaceId}/reactivate (the `ReactivateWorkspace` operationId).
+func (c *Client) ReactivateWorkspace(ctx context.Context, workspaceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReactivateWorkspaceRequest(c.Server, workspaceId)
 	if err != nil {
 		return nil, err
 	}
@@ -28496,6 +28548,74 @@ func NewListWorkspacesRequest(server string, params *ListWorkspacesParams) (*htt
 	return req, nil
 }
 
+// NewDeactivateWorkspaceRequest constructs an http.Request for the DeactivateWorkspace method
+func NewDeactivateWorkspaceRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/deactivate", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewReactivateWorkspaceRequest constructs an http.Request for the ReactivateWorkspace method
+func NewReactivateWorkspaceRequest(server string, workspaceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "workspaceId", workspaceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/workspaces/%s/reactivate", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -30801,7 +30921,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns every PMS and OTA connection in the workspace, each with its `status`.
 	//
-	// **One entry per Booking.com Extranet hotel login.** Each hotel that invites the Repull user connects as its own login, with its own `externalAccountId` (handle `booking_extranet:{externalAccountId}`). A new hotel adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each hotel's listings, reservations, conversations and reviews stay under its own login (filter them with `?account=booking_extranet:{externalAccountId}`).
+	// **Account ids.** `externalAccountId` is the platform's own account id (Airbnb host id, Booking.com hotel id, the Booking.com account id behind an Extranet login, the PMS account id; `null` when the platform does not give us one) and `id` is our connection record, the `X-Account-Id`.
+	//
+	// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 	//
 	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
 	//
@@ -31540,7 +31662,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking`, `vrbo-login` and every PMS (`guesty`, `hostaway`, `hospitable`, …).
 	//
-	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
+	// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's Vrbo account id (`accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`; the old sign-in id still works until 2027-02-12). It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 	//
 	// **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 	//
@@ -34099,6 +34221,24 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/workspaces (the `ListWorkspaces` operationId).
 	ListWorkspacesWithResponse(ctx context.Context, params *ListWorkspacesParams, reqEditors ...RequestEditorFn) (*ListWorkspacesClientResponse, error)
+
+	// DeactivateWorkspaceWithResponse Deactivate a workspace
+	//
+	// Offboard one of your customers. Disconnects every account still connected in the sub-workspace (Airbnb hosts, Booking.com properties, Vrbo sign-ins, PMSs), deactivates its listings so they stop counting toward your plan, and marks the workspace inactive. Nothing is deleted: its listings, reservations and conversations are kept, and it stays in `GET /v1/workspaces` with `active: false` and `deactivatedAt`. Nothing is changed on the channels themselves. Calling it again is safe. Undo it with `POST /v1/workspaces/{workspaceId}/reactivate`. Workspace names don't have to be unique; the `workspaceId` (or your own `externalRef`) identifies a workspace.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/workspaces/{workspaceId}/deactivate (the `DeactivateWorkspace` operationId).
+	DeactivateWorkspaceWithResponse(ctx context.Context, workspaceId string, reqEditors ...RequestEditorFn) (*DeactivateWorkspaceClientResponse, error)
+
+	// ReactivateWorkspaceWithResponse Reactivate a workspace
+	//
+	// Undo `POST /v1/workspaces/{workspaceId}/deactivate`. The workspace is active again and the listings the deactivation switched off are switched back on; listings that were already inactive before it stay inactive. Reactivated listings count toward your plan again, so a reactivation that would exceed your plan's listing cap is refused with `402 listings_limit_exceeded` and nothing changes. Accounts stay disconnected: have your customer reconnect each one through Connect (`POST /v1/connect` with `X-Workspace-Id` set to this workspace). Calling it on an active workspace changes nothing.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/workspaces/{workspaceId}/reactivate (the `ReactivateWorkspace` operationId).
+	ReactivateWorkspaceWithResponse(ctx context.Context, workspaceId string, reqEditors ...RequestEditorFn) (*ReactivateWorkspaceClientResponse, error)
 }
 
 type BatchUpdateAvailabilityClientResponse struct {
@@ -48520,7 +48660,7 @@ type GetListingMarkupsClientResponse struct {
 		// Id Repull listing id.
 		Id   *string `json:"id,omitempty"`
 		Vrbo *[]struct {
-			// AccountId The Vrbo account, as its connection id (`vrbo:13`).
+			// AccountId The Vrbo account, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
 			AccountId *string `json:"accountId,omitempty"`
 
 			// ListingIds Listings in this workspace linked on this Vrbo account — all share this markup.
@@ -48570,7 +48710,7 @@ func (r GetListingMarkupsClientResponse) GetJSON200() *struct {
 	// Id Repull listing id.
 	Id   *string `json:"id,omitempty"`
 	Vrbo *[]struct {
-		// AccountId The Vrbo account, as its connection id (`vrbo:13`).
+		// AccountId The Vrbo account, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
 		AccountId *string `json:"accountId,omitempty"`
 
 		// ListingIds Listings in this workspace linked on this Vrbo account — all share this markup.
@@ -50129,8 +50269,8 @@ type GetVrboPublishJobClientResponse struct {
 	JSON200 *struct {
 		Channel *GetVrboPublishJob200JSONResponseBodyChannel `json:"channel,omitempty"`
 		Job     *struct {
-			// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
-			AccountId *int `json:"accountId,omitempty"`
+			// AccountId The Vrbo account the listing is created in, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
+			AccountId *string `json:"accountId,omitempty"`
 
 			// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
 			Adjustments *[]string `json:"adjustments,omitempty"`
@@ -50178,8 +50318,8 @@ type GetVrboPublishJobClientResponse struct {
 func (r GetVrboPublishJobClientResponse) GetJSON200() *struct {
 	Channel *GetVrboPublishJob200JSONResponseBodyChannel `json:"channel,omitempty"`
 	Job     *struct {
-		// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
-		AccountId *int `json:"accountId,omitempty"`
+		// AccountId The Vrbo account the listing is created in, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
+		AccountId *string `json:"accountId,omitempty"`
 
 		// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
 		Adjustments *[]string `json:"adjustments,omitempty"`
@@ -50269,8 +50409,8 @@ type PublishListingToVrboClientResponse struct {
 	JSON202 *struct {
 		Channel *PublishListingToVrbo202JSONResponseBodyChannel `json:"channel,omitempty"`
 		Job     *struct {
-			// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
-			AccountId *int `json:"accountId,omitempty"`
+			// AccountId The Vrbo account the listing is created in, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
+			AccountId *string `json:"accountId,omitempty"`
 
 			// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
 			Adjustments *[]string `json:"adjustments,omitempty"`
@@ -50324,8 +50464,8 @@ type PublishListingToVrboClientResponse struct {
 func (r PublishListingToVrboClientResponse) GetJSON202() *struct {
 	Channel *PublishListingToVrbo202JSONResponseBodyChannel `json:"channel,omitempty"`
 	Job     *struct {
-		// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
-		AccountId *int `json:"accountId,omitempty"`
+		// AccountId The Vrbo account the listing is created in, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
+		AccountId *string `json:"accountId,omitempty"`
 
 		// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
 		Adjustments *[]string `json:"adjustments,omitempty"`
@@ -55219,6 +55359,229 @@ func (r ListWorkspacesClientResponse) ContentType() string {
 	return ""
 }
 
+type DeactivateWorkspaceClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *struct {
+			Active *DeactivateWorkspace200JSONResponseBodyDataActive `json:"active,omitempty"`
+
+			// AlreadyInactive True when the workspace was already inactive before this call.
+			AlreadyInactive *bool      `json:"alreadyInactive,omitempty"`
+			DeactivatedAt   *time.Time `json:"deactivatedAt,omitempty"`
+
+			// Disconnected Accounts that were still connected and are now disconnected.
+			Disconnected *[]struct {
+				AccountId *string `json:"accountId,omitempty"`
+
+				// Provider Example: airbnb
+				Provider *string `json:"provider,omitempty"`
+			} `json:"disconnected,omitempty"`
+
+			// ListingsDeactivated Listings this call switched off. `reactivate` switches these back on.
+			ListingsDeactivated *[]string `json:"listingsDeactivated,omitempty"`
+			WorkspaceId         *string   `json:"workspaceId,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeactivateWorkspaceClientResponse) GetJSON200() *struct {
+	Data *struct {
+		Active *DeactivateWorkspace200JSONResponseBodyDataActive `json:"active,omitempty"`
+
+		// AlreadyInactive True when the workspace was already inactive before this call.
+		AlreadyInactive *bool      `json:"alreadyInactive,omitempty"`
+		DeactivatedAt   *time.Time `json:"deactivatedAt,omitempty"`
+
+		// Disconnected Accounts that were still connected and are now disconnected.
+		Disconnected *[]struct {
+			AccountId *string `json:"accountId,omitempty"`
+
+			// Provider Example: airbnb
+			Provider *string `json:"provider,omitempty"`
+		} `json:"disconnected,omitempty"`
+
+		// ListingsDeactivated Listings this call switched off. `reactivate` switches these back on.
+		ListingsDeactivated *[]string `json:"listingsDeactivated,omitempty"`
+		WorkspaceId         *string   `json:"workspaceId,omitempty"`
+	} `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeactivateWorkspaceClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeactivateWorkspaceClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r DeactivateWorkspaceClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeactivateWorkspaceClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeactivateWorkspaceClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeactivateWorkspaceClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeactivateWorkspaceClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeactivateWorkspaceClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ReactivateWorkspaceClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *struct {
+			// AccountsReconnectRequired Accounts are never reconnected by this call.
+			AccountsReconnectRequired *ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired `json:"accountsReconnectRequired,omitempty"`
+			Active                    *ReactivateWorkspace200JSONResponseBodyDataActive                    `json:"active,omitempty"`
+
+			// AlreadyActive True when the workspace was already active — nothing was changed.
+			AlreadyActive *bool `json:"alreadyActive,omitempty"`
+
+			// ListingsReactivated Listings switched back on.
+			ListingsReactivated *[]string `json:"listingsReactivated,omitempty"`
+
+			// NextStep What to do next: reconnect the accounts through Connect.
+			NextStep *string `json:"nextStep,omitempty"`
+
+			// ReactivatedAt Null when the workspace was already active.
+			ReactivatedAt *time.Time `json:"reactivatedAt,omitempty"`
+			WorkspaceId   *string    `json:"workspaceId,omitempty"`
+		} `json:"data,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PaymentRequired
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ReactivateWorkspaceClientResponse) GetJSON200() *struct {
+	Data *struct {
+		// AccountsReconnectRequired Accounts are never reconnected by this call.
+		AccountsReconnectRequired *ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired `json:"accountsReconnectRequired,omitempty"`
+		Active                    *ReactivateWorkspace200JSONResponseBodyDataActive                    `json:"active,omitempty"`
+
+		// AlreadyActive True when the workspace was already active — nothing was changed.
+		AlreadyActive *bool `json:"alreadyActive,omitempty"`
+
+		// ListingsReactivated Listings switched back on.
+		ListingsReactivated *[]string `json:"listingsReactivated,omitempty"`
+
+		// NextStep What to do next: reconnect the accounts through Connect.
+		NextStep *string `json:"nextStep,omitempty"`
+
+		// ReactivatedAt Null when the workspace was already active.
+		ReactivatedAt *time.Time `json:"reactivatedAt,omitempty"`
+		WorkspaceId   *string    `json:"workspaceId,omitempty"`
+	} `json:"data,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ReactivateWorkspaceClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r ReactivateWorkspaceClientResponse) GetJSON402() *PaymentRequired {
+	return r.JSON402
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ReactivateWorkspaceClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ReactivateWorkspaceClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ReactivateWorkspaceClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ReactivateWorkspaceClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ReactivateWorkspaceClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReactivateWorkspaceClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ReactivateWorkspaceClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // BatchUpdateAvailabilityWithBodyWithResponse Update availability across many properties
 //
 // Applies ONE settings object across up to 500 properties and pushes the result to every connected channel.
@@ -58298,7 +58661,9 @@ func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Conte
 //
 // Returns every PMS and OTA connection in the workspace, each with its `status`.
 //
-// **One entry per Booking.com Extranet hotel login.** Each hotel that invites the Repull user connects as its own login, with its own `externalAccountId` (handle `booking_extranet:{externalAccountId}`). A new hotel adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each hotel's listings, reservations, conversations and reviews stay under its own login (filter them with `?account=booking_extranet:{externalAccountId}`).
+// **Account ids.** `externalAccountId` is the platform's own account id (Airbnb host id, Booking.com hotel id, the Booking.com account id behind an Extranet login, the PMS account id; `null` when the platform does not give us one) and `id` is our connection record, the `X-Account-Id`.
+//
+// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 //
 // **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
 //
@@ -59373,7 +59738,7 @@ func (c *ClientWithResponses) ZeevouConnectCallbackWithResponse(ctx context.Cont
 //
 // Disconnect ONE connected account of a provider from this workspace. Supported for `airbnb`, `booking`, `vrbo-login` and every PMS (`guesty`, `hostaway`, `hospitable`, …).
 //
-// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's `accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`. It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
+// **Which account.** Pass `accountId` — for Airbnb the host id (`accounts[].externalAccountId` from `GET /v1/connect/airbnb`), for Booking.com the hotel id, for `vrbo-login` the sign-in's Vrbo account id (`accounts[].externalAccountId` from `GET /v1/connect/vrbo-login`; the old sign-in id still works until 2027-02-12). It is optional only when the workspace has exactly one account for the provider. With several and no `accountId`, the call returns `422` with the account ids in `valid_values` instead of guessing. An `accountId` that is not connected to this workspace returns `404`. Disconnecting one account leaves the others connected.
 //
 // **What happens.** The account's stored authorization is removed and it stops syncing. Its listings are **deactivated**, not deleted: they stop counting toward your plan's listing limit, their data is kept, and they are returned in `listingsDeactivated`. A listing that is still connected through another account or channel stays active. Reconnect the account, then activate the listings with `POST /v1/listings/status`.
 //
@@ -62991,6 +63356,36 @@ func (c *ClientWithResponses) ListWorkspacesWithResponse(ctx context.Context, pa
 		return nil, err
 	}
 	return ParseListWorkspacesClientResponse(rsp)
+}
+
+// DeactivateWorkspaceWithResponse Deactivate a workspace
+//
+// Offboard one of your customers. Disconnects every account still connected in the sub-workspace (Airbnb hosts, Booking.com properties, Vrbo sign-ins, PMSs), deactivates its listings so they stop counting toward your plan, and marks the workspace inactive. Nothing is deleted: its listings, reservations and conversations are kept, and it stays in `GET /v1/workspaces` with `active: false` and `deactivatedAt`. Nothing is changed on the channels themselves. Calling it again is safe. Undo it with `POST /v1/workspaces/{workspaceId}/reactivate`. Workspace names don't have to be unique; the `workspaceId` (or your own `externalRef`) identifies a workspace.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/workspaces/{workspaceId}/deactivate (the `DeactivateWorkspace` operationId).
+func (c *ClientWithResponses) DeactivateWorkspaceWithResponse(ctx context.Context, workspaceId string, reqEditors ...RequestEditorFn) (*DeactivateWorkspaceClientResponse, error) {
+	rsp, err := c.DeactivateWorkspace(ctx, workspaceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeactivateWorkspaceClientResponse(rsp)
+}
+
+// ReactivateWorkspaceWithResponse Reactivate a workspace
+//
+// Undo `POST /v1/workspaces/{workspaceId}/deactivate`. The workspace is active again and the listings the deactivation switched off are switched back on; listings that were already inactive before it stay inactive. Reactivated listings count toward your plan again, so a reactivation that would exceed your plan's listing cap is refused with `402 listings_limit_exceeded` and nothing changes. Accounts stay disconnected: have your customer reconnect each one through Connect (`POST /v1/connect` with `X-Workspace-Id` set to this workspace). Calling it on an active workspace changes nothing.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/workspaces/{workspaceId}/reactivate (the `ReactivateWorkspace` operationId).
+func (c *ClientWithResponses) ReactivateWorkspaceWithResponse(ctx context.Context, workspaceId string, reqEditors ...RequestEditorFn) (*ReactivateWorkspaceClientResponse, error) {
+	rsp, err := c.ReactivateWorkspace(ctx, workspaceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReactivateWorkspaceClientResponse(rsp)
 }
 
 // ParseBatchUpdateAvailabilityClientResponse parses an HTTP response from a BatchUpdateAvailabilityWithResponse call
@@ -73498,7 +73893,7 @@ func ParseGetListingMarkupsClientResponse(rsp *http.Response) (*GetListingMarkup
 			// Id Repull listing id.
 			Id   *string `json:"id,omitempty"`
 			Vrbo *[]struct {
-				// AccountId The Vrbo account, as its connection id (`vrbo:13`).
+				// AccountId The Vrbo account, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
 				AccountId *string `json:"accountId,omitempty"`
 
 				// ListingIds Listings in this workspace linked on this Vrbo account — all share this markup.
@@ -74825,8 +75220,8 @@ func ParseGetVrboPublishJobClientResponse(rsp *http.Response) (*GetVrboPublishJo
 		var dest struct {
 			Channel *GetVrboPublishJob200JSONResponseBodyChannel `json:"channel,omitempty"`
 			Job     *struct {
-				// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
-				AccountId *int `json:"accountId,omitempty"`
+				// AccountId The Vrbo account the listing is created in, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
+				AccountId *string `json:"accountId,omitempty"`
 
 				// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
 				Adjustments *[]string `json:"adjustments,omitempty"`
@@ -74911,8 +75306,8 @@ func ParsePublishListingToVrboClientResponse(rsp *http.Response) (*PublishListin
 		var dest struct {
 			Channel *PublishListingToVrbo202JSONResponseBodyChannel `json:"channel,omitempty"`
 			Job     *struct {
-				// AccountId The Vrbo account (connection `vrbo:<accountId>`) the listing is created in.
-				AccountId *int `json:"accountId,omitempty"`
+				// AccountId The Vrbo account the listing is created in, as its handle `vrbo:{Vrbo account id}`. `null` until Vrbo's account id is captured for the sign-in.
+				AccountId *string `json:"accountId,omitempty"`
 
 				// Adjustments POST only: where the Vrbo listing departs from the listing's content because of a Vrbo rule.
 				Adjustments *[]string `json:"adjustments,omitempty"`
@@ -78303,6 +78698,160 @@ func ParseListWorkspacesClientResponse(rsp *http.Response) (*ListWorkspacesClien
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeactivateWorkspaceClientResponse parses an HTTP response from a DeactivateWorkspaceWithResponse call
+func ParseDeactivateWorkspaceClientResponse(rsp *http.Response) (*DeactivateWorkspaceClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeactivateWorkspaceClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				Active *DeactivateWorkspace200JSONResponseBodyDataActive `json:"active,omitempty"`
+
+				// AlreadyInactive True when the workspace was already inactive before this call.
+				AlreadyInactive *bool      `json:"alreadyInactive,omitempty"`
+				DeactivatedAt   *time.Time `json:"deactivatedAt,omitempty"`
+
+				// Disconnected Accounts that were still connected and are now disconnected.
+				Disconnected *[]struct {
+					AccountId *string `json:"accountId,omitempty"`
+
+					// Provider Example: airbnb
+					Provider *string `json:"provider,omitempty"`
+				} `json:"disconnected,omitempty"`
+
+				// ListingsDeactivated Listings this call switched off. `reactivate` switches these back on.
+				ListingsDeactivated *[]string `json:"listingsDeactivated,omitempty"`
+				WorkspaceId         *string   `json:"workspaceId,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReactivateWorkspaceClientResponse parses an HTTP response from a ReactivateWorkspaceWithResponse call
+func ParseReactivateWorkspaceClientResponse(rsp *http.Response) (*ReactivateWorkspaceClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReactivateWorkspaceClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *struct {
+				// AccountsReconnectRequired Accounts are never reconnected by this call.
+				AccountsReconnectRequired *ReactivateWorkspace200JSONResponseBodyDataAccountsReconnectRequired `json:"accountsReconnectRequired,omitempty"`
+				Active                    *ReactivateWorkspace200JSONResponseBodyDataActive                    `json:"active,omitempty"`
+
+				// AlreadyActive True when the workspace was already active — nothing was changed.
+				AlreadyActive *bool `json:"alreadyActive,omitempty"`
+
+				// ListingsReactivated Listings switched back on.
+				ListingsReactivated *[]string `json:"listingsReactivated,omitempty"`
+
+				// NextStep What to do next: reconnect the accounts through Connect.
+				NextStep *string `json:"nextStep,omitempty"`
+
+				// ReactivatedAt Null when the workspace was already active.
+				ReactivatedAt *time.Time `json:"reactivatedAt,omitempty"`
+				WorkspaceId   *string    `json:"workspaceId,omitempty"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PaymentRequired
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
 		var dest UnprocessableEntity
