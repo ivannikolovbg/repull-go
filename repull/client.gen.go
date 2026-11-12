@@ -2255,6 +2255,8 @@ type ClientInterface interface {
 	//
 	// **Account ids.** `externalAccountId` is the platform's own account id (Airbnb host id, Booking.com hotel id, the Booking.com account id behind an Extranet login, the PMS account id; `null` when the platform does not give us one) and `id` is our connection record, the `X-Account-Id`.
 	//
+	// **Access level.** Every connection carries `accessType`: `read_only`, `messaging` or `full_access`, or `null` when unknown. Airbnb: the tier the host's token was granted with. Vrbo: bookings and messages only (`messaging`) or with the calendar push (`full_access`). Booking.com: always `full_access`. Booking.com Extranet: always `messaging` (reads reservations, messages and reviews and replies; never writes rates or availability). PMS: `read_only` when every write-policy switch is off, else `full_access`. See the `ConnectionAccessType` schema.
+	//
 	// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 	//
 	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
@@ -2991,6 +2993,8 @@ type ClientInterface interface {
 	//
 	// Returns the current connection status for a provider, including host metadata (display name + avatar) for Airbnb so clients can render an account-level confirmation UI.
 	//
+	// **Access level.** `accessType` says what the connection may do: `read_only`, `messaging` or `full_access` (`null` when unknown). Airbnb reports it per host on `accounts[]` (the tier each host's token was granted with) and at the top level for the host in `externalAccountId`; Vrbo (`vrbo-login`) per account; Booking.com is always `full_access`, the Booking.com Extranet always `messaging`; a PMS is `read_only` when every `writePolicy` switch is off, else `full_access`. See the `ConnectionAccessType` schema for the meaning per provider.
+	//
 	// Corresponds with GET /v1/connect/{provider} (the `GetConnectStatus` operationId).
 	GetConnectStatus(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3144,9 +3148,11 @@ type ClientInterface interface {
 	//
 	// **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
 	//
-	// **Order:** newest conversation first (by when the conversation started), unless you pass `updated_since`.
+	// **Order:** most recent activity first (`lastMessageAt` descending) by default (`order=recent`). `lastMessageAt` is the conversation's newest activity: the time of its newest message (after an import, the newest imported message's own time, not the import time), or of a later change to the conversation.
 	//
-	// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations with activity (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`). Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
+	// **Full sync — use `order=created`:** a recent-order walk is a live view: a conversation that gets a new message while you page moves to the front, behind your walk, and that walk does not return it (the next walk or an `updated_since` poll will). To walk every conversation exactly once, pass `order=created` — newest conversation first (by when it started), stable for the whole walk. A cursor keeps the order its walk started in: cursors issued before recency ordering continue in creation order, and a recent-order cursor is refused with `order=created`.
+	//
+	// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations whose record changed (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`); `order` does not apply. Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
 	//
 	// Corresponds with GET /v1/conversations (the `ListConversations` operationId).
 	ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8905,6 +8911,8 @@ func (c *Client) ListVrboReservations(ctx context.Context, params *ListVrboReser
 //
 // **Account ids.** `externalAccountId` is the platform's own account id (Airbnb host id, Booking.com hotel id, the Booking.com account id behind an Extranet login, the PMS account id; `null` when the platform does not give us one) and `id` is our connection record, the `X-Account-Id`.
 //
+// **Access level.** Every connection carries `accessType`: `read_only`, `messaging` or `full_access`, or `null` when unknown. Airbnb: the tier the host's token was granted with. Vrbo: bookings and messages only (`messaging`) or with the calendar push (`full_access`). Booking.com: always `full_access`. Booking.com Extranet: always `messaging` (reads reservations, messages and reviews and replies; never writes rates or availability). PMS: `read_only` when every write-policy switch is off, else `full_access`. See the `ConnectionAccessType` schema.
+//
 // **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 //
 // **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
@@ -10211,6 +10219,8 @@ func (c *Client) DeleteConnection(ctx context.Context, provider Provider, params
 //
 // Returns the current connection status for a provider, including host metadata (display name + avatar) for Airbnb so clients can render an account-level confirmation UI.
 //
+// **Access level.** `accessType` says what the connection may do: `read_only`, `messaging` or `full_access` (`null` when unknown). Airbnb reports it per host on `accounts[]` (the tier each host's token was granted with) and at the top level for the host in `externalAccountId`; Vrbo (`vrbo-login`) per account; Booking.com is always `full_access`, the Booking.com Extranet always `messaging`; a PMS is `read_only` when every `writePolicy` switch is off, else `full_access`. See the `ConnectionAccessType` schema for the meaning per provider.
+//
 // Corresponds with GET /v1/connect/{provider} (the `GetConnectStatus` operationId).
 func (c *Client) GetConnectStatus(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetConnectStatusRequest(c.Server, provider)
@@ -10494,9 +10504,11 @@ func (c *Client) ListConnectionUnits(ctx context.Context, id string, params *Lis
 //
 // **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
 //
-// **Order:** newest conversation first (by when the conversation started), unless you pass `updated_since`.
+// **Order:** most recent activity first (`lastMessageAt` descending) by default (`order=recent`). `lastMessageAt` is the conversation's newest activity: the time of its newest message (after an import, the newest imported message's own time, not the import time), or of a later change to the conversation.
 //
-// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations with activity (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`). Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
+// **Full sync — use `order=created`:** a recent-order walk is a live view: a conversation that gets a new message while you page moves to the front, behind your walk, and that walk does not return it (the next walk or an `updated_since` poll will). To walk every conversation exactly once, pass `order=created` — newest conversation first (by when it started), stable for the whole walk. A cursor keeps the order its walk started in: cursors issued before recency ordering continue in creation order, and a recent-order cursor is refused with `order=created`.
+//
+// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations whose record changed (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`); `order` does not apply. Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
 //
 // Corresponds with GET /v1/conversations (the `ListConversations` operationId).
 func (c *Client) ListConversations(ctx context.Context, params *ListConversationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -21539,6 +21551,18 @@ func NewListConversationsRequest(server string, params *ListConversationsParams)
 
 		}
 
+		if params.Order != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "order", *params.Order, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
 		if params.Status != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -30923,6 +30947,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Account ids.** `externalAccountId` is the platform's own account id (Airbnb host id, Booking.com hotel id, the Booking.com account id behind an Extranet login, the PMS account id; `null` when the platform does not give us one) and `id` is our connection record, the `X-Account-Id`.
 	//
+	// **Access level.** Every connection carries `accessType`: `read_only`, `messaging` or `full_access`, or `null` when unknown. Airbnb: the tier the host's token was granted with. Vrbo: bookings and messages only (`messaging`) or with the calendar push (`full_access`). Booking.com: always `full_access`. Booking.com Extranet: always `messaging` (reads reservations, messages and reviews and replies; never writes rates or availability). PMS: `read_only` when every write-policy switch is off, else `full_access`. See the `ConnectionAccessType` schema.
+	//
 	// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 	//
 	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
@@ -31681,6 +31707,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Returns the current connection status for a provider, including host metadata (display name + avatar) for Airbnb so clients can render an account-level confirmation UI.
 	//
+	// **Access level.** `accessType` says what the connection may do: `read_only`, `messaging` or `full_access` (`null` when unknown). Airbnb reports it per host on `accounts[]` (the tier each host's token was granted with) and at the top level for the host in `externalAccountId`; Vrbo (`vrbo-login`) per account; Booking.com is always `full_access`, the Booking.com Extranet always `messaging`; a PMS is `read_only` when every `writePolicy` switch is off, else `full_access`. See the `ConnectionAccessType` schema for the meaning per provider.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with GET /v1/connect/{provider} (the `GetConnectStatus` operationId).
@@ -31844,9 +31872,11 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
 	//
-	// **Order:** newest conversation first (by when the conversation started), unless you pass `updated_since`.
+	// **Order:** most recent activity first (`lastMessageAt` descending) by default (`order=recent`). `lastMessageAt` is the conversation's newest activity: the time of its newest message (after an import, the newest imported message's own time, not the import time), or of a later change to the conversation.
 	//
-	// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations with activity (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`). Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
+	// **Full sync — use `order=created`:** a recent-order walk is a live view: a conversation that gets a new message while you page moves to the front, behind your walk, and that walk does not return it (the next walk or an `updated_since` poll will). To walk every conversation exactly once, pass `order=created` — newest conversation first (by when it started), stable for the whole walk. A cursor keeps the order its walk started in: cursors issued before recency ordering continue in creation order, and a recent-order cursor is refused with `order=created`.
+	//
+	// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations whose record changed (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`); `order` does not apply. Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -58663,6 +58693,8 @@ func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Conte
 //
 // **Account ids.** `externalAccountId` is the platform's own account id (Airbnb host id, Booking.com hotel id, the Booking.com account id behind an Extranet login, the PMS account id; `null` when the platform does not give us one) and `id` is our connection record, the `X-Account-Id`.
 //
+// **Access level.** Every connection carries `accessType`: `read_only`, `messaging` or `full_access`, or `null` when unknown. Airbnb: the tier the host's token was granted with. Vrbo: bookings and messages only (`messaging`) or with the calendar push (`full_access`). Booking.com: always `full_access`. Booking.com Extranet: always `messaging` (reads reservations, messages and reviews and replies; never writes rates or availability). PMS: `read_only` when every write-policy switch is off, else `full_access`. See the `ConnectionAccessType` schema.
+//
 // **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 //
 // **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
@@ -59763,6 +59795,8 @@ func (c *ClientWithResponses) DeleteConnectionWithResponse(ctx context.Context, 
 //
 // Returns the current connection status for a provider, including host metadata (display name + avatar) for Airbnb so clients can render an account-level confirmation UI.
 //
+// **Access level.** `accessType` says what the connection may do: `read_only`, `messaging` or `full_access` (`null` when unknown). Airbnb reports it per host on `accounts[]` (the tier each host's token was granted with) and at the top level for the host in `externalAccountId`; Vrbo (`vrbo-login`) per account; Booking.com is always `full_access`, the Booking.com Extranet always `messaging`; a PMS is `read_only` when every `writePolicy` switch is off, else `full_access`. See the `ConnectionAccessType` schema for the meaning per provider.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with GET /v1/connect/{provider} (the `GetConnectStatus` operationId).
@@ -60004,9 +60038,11 @@ func (c *ClientWithResponses) ListConnectionUnitsWithResponse(ctx context.Contex
 //
 // **Inactive listings:** conversations that belong to an inactive listing (by the thread's listing or its reservation's listing) are left out of the page and of `pagination.total`. Inactive listings keep syncing; activate the listing to use it here.
 //
-// **Order:** newest conversation first (by when the conversation started), unless you pass `updated_since`.
+// **Order:** most recent activity first (`lastMessageAt` descending) by default (`order=recent`). `lastMessageAt` is the conversation's newest activity: the time of its newest message (after an import, the newest imported message's own time, not the import time), or of a later change to the conversation.
 //
-// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations with activity (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`). Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
+// **Full sync — use `order=created`:** a recent-order walk is a live view: a conversation that gets a new message while you page moves to the front, behind your walk, and that walk does not return it (the next walk or an `updated_since` poll will). To walk every conversation exactly once, pass `order=created` — newest conversation first (by when it started), stable for the whole walk. A cursor keeps the order its walk started in: cursors issued before recency ordering continue in creation order, and a recent-order cursor is refused with `order=created`.
+//
+// **Incremental sync (`?updated_since=<ISO8601>`):** only conversations whose record changed (a new message or another change) at or after that instant, ordered oldest change first (`updatedAt ASC`); `order` does not apply. Walk every page with `cursor`, keeping `updated_since` on each request; the last row's `updatedAt` is your next watermark. A cursor from one kind of walk is refused on the other.
 //
 // Returns a wrapper object for the known response body format(s).
 //

@@ -1849,24 +1849,6 @@ func (e ConnectSessionCompletedPayloadPurpose) Valid() bool {
 	}
 }
 
-// Defines values for ConnectStatusAccountsAccessType.
-const (
-	ConnectStatusAccountsAccessTypeFullAccess ConnectStatusAccountsAccessType = "full_access"
-	ConnectStatusAccountsAccessTypeMessaging  ConnectStatusAccountsAccessType = "messaging"
-)
-
-// Valid indicates whether the value is a known member of the ConnectStatusAccountsAccessType enum.
-func (e ConnectStatusAccountsAccessType) Valid() bool {
-	switch e {
-	case ConnectStatusAccountsAccessTypeFullAccess:
-		return true
-	case ConnectStatusAccountsAccessTypeMessaging:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ConnectStatusStatus.
 const (
 	ConnectStatusStatusActive   ConnectStatusStatus = "active"
@@ -1912,6 +1894,27 @@ func (e ConnectionStatus) Valid() bool {
 	case ConnectionStatusNeedsPermissions:
 		return true
 	case ConnectionStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectionAccessType.
+const (
+	ConnectionAccessTypeFullAccess ConnectionAccessType = "full_access"
+	ConnectionAccessTypeMessaging  ConnectionAccessType = "messaging"
+	ConnectionAccessTypeReadOnly   ConnectionAccessType = "read_only"
+)
+
+// Valid indicates whether the value is a known member of the ConnectionAccessType enum.
+func (e ConnectionAccessType) Valid() bool {
+	switch e {
+	case ConnectionAccessTypeFullAccess:
+		return true
+	case ConnectionAccessTypeMessaging:
+		return true
+	case ConnectionAccessTypeReadOnly:
 		return true
 	default:
 		return false
@@ -6118,6 +6121,24 @@ func (e ListConversationsParamsPlatform) Valid() bool {
 	case ListConversationsParamsPlatformVrbo:
 		return true
 	case ListConversationsParamsPlatformWebsite:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListConversationsParamsOrder.
+const (
+	ListConversationsParamsOrderCreated ListConversationsParamsOrder = "created"
+	ListConversationsParamsOrderRecent  ListConversationsParamsOrder = "recent"
+)
+
+// Valid indicates whether the value is a known member of the ListConversationsParamsOrder enum.
+func (e ListConversationsParamsOrder) Valid() bool {
+	switch e {
+	case ListConversationsParamsOrderCreated:
+		return true
+	case ListConversationsParamsOrderRecent:
 		return true
 	default:
 		return false
@@ -10634,10 +10655,13 @@ type ConnectSessionCompletedPayloadPurpose string
 
 // ConnectStatus Connection status response for a single provider. When `connected` is false, all other fields except `provider` and `host` may be omitted, and `host` is null.
 type ConnectStatus struct {
-	// Accounts Airbnb: every Airbnb account this workspace has connected, including ones since disconnected. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account. Vrbo (`GET /v1/connect/vrbo-login`): every signed-in Vrbo account, each with `accessType` and `import` (a `VrboImportStatus`), plus a top-level `dataFreshness`. `externalAccountId` is the platform's own id (Airbnb host id, Vrbo account id; `null` for a Vrbo sign-in whose account id is not captured yet) and `connectionId` our connection record.
+	// AccessType What the connection may do: `read_only`, `messaging` or `full_access` (see `ConnectionAccessType` for the meaning per provider). Airbnb: the tier of the host in `externalAccountId`; each host's own is on `accounts[].accessType`. Absent when `connected` is false and on `GET /v1/connect/vrbo-login` (per account there); `null` when unknown.
+	AccessType *ConnectionAccessType `json:"accessType,omitempty"`
+
+	// Accounts Airbnb: every Airbnb account this workspace has connected, including ones since disconnected, each with its own `accessType`. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account. Vrbo (`GET /v1/connect/vrbo-login`): every signed-in Vrbo account, each with `accessType` and `import` (a `VrboImportStatus`), plus a top-level `dataFreshness`. `externalAccountId` is the platform's own id (Airbnb host id, Vrbo account id; `null` for a Vrbo sign-in whose account id is not captured yet) and `connectionId` our connection record.
 	Accounts *[]struct {
-		// AccessType Vrbo only.
-		AccessType *ConnectStatusAccountsAccessType `json:"accessType,omitempty"`
+		// AccessType What this account may do. Airbnb: the tier the host's token was granted with (`read_only`, `messaging`, `full_access`). Vrbo: `messaging` (bookings and messages, no calendar push) or `full_access` (also pushes prices and availability). `null` when unknown.
+		AccessType *ConnectionAccessType `json:"accessType,omitempty"`
 
 		// Connected True while the account is active and its authorization is usable.
 		//
@@ -10721,14 +10745,14 @@ type ConnectStatus struct {
 	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 }
 
-// ConnectStatusAccountsAccessType Vrbo only.
-type ConnectStatusAccountsAccessType string
-
 // ConnectStatusStatus Example: active
 type ConnectStatusStatus string
 
 // Connection defines model for Connection.
 type Connection struct {
+	// AccessType What this connection may do: `read_only`, `messaging` or `full_access` (see `ConnectionAccessType` for the meaning per provider). Airbnb: the tier of the host in `externalAccountId`. `null` when unknown.
+	AccessType *ConnectionAccessType `json:"accessType,omitempty"`
+
 	// Action Set when the host must do something before the connection works (e.g. grant the invited Booking.com Extranet user full access). `null` when no action is pending.
 	Action    *ConnectionAction `json:"action,omitempty"`
 	CreatedAt *time.Time        `json:"createdAt,omitempty"`
@@ -10761,6 +10785,11 @@ type Connection struct {
 //
 // Example: active
 type ConnectionStatus string
+
+// ConnectionAccessType What the connection may do on the platform, read from what we store. `null` when we do not know (e.g. an OTA we do not grade, or an Airbnb token from before the tiers existed). `read_only`: reads only, never writes. Airbnb: the read-only OAuth tier (no replies to guests, no writes). PMS: every `writePolicy` switch is off. `messaging`: reads reservations and messages and replies to guests; never writes prices or availability. Airbnb: the messaging OAuth tier ("Messaging & reviews": messages and review replies, no property management). Vrbo: bookings and messages, no calendar push. Booking.com Extranet (`booking_extranet`): always — it reads reservations, messages and reviews and replies, and never writes rates or availability. `full_access`: reads and writes, including prices and availability. Airbnb: the full OAuth tier. Vrbo: also pushes prices and availability. Booking.com (`booking`, the official connection): always. PMS: at least one `writePolicy` switch is on (`writePolicy` on `GET /v1/connect/{provider}` says which). Airbnb's tier is set when the host connects (`accessType` on `POST /v1/connect`); reconnect to change it.
+//
+// Example: messaging
+type ConnectionAccessType string
 
 // ConnectionAction A host action a connection needs before it can work.
 type ConnectionAction struct {
@@ -10797,10 +10826,12 @@ type Conversation struct {
 	CreatedAt    *time.Time    `json:"createdAt,omitempty"`
 
 	// ExternalThreadId The source channel's own thread id (Airbnb thread id, Booking conversation id, …). Pass this as the `{threadId}` path param on `POST /v1/channels/airbnb/messaging/{threadId}/messages` to reply — it is the bridge from a unified conversation straight to the provider-specific send call. `null` when the thread has no external id yet (e.g. a website/email thread).
-	ExternalThreadId *string    `json:"externalThreadId,omitempty"`
-	GuestId          *string    `json:"guestId,omitempty"`
-	Id               *string    `json:"id,omitempty"`
-	LastMessageAt    *time.Time `json:"lastMessageAt,omitempty"`
+	ExternalThreadId *string `json:"externalThreadId,omitempty"`
+	GuestId          *string `json:"guestId,omitempty"`
+	Id               *string `json:"id,omitempty"`
+
+	// LastMessageAt The conversation's newest activity: the time of its newest message (after an import, the newest imported message's own time, not the import time), or of a later change to the conversation. `GET /v1/conversations` sorts on it by default.
+	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
 
 	// LastMessagePreview Short preview of the most recent message body for list-UI rendering.
 	LastMessagePreview *string `json:"lastMessagePreview,omitempty"`
@@ -10814,9 +10845,11 @@ type Conversation struct {
 	Status *ConversationStatus `json:"status,omitempty"`
 
 	// Subject Thread subject (email/website channels) or null when not applicable.
-	Subject     *string    `json:"subject,omitempty"`
-	UnreadCount *int       `json:"unreadCount,omitempty"`
-	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
+	Subject     *string `json:"subject,omitempty"`
+	UnreadCount *int    `json:"unreadCount,omitempty"`
+
+	// UpdatedAt When the conversation record last changed; the watermark for `updated_since`.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
 // ConversationPlatform Example: airbnb
@@ -10868,7 +10901,9 @@ type ConversationDetail struct {
 	GuestId          *string            `json:"guestId,omitempty"`
 	Host             *ConversationHost  `json:"host,omitempty"`
 	Id               *string            `json:"id,omitempty"`
-	LastMessageAt    *time.Time         `json:"lastMessageAt,omitempty"`
+
+	// LastMessageAt The conversation's newest activity: the time of its newest message (after an import, the newest imported message's own time, not the import time), or of a later change to the conversation. `GET /v1/conversations` sorts on it by default.
+	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
 
 	// LastMessagePreview Short preview of the most recent message body for list-UI rendering.
 	LastMessagePreview *string `json:"lastMessagePreview,omitempty"`
@@ -10882,9 +10917,11 @@ type ConversationDetail struct {
 	Status *ConversationDetailStatus `json:"status,omitempty"`
 
 	// Subject Thread subject (email/website channels) or null when not applicable.
-	Subject     *string    `json:"subject,omitempty"`
-	UnreadCount *int       `json:"unreadCount,omitempty"`
-	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
+	Subject     *string `json:"subject,omitempty"`
+	UnreadCount *int    `json:"unreadCount,omitempty"`
+
+	// UpdatedAt When the conversation record last changed; the watermark for `updated_since`.
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
 // ConversationDetailPlatform Example: airbnb
@@ -19129,8 +19166,11 @@ type ListConversationsParams struct {
 	// Platform Restrict to threads on a single channel.
 	Platform *ListConversationsParamsPlatform `form:"platform,omitempty" json:"platform,omitempty"`
 
-	// UpdatedSince ISO 8601 instant. Only conversations with activity at or after it, oldest change first. Keep it on every page of the walk; use the last row's `updatedAt` as the next value.
+	// UpdatedSince ISO 8601 instant. Only conversations whose record changed at or after it, oldest change first. Keep it on every page of the walk; use the last row's `updatedAt` as the next value.
 	UpdatedSince *time.Time `form:"updated_since,omitempty" json:"updated_since,omitempty"`
+
+	// Order `recent` (default): most recent activity first — for an inbox or "what changed lately". A conversation that gets a new message while you page moves to the front, behind your walk, so a walk can miss it. `created`: newest conversation first, stable for the whole walk — use it to sync every conversation exactly once. Ignored with `updated_since` (always oldest change first). Keep the same value on every page of a walk.
+	Order *ListConversationsParamsOrder `form:"order,omitempty" json:"order,omitempty"`
 
 	// Status Filter by archive status. `archived` currently always returns an empty page — kept for forward-compat.
 	Status *ListConversationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
@@ -19141,6 +19181,9 @@ type ListConversationsParams struct {
 
 // ListConversationsParamsPlatform defines parameters for ListConversations.
 type ListConversationsParamsPlatform string
+
+// ListConversationsParamsOrder defines parameters for ListConversations.
+type ListConversationsParamsOrder string
 
 // ListConversationsParamsStatus defines parameters for ListConversations.
 type ListConversationsParamsStatus string
