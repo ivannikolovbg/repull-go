@@ -130,7 +130,7 @@ type ClientInterface interface {
 	//
 	// **`days` contains only the dates we actually hold calendar data for.** Requested dates with no calendar row are listed in `coverage.missingDates` — their availability is unknown. Never treat a missing date as bookable: this endpoint deliberately does not synthesise availability, because a fabricated open date can be double-booked. A property with no calendar still returns a real 200 (`days: []`, every date in `coverage.missingDates`), never a 404 — 404 means the property id does not exist or belongs to a different workspace.
 	//
-	// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
+	// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values — price, availability, minimum and maximum stay, closed to arrival and closed to departure — use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -140,6 +140,8 @@ type ClientInterface interface {
 	// UpdateAvailabilityWithBody Set prices, block or unblock dates
 	//
 	// Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+	//
+	// The fields apply to every date in `dates`; to give nights different values, send one request per group of nights. `closedToArrival` and `closedToDeparture` reach Airbnb, Booking.com and Vrbo. `maxNights` reaches Airbnb and Booking.com; Vrbo has no per-date maximum stay.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -151,6 +153,8 @@ type ClientInterface interface {
 	// UpdateAvailability Set prices, block or unblock dates
 	//
 	// Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+	//
+	// The fields apply to every date in `dates`; to give nights different values, send one request per group of nights. `closedToArrival` and `closedToDeparture` reach Airbnb, Booking.com and Vrbo. `maxNights` reaches Airbnb and Booking.com; Vrbo has no per-date maximum stay.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -5449,7 +5453,7 @@ func (c *Client) BatchUpdateAvailability(ctx context.Context, body BatchUpdateAv
 //
 // **`days` contains only the dates we actually hold calendar data for.** Requested dates with no calendar row are listed in `coverage.missingDates` — their availability is unknown. Never treat a missing date as bookable: this endpoint deliberately does not synthesise availability, because a fabricated open date can be double-booked. A property with no calendar still returns a real 200 (`days: []`, every date in `coverage.missingDates`), never a 404 — 404 means the property id does not exist or belongs to a different workspace.
 //
-// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
+// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values — price, availability, minimum and maximum stay, closed to arrival and closed to departure — use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -5469,6 +5473,8 @@ func (c *Client) GetAvailability(ctx context.Context, propertyId int, params *Ge
 // UpdateAvailabilityWithBody Set prices, block or unblock dates
 //
 // Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+//
+// The fields apply to every date in `dates`; to give nights different values, send one request per group of nights. `closedToArrival` and `closedToDeparture` reach Airbnb, Booking.com and Vrbo. `maxNights` reaches Airbnb and Booking.com; Vrbo has no per-date maximum stay.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -5490,6 +5496,8 @@ func (c *Client) UpdateAvailabilityWithBody(ctx context.Context, propertyId int,
 // UpdateAvailability Set prices, block or unblock dates
 //
 // Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+//
+// The fields apply to every date in `dates`; to give nights different values, send one request per group of nights. `closedToArrival` and `closedToDeparture` reach Airbnb, Booking.com and Vrbo. `maxNights` reaches Airbnb and Booking.com; Vrbo has no per-date maximum stay.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -28722,7 +28730,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **`days` contains only the dates we actually hold calendar data for.** Requested dates with no calendar row are listed in `coverage.missingDates` — their availability is unknown. Never treat a missing date as bookable: this endpoint deliberately does not synthesise availability, because a fabricated open date can be double-booked. A property with no calendar still returns a real 200 (`days: []`, every date in `coverage.missingDates`), never a 404 — 404 means the property id does not exist or belongs to a different workspace.
 	//
-	// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
+	// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values — price, availability, minimum and maximum stay, closed to arrival and closed to departure — use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -28735,6 +28743,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
 	//
+	// The fields apply to every date in `dates`; to give nights different values, send one request per group of nights. `closedToArrival` and `closedToDeparture` reach Airbnb, Booking.com and Vrbo. `maxNights` reaches Airbnb and Booking.com; Vrbo has no per-date maximum stay.
+	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -28745,6 +28755,8 @@ type ClientWithResponsesInterface interface {
 	// UpdateAvailabilityWithResponse Set prices, block or unblock dates
 	//
 	// Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+	//
+	// The fields apply to every date in `dates`; to give nights different values, send one request per group of nights. `closedToArrival` and `closedToDeparture` reach Airbnb, Booking.com and Vrbo. `maxNights` reaches Airbnb and Booking.com; Vrbo has no per-date maximum stay.
 	//
 	// Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 	//
@@ -55666,7 +55678,7 @@ func (c *ClientWithResponses) BatchUpdateAvailabilityWithResponse(ctx context.Co
 //
 // **`days` contains only the dates we actually hold calendar data for.** Requested dates with no calendar row are listed in `coverage.missingDates` — their availability is unknown. Never treat a missing date as bookable: this endpoint deliberately does not synthesise availability, because a fabricated open date can be double-booked. A property with no calendar still returns a real 200 (`days: []`, every date in `coverage.missingDates`), never a 404 — 404 means the property id does not exist or belongs to a different workspace.
 //
-// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
+// This endpoint is read-only, and the projected per-date shape carries **availability, units left, price, and min-nights only** — it does NOT expose max-stay, closed-to-arrival (CTA), closed-to-departure (CTD), or the dedicated stop-sell flag. To read or write that full restriction set on Booking.com use the channel routes: `GET`/`PUT /v1/channels/booking/availability` (with the room + rate ids from `GET /v1/channels/booking/properties/{id}/rooms`). To **write** calendar values — price, availability, minimum and maximum stay, closed to arrival and closed to departure — use `PUT /v1/availability/{propertyId}` (or `PATCH /v1/availability/batch`), which updates the property calendar and pushes to its connected channels; channel-only settings stay on the channel routes.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
@@ -55685,6 +55697,8 @@ func (c *ClientWithResponses) GetAvailabilityWithResponse(ctx context.Context, p
 //
 // Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
 //
+// The fields apply to every date in `dates`; to give nights different values, send one request per group of nights. `closedToArrival` and `closedToDeparture` reach Airbnb, Booking.com and Vrbo. `maxNights` reaches Airbnb and Booking.com; Vrbo has no per-date maximum stay.
+//
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -55701,6 +55715,8 @@ func (c *ClientWithResponses) UpdateAvailabilityWithBodyWithResponse(ctx context
 // UpdateAvailabilityWithResponse Set prices, block or unblock dates
 //
 // Writes the calendar for one property AND pushes to every connected channel in the same step. A write that only changed our copy would leave the OTA calendars stale and eventually double-book a guest.
+//
+// The fields apply to every date in `dates`; to give nights different values, send one request per group of nights. `closedToArrival` and `closedToDeparture` reach Airbnb, Booking.com and Vrbo. `maxNights` reaches Airbnb and Booking.com; Vrbo has no per-date maximum stay.
 //
 // Returns `403 listing_inactive` when the listing is inactive. An inactive listing keeps syncing, but cannot be read or changed through the API until it is activated.
 //

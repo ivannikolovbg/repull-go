@@ -931,6 +931,27 @@ func (e AlterationWebhookObjectStatus) Valid() bool {
 	}
 }
 
+// Defines values for AvailabilityWriteResultSyncedChannelsStatus.
+const (
+	AvailabilityWriteResultSyncedChannelsStatusAccepted AvailabilityWriteResultSyncedChannelsStatus = "accepted"
+	AvailabilityWriteResultSyncedChannelsStatusFailed   AvailabilityWriteResultSyncedChannelsStatus = "failed"
+	AvailabilityWriteResultSyncedChannelsStatusQueued   AvailabilityWriteResultSyncedChannelsStatus = "queued"
+)
+
+// Valid indicates whether the value is a known member of the AvailabilityWriteResultSyncedChannelsStatus enum.
+func (e AvailabilityWriteResultSyncedChannelsStatus) Valid() bool {
+	switch e {
+	case AvailabilityWriteResultSyncedChannelsStatusAccepted:
+		return true
+	case AvailabilityWriteResultSyncedChannelsStatusFailed:
+		return true
+	case AvailabilityWriteResultSyncedChannelsStatusQueued:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BillingNoticeCode.
 const (
 	PaymentFailed BillingNoticeCode = "payment_failed"
@@ -9230,10 +9251,18 @@ type AvailabilityBatchWriteRequest struct {
 	// AvailableUnits Rooms to sell on these dates, for a listing that sells several identical rooms (`unitCount` > 1, e.g. a Booking.com room type). Up to the listing's `unitCount`. Refused with `409 managed_by_pms` on a hotel PMS room type (Cloudbeds, Mews) — its PMS owns the room count.
 	AvailableUnits *int `json:"availableUnits,omitempty"`
 
+	// ClosedToArrival No check-in on these dates (`true`), or check-in allowed again (`false`). Sent to Airbnb, Booking.com and Vrbo. Leaving it out keeps the current value.
+	ClosedToArrival *bool `json:"closedToArrival,omitempty"`
+
+	// ClosedToDeparture No check-out on these dates (`true`), or check-out allowed again (`false`). Sent to Airbnb, Booking.com and Vrbo. Leaving it out keeps the current value.
+	ClosedToDeparture *bool `json:"closedToDeparture,omitempty"`
+
 	// Dates ISO dates. Capped at 731 — Airbnb refuses calendar writes spanning more.
-	Dates     []openapi_types.Date `json:"dates"`
-	MaxNights *int                 `json:"maxNights,omitempty"`
-	MinNights *int                 `json:"minNights,omitempty"`
+	Dates []openapi_types.Date `json:"dates"`
+
+	// MaxNights Maximum stay for an arrival on these dates. Sent to Airbnb and Booking.com. Vrbo has no per-date maximum stay, so it is not sent there.
+	MaxNights *int `json:"maxNights,omitempty"`
+	MinNights *int `json:"minNights,omitempty"`
 
 	// Price Nightly base price.
 	Price       *float32 `json:"price,omitempty"`
@@ -9248,10 +9277,18 @@ type AvailabilityWriteRequest struct {
 	// AvailableUnits Rooms to sell on these dates, for a listing that sells several identical rooms (`unitCount` > 1, e.g. a Booking.com room type). Up to the listing's `unitCount`. Refused with `409 managed_by_pms` on a hotel PMS room type (Cloudbeds, Mews) — its PMS owns the room count.
 	AvailableUnits *int `json:"availableUnits,omitempty"`
 
+	// ClosedToArrival No check-in on these dates (`true`), or check-in allowed again (`false`). Sent to Airbnb, Booking.com and Vrbo. Leaving it out keeps the current value.
+	ClosedToArrival *bool `json:"closedToArrival,omitempty"`
+
+	// ClosedToDeparture No check-out on these dates (`true`), or check-out allowed again (`false`). Sent to Airbnb, Booking.com and Vrbo. Leaving it out keeps the current value.
+	ClosedToDeparture *bool `json:"closedToDeparture,omitempty"`
+
 	// Dates ISO dates. Capped at 731 — Airbnb refuses calendar writes spanning more.
-	Dates     []openapi_types.Date `json:"dates"`
-	MaxNights *int                 `json:"maxNights,omitempty"`
-	MinNights *int                 `json:"minNights,omitempty"`
+	Dates []openapi_types.Date `json:"dates"`
+
+	// MaxNights Maximum stay for an arrival on these dates. Sent to Airbnb and Booking.com. Vrbo has no per-date maximum stay, so it is not sent there.
+	MaxNights *int `json:"maxNights,omitempty"`
+	MinNights *int `json:"minNights,omitempty"`
 
 	// Price Nightly base price.
 	Price *float32 `json:"price,omitempty"`
@@ -9269,13 +9306,35 @@ type AvailabilityWriteResult struct {
 
 		// AuthErrors Channels whose token has expired — these need reconnecting, not retrying.
 		AuthErrors *int `json:"authErrors,omitempty"`
-		Failed     *int `json:"failed,omitempty"`
-		Succeeded  *int `json:"succeeded,omitempty"`
+
+		// Channels One entry per listing per connected channel: which channel took the write and which refused it.
+		Channels *[]struct {
+			// AuthError True when the channel's authorization has expired: reconnect, don't retry.
+			AuthError *bool `json:"authError,omitempty"`
+
+			// Channel `airbnb`, `booking`, `vrbo`, or another connected channel.
+			//
+			// Example: booking
+			Channel *string `json:"channel,omitempty"`
+
+			// ChannelListingId The channel's own id for the listing or room.
+			ChannelListingId *string `json:"channelListingId,omitempty"`
+			Error            *string `json:"error,omitempty"`
+			ListingId        *string `json:"listingId,omitempty"`
+
+			// Status `accepted`: the channel took the write in this request. `queued` (Vrbo): sent within minutes and read back; `GET /v1/listings/{id}/calendar-sync` shows the outcome. `failed`: the channel refused it; see `error`.
+			Status *AvailabilityWriteResultSyncedChannelsStatus `json:"status,omitempty"`
+		} `json:"channels,omitempty"`
+		Failed    *int `json:"failed,omitempty"`
+		Succeeded *int `json:"succeeded,omitempty"`
 	} `json:"synced,omitempty"`
 
 	// Warning Present only when one or more channel pushes failed.
 	Warning *string `json:"warning,omitempty"`
 }
+
+// AvailabilityWriteResultSyncedChannelsStatus `accepted`: the channel took the write in this request. `queued` (Vrbo): sent within minutes and read back; `GET /v1/listings/{id}/calendar-sync` shows the outcome. `failed`: the channel refused it; see `error`.
+type AvailabilityWriteResultSyncedChannelsStatus string
 
 // AvailabilityWriteSettings At least one field is required. An empty object is rejected rather than silently no-ops — the upstream treats every field as optional, so a typo would otherwise return 200 and change nothing.
 type AvailabilityWriteSettings struct {
@@ -9284,8 +9343,16 @@ type AvailabilityWriteSettings struct {
 
 	// AvailableUnits Rooms to sell on these dates, for a listing that sells several identical rooms (`unitCount` > 1, e.g. a Booking.com room type). Up to the listing's `unitCount`. Refused with `409 managed_by_pms` on a hotel PMS room type (Cloudbeds, Mews) — its PMS owns the room count.
 	AvailableUnits *int `json:"availableUnits,omitempty"`
-	MaxNights      *int `json:"maxNights,omitempty"`
-	MinNights      *int `json:"minNights,omitempty"`
+
+	// ClosedToArrival No check-in on these dates (`true`), or check-in allowed again (`false`). Sent to Airbnb, Booking.com and Vrbo. Leaving it out keeps the current value.
+	ClosedToArrival *bool `json:"closedToArrival,omitempty"`
+
+	// ClosedToDeparture No check-out on these dates (`true`), or check-out allowed again (`false`). Sent to Airbnb, Booking.com and Vrbo. Leaving it out keeps the current value.
+	ClosedToDeparture *bool `json:"closedToDeparture,omitempty"`
+
+	// MaxNights Maximum stay for an arrival on these dates. Sent to Airbnb and Booking.com. Vrbo has no per-date maximum stay, so it is not sent there.
+	MaxNights *int `json:"maxNights,omitempty"`
+	MinNights *int `json:"minNights,omitempty"`
 
 	// Price Nightly base price.
 	Price *float32 `json:"price,omitempty"`
