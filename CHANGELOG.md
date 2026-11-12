@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.44 — 2026-11-12
+
+- New: `POST /v1/workspaces/{workspaceId}/deactivate`
+- New: `POST /v1/workspaces/{workspaceId}/reactivate`
+- Regenerated from the live spec (automated spec refresh).
+
 ## 0.2.43 — 2026-11-12
 
 - Regenerated from the live spec (automated spec refresh).
