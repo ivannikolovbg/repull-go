@@ -1179,6 +1179,8 @@ func (e BookingPropertyMappingStatus) Valid() bool {
 
 // Defines values for BookingPropertyActionRequestAction.
 const (
+	BookingPropertyActionRequestActionClose  BookingPropertyActionRequestAction = "close"
+	BookingPropertyActionRequestActionOpen   BookingPropertyActionRequestAction = "open"
 	BookingPropertyActionRequestActionRelist BookingPropertyActionRequestAction = "relist"
 	BookingPropertyActionRequestActionUnlist BookingPropertyActionRequestAction = "unlist"
 )
@@ -1186,6 +1188,10 @@ const (
 // Valid indicates whether the value is a known member of the BookingPropertyActionRequestAction enum.
 func (e BookingPropertyActionRequestAction) Valid() bool {
 	switch e {
+	case BookingPropertyActionRequestActionClose:
+		return true
+	case BookingPropertyActionRequestActionOpen:
+		return true
 	case BookingPropertyActionRequestActionRelist:
 		return true
 	case BookingPropertyActionRequestActionUnlist:
@@ -1195,8 +1201,46 @@ func (e BookingPropertyActionRequestAction) Valid() bool {
 	}
 }
 
+// Defines values for BookingPropertyActionRequestReason.
+const (
+	FULLYBOOKED          BookingPropertyActionRequestReason = "FULLY_BOOKED"
+	ISSUESBOOKING        BookingPropertyActionRequestReason = "ISSUES_BOOKING"
+	ISSUESGUESTS         BookingPropertyActionRequestReason = "ISSUES_GUESTS"
+	OTHER                BookingPropertyActionRequestReason = "OTHER"
+	PROPERTYNOTAVAILABLE BookingPropertyActionRequestReason = "PROPERTY_NOT_AVAILABLE"
+	RENOVATION           BookingPropertyActionRequestReason = "RENOVATION"
+	SEASON               BookingPropertyActionRequestReason = "SEASON"
+	STRATEGY             BookingPropertyActionRequestReason = "STRATEGY"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyActionRequestReason enum.
+func (e BookingPropertyActionRequestReason) Valid() bool {
+	switch e {
+	case FULLYBOOKED:
+		return true
+	case ISSUESBOOKING:
+		return true
+	case ISSUESGUESTS:
+		return true
+	case OTHER:
+		return true
+	case PROPERTYNOTAVAILABLE:
+		return true
+	case RENOVATION:
+		return true
+	case SEASON:
+		return true
+	case STRATEGY:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BookingPropertyActionResponseAction.
 const (
+	BookingPropertyActionResponseActionClose  BookingPropertyActionResponseAction = "close"
+	BookingPropertyActionResponseActionOpen   BookingPropertyActionResponseAction = "open"
 	BookingPropertyActionResponseActionRelist BookingPropertyActionResponseAction = "relist"
 	BookingPropertyActionResponseActionUnlist BookingPropertyActionResponseAction = "unlist"
 )
@@ -1204,6 +1248,10 @@ const (
 // Valid indicates whether the value is a known member of the BookingPropertyActionResponseAction enum.
 func (e BookingPropertyActionResponseAction) Valid() bool {
 	switch e {
+	case BookingPropertyActionResponseActionClose:
+		return true
+	case BookingPropertyActionResponseActionOpen:
+		return true
 	case BookingPropertyActionResponseActionRelist:
 		return true
 	case BookingPropertyActionResponseActionUnlist:
@@ -1222,6 +1270,54 @@ const (
 func (e BookingPropertyActionResponseChannel) Valid() bool {
 	switch e {
 	case BookingPropertyActionResponseChannelBooking:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingPropertyActionResponsePropertyStatus.
+const (
+	BookingPropertyActionResponsePropertyStatusClosed BookingPropertyActionResponsePropertyStatus = "closed"
+	BookingPropertyActionResponsePropertyStatusOpen   BookingPropertyActionResponsePropertyStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyActionResponsePropertyStatus enum.
+func (e BookingPropertyActionResponsePropertyStatus) Valid() bool {
+	switch e {
+	case BookingPropertyActionResponsePropertyStatusClosed:
+		return true
+	case BookingPropertyActionResponsePropertyStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BookingPropertyOpenResultOutcome.
+const (
+	BookingPropertyOpenResultOutcomeFailed          BookingPropertyOpenResultOutcome = "failed"
+	BookingPropertyOpenResultOutcomeListingInactive BookingPropertyOpenResultOutcome = "listing_inactive"
+	BookingPropertyOpenResultOutcomeNoListing       BookingPropertyOpenResultOutcome = "no_listing"
+	BookingPropertyOpenResultOutcomeNotNeeded       BookingPropertyOpenResultOutcome = "not_needed"
+	BookingPropertyOpenResultOutcomeOpened          BookingPropertyOpenResultOutcome = "opened"
+	BookingPropertyOpenResultOutcomeRefused         BookingPropertyOpenResultOutcome = "refused"
+)
+
+// Valid indicates whether the value is a known member of the BookingPropertyOpenResultOutcome enum.
+func (e BookingPropertyOpenResultOutcome) Valid() bool {
+	switch e {
+	case BookingPropertyOpenResultOutcomeFailed:
+		return true
+	case BookingPropertyOpenResultOutcomeListingInactive:
+		return true
+	case BookingPropertyOpenResultOutcomeNoListing:
+		return true
+	case BookingPropertyOpenResultOutcomeNotNeeded:
+		return true
+	case BookingPropertyOpenResultOutcomeOpened:
+		return true
+	case BookingPropertyOpenResultOutcomeRefused:
 		return true
 	default:
 		return false
@@ -2994,11 +3090,13 @@ func (e ListingUpdatedPayloadArea) Valid() bool {
 
 // Defines values for MapConnectBookingRoomsResponsePropertyStatusOutcome.
 const (
-	MapConnectBookingRoomsResponsePropertyStatusOutcomeBlocked       MapConnectBookingRoomsResponsePropertyStatusOutcome = "blocked"
-	MapConnectBookingRoomsResponsePropertyStatusOutcomeFailed        MapConnectBookingRoomsResponsePropertyStatusOutcome = "failed"
-	MapConnectBookingRoomsResponsePropertyStatusOutcomeNotNeeded     MapConnectBookingRoomsResponsePropertyStatusOutcome = "not_needed"
-	MapConnectBookingRoomsResponsePropertyStatusOutcomeOpened        MapConnectBookingRoomsResponsePropertyStatusOutcome = "opened"
-	MapConnectBookingRoomsResponsePropertyStatusOutcomeStatusUnknown MapConnectBookingRoomsResponsePropertyStatusOutcome = "status_unknown"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeBlocked         MapConnectBookingRoomsResponsePropertyStatusOutcome = "blocked"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeFailed          MapConnectBookingRoomsResponsePropertyStatusOutcome = "failed"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeListingInactive MapConnectBookingRoomsResponsePropertyStatusOutcome = "listing_inactive"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeNoListing       MapConnectBookingRoomsResponsePropertyStatusOutcome = "no_listing"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeNotNeeded       MapConnectBookingRoomsResponsePropertyStatusOutcome = "not_needed"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeOpened          MapConnectBookingRoomsResponsePropertyStatusOutcome = "opened"
+	MapConnectBookingRoomsResponsePropertyStatusOutcomeStatusUnknown   MapConnectBookingRoomsResponsePropertyStatusOutcome = "status_unknown"
 )
 
 // Valid indicates whether the value is a known member of the MapConnectBookingRoomsResponsePropertyStatusOutcome enum.
@@ -3007,6 +3105,10 @@ func (e MapConnectBookingRoomsResponsePropertyStatusOutcome) Valid() bool {
 	case MapConnectBookingRoomsResponsePropertyStatusOutcomeBlocked:
 		return true
 	case MapConnectBookingRoomsResponsePropertyStatusOutcomeFailed:
+		return true
+	case MapConnectBookingRoomsResponsePropertyStatusOutcomeListingInactive:
+		return true
+	case MapConnectBookingRoomsResponsePropertyStatusOutcomeNoListing:
 		return true
 	case MapConnectBookingRoomsResponsePropertyStatusOutcomeNotNeeded:
 		return true
@@ -9816,32 +9918,51 @@ type BookingPropertyListingsStatus string
 // BookingPropertyMappingStatus `mapped` — at least one room points at a listing. `unmapped` — the property is claimed but its rooms are not mapped yet, so `listings` is empty; finish `POST /v1/connect/booking/map-rooms`. An unmapped property is listed rather than hidden, so a half-finished connection is visible instead of looking like no connection at all.
 type BookingPropertyMappingStatus string
 
-// BookingPropertyActionRequest Take this listing's Booking.com property off sale, or put it back.
+// BookingPropertyActionRequest Take this listing's Booking.com property off sale or put it back (`unlist` / `relist`), or open or close the property itself on Booking.com (`open` / `close`).
 type BookingPropertyActionRequest struct {
 	// Action `unlist` closes the room's availability across the whole forward window, so the property stops selling. `relist` re-syncs the real calendar: dates that are genuinely blocked (a reservation, an owner stay) stay blocked, and only the closure `unlist` wrote lifts. They are not mirror images, and that is deliberate.
+	//
+	// `open` runs Booking.com's readiness check and opens the property only if it passes — on a property that is not ready it changes nothing and answers `422 booking_rejected` with Booking.com's reasons in `blockers`. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed. `close` closes the property on Booking.com with `reason`.
 	Action BookingPropertyActionRequestAction `json:"action"`
 
 	// HotelId Booking.com property to act on, for a listing mapped to more than one. Without it the request is refused with `409 ambiguous_booking_mapping` and nothing is written. `?hotel_id=` means the same thing; the body wins if you send both.
 	HotelId *string `json:"hotelId,omitempty"`
+
+	// Reason `close` only: the reason Booking.com records for closing the property. Default `PROPERTY_NOT_AVAILABLE`.
+	Reason *BookingPropertyActionRequestReason `json:"reason,omitempty"`
 }
 
 // BookingPropertyActionRequestAction `unlist` closes the room's availability across the whole forward window, so the property stops selling. `relist` re-syncs the real calendar: dates that are genuinely blocked (a reservation, an owner stay) stay blocked, and only the closure `unlist` wrote lifts. They are not mirror images, and that is deliberate.
+//
+// `open` runs Booking.com's readiness check and opens the property only if it passes — on a property that is not ready it changes nothing and answers `422 booking_rejected` with Booking.com's reasons in `blockers`. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed. `close` closes the property on Booking.com with `reason`.
 type BookingPropertyActionRequestAction string
+
+// BookingPropertyActionRequestReason `close` only: the reason Booking.com records for closing the property. Default `PROPERTY_NOT_AVAILABLE`.
+type BookingPropertyActionRequestReason string
 
 // BookingPropertyActionResponse defines model for BookingPropertyActionResponse.
 type BookingPropertyActionResponse struct {
-	Action  BookingPropertyActionResponseAction  `json:"action"`
+	Action BookingPropertyActionResponseAction `json:"action"`
+
+	// BookingStatus `open` / `close` only: Booking.com's status for the property before the call, e.g. `XML: Ready to open`.
+	BookingStatus *string `json:"bookingStatus,omitempty"`
+
+	// Changed `open` / `close` only: false when the property was already in that state, so nothing was sent.
+	Changed *bool                                `json:"changed,omitempty"`
 	Channel BookingPropertyActionResponseChannel `json:"channel"`
 
 	// HotelId The Booking.com property that was acted on. Always read it back — a listing can be mapped to several, and this states which one changed.
 	HotelId   string `json:"hotelId"`
 	ListingId string `json:"listingId"`
 
+	// PropertyStatus `open` / `close` only: the property's state on Booking.com after the call.
+	PropertyStatus *BookingPropertyActionResponsePropertyStatus `json:"propertyStatus,omitempty"`
+
 	// RoomBookingId Booking.com's own room id the availability write addressed.
 	RoomBookingId *string `json:"roomBookingId,omitempty"`
 
-	// Selling Whether the property is now on sale. **This is the state of the property on Booking.com, not of the listing in Repull** — `active` (what Repull bills and serves) is untouched by both actions and is deliberately not echoed here so the two can never be read as one field.
-	Selling bool `json:"selling"`
+	// Selling `unlist` / `relist` only. Whether the property is now on sale. **This is the state of the property on Booking.com, not of the listing in Repull** — `active` (what Repull bills and serves) is untouched by both actions and is deliberately not echoed here so the two can never be read as one field.
+	Selling *bool `json:"selling,omitempty"`
 }
 
 // BookingPropertyActionResponseAction defines model for BookingPropertyActionResponse.Action.
@@ -9850,8 +9971,32 @@ type BookingPropertyActionResponseAction string
 // BookingPropertyActionResponseChannel defines model for BookingPropertyActionResponse.Channel.
 type BookingPropertyActionResponseChannel string
 
+// BookingPropertyActionResponsePropertyStatus `open` / `close` only: the property's state on Booking.com after the call.
+type BookingPropertyActionResponsePropertyStatus string
+
 // BookingPropertyListResponse defines model for BookingPropertyListResponse.
 type BookingPropertyListResponse = []BookingProperty
+
+// BookingPropertyOpenResult What happened to one Booking.com property when its listing was activated. Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes.
+type BookingPropertyOpenResult struct {
+	// Blockers Booking.com's own reasons it will not open the property, e.g. "Room 1554900501 does not have kitchen or kitchenette". Empty unless `outcome` is `refused`.
+	Blockers []string `json:"blockers"`
+
+	// BookingStatus Booking.com's status for the property before anything was sent, e.g. `XML: Ready to open`, when it was read.
+	BookingStatus *string `json:"bookingStatus"`
+
+	// HotelId The Booking.com property (hotel id).
+	HotelId string `json:"hotelId"`
+
+	// ListingIds The listings in this request that are mapped to the property.
+	ListingIds []string `json:"listingIds"`
+
+	// Outcome `opened`: Booking.com's check passed and the property is now open. `refused`: Booking.com's check did not pass — `blockers` has its own reasons — and nothing changed. `not_needed`: Booking.com already has the property past its build stage (open, or closed by you), so it was left alone; use the `open` action on `POST /v1/channels/booking/properties/{id}` to reopen a closed property. `listing_inactive`: another listing on the same property is still inactive. `no_listing`: no listing is mapped to the property. `failed`: Booking.com did not answer; nothing changed — send the request again.
+	Outcome BookingPropertyOpenResultOutcome `json:"outcome"`
+}
+
+// BookingPropertyOpenResultOutcome `opened`: Booking.com's check passed and the property is now open. `refused`: Booking.com's check did not pass — `blockers` has its own reasons — and nothing changed. `not_needed`: Booking.com already has the property past its build stage (open, or closed by you), so it was left alone; use the `open` action on `POST /v1/channels/booking/properties/{id}` to reopen a closed property. `listing_inactive`: another listing on the same property is still inactive. `no_listing`: no listing is mapped to the property. `failed`: Booking.com did not answer; nothing changed — send the request again.
+type BookingPropertyOpenResultOutcome string
 
 // BookingPublishResult A publish is not one call to Booking.com: it is several independent Content API calls (details, description, amenities, rooms, photos, pricing), each of which can fail on its own. A PARTIAL publish is normal — what succeeded stays applied; there is no rollback. Fix the failing sections and publish again; re-publishing an unchanged section is harmless.
 //
@@ -11941,6 +12086,9 @@ type ListingActiveResponse struct {
 	// Active The resulting active state after the toggle.
 	Active *bool `json:"active,omitempty"`
 
+	// BookingProperties Only when activating: what happened to the Booking.com properties this listing is mapped to. Activating a listing opens its Booking.com property if Booking.com still has it in a build stage. Empty when the listing has no Booking.com property.
+	BookingProperties *[]BookingPropertyOpenResult `json:"bookingProperties,omitempty"`
+
 	// Id The listing id (id fields are serialized as strings to preserve precision).
 	Id *string `json:"id,omitempty"`
 }
@@ -13353,6 +13501,9 @@ type ListingStatusBatchResponse struct {
 	// Active The state every listing in the request is now in.
 	Active bool `json:"active"`
 
+	// BookingProperties Only when `active` is true: one entry per Booking.com property the listings in the request are mapped to, saying whether it was opened. Every listing in the request counts, including those in `unchanged`, so sending `active: true` again retries an open Booking.com refused. Empty when none of the listings has a Booking.com property.
+	BookingProperties *[]BookingPropertyOpenResult `json:"bookingProperties,omitempty"`
+
 	// Unchanged Listing ids that were already in the requested state, in request order.
 	Unchanged []string `json:"unchanged"`
 
@@ -13636,7 +13787,7 @@ type MapConnectBookingRoomsResponse struct {
 		// Message What is wrong and how to fix it, in plain words. Null when the property is open.
 		Message *string `json:"message,omitempty"`
 
-		// Outcome `opened`: it was being built and is now open. `not_needed`: it was already past that stage. `blocked`: Booking.com will not open it yet — see `blockers`. `status_unknown`: its status could not be read. `failed`: Booking.com did not answer the open request.
+		// Outcome `opened`: it was being built and is now open. `not_needed`: it was already past that stage. `blocked`: Booking.com will not open it yet — see `blockers`. `status_unknown`: its status could not be read. `failed`: Booking.com did not answer the open request. `listing_inactive`: a listing mapped to the property is inactive, so it was not opened — activate it when it is ready and Repull opens the property. `no_listing`: no listing is mapped to it.
 		Outcome    *MapConnectBookingRoomsResponsePropertyStatusOutcome `json:"outcome,omitempty"`
 		PropertyId *string                                              `json:"propertyId,omitempty"`
 
@@ -13658,7 +13809,7 @@ type MapConnectBookingRoomsResponse struct {
 	Unmapped *int `json:"unmapped,omitempty"`
 }
 
-// MapConnectBookingRoomsResponsePropertyStatusOutcome `opened`: it was being built and is now open. `not_needed`: it was already past that stage. `blocked`: Booking.com will not open it yet — see `blockers`. `status_unknown`: its status could not be read. `failed`: Booking.com did not answer the open request.
+// MapConnectBookingRoomsResponsePropertyStatusOutcome `opened`: it was being built and is now open. `not_needed`: it was already past that stage. `blocked`: Booking.com will not open it yet — see `blockers`. `status_unknown`: its status could not be read. `failed`: Booking.com did not answer the open request. `listing_inactive`: a listing mapped to the property is inactive, so it was not opened — activate it when it is ready and Repull opens the property. `no_listing`: no listing is mapped to it.
 type MapConnectBookingRoomsResponsePropertyStatusOutcome string
 
 // MarketBrowseCategory defines model for MarketBrowseCategory.

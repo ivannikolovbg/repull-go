@@ -1935,7 +1935,7 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/channels/booking/properties/{id} (the `GetBookingProperty` operationId).
 	GetBookingProperty(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// BookingPropertyActionWithBody Take a property off sale / put it back (unlist/relist)
+	// BookingPropertyActionWithBody Take a property off sale / put it back, or open / close it (unlist/relist/open/close)
 	//
 	// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
 	//
@@ -1944,6 +1944,10 @@ type ClientInterface interface {
 	// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
 	//
 	// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+	//
+	// **Opening and closing the property on Booking.com.** `open` runs Booking.com's readiness check and, only if it passes, opens the property. On a property that is not ready it changes nothing and answers **`422 booking_rejected`** with Booking.com's own reasons in `blockers` (for example "Room 1554900501 does not have kitchen or kitchenette"), so it is safe to ask. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed; an open property answers `changed: false`. `close` closes the property on Booking.com, with an optional `reason` (default `PROPERTY_NOT_AVAILABLE`). An inactive listing cannot be opened (`403 listing_inactive`), and neither can a property another inactive listing shares.
+	//
+	// **When Repull opens a property by itself.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. Activate with `POST /v1/listings/status` (or `PATCH /v1/listings/{id}`); its response has a `bookingProperties` entry per property saying whether it opened. Deactivating never closes a property that is already open — use `close` for that.
 	//
 	// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
 	//
@@ -1954,7 +1958,7 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
 	BookingPropertyActionWithBody(ctx context.Context, id int, params *BookingPropertyActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// BookingPropertyAction Take a property off sale / put it back (unlist/relist)
+	// BookingPropertyAction Take a property off sale / put it back, or open / close it (unlist/relist/open/close)
 	//
 	// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
 	//
@@ -1963,6 +1967,10 @@ type ClientInterface interface {
 	// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
 	//
 	// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+	//
+	// **Opening and closing the property on Booking.com.** `open` runs Booking.com's readiness check and, only if it passes, opens the property. On a property that is not ready it changes nothing and answers **`422 booking_rejected`** with Booking.com's own reasons in `blockers` (for example "Room 1554900501 does not have kitchen or kitchenette"), so it is safe to ask. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed; an open property answers `changed: false`. `close` closes the property on Booking.com, with an optional `reason` (default `PROPERTY_NOT_AVAILABLE`). An inactive listing cannot be opened (`403 listing_inactive`), and neither can a property another inactive listing shares.
+	//
+	// **When Repull opens a property by itself.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. Activate with `POST /v1/listings/status` (or `PATCH /v1/listings/{id}`); its response has a `bookingProperties` entry per property saying whether it opened. Deactivating never closes a property that is already open — use `close` for that.
 	//
 	// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
 	//
@@ -3673,7 +3681,9 @@ type ClientInterface interface {
 	//
 	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
 	//
-	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and nothing is pushed to the upstream channel (Airbnb / Booking.com / your PMS) — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	//
+	// **Activating opens the listing's Booking.com property.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. `bookingProperties` in the response says, per property, whether it was opened or what Booking.com said is missing. Sending `active: true` again for a listing that is already active retries the open. Deactivating never closes a property that is already open — use the `close` action on `POST /v1/channels/booking/properties/{id}`.
 	//
 	// **All or nothing.** Nothing changes unless the whole request can be applied:
 	// - If any id is not one of your listings, the call returns `404` naming those ids.
@@ -3694,7 +3704,9 @@ type ClientInterface interface {
 	//
 	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
 	//
-	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and nothing is pushed to the upstream channel (Airbnb / Booking.com / your PMS) — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	//
+	// **Activating opens the listing's Booking.com property.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. `bookingProperties` in the response says, per property, whether it was opened or what Booking.com said is missing. Sending `active: true` again for a listing that is already active retries the open. Deactivating never closes a property that is already open — use the `close` action on `POST /v1/channels/booking/properties/{id}`.
 	//
 	// **All or nothing.** Nothing changes unless the whole request can be applied:
 	// - If any id is not one of your listings, the call returns `404` naming those ids.
@@ -3739,7 +3751,7 @@ type ClientInterface interface {
 	//
 	// Toggle a listing's active state. Send `{ "active": false }` to **deactivate** (exclude the listing from Repull) or `{ "active": true }` to **reactivate** it.
 	//
-	// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
+	// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Activating opens the listing's Booking.com property if Booking.com still has it in a build stage and its check passes; `bookingProperties` in the response says what happened. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
 	//
 	// Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 	//
@@ -3756,7 +3768,7 @@ type ClientInterface interface {
 	//
 	// Toggle a listing's active state. Send `{ "active": false }` to **deactivate** (exclude the listing from Repull) or `{ "active": true }` to **reactivate** it.
 	//
-	// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
+	// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Activating opens the listing's Booking.com property if Booking.com still has it in a build stage and its check passes; `bookingProperties` in the response says what happened. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
 	//
 	// Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 	//
@@ -8419,7 +8431,7 @@ func (c *Client) GetBookingProperty(ctx context.Context, id int, reqEditors ...R
 	return c.Client.Do(req)
 }
 
-// BookingPropertyActionWithBody Take a property off sale / put it back (unlist/relist)
+// BookingPropertyActionWithBody Take a property off sale / put it back, or open / close it (unlist/relist/open/close)
 //
 // Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
 //
@@ -8428,6 +8440,10 @@ func (c *Client) GetBookingProperty(ctx context.Context, id int, reqEditors ...R
 // **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
 //
 // **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+//
+// **Opening and closing the property on Booking.com.** `open` runs Booking.com's readiness check and, only if it passes, opens the property. On a property that is not ready it changes nothing and answers **`422 booking_rejected`** with Booking.com's own reasons in `blockers` (for example "Room 1554900501 does not have kitchen or kitchenette"), so it is safe to ask. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed; an open property answers `changed: false`. `close` closes the property on Booking.com, with an optional `reason` (default `PROPERTY_NOT_AVAILABLE`). An inactive listing cannot be opened (`403 listing_inactive`), and neither can a property another inactive listing shares.
+//
+// **When Repull opens a property by itself.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. Activate with `POST /v1/listings/status` (or `PATCH /v1/listings/{id}`); its response has a `bookingProperties` entry per property saying whether it opened. Deactivating never closes a property that is already open — use `close` for that.
 //
 // Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
 //
@@ -8448,7 +8464,7 @@ func (c *Client) BookingPropertyActionWithBody(ctx context.Context, id int, para
 	return c.Client.Do(req)
 }
 
-// BookingPropertyAction Take a property off sale / put it back (unlist/relist)
+// BookingPropertyAction Take a property off sale / put it back, or open / close it (unlist/relist/open/close)
 //
 // Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
 //
@@ -8457,6 +8473,10 @@ func (c *Client) BookingPropertyActionWithBody(ctx context.Context, id int, para
 // **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
 //
 // **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+//
+// **Opening and closing the property on Booking.com.** `open` runs Booking.com's readiness check and, only if it passes, opens the property. On a property that is not ready it changes nothing and answers **`422 booking_rejected`** with Booking.com's own reasons in `blockers` (for example "Room 1554900501 does not have kitchen or kitchenette"), so it is safe to ask. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed; an open property answers `changed: false`. `close` closes the property on Booking.com, with an optional `reason` (default `PROPERTY_NOT_AVAILABLE`). An inactive listing cannot be opened (`403 listing_inactive`), and neither can a property another inactive listing shares.
+//
+// **When Repull opens a property by itself.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. Activate with `POST /v1/listings/status` (or `PATCH /v1/listings/{id}`); its response has a `bookingProperties` entry per property saying whether it opened. Deactivating never closes a property that is already open — use `close` for that.
 //
 // Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
 //
@@ -11443,7 +11463,9 @@ func (c *Client) BulkListingPromotions(ctx context.Context, body BulkListingProm
 //
 // Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
 //
-// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and nothing is pushed to the upstream channel (Airbnb / Booking.com / your PMS) — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+//
+// **Activating opens the listing's Booking.com property.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. `bookingProperties` in the response says, per property, whether it was opened or what Booking.com said is missing. Sending `active: true` again for a listing that is already active retries the open. Deactivating never closes a property that is already open — use the `close` action on `POST /v1/channels/booking/properties/{id}`.
 //
 // **All or nothing.** Nothing changes unless the whole request can be applied:
 // - If any id is not one of your listings, the call returns `404` naming those ids.
@@ -11474,7 +11496,9 @@ func (c *Client) SetListingsStatusWithBody(ctx context.Context, contentType stri
 //
 // Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
 //
-// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and nothing is pushed to the upstream channel (Airbnb / Booking.com / your PMS) — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+//
+// **Activating opens the listing's Booking.com property.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. `bookingProperties` in the response says, per property, whether it was opened or what Booking.com said is missing. Sending `active: true` again for a listing that is already active retries the open. Deactivating never closes a property that is already open — use the `close` action on `POST /v1/channels/booking/properties/{id}`.
 //
 // **All or nothing.** Nothing changes unless the whole request can be applied:
 // - If any id is not one of your listings, the call returns `404` naming those ids.
@@ -11549,7 +11573,7 @@ func (c *Client) GetListing(ctx context.Context, id int, params *GetListingParam
 //
 // Toggle a listing's active state. Send `{ "active": false }` to **deactivate** (exclude the listing from Repull) or `{ "active": true }` to **reactivate** it.
 //
-// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
+// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Activating opens the listing's Booking.com property if Booking.com still has it in a build stage and its check passes; `bookingProperties` in the response says what happened. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
 //
 // Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 //
@@ -11576,7 +11600,7 @@ func (c *Client) UpdateListingActiveWithBody(ctx context.Context, id int, conten
 //
 // Toggle a listing's active state. Send `{ "active": false }` to **deactivate** (exclude the listing from Repull) or `{ "active": true }` to **reactivate** it.
 //
-// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
+// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Activating opens the listing's Booking.com property if Booking.com still has it in a build stage and its check passes; `bookingProperties` in the response says what happened. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
 //
 // Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 //
@@ -30619,7 +30643,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/channels/booking/properties/{id} (the `GetBookingProperty` operationId).
 	GetBookingPropertyWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetBookingPropertyClientResponse, error)
 
-	// BookingPropertyActionWithBodyWithResponse Take a property off sale / put it back (unlist/relist)
+	// BookingPropertyActionWithBodyWithResponse Take a property off sale / put it back, or open / close it (unlist/relist/open/close)
 	//
 	// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
 	//
@@ -30628,6 +30652,10 @@ type ClientWithResponsesInterface interface {
 	// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
 	//
 	// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+	//
+	// **Opening and closing the property on Booking.com.** `open` runs Booking.com's readiness check and, only if it passes, opens the property. On a property that is not ready it changes nothing and answers **`422 booking_rejected`** with Booking.com's own reasons in `blockers` (for example "Room 1554900501 does not have kitchen or kitchenette"), so it is safe to ask. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed; an open property answers `changed: false`. `close` closes the property on Booking.com, with an optional `reason` (default `PROPERTY_NOT_AVAILABLE`). An inactive listing cannot be opened (`403 listing_inactive`), and neither can a property another inactive listing shares.
+	//
+	// **When Repull opens a property by itself.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. Activate with `POST /v1/listings/status` (or `PATCH /v1/listings/{id}`); its response has a `bookingProperties` entry per property saying whether it opened. Deactivating never closes a property that is already open — use `close` for that.
 	//
 	// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
 	//
@@ -30638,7 +30666,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/channels/booking/properties/{id} (the `BookingPropertyAction` operationId).
 	BookingPropertyActionWithBodyWithResponse(ctx context.Context, id int, params *BookingPropertyActionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BookingPropertyActionClientResponse, error)
 
-	// BookingPropertyActionWithResponse Take a property off sale / put it back (unlist/relist)
+	// BookingPropertyActionWithResponse Take a property off sale / put it back, or open / close it (unlist/relist/open/close)
 	//
 	// Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
 	//
@@ -30647,6 +30675,10 @@ type ClientWithResponsesInterface interface {
 	// **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
 	//
 	// **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+	//
+	// **Opening and closing the property on Booking.com.** `open` runs Booking.com's readiness check and, only if it passes, opens the property. On a property that is not ready it changes nothing and answers **`422 booking_rejected`** with Booking.com's own reasons in `blockers` (for example "Room 1554900501 does not have kitchen or kitchenette"), so it is safe to ask. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed; an open property answers `changed: false`. `close` closes the property on Booking.com, with an optional `reason` (default `PROPERTY_NOT_AVAILABLE`). An inactive listing cannot be opened (`403 listing_inactive`), and neither can a property another inactive listing shares.
+	//
+	// **When Repull opens a property by itself.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. Activate with `POST /v1/listings/status` (or `PATCH /v1/listings/{id}`); its response has a `bookingProperties` entry per property saying whether it opened. Deactivating never closes a property that is already open — use `close` for that.
 	//
 	// Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
 	//
@@ -32447,7 +32479,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
 	//
-	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and nothing is pushed to the upstream channel (Airbnb / Booking.com / your PMS) — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	//
+	// **Activating opens the listing's Booking.com property.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. `bookingProperties` in the response says, per property, whether it was opened or what Booking.com said is missing. Sending `active: true` again for a listing that is already active retries the open. Deactivating never closes a property that is already open — use the `close` action on `POST /v1/channels/booking/properties/{id}`.
 	//
 	// **All or nothing.** Nothing changes unless the whole request can be applied:
 	// - If any id is not one of your listings, the call returns `404` naming those ids.
@@ -32468,7 +32502,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
 	//
-	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and nothing is pushed to the upstream channel (Airbnb / Booking.com / your PMS) — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+	//
+	// **Activating opens the listing's Booking.com property.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. `bookingProperties` in the response says, per property, whether it was opened or what Booking.com said is missing. Sending `active: true` again for a listing that is already active retries the open. Deactivating never closes a property that is already open — use the `close` action on `POST /v1/channels/booking/properties/{id}`.
 	//
 	// **All or nothing.** Nothing changes unless the whole request can be applied:
 	// - If any id is not one of your listings, the call returns `404` naming those ids.
@@ -32517,7 +32553,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Toggle a listing's active state. Send `{ "active": false }` to **deactivate** (exclude the listing from Repull) or `{ "active": true }` to **reactivate** it.
 	//
-	// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
+	// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Activating opens the listing's Booking.com property if Booking.com still has it in a build stage and its check passes; `bookingProperties` in the response says what happened. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
 	//
 	// Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 	//
@@ -32534,7 +32570,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Toggle a listing's active state. Send `{ "active": false }` to **deactivate** (exclude the listing from Repull) or `{ "active": true }` to **reactivate** it.
 	//
-	// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
+	// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Activating opens the listing's Booking.com property if Booking.com still has it in a build stage and its check passes; `bookingProperties` in the response says what happened. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
 	//
 	// Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 	//
@@ -58266,7 +58302,7 @@ func (c *ClientWithResponses) GetBookingPropertyWithResponse(ctx context.Context
 	return ParseGetBookingPropertyClientResponse(rsp)
 }
 
-// BookingPropertyActionWithBodyWithResponse Take a property off sale / put it back (unlist/relist)
+// BookingPropertyActionWithBodyWithResponse Take a property off sale / put it back, or open / close it (unlist/relist/open/close)
 //
 // Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
 //
@@ -58275,6 +58311,10 @@ func (c *ClientWithResponses) GetBookingPropertyWithResponse(ctx context.Context
 // **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
 //
 // **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+//
+// **Opening and closing the property on Booking.com.** `open` runs Booking.com's readiness check and, only if it passes, opens the property. On a property that is not ready it changes nothing and answers **`422 booking_rejected`** with Booking.com's own reasons in `blockers` (for example "Room 1554900501 does not have kitchen or kitchenette"), so it is safe to ask. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed; an open property answers `changed: false`. `close` closes the property on Booking.com, with an optional `reason` (default `PROPERTY_NOT_AVAILABLE`). An inactive listing cannot be opened (`403 listing_inactive`), and neither can a property another inactive listing shares.
+//
+// **When Repull opens a property by itself.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. Activate with `POST /v1/listings/status` (or `PATCH /v1/listings/{id}`); its response has a `bookingProperties` entry per property saying whether it opened. Deactivating never closes a property that is already open — use `close` for that.
 //
 // Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
 //
@@ -58291,7 +58331,7 @@ func (c *ClientWithResponses) BookingPropertyActionWithBodyWithResponse(ctx cont
 	return ParseBookingPropertyActionClientResponse(rsp)
 }
 
-// BookingPropertyActionWithResponse Take a property off sale / put it back (unlist/relist)
+// BookingPropertyActionWithResponse Take a property off sale / put it back, or open / close it (unlist/relist/open/close)
 //
 // Stop this listing's Booking.com property being sold, or start it again. `id` is a **Repull listing id**, not a Booking.com hotel id, as on the GET.
 //
@@ -58300,6 +58340,10 @@ func (c *ClientWithResponses) BookingPropertyActionWithBodyWithResponse(ctx cont
 // **Which property gets closed.** A listing can be mapped to more than one Booking.com property — the same unit re-listed under a new property keeps its old mapping, and workspaces routinely sit on five or six. With exactly one, send nothing. With several, name one with `hotelId` (or `?hotel_id=`); omit it and the request is refused with **`409 ambiguous_booking_mapping`** listing the candidates, and nothing is written. That refusal matters more here than on a publish: writing content into the wrong property is recoverable, closing the wrong property's availability takes real inventory off sale while the property you meant keeps selling. Naming a property this listing is not mapped to is a `404` that names the ones it is.
 //
 // **This does not change the listing in Repull.** `active` — what Repull bills and serves — is untouched by both actions and is deliberately not echoed in the response, so the two ideas can never be read as one field. To take a listing off the market on every channel at once, use `POST /v1/listings/{id}/offline`.
+//
+// **Opening and closing the property on Booking.com.** `open` runs Booking.com's readiness check and, only if it passes, opens the property. On a property that is not ready it changes nothing and answers **`422 booking_rejected`** with Booking.com's own reasons in `blockers` (for example "Room 1554900501 does not have kitchen or kitchenette"), so it is safe to ask. It opens a property Booking.com has in a build stage (`XML: Being built`, `XML: Ready to open`) or closed; an open property answers `changed: false`. `close` closes the property on Booking.com, with an optional `reason` (default `PROPERTY_NOT_AVAILABLE`). An inactive listing cannot be opened (`403 listing_inactive`), and neither can a property another inactive listing shares.
+//
+// **When Repull opens a property by itself.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. Activate with `POST /v1/listings/status` (or `PATCH /v1/listings/{id}`); its response has a `bookingProperties` entry per property saying whether it opened. Deactivating never closes a property that is already open — use `close` for that.
 //
 // Any other action returns a structured `422` naming the ones that are supported. To push content use `POST /v1/listings/{id}/publish/booking`; to map rooms use `POST /v1/connect/booking/map-rooms`.
 //
@@ -60867,7 +60911,9 @@ func (c *ClientWithResponses) BulkListingPromotionsWithResponse(ctx context.Cont
 //
 // Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
 //
-// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and nothing is pushed to the upstream channel (Airbnb / Booking.com / your PMS) — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+//
+// **Activating opens the listing's Booking.com property.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. `bookingProperties` in the response says, per property, whether it was opened or what Booking.com said is missing. Sending `active: true` again for a listing that is already active retries the open. Deactivating never closes a property that is already open — use the `close` action on `POST /v1/channels/booking/properties/{id}`.
 //
 // **All or nothing.** Nothing changes unless the whole request can be applied:
 // - If any id is not one of your listings, the call returns `404` naming those ids.
@@ -60894,7 +60940,9 @@ func (c *ClientWithResponses) SetListingsStatusWithBodyWithResponse(ctx context.
 //
 // Sets up to 500 listings active or inactive in one call. Send `{ "listingIds": ["4118", "4119"], "active": false }` to deactivate them, or `"active": true` to activate them.
 //
-// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and the upstream channel (Airbnb / Booking.com / your PMS) is never touched — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+// An inactive listing is not counted toward your plan's listing limit or billed. It is NOT deleted and nothing is pushed to the upstream channel (Airbnb / Booking.com / your PMS) — its data keeps syncing, so it is complete the moment you activate it again. Until then it cannot be read, changed, or receive webhooks.
+//
+// **Activating opens the listing's Booking.com property.** Repull opens a Booking.com property automatically only while every listing mapped to it is active. Keep a listing that is not ready inactive and its property is never opened; activate it and Repull opens the property, provided Booking.com's own readiness check passes. `bookingProperties` in the response says, per property, whether it was opened or what Booking.com said is missing. Sending `active: true` again for a listing that is already active retries the open. Deactivating never closes a property that is already open — use the `close` action on `POST /v1/channels/booking/properties/{id}`.
 //
 // **All or nothing.** Nothing changes unless the whole request can be applied:
 // - If any id is not one of your listings, the call returns `404` naming those ids.
@@ -60961,7 +61009,7 @@ func (c *ClientWithResponses) GetListingWithResponse(ctx context.Context, id int
 //
 // Toggle a listing's active state. Send `{ "active": false }` to **deactivate** (exclude the listing from Repull) or `{ "active": true }` to **reactivate** it.
 //
-// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
+// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Activating opens the listing's Booking.com property if Booking.com still has it in a build stage and its check passes; `bookingProperties` in the response says what happened. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
 //
 // Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 //
@@ -60984,7 +61032,7 @@ func (c *ClientWithResponses) UpdateListingActiveWithBodyWithResponse(ctx contex
 //
 // Toggle a listing's active state. Send `{ "active": false }` to **deactivate** (exclude the listing from Repull) or `{ "active": true }` to **reactivate** it.
 //
-// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
+// "Deactivate" keeps the listing row — it is NOT a hard delete, and it NEVER touches the upstream channel (Airbnb / Hospitable / Booking.com). Repull only mutates its own copy of the inventory. Activating opens the listing's Booking.com property if Booking.com still has it in a build stage and its check passes; `bookingProperties` in the response says what happened. Deactivating is the self-serve way to get back under the plan-listings cap without paying.
 //
 // Reactivation respects the plan-listings cap: if activating this listing would push you over the cap for your tier, the call returns `402 listings_limit_exceeded` and the listing stays inactive. Deactivate another listing or upgrade first.
 //
