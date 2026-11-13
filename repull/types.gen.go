@@ -6217,6 +6217,51 @@ func (e CreateConnectionJSONBodyAccessType) Valid() bool {
 	}
 }
 
+// Defines values for StartConnectionImportJSONBodyScope.
+const (
+	StartConnectionImportJSONBodyScopeListings StartConnectionImportJSONBodyScope = "listings"
+)
+
+// Valid indicates whether the value is a known member of the StartConnectionImportJSONBodyScope enum.
+func (e StartConnectionImportJSONBodyScope) Valid() bool {
+	switch e {
+	case StartConnectionImportJSONBodyScopeListings:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StartConnectionImport202JSONResponseBodyDataScope.
+const (
+	StartConnectionImport202JSONResponseBodyDataScopeListings StartConnectionImport202JSONResponseBodyDataScope = "listings"
+)
+
+// Valid indicates whether the value is a known member of the StartConnectionImport202JSONResponseBodyDataScope enum.
+func (e StartConnectionImport202JSONResponseBodyDataScope) Valid() bool {
+	switch e {
+	case StartConnectionImport202JSONResponseBodyDataScopeListings:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for StartConnectionImport202JSONResponseBodyDataStatus.
+const (
+	StartConnectionImport202JSONResponseBodyDataStatusQueued StartConnectionImport202JSONResponseBodyDataStatus = "queued"
+)
+
+// Valid indicates whether the value is a known member of the StartConnectionImport202JSONResponseBodyDataStatus enum.
+func (e StartConnectionImport202JSONResponseBodyDataStatus) Valid() bool {
+	switch e {
+	case StartConnectionImport202JSONResponseBodyDataStatusQueued:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListConnectionUnits200JSONResponseBodyStatus.
 const (
 	ListConnectionUnits200JSONResponseBodyStatusCompleted ListConnectionUnits200JSONResponseBodyStatus = "completed"
@@ -19396,6 +19441,21 @@ type ListConnectionImportsParams struct {
 	SessionId *string `form:"sessionId,omitempty" json:"sessionId,omitempty"`
 }
 
+// StartConnectionImportJSONBody defines parameters for StartConnectionImport.
+type StartConnectionImportJSONBody struct {
+	// Scope What to import. `listings` = the account's listings and their calendars (pricing and availability). The only scope; the full import runs when an account is connected.
+	Scope *StartConnectionImportJSONBodyScope `json:"scope,omitempty"`
+}
+
+// StartConnectionImportJSONBodyScope defines parameters for StartConnectionImport.
+type StartConnectionImportJSONBodyScope string
+
+// StartConnectionImport202JSONResponseBodyDataScope defines parameters for StartConnectionImport.
+type StartConnectionImport202JSONResponseBodyDataScope string
+
+// StartConnectionImport202JSONResponseBodyDataStatus defines parameters for StartConnectionImport.
+type StartConnectionImport202JSONResponseBodyDataStatus string
+
 // SearchConnectionListingOptionsParams defines parameters for SearchConnectionListingOptions.
 type SearchConnectionListingOptionsParams struct {
 	// Q Text to match (name, city or listing id).
@@ -20854,6 +20914,9 @@ type CreateConnectionJSONRequestBody CreateConnectionJSONBody
 
 // UpdateConnectWritePolicyJSONRequestBody defines body for UpdateConnectWritePolicy for application/json ContentType.
 type UpdateConnectWritePolicyJSONRequestBody UpdateConnectWritePolicyJSONBody
+
+// StartConnectionImportJSONRequestBody defines body for StartConnectionImport for application/json ContentType.
+type StartConnectionImportJSONRequestBody StartConnectionImportJSONBody
 
 // ApplyConnectionMappingsJSONRequestBody defines body for ApplyConnectionMappings for application/json ContentType.
 type ApplyConnectionMappingsJSONRequestBody ApplyConnectionMappingsJSONBody

@@ -3082,6 +3082,40 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
 	ListConnectionImports(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// StartConnectionImportWithBody Import a connection's new listings now
+	//
+	// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	//
+	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+	//
+	// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
+	//
+	// The import runs in the background (`202`). It is recorded like any other import (trigger `resync`, one `listings` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the new listings with `GET /v1/listings`.
+	//
+	// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
+	StartConnectionImportWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// StartConnectionImport Import a connection's new listings now
+	//
+	// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	//
+	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+	//
+	// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
+	//
+	// The import runs in the background (`202`). It is recorded like any other import (trigger `resync`, one `listings` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the new listings with `GET /v1/listings`.
+	//
+	// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
+	StartConnectionImport(ctx context.Context, id string, body StartConnectionImportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SearchConnectionListingOptions Search listings a unit can be mapped to
 	//
 	// Search the workspace's active listings by name, city or id, for a mapping picker. A workspace can hold tens of thousands of listings, so pickers search here as the user types rather than loading them all. Empty `q` returns the first `limit` listings by name.
@@ -10384,6 +10418,60 @@ func (c *Client) UpdateConnectWritePolicy(ctx context.Context, provider Provider
 // Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
 func (c *Client) ListConnectionImports(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListConnectionImportsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// StartConnectionImportWithBody Import a connection's new listings now
+//
+// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+//
+// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+//
+// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
+//
+// The import runs in the background (`202`). It is recorded like any other import (trigger `resync`, one `listings` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the new listings with `GET /v1/listings`.
+//
+// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
+func (c *Client) StartConnectionImportWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartConnectionImportRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// StartConnectionImport Import a connection's new listings now
+//
+// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+//
+// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+//
+// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
+//
+// The import runs in the background (`202`). It is recorded like any other import (trigger `resync`, one `listings` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the new listings with `GET /v1/listings`.
+//
+// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
+func (c *Client) StartConnectionImport(ctx context.Context, id string, body StartConnectionImportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartConnectionImportRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -21243,6 +21331,53 @@ func NewListConnectionImportsRequest(server string, id string, params *ListConne
 	return req, nil
 }
 
+// NewStartConnectionImportRequest calls the generic StartConnectionImport builder with application/json body
+func NewStartConnectionImportRequest(server string, id string, body StartConnectionImportJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewStartConnectionImportRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewStartConnectionImportRequestWithBody constructs an http.Request for the StartConnectionImport method, with any body, and a specified content type
+func NewStartConnectionImportRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connections/%s/imports", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewSearchConnectionListingOptionsRequest constructs an http.Request for the SearchConnectionListingOptions method
 func NewSearchConnectionListingOptionsRequest(server string, id string, params *SearchConnectionListingOptionsParams) (*http.Request, error) {
 	var err error
@@ -31833,6 +31968,40 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
 	ListConnectionImportsWithResponse(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*ListConnectionImportsClientResponse, error)
+
+	// StartConnectionImportWithBodyWithResponse Import a connection's new listings now
+	//
+	// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	//
+	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+	//
+	// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
+	//
+	// The import runs in the background (`202`). It is recorded like any other import (trigger `resync`, one `listings` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the new listings with `GET /v1/listings`.
+	//
+	// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
+	StartConnectionImportWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*StartConnectionImportClientResponse, error)
+
+	// StartConnectionImportWithResponse Import a connection's new listings now
+	//
+	// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	//
+	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+	//
+	// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
+	//
+	// The import runs in the background (`202`). It is recorded like any other import (trigger `resync`, one `listings` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the new listings with `GET /v1/listings`.
+	//
+	// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
+	StartConnectionImportWithResponse(ctx context.Context, id string, body StartConnectionImportJSONRequestBody, reqEditors ...RequestEditorFn) (*StartConnectionImportClientResponse, error)
 
 	// SearchConnectionListingOptionsWithResponse Search listings a unit can be mapped to
 	//
@@ -44677,6 +44846,91 @@ func (r ListConnectionImportsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ListConnectionImportsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type StartConnectionImportClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON202 the response for an HTTP 202 `application/json` response
+	JSON202 *struct {
+		Data *struct {
+			// Connection The connection handle, e.g. `airbnb:1234567`.
+			Connection string                                             `json:"connection"`
+			QueuedAt   time.Time                                          `json:"queuedAt"`
+			Scope      StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
+			Status     StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
+		} `json:"data,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+}
+
+// GetJSON202 returns the response for an HTTP 202 `application/json` response
+func (r StartConnectionImportClientResponse) GetJSON202() *struct {
+	Data *struct {
+		// Connection The connection handle, e.g. `airbnb:1234567`.
+		Connection string                                             `json:"connection"`
+		QueuedAt   time.Time                                          `json:"queuedAt"`
+		Scope      StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
+		Status     StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
+	} `json:"data,omitempty"`
+} {
+	return r.JSON202
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r StartConnectionImportClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r StartConnectionImportClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r StartConnectionImportClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r StartConnectionImportClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetBody returns the raw response body bytes
+func (r StartConnectionImportClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r StartConnectionImportClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartConnectionImportClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r StartConnectionImportClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -59984,6 +60238,52 @@ func (c *ClientWithResponses) ListConnectionImportsWithResponse(ctx context.Cont
 	return ParseListConnectionImportsClientResponse(rsp)
 }
 
+// StartConnectionImportWithBodyWithResponse Import a connection's new listings now
+//
+// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+//
+// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+//
+// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
+//
+// The import runs in the background (`202`). It is recorded like any other import (trigger `resync`, one `listings` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the new listings with `GET /v1/listings`.
+//
+// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
+func (c *ClientWithResponses) StartConnectionImportWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*StartConnectionImportClientResponse, error) {
+	rsp, err := c.StartConnectionImportWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartConnectionImportClientResponse(rsp)
+}
+
+// StartConnectionImportWithResponse Import a connection's new listings now
+//
+// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+//
+// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+//
+// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
+//
+// The import runs in the background (`202`). It is recorded like any other import (trigger `resync`, one `listings` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the new listings with `GET /v1/listings`.
+//
+// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
+func (c *ClientWithResponses) StartConnectionImportWithResponse(ctx context.Context, id string, body StartConnectionImportJSONRequestBody, reqEditors ...RequestEditorFn) (*StartConnectionImportClientResponse, error) {
+	rsp, err := c.StartConnectionImport(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartConnectionImportClientResponse(rsp)
+}
+
 // SearchConnectionListingOptionsWithResponse Search listings a unit can be mapped to
 //
 // Search the workspace's active listings by name, city or id, for a mapping picker. A workspace can hold tens of thousands of listings, so pickers search here as the user types rather than loading them all. Empty `q` returns the first `limit` listings by name.
@@ -71194,6 +71494,68 @@ func ParseListConnectionImportsClientResponse(rsp *http.Response) (*ListConnecti
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseStartConnectionImportClientResponse parses an HTTP response from a StartConnectionImportWithResponse call
+func ParseStartConnectionImportClientResponse(rsp *http.Response) (*StartConnectionImportClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartConnectionImportClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest struct {
+			Data *struct {
+				// Connection The connection handle, e.g. `airbnb:1234567`.
+				Connection string                                             `json:"connection"`
+				QueuedAt   time.Time                                          `json:"queuedAt"`
+				Scope      StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
+				Status     StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
+			} `json:"data,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	}
 
