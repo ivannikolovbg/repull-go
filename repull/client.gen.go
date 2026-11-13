@@ -2269,11 +2269,11 @@ type ClientInterface interface {
 	//
 	// **Access level.** Every connection carries `accessType`: `read_only`, `messaging` or `full_access`, or `null` when unknown. Airbnb: the tier the host's token was granted with. Vrbo: bookings and messages only (`messaging`) or with the calendar push (`full_access`). Booking.com: always `full_access`. Booking.com Extranet: always `messaging` (reads reservations, messages and reviews and replies; never writes rates or availability). PMS: `read_only` when every write-policy switch is off, else `full_access`. See the `ConnectionAccessType` schema.
 	//
-	// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
+	// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them. Each login is its own connection with its own `id` (the `X-Account-Id`, and `account.id` in webhooks), and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 	//
-	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
+	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). A Booking.com Extranet login whose rooms are imported but none matched to a listing carries `action.reason: "needs_mapping"` while its `status` is `active`: nothing syncs until the host maps the rooms, and `fixUrl` opens the room-mapping step. These connections carry two extra fields:
 	//
-	// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
+	// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (`needs_permissions`, `needs_mapping`, `reauth_required`); `message` is a host-facing one-liner describing what to do.
 	// - `fixUrl` — a durable link that reopens the hosted Connect flow **bound to that account, on the fix screen** (e.g. "grant full access" + a Re-check button). It is safe to store and show in your own dashboard.
 	//
 	// **Self-serve repair:** when `action.required` is true, surface a "Fix" button that opens `fixUrl` in a new tab (or embed it). The host resolves the issue (e.g. grants the user full access in Booking.com) and clicks Re-check; the import finishes on its own and the connection flips back to `active` — no re-invite, no support ticket. Poll this endpoint (or read it after the host returns) to confirm `action` has cleared.
@@ -3082,9 +3082,9 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
 	ListConnectionImports(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// StartConnectionImportWithBody Import a connection's new listings now
+	// StartConnectionImportWithBody Refresh a connection's listings
 	//
-	// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 	//
 	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 	//
@@ -3099,9 +3099,9 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
 	StartConnectionImportWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// StartConnectionImport Import a connection's new listings now
+	// StartConnectionImport Refresh a connection's listings
 	//
-	// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 	//
 	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 	//
@@ -8975,11 +8975,11 @@ func (c *Client) ListVrboReservations(ctx context.Context, params *ListVrboReser
 //
 // **Access level.** Every connection carries `accessType`: `read_only`, `messaging` or `full_access`, or `null` when unknown. Airbnb: the tier the host's token was granted with. Vrbo: bookings and messages only (`messaging`) or with the calendar push (`full_access`). Booking.com: always `full_access`. Booking.com Extranet: always `messaging` (reads reservations, messages and reviews and replies; never writes rates or availability). PMS: `read_only` when every write-policy switch is off, else `full_access`. See the `ConnectionAccessType` schema.
 //
-// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
+// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them. Each login is its own connection with its own `id` (the `X-Account-Id`, and `account.id` in webhooks), and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 //
-// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
+// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). A Booking.com Extranet login whose rooms are imported but none matched to a listing carries `action.reason: "needs_mapping"` while its `status` is `active`: nothing syncs until the host maps the rooms, and `fixUrl` opens the room-mapping step. These connections carry two extra fields:
 //
-// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
+// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (`needs_permissions`, `needs_mapping`, `reauth_required`); `message` is a host-facing one-liner describing what to do.
 // - `fixUrl` — a durable link that reopens the hosted Connect flow **bound to that account, on the fix screen** (e.g. "grant full access" + a Re-check button). It is safe to store and show in your own dashboard.
 //
 // **Self-serve repair:** when `action.required` is true, surface a "Fix" button that opens `fixUrl` in a new tab (or embed it). The host resolves the issue (e.g. grants the user full access in Booking.com) and clicks Re-check; the import finishes on its own and the connection flips back to `active` — no re-invite, no support ticket. Poll this endpoint (or read it after the host returns) to confirm `action` has cleared.
@@ -10428,9 +10428,9 @@ func (c *Client) ListConnectionImports(ctx context.Context, id string, params *L
 	return c.Client.Do(req)
 }
 
-// StartConnectionImportWithBody Import a connection's new listings now
+// StartConnectionImportWithBody Refresh a connection's listings
 //
-// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 //
 // The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 //
@@ -10455,9 +10455,9 @@ func (c *Client) StartConnectionImportWithBody(ctx context.Context, id string, c
 	return c.Client.Do(req)
 }
 
-// StartConnectionImport Import a connection's new listings now
+// StartConnectionImport Refresh a connection's listings
 //
-// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 //
 // The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 //
@@ -31128,11 +31128,11 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Access level.** Every connection carries `accessType`: `read_only`, `messaging` or `full_access`, or `null` when unknown. Airbnb: the tier the host's token was granted with. Vrbo: bookings and messages only (`messaging`) or with the calendar push (`full_access`). Booking.com: always `full_access`. Booking.com Extranet: always `messaging` (reads reservations, messages and reviews and replies; never writes rates or availability). PMS: `read_only` when every write-policy switch is off, else `full_access`. See the `ConnectionAccessType` schema.
 	//
-	// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
+	// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them. Each login is its own connection with its own `id` (the `X-Account-Id`, and `account.id` in webhooks), and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 	//
-	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
+	// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). A Booking.com Extranet login whose rooms are imported but none matched to a listing carries `action.reason: "needs_mapping"` while its `status` is `active`: nothing syncs until the host maps the rooms, and `fixUrl` opens the room-mapping step. These connections carry two extra fields:
 	//
-	// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
+	// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (`needs_permissions`, `needs_mapping`, `reauth_required`); `message` is a host-facing one-liner describing what to do.
 	// - `fixUrl` — a durable link that reopens the hosted Connect flow **bound to that account, on the fix screen** (e.g. "grant full access" + a Re-check button). It is safe to store and show in your own dashboard.
 	//
 	// **Self-serve repair:** when `action.required` is true, surface a "Fix" button that opens `fixUrl` in a new tab (or embed it). The host resolves the issue (e.g. grants the user full access in Booking.com) and clicks Re-check; the import finishes on its own and the connection flips back to `active` — no re-invite, no support ticket. Poll this endpoint (or read it after the host returns) to confirm `action` has cleared.
@@ -31969,9 +31969,9 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
 	ListConnectionImportsWithResponse(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*ListConnectionImportsClientResponse, error)
 
-	// StartConnectionImportWithBodyWithResponse Import a connection's new listings now
+	// StartConnectionImportWithBodyWithResponse Refresh a connection's listings
 	//
-	// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 	//
 	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 	//
@@ -31986,9 +31986,9 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
 	StartConnectionImportWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*StartConnectionImportClientResponse, error)
 
-	// StartConnectionImportWithResponse Import a connection's new listings now
+	// StartConnectionImportWithResponse Refresh a connection's listings
 	//
-	// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 	//
 	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 	//
@@ -59013,11 +59013,11 @@ func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Conte
 //
 // **Access level.** Every connection carries `accessType`: `read_only`, `messaging` or `full_access`, or `null` when unknown. Airbnb: the tier the host's token was granted with. Vrbo: bookings and messages only (`messaging`) or with the calendar push (`full_access`). Booking.com: always `full_access`. Booking.com Extranet: always `messaging` (reads reservations, messages and reviews and replies; never writes rates or availability). PMS: `read_only` when every write-policy switch is off, else `full_access`. See the `ConnectionAccessType` schema.
 //
-// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them; the entries share the workspace's Extranet `id`, and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
+// **One entry per Booking.com Extranet login.** Each Booking.com account that invites the Repull user connects as its own login, with its own `externalAccountId` — the Booking.com account id (handle `booking_extranet:{externalAccountId}`). A new login adds an entry next to the existing ones and never replaces them. Each login is its own connection with its own `id` (the `X-Account-Id`, and `account.id` in webhooks), and each login's listings, reservations, conversations and reviews stay under its own account (filter them with `?account=booking_extranet:{externalAccountId}`).
 //
-// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). These connections carry two extra fields:
+// **Spot connections that need attention.** A connection whose `status` is not `active` may need the host to do something before it works — most commonly a Booking.com Extranet connection where the invited user was granted only partial access (`status: "needs_permissions"`). A Smoobu connection still on a legacy single API key carries `action.reason: "reauth_required"` while its `status` is `active`: Smoobu stops accepting those keys on October 31, 2026, and `fixUrl` opens the form for a new API key + secret (the connection id stays the same). A Booking.com Extranet login whose rooms are imported but none matched to a listing carries `action.reason: "needs_mapping"` while its `status` is `active`: nothing syncs until the host maps the rooms, and `fixUrl` opens the room-mapping step. These connections carry two extra fields:
 //
-// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (e.g. `needs_permissions`); `message` is a host-facing one-liner describing what to do.
+// - `action` — `{ required: true, reason, message }`. `reason` is a stable machine code (`needs_permissions`, `needs_mapping`, `reauth_required`); `message` is a host-facing one-liner describing what to do.
 // - `fixUrl` — a durable link that reopens the hosted Connect flow **bound to that account, on the fix screen** (e.g. "grant full access" + a Re-check button). It is safe to store and show in your own dashboard.
 //
 // **Self-serve repair:** when `action.required` is true, surface a "Fix" button that opens `fixUrl` in a new tab (or embed it). The host resolves the issue (e.g. grants the user full access in Booking.com) and clicks Re-check; the import finishes on its own and the connection flips back to `active` — no re-invite, no support ticket. Poll this endpoint (or read it after the host returns) to confirm `action` has cleared.
@@ -60238,9 +60238,9 @@ func (c *ClientWithResponses) ListConnectionImportsWithResponse(ctx context.Cont
 	return ParseListConnectionImportsClientResponse(rsp)
 }
 
-// StartConnectionImportWithBodyWithResponse Import a connection's new listings now
+// StartConnectionImportWithBodyWithResponse Refresh a connection's listings
 //
-// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 //
 // The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 //
@@ -60261,9 +60261,9 @@ func (c *ClientWithResponses) StartConnectionImportWithBodyWithResponse(ctx cont
 	return ParseStartConnectionImportClientResponse(rsp)
 }
 
-// StartConnectionImportWithResponse Import a connection's new listings now
+// StartConnectionImportWithResponse Refresh a connection's listings
 //
-// Re-reads the connected account's listings and their calendars (pricing and availability) now. A property added on Airbnb since the last import comes in as a new listing; existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 //
 // The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 //

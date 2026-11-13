@@ -10870,13 +10870,20 @@ type ConnectSessionAbandonedEventEvent string
 
 // ConnectSessionAbandonedPayload Payload for `connect.session.abandoned`. A user opened a Connect session and never finished it — the link ran out, or the account was connected but its rooms were never mapped. Use `state` or `sessionId` to find your user, `reason` and `nextStep` to decide what to send them (usually a new Connect link). Sent once per session, only for sessions opened in the last 7 days.
 type ConnectSessionAbandonedPayload struct {
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	// ConnectionId Booking.com Extranet in `awaiting_room_mapping`: the connection record of the connected login (the `X-Account-Id`). Absent otherwise.
+	//
+	// Example: 1701
+	ConnectionId *string    `json:"connectionId,omitempty"`
+	CreatedAt    *time.Time `json:"createdAt,omitempty"`
 
-	// ExternalAccountId Booking.com: the Hotel ID the user entered while waiting for the Extranet approval.
+	// ExternalAccountId Booking.com: the Hotel ID the user entered while waiting for the Extranet approval. Booking.com Extranet in `awaiting_room_mapping`: the Booking.com account id of the connected login.
 	//
 	// Example: 17168363
-	ExternalAccountId *string    `json:"externalAccountId,omitempty"`
-	LastActivityAt    *time.Time `json:"lastActivityAt,omitempty"`
+	ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+	// FixUrl Booking.com Extranet in `awaiting_room_mapping`: a durable link that reopens Connect on the room-mapping step for this login. Send the host there to finish. `null` when there is nothing to resume.
+	FixUrl         *string    `json:"fixUrl,omitempty"`
+	LastActivityAt *time.Time `json:"lastActivityAt,omitempty"`
 
 	// LastErrorCode The last error the user hit on the Connect page, e.g. `invalid_credentials`, `awaiting_designation`.
 	//
