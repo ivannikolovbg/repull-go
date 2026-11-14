@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.46 — 2026-11-14
+
+- Regenerated from the live spec (automated spec refresh).
+
 ## 0.2.45 — 2026-11-13
 
 - New: `POST /v1/connections/{id}/imports`
