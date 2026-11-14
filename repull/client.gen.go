@@ -2959,6 +2959,8 @@ type ClientInterface interface {
 	//
 	// No API key required when called with a `sessionId` — the session is the capability token.
 	//
+	// **Lost the password?** It is returned once. Send the same request with `"rotate": true` to replace it and get the new one back; the old password stops working, so paste the new one into Vrbo. Without `rotate`, a second request for the same advertiser returns `409 credentials_already_provisioned`.
+	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/connect/vrbo/credentials (the `SubmitVrboCredentials` operationId).
@@ -2971,6 +2973,8 @@ type ClientInterface interface {
 	// The credentials are validated against Vrbo before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 	//
 	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// **Lost the password?** It is returned once. Send the same request with `"rotate": true` to replace it and get the new one back; the old password stops working, so paste the new one into Vrbo. Without `rotate`, a second request for the same advertiser returns `409 credentials_already_provisioned`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -10195,6 +10199,8 @@ func (c *Client) VrboLogin(ctx context.Context, body VrboLoginJSONRequestBody, r
 //
 // No API key required when called with a `sessionId` — the session is the capability token.
 //
+// **Lost the password?** It is returned once. Send the same request with `"rotate": true` to replace it and get the new one back; the old password stops working, so paste the new one into Vrbo. Without `rotate`, a second request for the same advertiser returns `409 credentials_already_provisioned`.
+//
 // Takes any type of body and a specified content type.
 //
 // Corresponds with POST /v1/connect/vrbo/credentials (the `SubmitVrboCredentials` operationId).
@@ -10217,6 +10223,8 @@ func (c *Client) SubmitVrboCredentialsWithBody(ctx context.Context, contentType 
 // The credentials are validated against Vrbo before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 //
 // No API key required when called with a `sessionId` — the session is the capability token.
+//
+// **Lost the password?** It is returned once. Send the same request with `"rotate": true` to replace it and get the new one back; the old password stops working, so paste the new one into Vrbo. Without `rotate`, a second request for the same advertiser returns `409 credentials_already_provisioned`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -31836,6 +31844,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// No API key required when called with a `sessionId` — the session is the capability token.
 	//
+	// **Lost the password?** It is returned once. Send the same request with `"rotate": true` to replace it and get the new one back; the old password stops working, so paste the new one into Vrbo. Without `rotate`, a second request for the same advertiser returns `409 credentials_already_provisioned`.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/connect/vrbo/credentials (the `SubmitVrboCredentials` operationId).
@@ -31848,6 +31858,8 @@ type ClientWithResponsesInterface interface {
 	// The credentials are validated against Vrbo before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 	//
 	// No API key required when called with a `sessionId` — the session is the capability token.
+	//
+	// **Lost the password?** It is returned once. Send the same request with `"rotate": true` to replace it and get the new one back; the old password stops working, so paste the new one into Vrbo. Without `rotate`, a second request for the same advertiser returns `409 credentials_already_provisioned`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -60039,6 +60051,8 @@ func (c *ClientWithResponses) VrboLoginWithResponse(ctx context.Context, body Vr
 //
 // No API key required when called with a `sessionId` — the session is the capability token.
 //
+// **Lost the password?** It is returned once. Send the same request with `"rotate": true` to replace it and get the new one back; the old password stops working, so paste the new one into Vrbo. Without `rotate`, a second request for the same advertiser returns `409 credentials_already_provisioned`.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/connect/vrbo/credentials (the `SubmitVrboCredentials` operationId).
@@ -60057,6 +60071,8 @@ func (c *ClientWithResponses) SubmitVrboCredentialsWithBodyWithResponse(ctx cont
 // The credentials are validated against Vrbo before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
 //
 // No API key required when called with a `sessionId` — the session is the capability token.
+//
+// **Lost the password?** It is returned once. Send the same request with `"rotate": true` to replace it and get the new one back; the old password stops working, so paste the new one into Vrbo. Without `rotate`, a second request for the same advertiser returns `409 credentials_already_provisioned`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //

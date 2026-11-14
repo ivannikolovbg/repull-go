@@ -10983,10 +10983,13 @@ type ConnectStatus struct {
 	// AccessType What the connection may do: `read_only`, `messaging` or `full_access` (see `ConnectionAccessType` for the meaning per provider). Airbnb: the tier of the host in `externalAccountId`; each host's own is on `accounts[].accessType`. Absent when `connected` is false and on `GET /v1/connect/vrbo-login` (per account there); `null` when unknown.
 	AccessType *ConnectionAccessType `json:"accessType,omitempty"`
 
-	// Accounts Airbnb: every Airbnb account this workspace has connected, including ones since disconnected, each with its own `accessType`. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/airbnb` to disconnect one account. Vrbo (`GET /v1/connect/vrbo-login`): every signed-in Vrbo account, each with `accessType` and `import` (a `VrboImportStatus`), plus a top-level `dataFreshness`. `externalAccountId` is the platform's own id (Airbnb host id, Vrbo account id; `null` for a Vrbo sign-in whose account id is not captured yet) and `connectionId` our connection record.
+	// Accounts One entry per connected account, for every provider: Airbnb, every host account connected (including ones since disconnected), each with its own `accessType`; Booking.com, every hotel (`externalAccountId` is the hotel id); Vrbo, every sign-in; Booking.com Extranet, every hotel login; a PMS, its one account. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/{provider}` to disconnect one. The top-level fields describe one record and stay for existing integrations; show `accounts[]` to list what is connected. Vrbo sign-ins also carry `accessType` and `import` (a `VrboImportStatus`), with a top-level `dataFreshness` on `GET /v1/connect/vrbo-login`.
 	Accounts *[]struct {
 		// AccessType What this account may do. Airbnb: the tier the host's token was granted with (`read_only`, `messaging`, `full_access`). Vrbo: `messaging` (bookings and messages, no calendar push) or `full_access` (also pushes prices and availability). `null` when unknown.
 		AccessType *ConnectionAccessType `json:"accessType,omitempty"`
+
+		// Action Booking.com: `{ required, reason: "needs_mapping", message }` while a room of this hotel is matched to no listing (nothing syncs for that room). Null when nothing is needed.
+		Action *map[string]interface{} `json:"action,omitempty"`
 
 		// Connected True while the account is active and its authorization is usable.
 		//
@@ -11001,10 +11004,13 @@ type ConnectStatus struct {
 		// Email Vrbo only: the account email.
 		Email *string `json:"email,omitempty"`
 
-		// ExternalAccountId Airbnb: the host id, as a string (it can exceed 2^53). Vrbo: Vrbo's own account id; `null` until it is captured at sign-in.
+		// ExternalAccountId Airbnb: the host id, as a string (it can exceed 2^53). Booking.com: the hotel id. Vrbo: Vrbo's own account id; `null` until it is captured at sign-in. Extranet: the Booking.com account id. PMS: the PMS account id.
 		//
 		// Example: 79730216
 		ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+		// FixUrl Booking.com: a link that opens room mapping for this hotel (no new Connect session needed). Send the host to it when `action` is set.
+		FixUrl *string `json:"fixUrl,omitempty"`
 
 		// Import Vrbo only: where the account import stands.
 		Import *VrboImportStatus `json:"import,omitempty"`
@@ -19378,8 +19384,14 @@ type VrboLogin200JSONResponseBodyStatus string
 
 // SubmitVrboCredentialsJSONBody defines parameters for SubmitVrboCredentials.
 type SubmitVrboCredentialsJSONBody struct {
-	// Credentials Activation handshake — Repull mints the Basic-Auth pair the host pastes into Vrbo Partner Central.
-	Credentials map[string]interface{} `json:"credentials"`
+	// AdvertiserExternalId The host's Vrbo advertiser id. Repull mints the Basic-Auth pair for it, which the host pastes into Vrbo Partner Central.
+	AdvertiserExternalId string `json:"advertiserExternalId"`
+
+	// EndpointUrl Optional. Vrbo Partner Central sets this itself.
+	EndpointUrl *string `json:"endpointUrl,omitempty"`
+
+	// Rotate Replace the advertiser's existing password and return the new one. The old password stops working.
+	Rotate *bool `json:"rotate,omitempty"`
 
 	// SessionId Connect session id from `POST /v1/connect/vrbo`.
 	SessionId *string `json:"sessionId,omitempty"`
