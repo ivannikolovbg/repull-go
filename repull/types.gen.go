@@ -6156,8 +6156,9 @@ func (e VrboLoginJSONBodyAccessType) Valid() bool {
 
 // Defines values for VrboLoginJSONBodyAction.
 const (
-	Login VrboLoginJSONBodyAction = "login"
-	Otp   VrboLoginJSONBodyAction = "otp"
+	Login  VrboLoginJSONBodyAction = "login"
+	Otp    VrboLoginJSONBodyAction = "otp"
+	Resend VrboLoginJSONBodyAction = "resend"
 )
 
 // Valid indicates whether the value is a known member of the VrboLoginJSONBodyAction enum.
@@ -6166,6 +6167,8 @@ func (e VrboLoginJSONBodyAction) Valid() bool {
 	case Login:
 		return true
 	case Otp:
+		return true
+	case Resend:
 		return true
 	default:
 		return false
@@ -11075,7 +11078,7 @@ type Connection struct {
 	// AccessType What this connection may do: `read_only`, `messaging` or `full_access` (see `ConnectionAccessType` for the meaning per provider). Airbnb: the tier of the host in `externalAccountId`. `null` when unknown.
 	AccessType *ConnectionAccessType `json:"accessType,omitempty"`
 
-	// Action Set when the host must do something before the connection works (e.g. grant the invited Booking.com Extranet user full access). `null` when no action is pending.
+	// Action Set when the host must do something before the connection works (e.g. grant the invited Booking.com Extranet user full access), or has units still to map (`reason: needs_mapping` — Booking.com Extranet rooms, Vrbo units; `required` is false when only some Vrbo units are left). `null` when no action is pending.
 	Action    *ConnectionAction `json:"action,omitempty"`
 	CreatedAt *time.Time        `json:"createdAt,omitempty"`
 
@@ -11084,7 +11087,7 @@ type Connection struct {
 	// Example: 20123456
 	ExternalAccountId *string `json:"externalAccountId,omitempty"`
 
-	// FixUrl Durable link that reopens the hosted Connect flow bound to this account on the fix screen — send the host here to resolve `action`. Present only when `action.required` is true; `null` otherwise.
+	// FixUrl Durable link that reopens the hosted Connect flow bound to this account on the fix screen — send the host here to resolve `action`. For `needs_mapping` it opens the unit mapping directly (no new sign-in). Present whenever `action` is set; `null` otherwise.
 	FixUrl *string `json:"fixUrl,omitempty"`
 
 	// Host Host metadata for the linked account. Currently populated for Airbnb only; null for other providers.
