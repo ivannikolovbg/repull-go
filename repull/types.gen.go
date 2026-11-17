@@ -40,6 +40,36 @@ func (e AIOperationOperation) Valid() bool {
 	}
 }
 
+// Defines values for AccountCalendarAccessChangedEventEvent.
+const (
+	AccountCalendarAccessChangedEventEventAccountCalendarAccessChanged AccountCalendarAccessChangedEventEvent = "account.calendar_access_changed"
+)
+
+// Valid indicates whether the value is a known member of the AccountCalendarAccessChangedEventEvent enum.
+func (e AccountCalendarAccessChangedEventEvent) Valid() bool {
+	switch e {
+	case AccountCalendarAccessChangedEventEventAccountCalendarAccessChanged:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountCalendarAccessChangedPayloadProvider.
+const (
+	AccountCalendarAccessChangedPayloadProviderVrbo AccountCalendarAccessChangedPayloadProvider = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the AccountCalendarAccessChangedPayloadProvider enum.
+func (e AccountCalendarAccessChangedPayloadProvider) Valid() bool {
+	switch e {
+	case AccountCalendarAccessChangedPayloadProviderVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AccountCreatedEventEvent.
 const (
 	AccountCreatedEventEventAccountCreated AccountCreatedEventEvent = "account.created"
@@ -4570,6 +4600,21 @@ func (e UsageQuotaWarningPayloadScope) Valid() bool {
 	}
 }
 
+// Defines values for VrboCalendarAccessManagedBy.
+const (
+	IntegratedSoftware VrboCalendarAccessManagedBy = "integrated_software"
+)
+
+// Valid indicates whether the value is a known member of the VrboCalendarAccessManagedBy enum.
+func (e VrboCalendarAccessManagedBy) Valid() bool {
+	switch e {
+	case IntegratedSoftware:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for VrboImportStatusAccessType.
 const (
 	VrboImportStatusAccessTypeFullAccess VrboImportStatusAccessType = "full_access"
@@ -4650,6 +4695,7 @@ func (e WebhookEventCatalogEntryDomain) Valid() bool {
 
 // Defines values for WebhookEventType.
 const (
+	WebhookEventTypeAccountCalendarAccessChanged   WebhookEventType = "account.calendar_access_changed"
 	WebhookEventTypeAccountCreated                 WebhookEventType = "account.created"
 	WebhookEventTypeAccountDisconnected            WebhookEventType = "account.disconnected"
 	WebhookEventTypeAccountImportCompleted         WebhookEventType = "account.import.completed"
@@ -4697,6 +4743,8 @@ const (
 // Valid indicates whether the value is a known member of the WebhookEventType enum.
 func (e WebhookEventType) Valid() bool {
 	switch e {
+	case WebhookEventTypeAccountCalendarAccessChanged:
+		return true
 	case WebhookEventTypeAccountCreated:
 		return true
 	case WebhookEventTypeAccountDisconnected:
@@ -6676,6 +6724,21 @@ func (e ListListingsParamsStatus) Valid() bool {
 	}
 }
 
+// Defines values for GetListingCalendarSync200JSONResponseBodyChannelsOffReason.
+const (
+	CalendarManagedElsewhere GetListingCalendarSync200JSONResponseBodyChannelsOffReason = "calendar_managed_elsewhere"
+)
+
+// Valid indicates whether the value is a known member of the GetListingCalendarSync200JSONResponseBodyChannelsOffReason enum.
+func (e GetListingCalendarSync200JSONResponseBodyChannelsOffReason) Valid() bool {
+	switch e {
+	case CalendarManagedElsewhere:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult.
 const (
 	GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResultInSync   GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult = "in_sync"
@@ -7863,6 +7926,46 @@ type AIOperation struct {
 
 // AIOperationOperation AI operation to perform
 type AIOperationOperation string
+
+// AccountCalendarAccessChangedEvent Another tool (such as a PMS) started or stopped managing a Vrbo account's calendar. Started: calendar sync is now off for every unit of the account. Stopped: nothing is switched back on; turn it on with `POST /v1/connections/{id}/mappings` (`calendarSync: true`).
+type AccountCalendarAccessChangedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string                              `json:"apiVersion"`
+	Data       AccountCalendarAccessChangedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AccountCalendarAccessChangedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// AccountCalendarAccessChangedEventEvent The event name. This field is `event`, not `type`.
+type AccountCalendarAccessChangedEventEvent string
+
+// AccountCalendarAccessChangedPayload defines model for AccountCalendarAccessChangedPayload.
+type AccountCalendarAccessChangedPayload struct {
+	// AccountId Vrbo's account number (`accounts[].externalAccountId` on `GET /v1/connect/vrbo-login`).
+	AccountId *string `json:"accountId"`
+
+	// Calendar Whether another tool manages a Vrbo account's calendar. Vrbo reports it per account; Repull asks when the account connects and once a day. While `managedBy` is set, Vrbo refuses price and availability changes from anyone else, so calendar sync is off for every unit of the account and turning it on returns `409 calendar_managed_elsewhere`. Bookings and messages keep working.
+	Calendar  VrboCalendarAccess `json:"calendar"`
+	ChangedAt time.Time          `json:"changedAt"`
+
+	// ConnectionId The workspace's Vrbo connection record.
+	ConnectionId *int                                        `json:"connectionId"`
+	Provider     AccountCalendarAccessChangedPayloadProvider `json:"provider"`
+	WorkspaceId  int                                         `json:"workspaceId"`
+}
+
+// AccountCalendarAccessChangedPayloadProvider defines model for AccountCalendarAccessChangedPayload.Provider.
+type AccountCalendarAccessChangedPayloadProvider string
 
 // AccountCreatedEvent defines model for AccountCreatedEvent.
 type AccountCreatedEvent struct {
@@ -10990,6 +11093,9 @@ type ConnectStatus struct {
 
 		// Action Booking.com: `{ required, reason: "needs_mapping", message }` while a room of this hotel is matched to no listing (nothing syncs for that room). Null when nothing is needed.
 		Action *map[string]interface{} `json:"action,omitempty"`
+
+		// Calendar Vrbo only. Whether another tool (such as a PMS) manages this account's calendar; while `calendar.managedBy` is set, calendar sync is off for all its units.
+		Calendar *VrboCalendarAccess `json:"calendar,omitempty"`
 
 		// Connected True while the account is active and its authorization is usable.
 		//
@@ -17496,6 +17602,24 @@ type UsageQuotaWarningPayload struct {
 // Example: daily_requests
 type UsageQuotaWarningPayloadScope string
 
+// VrboCalendarAccess Whether another tool manages a Vrbo account's calendar. Vrbo reports it per account; Repull asks when the account connects and once a day. While `managedBy` is set, Vrbo refuses price and availability changes from anyone else, so calendar sync is off for every unit of the account and turning it on returns `409 calendar_managed_elsewhere`. Bookings and messages keep working.
+type VrboCalendarAccess struct {
+	// CheckedAt When Vrbo was last asked. `null` until the first check.
+	CheckedAt *time.Time `json:"checkedAt"`
+
+	// DetectedAt When `managedBy` was first seen. `null` when not managed.
+	DetectedAt *time.Time `json:"detectedAt"`
+
+	// DocsUrl Example: https://repull.dev/docs/channels/vrbo/calendar-managed-elsewhere
+	DocsUrl string `json:"docsUrl"`
+
+	// ManagedBy `integrated_software`: Vrbo says connected software (such as a PMS) manages the calendar. `null`: Repull may manage it.
+	ManagedBy *VrboCalendarAccessManagedBy `json:"managedBy"`
+}
+
+// VrboCalendarAccessManagedBy `integrated_software`: Vrbo says connected software (such as a PMS) manages the calendar. `null`: Repull may manage it.
+type VrboCalendarAccessManagedBy string
+
 // VrboImportStatus Where a Vrbo account import stands. Nothing is imported until its unit mapping is confirmed; then upcoming bookings and the last 30 days of messages come first, and the whole account history after.
 type VrboImportStatus struct {
 	// AccessType `messaging`: bookings and messages only, the calendar is never pushed.
@@ -19468,7 +19592,7 @@ type ListConnectionImportsParams struct {
 
 // StartConnectionImportJSONBody defines parameters for StartConnectionImport.
 type StartConnectionImportJSONBody struct {
-	// Scope What to import. `listings` = the account's listings and their calendars (pricing and availability). The only scope; the full import runs when an account is connected.
+	// Scope What to import. `listings` = the account's listings. New listings come in with their calendar (pricing and availability); on a full-access connection, calendars of listings already in Repull are not re-read. The only scope; the full import runs when an account is connected.
 	Scope *StartConnectionImportJSONBodyScope `json:"scope,omitempty"`
 }
 
@@ -19492,7 +19616,7 @@ type SearchConnectionListingOptionsParams struct {
 // ApplyConnectionMappingsJSONBody defines parameters for ApplyConnectionMappings.
 type ApplyConnectionMappingsJSONBody struct {
 	Mappings []struct {
-		// CalendarSync Vrbo: push this listing's prices and availability to Vrbo. Omit to follow the connection's access type (`messaging` = off, `full_access` = on). A new listing (`create`) always follows the access type. Other channels ignore it.
+		// CalendarSync Vrbo: push this listing's prices and availability to Vrbo. Omit to follow the connection's access type (`messaging` = off, `full_access` = on). A new listing (`create`) always follows the access type. Other channels ignore it. `true` returns `409 calendar_managed_elsewhere` while Vrbo says another tool (such as a PMS) manages the account's calendar (`calendar.managedBy` on `GET /v1/connect/vrbo-login`); see https://repull.dev/docs/channels/vrbo/calendar-managed-elsewhere.
 		CalendarSync *bool  `json:"calendarSync,omitempty"`
 		Create       *bool  `json:"create,omitempty"`
 		ListingId    *int   `json:"listingId,omitempty"`
@@ -19918,6 +20042,9 @@ type GetListingParams struct {
 	// XSchema Apply a custom or built-in schema to transform the response. Built-in: `native` (default), `calry`, `calry-v1`. Custom: any schema name created via `POST /v1/schema/custom`. Unknown / inactive schema names fall back to `native`.
 	XSchema *XSchemaHeader `json:"X-Schema,omitempty"`
 }
+
+// GetListingCalendarSync200JSONResponseBodyChannelsOffReason defines parameters for GetListingCalendarSync.
+type GetListingCalendarSync200JSONResponseBodyChannelsOffReason string
 
 // GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult defines parameters for GetListingCalendarSync.
 type GetListingCalendarSync200JSONResponseBodyChannelsQueueLastPushResult string
@@ -24124,6 +24251,40 @@ func (t *WebhookEvent) MergeAccountUnitsAddedEvent(v AccountUnitsAddedEvent) err
 	return err
 }
 
+// AsAccountCalendarAccessChangedEvent returns the union data inside the WebhookEvent as a AccountCalendarAccessChangedEvent
+func (t WebhookEvent) AsAccountCalendarAccessChangedEvent() (AccountCalendarAccessChangedEvent, error) {
+	var body AccountCalendarAccessChangedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAccountCalendarAccessChangedEvent overwrites any union data inside the WebhookEvent as the provided AccountCalendarAccessChangedEvent
+func (t *WebhookEvent) FromAccountCalendarAccessChangedEvent(v AccountCalendarAccessChangedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.calendar_access_changed"}`))
+	t.union = b
+	return err
+}
+
+// MergeAccountCalendarAccessChangedEvent performs a merge with any union data inside the WebhookEvent, using the provided AccountCalendarAccessChangedEvent
+func (t *WebhookEvent) MergeAccountCalendarAccessChangedEvent(v AccountCalendarAccessChangedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.calendar_access_changed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsReviewCreatedEvent returns the union data inside the WebhookEvent as a ReviewCreatedEvent
 func (t WebhookEvent) AsReviewCreatedEvent() (ReviewCreatedEvent, error) {
 	var body ReviewCreatedEvent
@@ -24512,6 +24673,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
+	case "account.calendar_access_changed":
+		return t.AsAccountCalendarAccessChangedEvent()
 	case "account.created":
 		return t.AsAccountCreatedEvent()
 	case "account.disconnected":

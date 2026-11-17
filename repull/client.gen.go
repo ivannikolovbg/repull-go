@@ -3088,7 +3088,7 @@ type ClientInterface interface {
 
 	// StartConnectionImportWithBody Refresh a connection's listings
 	//
-	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 	//
 	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 	//
@@ -3105,7 +3105,7 @@ type ClientInterface interface {
 
 	// StartConnectionImport Refresh a connection's listings
 	//
-	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 	//
 	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 	//
@@ -10438,7 +10438,7 @@ func (c *Client) ListConnectionImports(ctx context.Context, id string, params *L
 
 // StartConnectionImportWithBody Refresh a connection's listings
 //
-// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 //
 // The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 //
@@ -10465,7 +10465,7 @@ func (c *Client) StartConnectionImportWithBody(ctx context.Context, id string, c
 
 // StartConnectionImport Refresh a connection's listings
 //
-// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 //
 // The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 //
@@ -31983,7 +31983,7 @@ type ClientWithResponsesInterface interface {
 
 	// StartConnectionImportWithBodyWithResponse Refresh a connection's listings
 	//
-	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 	//
 	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 	//
@@ -32000,7 +32000,7 @@ type ClientWithResponsesInterface interface {
 
 	// StartConnectionImportWithResponse Refresh a connection's listings
 	//
-	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+	// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 	//
 	// The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 	//
@@ -45023,6 +45023,8 @@ type ApplyConnectionMappingsClientResponse struct {
 			UnitId    *string `json:"unit_id,omitempty"`
 		} `json:"results,omitempty"`
 	}
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
@@ -45038,6 +45040,11 @@ func (r ApplyConnectionMappingsClientResponse) GetJSON200() *struct {
 	} `json:"results,omitempty"`
 } {
 	return r.JSON200
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r ApplyConnectionMappingsClientResponse) GetJSON409() *Error {
+	return r.JSON409
 }
 
 // GetBody returns the raw response body bytes
@@ -45137,8 +45144,10 @@ type ListConnectionUnitsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
-		Channel        *string `json:"channel,omitempty"`
-		ConnectionId   *string `json:"connection_id,omitempty"`
+		// Calendar Whether another tool manages a Vrbo account's calendar. Vrbo reports it per account; Repull asks when the account connects and once a day. While `managedBy` is set, Vrbo refuses price and availability changes from anyone else, so calendar sync is off for every unit of the account and turning it on returns `409 calendar_managed_elsewhere`. Bookings and messages keep working.
+		Calendar       *VrboCalendarAccess `json:"calendar,omitempty"`
+		Channel        *string             `json:"channel,omitempty"`
+		ConnectionId   *string             `json:"connection_id,omitempty"`
 		ListingOptions *[]struct {
 			City *string `json:"city,omitempty"`
 			Id   *int    `json:"id,omitempty"`
@@ -45156,7 +45165,7 @@ type ListConnectionUnitsClientResponse struct {
 			CurrentListingId *int    `json:"current_listing_id,omitempty"`
 			Grain            *string `json:"grain,omitempty"`
 
-			// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`; the Vrbo listing ID is `unit_id`.
+			// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`; the Vrbo listing ID is `unit_id`.
 			Meta               *map[string]interface{} `json:"meta,omitempty"`
 			SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 			UnitId             *string                 `json:"unit_id,omitempty"`
@@ -45167,8 +45176,10 @@ type ListConnectionUnitsClientResponse struct {
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListConnectionUnitsClientResponse) GetJSON200() *struct {
-	Channel        *string `json:"channel,omitempty"`
-	ConnectionId   *string `json:"connection_id,omitempty"`
+	// Calendar Whether another tool manages a Vrbo account's calendar. Vrbo reports it per account; Repull asks when the account connects and once a day. While `managedBy` is set, Vrbo refuses price and availability changes from anyone else, so calendar sync is off for every unit of the account and turning it on returns `409 calendar_managed_elsewhere`. Bookings and messages keep working.
+	Calendar       *VrboCalendarAccess `json:"calendar,omitempty"`
+	Channel        *string             `json:"channel,omitempty"`
+	ConnectionId   *string             `json:"connection_id,omitempty"`
 	ListingOptions *[]struct {
 		City *string `json:"city,omitempty"`
 		Id   *int    `json:"id,omitempty"`
@@ -45186,7 +45197,7 @@ func (r ListConnectionUnitsClientResponse) GetJSON200() *struct {
 		CurrentListingId *int    `json:"current_listing_id,omitempty"`
 		Grain            *string `json:"grain,omitempty"`
 
-		// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`; the Vrbo listing ID is `unit_id`.
+		// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`; the Vrbo listing ID is `unit_id`.
 		Meta               *map[string]interface{} `json:"meta,omitempty"`
 		SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 		UnitId             *string                 `json:"unit_id,omitempty"`
@@ -48588,11 +48599,17 @@ type GetListingCalendarSyncClientResponse struct {
 			// Channel Example: vrbo
 			Channel string `json:"channel"`
 
+			// DocsUrl Explains `offReason` and how to turn calendar sync back on.
+			DocsUrl *string `json:"docsUrl,omitempty"`
+
 			// LastSyncAt When a push last wrote to this listing's calendar.
 			LastSyncAt *time.Time `json:"lastSyncAt"`
 
 			// NightsWithProblems Example: 0
 			NightsWithProblems int `json:"nightsWithProblems"`
+
+			// OffReason Vrbo only, when Repull turned calendar sync off: Vrbo says another tool (such as a PMS) manages the account's calendar. Absent when the host turned it off.
+			OffReason *GetListingCalendarSync200JSONResponseBodyChannelsOffReason `json:"offReason,omitempty"`
 
 			// PlatformId The listing's id on the channel.
 			//
@@ -48663,11 +48680,17 @@ func (r GetListingCalendarSyncClientResponse) GetJSON200() *struct {
 		// Channel Example: vrbo
 		Channel string `json:"channel"`
 
+		// DocsUrl Explains `offReason` and how to turn calendar sync back on.
+		DocsUrl *string `json:"docsUrl,omitempty"`
+
 		// LastSyncAt When a push last wrote to this listing's calendar.
 		LastSyncAt *time.Time `json:"lastSyncAt"`
 
 		// NightsWithProblems Example: 0
 		NightsWithProblems int `json:"nightsWithProblems"`
+
+		// OffReason Vrbo only, when Repull turned calendar sync off: Vrbo says another tool (such as a PMS) manages the account's calendar. Absent when the host turned it off.
+		OffReason *GetListingCalendarSync200JSONResponseBodyChannelsOffReason `json:"offReason,omitempty"`
 
 		// PlatformId The listing's id on the channel.
 		//
@@ -60256,7 +60279,7 @@ func (c *ClientWithResponses) ListConnectionImportsWithResponse(ctx context.Cont
 
 // StartConnectionImportWithBodyWithResponse Refresh a connection's listings
 //
-// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 //
 // The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 //
@@ -60279,7 +60302,7 @@ func (c *ClientWithResponses) StartConnectionImportWithBodyWithResponse(ctx cont
 
 // StartConnectionImportWithResponse Refresh a connection's listings
 //
-// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings and their calendars (pricing and availability) now; a new property comes in as a new listing and existing listings are refreshed. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
+// Refresh listings: picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts.
 //
 // The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
 //
@@ -71644,6 +71667,13 @@ func ParseApplyConnectionMappingsClientResponse(rsp *http.Response) (*ApplyConne
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	}
 
 	return response, nil
@@ -71702,8 +71732,10 @@ func ParseListConnectionUnitsClientResponse(rsp *http.Response) (*ListConnection
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			Channel        *string `json:"channel,omitempty"`
-			ConnectionId   *string `json:"connection_id,omitempty"`
+			// Calendar Whether another tool manages a Vrbo account's calendar. Vrbo reports it per account; Repull asks when the account connects and once a day. While `managedBy` is set, Vrbo refuses price and availability changes from anyone else, so calendar sync is off for every unit of the account and turning it on returns `409 calendar_managed_elsewhere`. Bookings and messages keep working.
+			Calendar       *VrboCalendarAccess `json:"calendar,omitempty"`
+			Channel        *string             `json:"channel,omitempty"`
+			ConnectionId   *string             `json:"connection_id,omitempty"`
 			ListingOptions *[]struct {
 				City *string `json:"city,omitempty"`
 				Id   *int    `json:"id,omitempty"`
@@ -71721,7 +71753,7 @@ func ParseListConnectionUnitsClientResponse(rsp *http.Response) (*ListConnection
 				CurrentListingId *int    `json:"current_listing_id,omitempty"`
 				Grain            *string `json:"grain,omitempty"`
 
-				// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`; the Vrbo listing ID is `unit_id`.
+				// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`; the Vrbo listing ID is `unit_id`.
 				Meta               *map[string]interface{} `json:"meta,omitempty"`
 				SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 				UnitId             *string                 `json:"unit_id,omitempty"`
@@ -74079,11 +74111,17 @@ func ParseGetListingCalendarSyncClientResponse(rsp *http.Response) (*GetListingC
 				// Channel Example: vrbo
 				Channel string `json:"channel"`
 
+				// DocsUrl Explains `offReason` and how to turn calendar sync back on.
+				DocsUrl *string `json:"docsUrl,omitempty"`
+
 				// LastSyncAt When a push last wrote to this listing's calendar.
 				LastSyncAt *time.Time `json:"lastSyncAt"`
 
 				// NightsWithProblems Example: 0
 				NightsWithProblems int `json:"nightsWithProblems"`
+
+				// OffReason Vrbo only, when Repull turned calendar sync off: Vrbo says another tool (such as a PMS) manages the account's calendar. Absent when the host turned it off.
+				OffReason *GetListingCalendarSync200JSONResponseBodyChannelsOffReason `json:"offReason,omitempty"`
 
 				// PlatformId The listing's id on the channel.
 				//
