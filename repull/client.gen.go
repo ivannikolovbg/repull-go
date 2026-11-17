@@ -553,7 +553,7 @@ type ClientInterface interface {
 	//
 	// **This is Repull's stored copy, not a live call to Airbnb.** Values come from the local Airbnb mirror that the sync workers fill, so the response always carries `dataFreshness` — check `dataFreshness.stale` (and `dataFreshness.accounts[]` when the workspace has several Airbnb accounts) before treating a value as current.
 	//
-	// **Not exposed by Airbnb.** The pre-reservation message and automatic stay extension have no field on Airbnb's `booking_settings` resource, so neither can be read or written here; set the pre-reservation message in the Airbnb host dashboard, and handle extensions through `/v1/channels/airbnb/alterations`. Airbnb also expresses the same-day cutoff only as whole hours of advance notice, so `advanceNotice.hours` is as precise as the cutoff gets.
+	// **Not exposed by Airbnb.** The pre-reservation message and automatic stay extension have no field on Airbnb's `booking_settings` resource, so neither can be read or written here; set the pre-reservation message in the Airbnb host dashboard, and handle extensions through `/v1/channels/airbnb/alterations`. The same-day cutoff is Airbnb's advance-notice hours counted back from 11:59 PM on the check-in day: read it as `advanceNotice.sameDayCutoff` (e.g. `23:00`) or `advanceNotice.hours` (e.g. `1`), and write either one.
 	//
 	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive — an inactive listing keeps syncing but cannot be read or changed through the API until it is activated.
 	//
@@ -6216,7 +6216,7 @@ func (c *Client) UpdateAirbnbListingAvailability(ctx context.Context, id string,
 //
 // **This is Repull's stored copy, not a live call to Airbnb.** Values come from the local Airbnb mirror that the sync workers fill, so the response always carries `dataFreshness` — check `dataFreshness.stale` (and `dataFreshness.accounts[]` when the workspace has several Airbnb accounts) before treating a value as current.
 //
-// **Not exposed by Airbnb.** The pre-reservation message and automatic stay extension have no field on Airbnb's `booking_settings` resource, so neither can be read or written here; set the pre-reservation message in the Airbnb host dashboard, and handle extensions through `/v1/channels/airbnb/alterations`. Airbnb also expresses the same-day cutoff only as whole hours of advance notice, so `advanceNotice.hours` is as precise as the cutoff gets.
+// **Not exposed by Airbnb.** The pre-reservation message and automatic stay extension have no field on Airbnb's `booking_settings` resource, so neither can be read or written here; set the pre-reservation message in the Airbnb host dashboard, and handle extensions through `/v1/channels/airbnb/alterations`. The same-day cutoff is Airbnb's advance-notice hours counted back from 11:59 PM on the check-in day: read it as `advanceNotice.sameDayCutoff` (e.g. `23:00`) or `advanceNotice.hours` (e.g. `1`), and write either one.
 //
 // Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive — an inactive listing keeps syncing but cannot be read or changed through the API until it is activated.
 //
@@ -29338,7 +29338,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **This is Repull's stored copy, not a live call to Airbnb.** Values come from the local Airbnb mirror that the sync workers fill, so the response always carries `dataFreshness` — check `dataFreshness.stale` (and `dataFreshness.accounts[]` when the workspace has several Airbnb accounts) before treating a value as current.
 	//
-	// **Not exposed by Airbnb.** The pre-reservation message and automatic stay extension have no field on Airbnb's `booking_settings` resource, so neither can be read or written here; set the pre-reservation message in the Airbnb host dashboard, and handle extensions through `/v1/channels/airbnb/alterations`. Airbnb also expresses the same-day cutoff only as whole hours of advance notice, so `advanceNotice.hours` is as precise as the cutoff gets.
+	// **Not exposed by Airbnb.** The pre-reservation message and automatic stay extension have no field on Airbnb's `booking_settings` resource, so neither can be read or written here; set the pre-reservation message in the Airbnb host dashboard, and handle extensions through `/v1/channels/airbnb/alterations`. The same-day cutoff is Airbnb's advance-notice hours counted back from 11:59 PM on the check-in day: read it as `advanceNotice.sameDayCutoff` (e.g. `23:00`) or `advanceNotice.hours` (e.g. `1`), and write either one.
 	//
 	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive — an inactive listing keeps syncing but cannot be read or changed through the API until it is activated.
 	//
@@ -35985,11 +35985,16 @@ type GetAirbnbBookingSettingsClientResponse struct {
 				// AllowRequestToBook Whether a guest may still REQUEST to book inside the notice window.
 				AllowRequestToBook *bool `json:"allowRequestToBook,omitempty"`
 
-				// Hours Whole hours of notice. `0` allows same-day bookings.
+				// Hours Airbnb's advance notice: 0-24, 48, 72 or 168. Airbnb counts it back from 11:59 PM on the check-in day, in the listing's time zone, so 0-23 is a same-day cutoff: `0` = same-day bookings until midnight, `1` = until 11 PM, `3` = until 9 PM. `24` and above = no same-day bookings.
 				Hours *int `json:"hours,omitempty"`
 
-				// SameDayBookingsAllowed Derived: `hours === 0`.
+				// SameDayBookingsAllowed Derived: `hours < 24`.
 				SameDayBookingsAllowed *bool `json:"sameDayBookingsAllowed,omitempty"`
+
+				// SameDayCutoff Derived: the last time a same-day booking is accepted, `HH:mm` in the listing's time (`00:00` = midnight). `null` when same-day bookings are off.
+				//
+				// Example: 23:00
+				SameDayCutoff *string `json:"sameDayCutoff,omitempty"`
 			} `json:"advanceNotice,omitempty"`
 
 			// BookingMode Derived from `instantBook`. `request_to_book` means every booking needs the host to approve it.
@@ -36069,11 +36074,16 @@ func (r GetAirbnbBookingSettingsClientResponse) GetJSON200() *struct {
 			// AllowRequestToBook Whether a guest may still REQUEST to book inside the notice window.
 			AllowRequestToBook *bool `json:"allowRequestToBook,omitempty"`
 
-			// Hours Whole hours of notice. `0` allows same-day bookings.
+			// Hours Airbnb's advance notice: 0-24, 48, 72 or 168. Airbnb counts it back from 11:59 PM on the check-in day, in the listing's time zone, so 0-23 is a same-day cutoff: `0` = same-day bookings until midnight, `1` = until 11 PM, `3` = until 9 PM. `24` and above = no same-day bookings.
 			Hours *int `json:"hours,omitempty"`
 
-			// SameDayBookingsAllowed Derived: `hours === 0`.
+			// SameDayBookingsAllowed Derived: `hours < 24`.
 			SameDayBookingsAllowed *bool `json:"sameDayBookingsAllowed,omitempty"`
+
+			// SameDayCutoff Derived: the last time a same-day booking is accepted, `HH:mm` in the listing's time (`00:00` = midnight). `null` when same-day bookings are off.
+			//
+			// Example: 23:00
+			SameDayCutoff *string `json:"sameDayCutoff,omitempty"`
 		} `json:"advanceNotice,omitempty"`
 
 		// BookingMode Derived from `instantBook`. `request_to_book` means every booking needs the host to approve it.
@@ -36204,11 +36214,16 @@ type UpdateAirbnbBookingSettingsClientResponse struct {
 					// AllowRequestToBook Whether a guest may still REQUEST to book inside the notice window.
 					AllowRequestToBook *bool `json:"allowRequestToBook,omitempty"`
 
-					// Hours Whole hours of notice. `0` allows same-day bookings.
+					// Hours Airbnb's advance notice: 0-24, 48, 72 or 168. Airbnb counts it back from 11:59 PM on the check-in day, in the listing's time zone, so 0-23 is a same-day cutoff: `0` = same-day bookings until midnight, `1` = until 11 PM, `3` = until 9 PM. `24` and above = no same-day bookings.
 					Hours *int `json:"hours,omitempty"`
 
-					// SameDayBookingsAllowed Derived: `hours === 0`.
+					// SameDayBookingsAllowed Derived: `hours < 24`.
 					SameDayBookingsAllowed *bool `json:"sameDayBookingsAllowed,omitempty"`
+
+					// SameDayCutoff Derived: the last time a same-day booking is accepted, `HH:mm` in the listing's time (`00:00` = midnight). `null` when same-day bookings are off.
+					//
+					// Example: 23:00
+					SameDayCutoff *string `json:"sameDayCutoff,omitempty"`
 				} `json:"advanceNotice,omitempty"`
 
 				// BookingMode Derived from `instantBook`. `request_to_book` means every booking needs the host to approve it.
@@ -36289,11 +36304,16 @@ func (r UpdateAirbnbBookingSettingsClientResponse) GetJSON200() *struct {
 				// AllowRequestToBook Whether a guest may still REQUEST to book inside the notice window.
 				AllowRequestToBook *bool `json:"allowRequestToBook,omitempty"`
 
-				// Hours Whole hours of notice. `0` allows same-day bookings.
+				// Hours Airbnb's advance notice: 0-24, 48, 72 or 168. Airbnb counts it back from 11:59 PM on the check-in day, in the listing's time zone, so 0-23 is a same-day cutoff: `0` = same-day bookings until midnight, `1` = until 11 PM, `3` = until 9 PM. `24` and above = no same-day bookings.
 				Hours *int `json:"hours,omitempty"`
 
-				// SameDayBookingsAllowed Derived: `hours === 0`.
+				// SameDayBookingsAllowed Derived: `hours < 24`.
 				SameDayBookingsAllowed *bool `json:"sameDayBookingsAllowed,omitempty"`
+
+				// SameDayCutoff Derived: the last time a same-day booking is accepted, `HH:mm` in the listing's time (`00:00` = midnight). `null` when same-day bookings are off.
+				//
+				// Example: 23:00
+				SameDayCutoff *string `json:"sameDayCutoff,omitempty"`
 			} `json:"advanceNotice,omitempty"`
 
 			// BookingMode Derived from `instantBook`. `request_to_book` means every booking needs the host to approve it.
@@ -56618,7 +56638,7 @@ func (c *ClientWithResponses) UpdateAirbnbListingAvailabilityWithResponse(ctx co
 //
 // **This is Repull's stored copy, not a live call to Airbnb.** Values come from the local Airbnb mirror that the sync workers fill, so the response always carries `dataFreshness` — check `dataFreshness.stale` (and `dataFreshness.accounts[]` when the workspace has several Airbnb accounts) before treating a value as current.
 //
-// **Not exposed by Airbnb.** The pre-reservation message and automatic stay extension have no field on Airbnb's `booking_settings` resource, so neither can be read or written here; set the pre-reservation message in the Airbnb host dashboard, and handle extensions through `/v1/channels/airbnb/alterations`. Airbnb also expresses the same-day cutoff only as whole hours of advance notice, so `advanceNotice.hours` is as precise as the cutoff gets.
+// **Not exposed by Airbnb.** The pre-reservation message and automatic stay extension have no field on Airbnb's `booking_settings` resource, so neither can be read or written here; set the pre-reservation message in the Airbnb host dashboard, and handle extensions through `/v1/channels/airbnb/alterations`. The same-day cutoff is Airbnb's advance-notice hours counted back from 11:59 PM on the check-in day: read it as `advanceNotice.sameDayCutoff` (e.g. `23:00`) or `advanceNotice.hours` (e.g. `1`), and write either one.
 //
 // Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive — an inactive listing keeps syncing but cannot be read or changed through the API until it is activated.
 //
@@ -64984,11 +65004,16 @@ func ParseGetAirbnbBookingSettingsClientResponse(rsp *http.Response) (*GetAirbnb
 					// AllowRequestToBook Whether a guest may still REQUEST to book inside the notice window.
 					AllowRequestToBook *bool `json:"allowRequestToBook,omitempty"`
 
-					// Hours Whole hours of notice. `0` allows same-day bookings.
+					// Hours Airbnb's advance notice: 0-24, 48, 72 or 168. Airbnb counts it back from 11:59 PM on the check-in day, in the listing's time zone, so 0-23 is a same-day cutoff: `0` = same-day bookings until midnight, `1` = until 11 PM, `3` = until 9 PM. `24` and above = no same-day bookings.
 					Hours *int `json:"hours,omitempty"`
 
-					// SameDayBookingsAllowed Derived: `hours === 0`.
+					// SameDayBookingsAllowed Derived: `hours < 24`.
 					SameDayBookingsAllowed *bool `json:"sameDayBookingsAllowed,omitempty"`
+
+					// SameDayCutoff Derived: the last time a same-day booking is accepted, `HH:mm` in the listing's time (`00:00` = midnight). `null` when same-day bookings are off.
+					//
+					// Example: 23:00
+					SameDayCutoff *string `json:"sameDayCutoff,omitempty"`
 				} `json:"advanceNotice,omitempty"`
 
 				// BookingMode Derived from `instantBook`. `request_to_book` means every booking needs the host to approve it.
@@ -65118,11 +65143,16 @@ func ParseUpdateAirbnbBookingSettingsClientResponse(rsp *http.Response) (*Update
 						// AllowRequestToBook Whether a guest may still REQUEST to book inside the notice window.
 						AllowRequestToBook *bool `json:"allowRequestToBook,omitempty"`
 
-						// Hours Whole hours of notice. `0` allows same-day bookings.
+						// Hours Airbnb's advance notice: 0-24, 48, 72 or 168. Airbnb counts it back from 11:59 PM on the check-in day, in the listing's time zone, so 0-23 is a same-day cutoff: `0` = same-day bookings until midnight, `1` = until 11 PM, `3` = until 9 PM. `24` and above = no same-day bookings.
 						Hours *int `json:"hours,omitempty"`
 
-						// SameDayBookingsAllowed Derived: `hours === 0`.
+						// SameDayBookingsAllowed Derived: `hours < 24`.
 						SameDayBookingsAllowed *bool `json:"sameDayBookingsAllowed,omitempty"`
+
+						// SameDayCutoff Derived: the last time a same-day booking is accepted, `HH:mm` in the listing's time (`00:00` = midnight). `null` when same-day bookings are off.
+						//
+						// Example: 23:00
+						SameDayCutoff *string `json:"sameDayCutoff,omitempty"`
 					} `json:"advanceNotice,omitempty"`
 
 					// BookingMode Derived from `instantBook`. `request_to_book` means every booking needs the host to approve it.

@@ -2254,6 +2254,24 @@ func (e GuestCreateResponseContactsType) Valid() bool {
 	}
 }
 
+// Defines values for GuestPhoneType.
+const (
+	GuestPhoneTypeAirbnbRelay GuestPhoneType = "airbnb_relay"
+	GuestPhoneTypeGuest       GuestPhoneType = "guest"
+)
+
+// Valid indicates whether the value is a known member of the GuestPhoneType enum.
+func (e GuestPhoneType) Valid() bool {
+	switch e {
+	case GuestPhoneTypeAirbnbRelay:
+		return true
+	case GuestPhoneTypeGuest:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GuestUpdateResponseContactsType.
 const (
 	GuestUpdateResponseContactsTypeEmail GuestUpdateResponseContactsType = "email"
@@ -5020,6 +5038,102 @@ func (e GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory)
 	case GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryOff:
 		return true
 	case GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategoryRecommendedGuestsOnly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours.
+const (
+	N0   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 0
+	N1   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 1
+	N10  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 10
+	N11  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 11
+	N12  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 12
+	N13  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 13
+	N14  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 14
+	N15  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 15
+	N16  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 16
+	N168 UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 168
+	N17  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 17
+	N18  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 18
+	N19  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 19
+	N2   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 2
+	N20  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 20
+	N21  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 21
+	N22  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 22
+	N23  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 23
+	N24  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 24
+	N3   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 3
+	N4   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 4
+	N48  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 48
+	N5   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 5
+	N6   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 6
+	N7   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 7
+	N72  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 72
+	N8   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 8
+	N9   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 9
+)
+
+// Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours enum.
+func (e UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours) Valid() bool {
+	switch e {
+	case N0:
+		return true
+	case N1:
+		return true
+	case N10:
+		return true
+	case N11:
+		return true
+	case N12:
+		return true
+	case N13:
+		return true
+	case N14:
+		return true
+	case N15:
+		return true
+	case N16:
+		return true
+	case N168:
+		return true
+	case N17:
+		return true
+	case N18:
+		return true
+	case N19:
+		return true
+	case N2:
+		return true
+	case N20:
+		return true
+	case N21:
+		return true
+	case N22:
+		return true
+	case N23:
+		return true
+	case N24:
+		return true
+	case N3:
+		return true
+	case N4:
+		return true
+	case N48:
+		return true
+	case N5:
+		return true
+	case N6:
+		return true
+	case N7:
+		return true
+	case N72:
+		return true
+	case N8:
+		return true
+	case N9:
 		return true
 	default:
 		return false
@@ -11752,8 +11866,11 @@ type Guest struct {
 	Language     *string    `json:"language,omitempty"`
 	LastStayedAt *time.Time `json:"lastStayedAt,omitempty"`
 
-	// Phone Primary phone contact (or first non-primary if no primary set).
+	// Phone Primary phone contact (or first non-primary if no primary set). May be an Airbnb relay number — check `phoneType`.
 	Phone *string `json:"phone,omitempty"`
+
+	// PhoneType `airbnb_relay` when `phone` is a temporary Airbnb relay number (SMS only, expires 48h after checkout, shared across hosts, never a guest identifier); `guest` otherwise; `null` when there is no phone.
+	PhoneType *GuestPhoneType `json:"phoneType,omitempty"`
 
 	// TotalReservations Lifetime reservation count.
 	TotalReservations *int `json:"totalReservations,omitempty"`
@@ -11768,6 +11885,9 @@ type Guest struct {
 type GuestContact struct {
 	IsPrimary *bool      `json:"isPrimary,omitempty"`
 	LastUsed  *time.Time `json:"lastUsed,omitempty"`
+
+	// PhoneType Phone contacts only: `airbnb_relay` when this is a temporary Airbnb relay number (SMS only, expires 48h after checkout, shared across hosts, never a guest identifier); `guest` otherwise.
+	PhoneType *GuestPhoneType `json:"phoneType,omitempty"`
 
 	// Type Contact channel type (`phone`, `email`, etc.).
 	//
@@ -11872,6 +11992,11 @@ type GuestNote struct {
 	Id        *string    `json:"id,omitempty"`
 }
 
+// GuestPhoneType Whether `phone` is the guest's own number or an Airbnb relay number. Since late October 2026 Airbnb never shares a guest's real phone number. For an Airbnb stay where the listing, host and guest are all in the same country and that country is the US or Canada, Airbnb gives a temporary relay number instead (`airbnb_relay`); every other Airbnb stay has no phone at all. A relay number forwards SMS only (no MMS, RCS or images; about 1,000 characters including Airbnb's prefix, not split). It stops working 48 hours after checkout or when the reservation is cancelled, and it can change during the stay without a reservation webhook (re-read the reservation for the current one). The same relay number is used for other guests of other hosts, so never use it to identify or match a guest. Texting from a number Airbnb does not know: the first message must be the reservation's confirmation code (for example `HM12345678`); text from the host's Airbnb contact number for automatic delivery. `guest` means the number as the channel or the host recorded it.
+//
+// Example: airbnb_relay
+type GuestPhoneType string
+
 // GuestProfile Full guest profile returned by `GET /v1/guests/{id}`. Aggregates the base list-row fields plus contacts, flags, notes, risk metadata, and a reservations-summary rollup.
 type GuestProfile struct {
 	AvatarUrl         *string              `json:"avatarUrl,omitempty"`
@@ -11888,7 +12013,12 @@ type GuestProfile struct {
 	IsBlacklisted     *bool                `json:"isBlacklisted,omitempty"`
 	Language          *string              `json:"language,omitempty"`
 	Notes             *[]GuestNote         `json:"notes,omitempty"`
-	Phone             *string              `json:"phone,omitempty"`
+
+	// Phone Primary phone contact. May be an Airbnb relay number — check `phoneType`.
+	Phone *string `json:"phone,omitempty"`
+
+	// PhoneType `airbnb_relay` when `phone` is a temporary Airbnb relay number; `guest` otherwise; `null` when there is no phone.
+	PhoneType *GuestPhoneType `json:"phoneType,omitempty"`
 
 	// ReservationsSummary Aggregate counts of reservations attached to the guest. `future` is derived from `total - past - cancelled`.
 	ReservationsSummary *GuestReservationsSummary `json:"reservationsSummary,omitempty"`
@@ -15593,6 +15723,11 @@ type Reservation struct {
 	// Example: declined
 	StatusDetail *ReservationStatusDetail `json:"statusDetail,omitempty"`
 
+	// SuggestedDoorCode Airbnb reservations only, when Airbnb sends it: the door code Airbnb suggests — the last 4 digits of the booker's verified phone number, or random digits when there is none. Use it instead of deriving a code from the guest's phone, which Airbnb no longer shares. Omitted on every other reservation.
+	//
+	// Example: 5446
+	SuggestedDoorCode *string `json:"suggestedDoorCode,omitempty"`
+
 	// TotalPrice DEPRECATED — use `financials.totalPrice` (a number). Decimal-as-string (precision 10, scale 2) kept for back-compat.
 	//
 	// Example: 1250.00
@@ -16658,8 +16793,16 @@ type ReservationPrimaryGuest struct {
 	Language *string `json:"language,omitempty"`
 	LastName *string `json:"lastName,omitempty"`
 
-	// Phone Primary phone contact (or first non-primary if no primary set).
+	// Phone Primary phone contact (or first non-primary if no primary set). For an Airbnb stay this may be an Airbnb relay number — check `phoneType`.
 	Phone *string `json:"phone,omitempty"`
+
+	// PhoneExpiresAt Only next to an Airbnb relay number: when it stops working (checkout + 48 hours). `null` when Airbnb did not give the checkout time with its offset. A cancelled reservation's relay number stops working at cancellation, whatever this says.
+	//
+	// Example: 2026-11-22T16:00:00.000Z
+	PhoneExpiresAt *time.Time `json:"phoneExpiresAt,omitempty"`
+
+	// PhoneType Present whenever `phone` is. `airbnb_relay` when `phone` is a temporary Airbnb relay number (SMS only, expires 48h after checkout, shared across hosts, never a guest identifier); `guest` otherwise.
+	PhoneType *GuestPhoneType `json:"phoneType,omitempty"`
 }
 
 // ReservationQuoteRequest defines model for ReservationQuoteRequest.
@@ -18096,10 +18239,17 @@ type GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory str
 
 // UpdateAirbnbBookingSettingsJSONBody defines parameters for UpdateAirbnbBookingSettings.
 type UpdateAirbnbBookingSettingsJSONBody struct {
-	// AdvanceNotice Send `hours`, `allowRequestToBook`, or both. The half you omit keeps the value Airbnb currently holds.
+	// AdvanceNotice Send `hours` (or `sameDayCutoff`), `allowRequestToBook`, or both. The half you omit keeps the value Airbnb currently holds. `hours` and `sameDayCutoff` are the same setting: send one.
 	AdvanceNotice *struct {
 		AllowRequestToBook *bool `json:"allowRequestToBook,omitempty"`
-		Hours              *int  `json:"hours,omitempty"`
+
+		// Hours Counted back from 11:59 PM on the check-in day (listing time): `0` = same-day bookings until midnight, `1` = until 11 PM, `24` = no same-day bookings.
+		Hours *UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours `json:"hours,omitempty"`
+
+		// SameDayCutoff The last time a same-day booking is accepted, whole hours in the listing's time (`23:00` = 11 PM, `00:00` = midnight). Converted to `hours` (`23:00` = 1).
+		//
+		// Example: 23:00
+		SameDayCutoff *string `json:"sameDayCutoff,omitempty"`
 	} `json:"advanceNotice,omitempty"`
 
 	// BookingWindow Send `days`, or `unlimited: true`. Sending both is refused.
@@ -18137,6 +18287,9 @@ type UpdateAirbnbBookingSettingsJSONBody struct {
 		Nights int `json:"nights"`
 	} `json:"preparationTime,omitempty"`
 }
+
+// UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours defines parameters for UpdateAirbnbBookingSettings.
+type UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours int
 
 // UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy defines parameters for UpdateAirbnbBookingSettings.
 type UpdateAirbnbBookingSettingsJSONBodyCancellationShortStayPolicy string
