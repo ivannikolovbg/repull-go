@@ -316,6 +316,36 @@ func (e AccountImportStartedPayloadTrigger) Valid() bool {
 	}
 }
 
+// Defines values for AccountNotificationsMissingEventEvent.
+const (
+	AccountNotificationsMissingEventEventAccountNotificationsMissing AccountNotificationsMissingEventEvent = "account.notifications_missing"
+)
+
+// Valid indicates whether the value is a known member of the AccountNotificationsMissingEventEvent enum.
+func (e AccountNotificationsMissingEventEvent) Valid() bool {
+	switch e {
+	case AccountNotificationsMissingEventEventAccountNotificationsMissing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountNotificationsMissingPayloadProvider.
+const (
+	AccountNotificationsMissingPayloadProviderVrbo AccountNotificationsMissingPayloadProvider = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the AccountNotificationsMissingPayloadProvider enum.
+func (e AccountNotificationsMissingPayloadProvider) Valid() bool {
+	switch e {
+	case AccountNotificationsMissingPayloadProviderVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AccountUnitsAddedEventEvent.
 const (
 	AccountUnitsAddedEventEventAccountUnitsAdded AccountUnitsAddedEventEvent = "account.units.added"
@@ -2218,6 +2248,39 @@ func (e ConversationMessageAttachmentType) Valid() bool {
 	}
 }
 
+// Defines values for ConversationMessageStatusChangedEventEvent.
+const (
+	ConversationMessageStatusChangedEventEventConversationMessageStatusChanged ConversationMessageStatusChangedEventEvent = "conversation.message.status_changed"
+)
+
+// Valid indicates whether the value is a known member of the ConversationMessageStatusChangedEventEvent enum.
+func (e ConversationMessageStatusChangedEventEvent) Valid() bool {
+	switch e {
+	case ConversationMessageStatusChangedEventEventConversationMessageStatusChanged:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConversationMessageStatusChangedPayloadStatus.
+const (
+	ConversationMessageStatusChangedPayloadStatusFailed ConversationMessageStatusChangedPayloadStatus = "failed"
+	ConversationMessageStatusChangedPayloadStatusSent   ConversationMessageStatusChangedPayloadStatus = "sent"
+)
+
+// Valid indicates whether the value is a known member of the ConversationMessageStatusChangedPayloadStatus enum.
+func (e ConversationMessageStatusChangedPayloadStatus) Valid() bool {
+	switch e {
+	case ConversationMessageStatusChangedPayloadStatusFailed:
+		return true
+	case ConversationMessageStatusChangedPayloadStatusSent:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ErrorErrorUpgradePlan.
 const (
 	ErrorErrorUpgradePlanCustom  ErrorErrorUpgradePlan = "custom"
@@ -3205,6 +3268,7 @@ func (e MessageDirection) Valid() bool {
 // Defines values for MessageStatus.
 const (
 	MessageStatusFailed   MessageStatus = "failed"
+	MessageStatusQueued   MessageStatus = "queued"
 	MessageStatusReceived MessageStatus = "received"
 	MessageStatusSending  MessageStatus = "sending"
 	MessageStatusSent     MessageStatus = "sent"
@@ -3214,6 +3278,8 @@ const (
 func (e MessageStatus) Valid() bool {
 	switch e {
 	case MessageStatusFailed:
+		return true
+	case MessageStatusQueued:
 		return true
 	case MessageStatusReceived:
 		return true
@@ -4675,6 +4741,27 @@ func (e VrboImportStatusState) Valid() bool {
 	}
 }
 
+// Defines values for VrboNotificationsState.
+const (
+	VrboNotificationsStateActive  VrboNotificationsState = "active"
+	VrboNotificationsStateMissing VrboNotificationsState = "missing"
+	VrboNotificationsStateUnknown VrboNotificationsState = "unknown"
+)
+
+// Valid indicates whether the value is a known member of the VrboNotificationsState enum.
+func (e VrboNotificationsState) Valid() bool {
+	switch e {
+	case VrboNotificationsStateActive:
+		return true
+	case VrboNotificationsStateMissing:
+		return true
+	case VrboNotificationsStateUnknown:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for WebhookEventCatalogEntryDomain.
 const (
 	WebhookEventCatalogEntryDomainAccounts     WebhookEventCatalogEntryDomain = "accounts"
@@ -4713,49 +4800,51 @@ func (e WebhookEventCatalogEntryDomain) Valid() bool {
 
 // Defines values for WebhookEventType.
 const (
-	WebhookEventTypeAccountCalendarAccessChanged   WebhookEventType = "account.calendar_access_changed"
-	WebhookEventTypeAccountCreated                 WebhookEventType = "account.created"
-	WebhookEventTypeAccountDisconnected            WebhookEventType = "account.disconnected"
-	WebhookEventTypeAccountImportCompleted         WebhookEventType = "account.import.completed"
-	WebhookEventTypeAccountImportFailed            WebhookEventType = "account.import.failed"
-	WebhookEventTypeAccountImportStarted           WebhookEventType = "account.import.started"
-	WebhookEventTypeAccountUnitsAdded              WebhookEventType = "account.units.added"
-	WebhookEventTypeAiOperationCompleted           WebhookEventType = "ai.operation.completed"
-	WebhookEventTypeAiOperationFailed              WebhookEventType = "ai.operation.failed"
-	WebhookEventTypeBookingUnacknowledged          WebhookEventType = "booking.unacknowledged"
-	WebhookEventTypeChannelDegraded                WebhookEventType = "channel.degraded"
-	WebhookEventTypeChannelSyncFailed              WebhookEventType = "channel.sync.failed"
-	WebhookEventTypeConnectSessionAbandoned        WebhookEventType = "connect.session.abandoned"
-	WebhookEventTypeConnectSessionCompleted        WebhookEventType = "connect.session.completed"
-	WebhookEventTypeInquiryCreated                 WebhookEventType = "inquiry.created"
-	WebhookEventTypeInquiryUpdated                 WebhookEventType = "inquiry.updated"
-	WebhookEventTypeListingCreated                 WebhookEventType = "listing.created"
-	WebhookEventTypeListingDeleted                 WebhookEventType = "listing.deleted"
-	WebhookEventTypeListingReactivated             WebhookEventType = "listing.reactivated"
-	WebhookEventTypeListingSuspended               WebhookEventType = "listing.suspended"
-	WebhookEventTypeListingUpdated                 WebhookEventType = "listing.updated"
-	WebhookEventTypeMigrationCompleted             WebhookEventType = "migration.completed"
-	WebhookEventTypeMigrationFailed                WebhookEventType = "migration.failed"
-	WebhookEventTypePaymentCompleted               WebhookEventType = "payment.completed"
-	WebhookEventTypePaymentRefunded                WebhookEventType = "payment.refunded"
-	WebhookEventTypePayoutCompleted                WebhookEventType = "payout.completed"
-	WebhookEventTypeRepullPing                     WebhookEventType = "repull.ping"
-	WebhookEventTypeReservationAlterationCreated   WebhookEventType = "reservation.alteration.created"
-	WebhookEventTypeReservationAlterationResponded WebhookEventType = "reservation.alteration.responded"
-	WebhookEventTypeReservationCancelled           WebhookEventType = "reservation.cancelled"
-	WebhookEventTypeReservationCreated             WebhookEventType = "reservation.created"
-	WebhookEventTypeReservationMessageReaction     WebhookEventType = "reservation.message.reaction"
-	WebhookEventTypeReservationMessageRead         WebhookEventType = "reservation.message.read"
-	WebhookEventTypeReservationMessageReceived     WebhookEventType = "reservation.message.received"
-	WebhookEventTypeReservationMessageSent         WebhookEventType = "reservation.message.sent"
-	WebhookEventTypeReservationMessageUpdated      WebhookEventType = "reservation.message.updated"
-	WebhookEventTypeReservationRequestCreated      WebhookEventType = "reservation.request.created"
-	WebhookEventTypeReservationRequestUpdated      WebhookEventType = "reservation.request.updated"
-	WebhookEventTypeReservationThreadAssigned      WebhookEventType = "reservation.thread.assigned"
-	WebhookEventTypeReservationUpdated             WebhookEventType = "reservation.updated"
-	WebhookEventTypeReviewCreated                  WebhookEventType = "review.created"
-	WebhookEventTypeReviewResponded                WebhookEventType = "review.responded"
-	WebhookEventTypeUsageQuotaWarning              WebhookEventType = "usage.quota.warning"
+	WebhookEventTypeAccountCalendarAccessChanged     WebhookEventType = "account.calendar_access_changed"
+	WebhookEventTypeAccountCreated                   WebhookEventType = "account.created"
+	WebhookEventTypeAccountDisconnected              WebhookEventType = "account.disconnected"
+	WebhookEventTypeAccountImportCompleted           WebhookEventType = "account.import.completed"
+	WebhookEventTypeAccountImportFailed              WebhookEventType = "account.import.failed"
+	WebhookEventTypeAccountImportStarted             WebhookEventType = "account.import.started"
+	WebhookEventTypeAccountNotificationsMissing      WebhookEventType = "account.notifications_missing"
+	WebhookEventTypeAccountUnitsAdded                WebhookEventType = "account.units.added"
+	WebhookEventTypeAiOperationCompleted             WebhookEventType = "ai.operation.completed"
+	WebhookEventTypeAiOperationFailed                WebhookEventType = "ai.operation.failed"
+	WebhookEventTypeBookingUnacknowledged            WebhookEventType = "booking.unacknowledged"
+	WebhookEventTypeChannelDegraded                  WebhookEventType = "channel.degraded"
+	WebhookEventTypeChannelSyncFailed                WebhookEventType = "channel.sync.failed"
+	WebhookEventTypeConnectSessionAbandoned          WebhookEventType = "connect.session.abandoned"
+	WebhookEventTypeConnectSessionCompleted          WebhookEventType = "connect.session.completed"
+	WebhookEventTypeConversationMessageStatusChanged WebhookEventType = "conversation.message.status_changed"
+	WebhookEventTypeInquiryCreated                   WebhookEventType = "inquiry.created"
+	WebhookEventTypeInquiryUpdated                   WebhookEventType = "inquiry.updated"
+	WebhookEventTypeListingCreated                   WebhookEventType = "listing.created"
+	WebhookEventTypeListingDeleted                   WebhookEventType = "listing.deleted"
+	WebhookEventTypeListingReactivated               WebhookEventType = "listing.reactivated"
+	WebhookEventTypeListingSuspended                 WebhookEventType = "listing.suspended"
+	WebhookEventTypeListingUpdated                   WebhookEventType = "listing.updated"
+	WebhookEventTypeMigrationCompleted               WebhookEventType = "migration.completed"
+	WebhookEventTypeMigrationFailed                  WebhookEventType = "migration.failed"
+	WebhookEventTypePaymentCompleted                 WebhookEventType = "payment.completed"
+	WebhookEventTypePaymentRefunded                  WebhookEventType = "payment.refunded"
+	WebhookEventTypePayoutCompleted                  WebhookEventType = "payout.completed"
+	WebhookEventTypeRepullPing                       WebhookEventType = "repull.ping"
+	WebhookEventTypeReservationAlterationCreated     WebhookEventType = "reservation.alteration.created"
+	WebhookEventTypeReservationAlterationResponded   WebhookEventType = "reservation.alteration.responded"
+	WebhookEventTypeReservationCancelled             WebhookEventType = "reservation.cancelled"
+	WebhookEventTypeReservationCreated               WebhookEventType = "reservation.created"
+	WebhookEventTypeReservationMessageReaction       WebhookEventType = "reservation.message.reaction"
+	WebhookEventTypeReservationMessageRead           WebhookEventType = "reservation.message.read"
+	WebhookEventTypeReservationMessageReceived       WebhookEventType = "reservation.message.received"
+	WebhookEventTypeReservationMessageSent           WebhookEventType = "reservation.message.sent"
+	WebhookEventTypeReservationMessageUpdated        WebhookEventType = "reservation.message.updated"
+	WebhookEventTypeReservationRequestCreated        WebhookEventType = "reservation.request.created"
+	WebhookEventTypeReservationRequestUpdated        WebhookEventType = "reservation.request.updated"
+	WebhookEventTypeReservationThreadAssigned        WebhookEventType = "reservation.thread.assigned"
+	WebhookEventTypeReservationUpdated               WebhookEventType = "reservation.updated"
+	WebhookEventTypeReviewCreated                    WebhookEventType = "review.created"
+	WebhookEventTypeReviewResponded                  WebhookEventType = "review.responded"
+	WebhookEventTypeUsageQuotaWarning                WebhookEventType = "usage.quota.warning"
 )
 
 // Valid indicates whether the value is a known member of the WebhookEventType enum.
@@ -4773,6 +4862,8 @@ func (e WebhookEventType) Valid() bool {
 		return true
 	case WebhookEventTypeAccountImportStarted:
 		return true
+	case WebhookEventTypeAccountNotificationsMissing:
+		return true
 	case WebhookEventTypeAccountUnitsAdded:
 		return true
 	case WebhookEventTypeAiOperationCompleted:
@@ -4788,6 +4879,8 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeConnectSessionAbandoned:
 		return true
 	case WebhookEventTypeConnectSessionCompleted:
+		return true
+	case WebhookEventTypeConversationMessageStatusChanged:
 		return true
 	case WebhookEventTypeInquiryCreated:
 		return true
@@ -8350,6 +8443,51 @@ type AccountImportStartedPayload struct {
 // AccountImportStartedPayloadTrigger defines model for AccountImportStartedPayload.Trigger.
 type AccountImportStartedPayloadTrigger string
 
+// AccountNotificationsMissingEvent A Vrbo account's notification emails are not arriving. Ask the host to add `data.notifications.address` on Vrbo as a secondary email with message and reservation notifications on.
+type AccountNotificationsMissingEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `account.notifications_missing`: a Vrbo account had new guest messages and no notification email arrived for them.
+	Data AccountNotificationsMissingPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event AccountNotificationsMissingEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// AccountNotificationsMissingEventEvent The event name. This field is `event`, not `type`.
+type AccountNotificationsMissingEventEvent string
+
+// AccountNotificationsMissingPayload Payload for `account.notifications_missing`: a Vrbo account had new guest messages and no notification email arrived for them.
+type AccountNotificationsMissingPayload struct {
+	// AccountId Vrbo's account number (`accounts[].externalAccountId` on `GET /v1/connect/vrbo-login`).
+	AccountId *string `json:"accountId"`
+
+	// ConnectionId The workspace's Vrbo connection record.
+	ConnectionId *int      `json:"connectionId"`
+	DetectedAt   time.Time `json:"detectedAt"`
+
+	// DocsUrl Example: https://repull.dev/docs/channels/vrbo/notifications
+	DocsUrl *string `json:"docsUrl,omitempty"`
+
+	// Notifications Whether Vrbo's notification emails for this account reach Repull. Each one brings a new guest message or booking in within about a minute; without them Repull relies on its scheduled check, which is slower.
+	Notifications VrboNotifications                          `json:"notifications"`
+	Provider      AccountNotificationsMissingPayloadProvider `json:"provider"`
+	WorkspaceId   int                                        `json:"workspaceId"`
+}
+
+// AccountNotificationsMissingPayloadProvider defines model for AccountNotificationsMissingPayload.Provider.
+type AccountNotificationsMissingPayloadProvider string
+
 // AccountUnitsAddedEvent A connected login gained a property or room. Map the new units to listings to import their bookings.
 type AccountUnitsAddedEvent struct {
 	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
@@ -11241,9 +11379,13 @@ type ConnectStatus struct {
 		// NotificationEmail Vrbo only. The address the host can add on Vrbo as a secondary email (with message and reservation notifications on) so new bookings, inquiries and messages arrive within a minute instead of at the scheduled check. Ask every host to add it: notifications are how Vrbo updates reach Repull, the scheduled check is the backup. Hosted Connect shows it on its mapping screen; show it in your own app when you create sessions with `mapping: "api"`.
 		NotificationEmail *string `json:"notificationEmail,omitempty"`
 
-		// NotificationReceivedAt Vrbo only. When Vrbo's first notification reached `notificationEmail`, i.e. the host added it with notifications on. `null` until then.
+		// NotificationReceivedAt Deprecated: use `notifications`. Vrbo only. When Vrbo's FIRST notification reached `notificationEmail`; it stays set even if notifications later stop. `null` until then.
+		// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 		NotificationReceivedAt *time.Time `json:"notificationReceivedAt,omitempty"`
-		PictureUrl             *string    `json:"pictureUrl,omitempty"`
+
+		// Notifications Vrbo only. Whether Vrbo's notification emails reach Repull now (`state`), when the last one did, and the address to add. When `state` is `missing`, ask the host to add `address` on Vrbo; `account.notifications_missing` is sent when that happens.
+		Notifications *VrboNotifications `json:"notifications,omitempty"`
+		PictureUrl    *string            `json:"pictureUrl,omitempty"`
 
 		// Status Example: active
 		Status *string `json:"status,omitempty"`
@@ -11542,6 +11684,52 @@ type ConversationMessageAttachment struct {
 
 // ConversationMessageAttachmentType Coarse kind, derived from `contentType`.
 type ConversationMessageAttachmentType string
+
+// ConversationMessageStatusChangedEvent A message you sent was delivered or gave up after the send call returned. Update the message you show from `status` and `statusReason`.
+type ConversationMessageStatusChangedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `conversation.message.status_changed`: a message you sent changed delivery status after the send call returned — a Vrbo reply accepted as `queued` (`202`) was delivered (`sent`) or gave up (`failed`).
+	Data ConversationMessageStatusChangedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ConversationMessageStatusChangedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ConversationMessageStatusChangedEventEvent The event name. This field is `event`, not `type`.
+type ConversationMessageStatusChangedEventEvent string
+
+// ConversationMessageStatusChangedPayload Payload for `conversation.message.status_changed`: a message you sent changed delivery status after the send call returned — a Vrbo reply accepted as `queued` (`202`) was delivered (`sent`) or gave up (`failed`).
+type ConversationMessageStatusChangedPayload struct {
+	// ConversationId The conversation (`GET /v1/conversations/{id}`).
+	//
+	// Example: 549555
+	ConversationId string `json:"conversationId"`
+
+	// MessageId The message, as `id` on the send response and on `GET /v1/conversations/{id}/messages`.
+	//
+	// Example: 1861207
+	MessageId string `json:"messageId"`
+
+	// Status The new delivery status.
+	Status ConversationMessageStatusChangedPayloadStatus `json:"status"`
+
+	// StatusReason Why it `failed`, in plain words. `null` when `sent`.
+	StatusReason *string `json:"statusReason"`
+}
+
+// ConversationMessageStatusChangedPayloadStatus The new delivery status.
+type ConversationMessageStatusChangedPayloadStatus string
 
 // CursorPagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
 type CursorPagination = Pagination
@@ -14391,10 +14579,10 @@ type Message struct {
 	SenderType *string    `json:"senderType,omitempty"`
 	SentAt     *time.Time `json:"sentAt,omitempty"`
 
-	// Status Delivery state. Inbound messages are `received`. An outbound message is `sending` while it is queued to the channel, `sent` once the channel accepted it, or `failed`. Only `sent` (or `received`) means the guest can see it.
+	// Status Delivery state. Inbound messages are `received`. An outbound message is `sending` while it is handed to the channel, `queued` when the channel was busy and Repull is still delivering it in the background (Vrbo), `sent` once the channel accepted it, or `failed`. Only `sent` (or `received`) means the guest can see it. A change from `queued` is sent as `conversation.message.status_changed`.
 	Status *MessageStatus `json:"status,omitempty"`
 
-	// StatusReason Why a message is still `sending` or `failed`, in plain words. `null` otherwise.
+	// StatusReason Why a message is still `sending` or `queued`, or why it `failed`, in plain words. `null` otherwise.
 	StatusReason *string `json:"statusReason,omitempty"`
 
 	// TranslatedBody English translation when the original language is non-English and a translation has been computed.
@@ -14404,7 +14592,7 @@ type Message struct {
 // MessageDirection defines model for Message.Direction.
 type MessageDirection string
 
-// MessageStatus Delivery state. Inbound messages are `received`. An outbound message is `sending` while it is queued to the channel, `sent` once the channel accepted it, or `failed`. Only `sent` (or `received`) means the guest can see it.
+// MessageStatus Delivery state. Inbound messages are `received`. An outbound message is `sending` while it is handed to the channel, `queued` when the channel was busy and Repull is still delivering it in the background (Vrbo), `sent` once the channel accepted it, or `failed`. Only `sent` (or `received`) means the guest can see it. A change from `queued` is sent as `conversation.message.status_changed`.
 type MessageStatus string
 
 // MessageActor Who did something on a message.
@@ -17545,7 +17733,9 @@ type SendMessageResponse struct {
 	// Parts Present only when `attachments` were sent: one entry per channel message, in delivery order. `id` is the text message (or the last file message when there is no text).
 	Parts *[]SendMessagePart `json:"parts,omitempty"`
 
-	// Status Example: sent
+	// Status `sent`: delivered. `queued` (with HTTP `202`): recorded, and still being delivered in the background because the channel was busy (Vrbo) — do not resend; the outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` and as `conversation.message.status_changed`.
+	//
+	// Example: sent
 	Status *string `json:"status,omitempty"`
 
 	// StatusReason The channel's verbatim note, when it gave one — including the refusal that triggered a rewrite.
@@ -17804,6 +17994,23 @@ type VrboListing struct {
 
 // VrboListingListResponse defines model for VrboListingListResponse.
 type VrboListingListResponse = []VrboListing
+
+// VrboNotifications Whether Vrbo's notification emails for this account reach Repull. Each one brings a new guest message or booking in within about a minute; without them Repull relies on its scheduled check, which is slower.
+type VrboNotifications struct {
+	// Address The address the host adds on Vrbo as a secondary email, with message and reservation notifications on.
+	//
+	// Example: in+vrbo-1234-321@repull.dev
+	Address *string `json:"address"`
+
+	// LastReceivedAt When the last Vrbo notification reached `address`. `null` when none ever has.
+	LastReceivedAt *time.Time `json:"lastReceivedAt"`
+
+	// State `active`: notifications arrive for this account's guest messages. `missing`: Repull found new guest messages and no notification came for them — ask the host to add `address` on Vrbo (or turn its notifications back on). `unknown`: no guest messages yet to judge by.
+	State VrboNotificationsState `json:"state"`
+}
+
+// VrboNotificationsState `active`: notifications arrive for this account's guest messages. `missing`: Repull found new guest messages and no notification came for them — ask the host to add `address` on Vrbo (or turn its notifications back on). `unknown`: no guest messages yet to judge by.
+type VrboNotificationsState string
 
 // VrboReservation A VRBO reservation.
 type VrboReservation struct {
@@ -23486,6 +23693,40 @@ func (t *WebhookEvent) MergeReservationMessageReceivedEvent(v ReservationMessage
 	return err
 }
 
+// AsConversationMessageStatusChangedEvent returns the union data inside the WebhookEvent as a ConversationMessageStatusChangedEvent
+func (t WebhookEvent) AsConversationMessageStatusChangedEvent() (ConversationMessageStatusChangedEvent, error) {
+	var body ConversationMessageStatusChangedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromConversationMessageStatusChangedEvent overwrites any union data inside the WebhookEvent as the provided ConversationMessageStatusChangedEvent
+func (t *WebhookEvent) FromConversationMessageStatusChangedEvent(v ConversationMessageStatusChangedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"conversation.message.status_changed"}`))
+	t.union = b
+	return err
+}
+
+// MergeConversationMessageStatusChangedEvent performs a merge with any union data inside the WebhookEvent, using the provided ConversationMessageStatusChangedEvent
+func (t *WebhookEvent) MergeConversationMessageStatusChangedEvent(v ConversationMessageStatusChangedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"conversation.message.status_changed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsReservationMessageSentEvent returns the union data inside the WebhookEvent as a ReservationMessageSentEvent
 func (t WebhookEvent) AsReservationMessageSentEvent() (ReservationMessageSentEvent, error) {
 	var body ReservationMessageSentEvent
@@ -24438,6 +24679,40 @@ func (t *WebhookEvent) MergeAccountCalendarAccessChangedEvent(v AccountCalendarA
 	return err
 }
 
+// AsAccountNotificationsMissingEvent returns the union data inside the WebhookEvent as a AccountNotificationsMissingEvent
+func (t WebhookEvent) AsAccountNotificationsMissingEvent() (AccountNotificationsMissingEvent, error) {
+	var body AccountNotificationsMissingEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAccountNotificationsMissingEvent overwrites any union data inside the WebhookEvent as the provided AccountNotificationsMissingEvent
+func (t *WebhookEvent) FromAccountNotificationsMissingEvent(v AccountNotificationsMissingEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.notifications_missing"}`))
+	t.union = b
+	return err
+}
+
+// MergeAccountNotificationsMissingEvent performs a merge with any union data inside the WebhookEvent, using the provided AccountNotificationsMissingEvent
+func (t *WebhookEvent) MergeAccountNotificationsMissingEvent(v AccountNotificationsMissingEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"account.notifications_missing"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsReviewCreatedEvent returns the union data inside the WebhookEvent as a ReviewCreatedEvent
 func (t WebhookEvent) AsReviewCreatedEvent() (ReviewCreatedEvent, error) {
 	var body ReviewCreatedEvent
@@ -24838,6 +25113,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsAccountImportFailedEvent()
 	case "account.import.started":
 		return t.AsAccountImportStartedEvent()
+	case "account.notifications_missing":
+		return t.AsAccountNotificationsMissingEvent()
 	case "account.units.added":
 		return t.AsAccountUnitsAddedEvent()
 	case "ai.operation.completed":
@@ -24854,6 +25131,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsConnectSessionAbandonedEvent()
 	case "connect.session.completed":
 		return t.AsConnectSessionCompletedEvent()
+	case "conversation.message.status_changed":
+		return t.AsConversationMessageStatusChangedEvent()
 	case "inquiry.created":
 		return t.AsInquiryCreatedEvent()
 	case "inquiry.updated":

@@ -3243,6 +3243,10 @@ type ClientInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// ### Vrbo: `202` while Vrbo is busy
+	//
+	// A Vrbo reply is delivered in the call when Vrbo takes it (about 20 seconds at most) and returns `200` with `status: "sent"`. When Vrbo is busy, the reply is recorded and delivered in the background: the call returns **`202` with `status: "queued"`** and the message `id`. Do not send it again — a retry with the same `Idempotency-Key` returns the same `202`. The outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` (`sent`, or `failed` with `statusReason`) and as the `conversation.message.status_changed` webhook.
+	//
 	// ### Attachments
 	//
 	// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
@@ -3279,6 +3283,10 @@ type ClientInterface interface {
 	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+	//
+	// ### Vrbo: `202` while Vrbo is busy
+	//
+	// A Vrbo reply is delivered in the call when Vrbo takes it (about 20 seconds at most) and returns `200` with `status: "sent"`. When Vrbo is busy, the reply is recorded and delivered in the background: the call returns **`202` with `status: "queued"`** and the message `id`. Do not send it again — a retry with the same `Idempotency-Key` returns the same `202`. The outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` (`sent`, or `failed` with `statusReason`) and as the `conversation.message.status_changed` webhook.
 	//
 	// ### Attachments
 	//
@@ -10703,6 +10711,10 @@ func (c *Client) ListConversationMessages(ctx context.Context, id int, params *L
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// ### Vrbo: `202` while Vrbo is busy
+//
+// A Vrbo reply is delivered in the call when Vrbo takes it (about 20 seconds at most) and returns `200` with `status: "sent"`. When Vrbo is busy, the reply is recorded and delivered in the background: the call returns **`202` with `status: "queued"`** and the message `id`. Do not send it again — a retry with the same `Idempotency-Key` returns the same `202`. The outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` (`sent`, or `failed` with `statusReason`) and as the `conversation.message.status_changed` webhook.
+//
 // ### Attachments
 //
 // Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
@@ -10749,6 +10761,10 @@ func (c *Client) SendConversationMessageWithBody(ctx context.Context, id int, pa
 // When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+//
+// ### Vrbo: `202` while Vrbo is busy
+//
+// A Vrbo reply is delivered in the call when Vrbo takes it (about 20 seconds at most) and returns `200` with `status: "sent"`. When Vrbo is busy, the reply is recorded and delivered in the background: the call returns **`202` with `status: "queued"`** and the message `id`. Do not send it again — a retry with the same `Idempotency-Key` returns the same `202`. The outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` (`sent`, or `failed` with `statusReason`) and as the `conversation.message.status_changed` webhook.
 //
 // ### Attachments
 //
@@ -32148,6 +32164,10 @@ type ClientWithResponsesInterface interface {
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 	//
+	// ### Vrbo: `202` while Vrbo is busy
+	//
+	// A Vrbo reply is delivered in the call when Vrbo takes it (about 20 seconds at most) and returns `200` with `status: "sent"`. When Vrbo is busy, the reply is recorded and delivered in the background: the call returns **`202` with `status: "queued"`** and the message `id`. Do not send it again — a retry with the same `Idempotency-Key` returns the same `202`. The outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` (`sent`, or `failed` with `statusReason`) and as the `conversation.message.status_changed` webhook.
+	//
 	// ### Attachments
 	//
 	// Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
@@ -32184,6 +32204,10 @@ type ClientWithResponsesInterface interface {
 	// When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 	//
 	// Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+	//
+	// ### Vrbo: `202` while Vrbo is busy
+	//
+	// A Vrbo reply is delivered in the call when Vrbo takes it (about 20 seconds at most) and returns `200` with `status: "sent"`. When Vrbo is busy, the reply is recorded and delivered in the background: the call returns **`202` with `status: "queued"`** and the message `id`. Do not send it again — a retry with the same `Idempotency-Key` returns the same `202`. The outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` (`sent`, or `failed` with `statusReason`) and as the `conversation.message.status_changed` webhook.
 	//
 	// ### Attachments
 	//
@@ -45489,6 +45513,8 @@ type SendConversationMessageClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *SendMessageResponse
+	// JSON202 the response for an HTTP 202 `application/json` response
+	JSON202 *SendMessageResponse
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
 	// JSON403 the response for an HTTP 403 `application/json` response
@@ -45506,6 +45532,11 @@ type SendConversationMessageClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r SendConversationMessageClientResponse) GetJSON200() *SendMessageResponse {
 	return r.JSON200
+}
+
+// GetJSON202 returns the response for an HTTP 202 `application/json` response
+func (r SendConversationMessageClientResponse) GetJSON202() *SendMessageResponse {
+	return r.JSON202
 }
 
 // GetJSON401 returns the response for an HTTP 401 `application/json` response
@@ -60530,6 +60561,10 @@ func (c *ClientWithResponses) ListConversationMessagesWithResponse(ctx context.C
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
 //
+// ### Vrbo: `202` while Vrbo is busy
+//
+// A Vrbo reply is delivered in the call when Vrbo takes it (about 20 seconds at most) and returns `200` with `status: "sent"`. When Vrbo is busy, the reply is recorded and delivered in the background: the call returns **`202` with `status: "queued"`** and the message `id`. Do not send it again — a retry with the same `Idempotency-Key` returns the same `202`. The outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` (`sent`, or `failed` with `statusReason`) and as the `conversation.message.status_changed` webhook.
+//
 // ### Attachments
 //
 // Send files with `attachments: [{ url, contentType?, filename? }]` — public `https://` URLs, up to 5 per request, 10 MB each. `message` may be omitted when there are attachments (except on Booking.com). Repull downloads each file, reads its real type from the bytes, keeps a durable copy and delivers it through the channel's own file flow. **Every file is checked before anything is sent**: if one is unreachable, too large or of a type the channel refuses, the call returns 422 naming the file (`index`) and the guest receives nothing.
@@ -60572,6 +60607,10 @@ func (c *ClientWithResponses) SendConversationMessageWithBodyWithResponse(ctx co
 // When the text cannot be salvaged (the link is most of the message) nothing is delivered and the call returns `422 message_not_sent` with the channel's verbatim refusal in `statusReason`. `message_not_sent` only ever means the channel refused: a fault on Repull's side (a dropped database connection, a timeout) is `503 internal_error` with `sent: false` when nothing was delivered — retry it unchanged with the same `Idempotency-Key`.
 //
 // Send `Idempotency-Key` — without it, retrying after a network timeout sends the guest the same message twice.
+//
+// ### Vrbo: `202` while Vrbo is busy
+//
+// A Vrbo reply is delivered in the call when Vrbo takes it (about 20 seconds at most) and returns `200` with `status: "sent"`. When Vrbo is busy, the reply is recorded and delivered in the background: the call returns **`202` with `status: "queued"`** and the message `id`. Do not send it again — a retry with the same `Idempotency-Key` returns the same `202`. The outcome arrives as the message's `status` on `GET /v1/conversations/{id}/messages` (`sent`, or `failed` with `statusReason`) and as the `conversation.message.status_changed` webhook.
 //
 // ### Attachments
 //
@@ -72003,6 +72042,13 @@ func ParseSendConversationMessageClientResponse(rsp *http.Response) (*SendConver
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest SendMessageResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest Unauthorized
