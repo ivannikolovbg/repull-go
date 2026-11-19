@@ -3921,6 +3921,17 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
 	GenerateListingContent(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetListingIcal Repull iCal backup feed
+	//
+	// The listing's Repull iCal backup feed: an iCal calendar named "Repull" with the listing's bookings and blocks as all-day events, at an unguessable address on `api.repull.dev` (created on first request, one per listing). Channels that import iCal close those nights from it on their own schedule — availability only, never prices.
+	//
+	// **Vrbo:** Repull imports this feed into every calendar-synced Vrbo unit by itself, as a backup for the direct calendar push, and removes other tools' imported feeds while Repull is the unit's master calendar. `vrbo` says, per unit, whether Vrbo imports it (as last checked, once a day). When `status` is `failed`, ask the host to add `url` in Vrbo → Calendar → Import calendar, named "Repull". Changes arrive as `listing.ical_feed_changed`.
+	//
+	// The address is a credential: anyone with it can read the listing's booked dates (no guest details). Returns `403 listing_inactive` for an inactive listing.
+	//
+	// Corresponds with GET /v1/listings/{id}/ical (the `GetListingIcal` operationId).
+	GetListingIcal(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetListingMarkups Get a listing's channel markups
 	//
 	// The markup each channel adds to this listing's price.
@@ -11879,6 +11890,27 @@ func (c *Client) GenerateListingContentWithBody(ctx context.Context, id int, con
 // Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
 func (c *Client) GenerateListingContent(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGenerateListingContentRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetListingIcal Repull iCal backup feed
+//
+// The listing's Repull iCal backup feed: an iCal calendar named "Repull" with the listing's bookings and blocks as all-day events, at an unguessable address on `api.repull.dev` (created on first request, one per listing). Channels that import iCal close those nights from it on their own schedule — availability only, never prices.
+//
+// **Vrbo:** Repull imports this feed into every calendar-synced Vrbo unit by itself, as a backup for the direct calendar push, and removes other tools' imported feeds while Repull is the unit's master calendar. `vrbo` says, per unit, whether Vrbo imports it (as last checked, once a day). When `status` is `failed`, ask the host to add `url` in Vrbo → Calendar → Import calendar, named "Repull". Changes arrive as `listing.ical_feed_changed`.
+//
+// The address is a credential: anyone with it can read the listing's booked dates (no guest details). Returns `403 listing_inactive` for an inactive listing.
+//
+// Corresponds with GET /v1/listings/{id}/ical (the `GetListingIcal` operationId).
+func (c *Client) GetListingIcal(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetListingIcalRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -23951,6 +23983,40 @@ func NewGenerateListingContentRequestWithBody(server string, id int, contentType
 	return req, nil
 }
 
+// NewGetListingIcalRequest constructs an http.Request for the GetListingIcal method
+func NewGetListingIcalRequest(server string, id int) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/ical", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetListingMarkupsRequest constructs an http.Request for the GetListingMarkups method
 func NewGetListingMarkupsRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -32885,6 +32951,19 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/listings/{id}/generate-content (the `GenerateListingContent` operationId).
 	GenerateListingContentWithResponse(ctx context.Context, id int, body GenerateListingContentJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateListingContentClientResponse, error)
+
+	// GetListingIcalWithResponse Repull iCal backup feed
+	//
+	// The listing's Repull iCal backup feed: an iCal calendar named "Repull" with the listing's bookings and blocks as all-day events, at an unguessable address on `api.repull.dev` (created on first request, one per listing). Channels that import iCal close those nights from it on their own schedule — availability only, never prices.
+	//
+	// **Vrbo:** Repull imports this feed into every calendar-synced Vrbo unit by itself, as a backup for the direct calendar push, and removes other tools' imported feeds while Repull is the unit's master calendar. `vrbo` says, per unit, whether Vrbo imports it (as last checked, once a day). When `status` is `failed`, ask the host to add `url` in Vrbo → Calendar → Import calendar, named "Repull". Changes arrive as `listing.ical_feed_changed`.
+	//
+	// The address is a credential: anyone with it can read the listing's booked dates (no guest details). Returns `403 listing_inactive` for an inactive listing.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/listings/{id}/ical (the `GetListingIcal` operationId).
+	GetListingIcalWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingIcalClientResponse, error)
 
 	// GetListingMarkupsWithResponse Get a listing's channel markups
 	//
@@ -45060,11 +45139,16 @@ type ApplyConnectionMappingsClientResponse struct {
 		Channel      *string `json:"channel,omitempty"`
 		ConnectionId *string `json:"connection_id,omitempty"`
 		Results      *[]struct {
-			Created   *bool   `json:"created,omitempty"`
-			Error     *string `json:"error,omitempty"`
-			ListingId *int    `json:"listing_id,omitempty"`
-			Ok        *bool   `json:"ok,omitempty"`
-			UnitId    *string `json:"unit_id,omitempty"`
+			Created *bool   `json:"created,omitempty"`
+			Error   *string `json:"error,omitempty"`
+
+			// IcalFeedUrl Vrbo, for a mapped unit: the listing's Repull iCal backup feed (`GET /v1/listings/{id}/ical`). With calendar sync on, Repull imports it into the Vrbo unit by itself (Vrbo → Calendar → Import calendar, named "Repull") and removes other tools' imported feeds; `listing.ical_feed_changed` reports it. Only if that fails does the host add it by hand.
+			//
+			// Example: https://api.repull.dev/ical/4f9c2d7e1a8b3c6d5e0f9a2b7c4d1e8f3a6b9c2d5e8f1a4b7c0d3e6f9a2b5c8d.ics
+			IcalFeedUrl *string `json:"ical_feed_url,omitempty"`
+			ListingId   *int    `json:"listing_id,omitempty"`
+			Ok          *bool   `json:"ok,omitempty"`
+			UnitId      *string `json:"unit_id,omitempty"`
 		} `json:"results,omitempty"`
 	}
 	// JSON409 the response for an HTTP 409 `application/json` response
@@ -45076,11 +45160,16 @@ func (r ApplyConnectionMappingsClientResponse) GetJSON200() *struct {
 	Channel      *string `json:"channel,omitempty"`
 	ConnectionId *string `json:"connection_id,omitempty"`
 	Results      *[]struct {
-		Created   *bool   `json:"created,omitempty"`
-		Error     *string `json:"error,omitempty"`
-		ListingId *int    `json:"listing_id,omitempty"`
-		Ok        *bool   `json:"ok,omitempty"`
-		UnitId    *string `json:"unit_id,omitempty"`
+		Created *bool   `json:"created,omitempty"`
+		Error   *string `json:"error,omitempty"`
+
+		// IcalFeedUrl Vrbo, for a mapped unit: the listing's Repull iCal backup feed (`GET /v1/listings/{id}/ical`). With calendar sync on, Repull imports it into the Vrbo unit by itself (Vrbo → Calendar → Import calendar, named "Repull") and removes other tools' imported feeds; `listing.ical_feed_changed` reports it. Only if that fails does the host add it by hand.
+		//
+		// Example: https://api.repull.dev/ical/4f9c2d7e1a8b3c6d5e0f9a2b7c4d1e8f3a6b9c2d5e8f1a4b7c0d3e6f9a2b5c8d.ics
+		IcalFeedUrl *string `json:"ical_feed_url,omitempty"`
+		ListingId   *int    `json:"listing_id,omitempty"`
+		Ok          *bool   `json:"ok,omitempty"`
+		UnitId      *string `json:"unit_id,omitempty"`
 	} `json:"results,omitempty"`
 } {
 	return r.JSON200
@@ -45209,7 +45298,7 @@ type ListConnectionUnitsClientResponse struct {
 			CurrentListingId *int    `json:"current_listing_id,omitempty"`
 			Grain            *string `json:"grain,omitempty"`
 
-			// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`; the Vrbo listing ID is `unit_id`.
+			// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`, and for a mapped unit `icalBackup`: `{ feedUrl, status, otherFeeds }` — the listing's Repull iCal backup feed and whether Vrbo imports it (`status` as on `GET /v1/listings/{id}/ical`: `imported`, `pending`, `failed`, `not_imported`, `off`; Repull adds it itself, so only on `failed` does the host add `feedUrl` in Vrbo → Calendar → Import calendar, named "Repull"); the Vrbo listing ID is `unit_id`.
 			Meta               *map[string]interface{} `json:"meta,omitempty"`
 			SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 			UnitId             *string                 `json:"unit_id,omitempty"`
@@ -45241,7 +45330,7 @@ func (r ListConnectionUnitsClientResponse) GetJSON200() *struct {
 		CurrentListingId *int    `json:"current_listing_id,omitempty"`
 		Grain            *string `json:"grain,omitempty"`
 
-		// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`; the Vrbo listing ID is `unit_id`.
+		// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`, and for a mapped unit `icalBackup`: `{ feedUrl, status, otherFeeds }` — the listing's Repull iCal backup feed and whether Vrbo imports it (`status` as on `GET /v1/listings/{id}/ical`: `imported`, `pending`, `failed`, `not_imported`, `off`; Repull adds it itself, so only on `failed` does the host add `feedUrl` in Vrbo → Calendar → Import calendar, named "Repull"); the Vrbo listing ID is `unit_id`.
 		Meta               *map[string]interface{} `json:"meta,omitempty"`
 		SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 		UnitId             *string                 `json:"unit_id,omitempty"`
@@ -49042,6 +49131,147 @@ func (r GenerateListingContentClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GenerateListingContentClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetListingIcalClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// CalendarName The calendar name the feed carries, and the name to give it when importing it by hand.
+		CalendarName GetListingIcal200JSONResponseBodyCalendarName `json:"calendarName"`
+
+		// Enabled False when the listing's feed was turned off; the address then answers 404.
+		Enabled bool `json:"enabled"`
+
+		// ListingId Example: 1001
+		ListingId string `json:"listingId"`
+
+		// Url The feed address. Import it on any channel that reads iCal.
+		//
+		// Example: https://api.repull.dev/ical/4f9c2d7e1a8b3c6d5e0f9a2b7c4d1e8f3a6b9c2d5e8f1a4b7c0d3e6f9a2b5c8d.ics
+		Url string `json:"url"`
+
+		// Vrbo One entry per Vrbo unit mapped to the listing.
+		Vrbo []struct {
+			// CalendarSync Calendar sync is on for the unit.
+			CalendarSync bool `json:"calendarSync"`
+
+			// CheckedAt When Repull last read the unit's imported calendars.
+			CheckedAt *time.Time `json:"checkedAt"`
+
+			// OtherFeeds Names of other calendars the unit still imports, as Vrbo shows them.
+			//
+			// Example: []
+			OtherFeeds []string `json:"otherFeeds"`
+
+			// Status `imported`: Vrbo imports the feed. `pending`: calendar sync is on and Repull has not checked the unit yet — it adds the feed itself. `failed`: Vrbo did not take it; ask the host to add `url` in Vrbo → Calendar → Import calendar, named "Repull". `not_imported`: checked, not there, and not added (for example, the feed is turned off). `off`: calendar sync is off, so Repull leaves the unit's imported calendars alone.
+			Status GetListingIcal200JSONResponseBodyVrboStatus `json:"status"`
+
+			// UnitId The Vrbo listing number (`unitId` on `GET /v1/connections/{id}/units`).
+			//
+			// Example: 7001234
+			UnitId string `json:"unitId"`
+		} `json:"vrbo"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetListingIcalClientResponse) GetJSON200() *struct {
+	// CalendarName The calendar name the feed carries, and the name to give it when importing it by hand.
+	CalendarName GetListingIcal200JSONResponseBodyCalendarName `json:"calendarName"`
+
+	// Enabled False when the listing's feed was turned off; the address then answers 404.
+	Enabled bool `json:"enabled"`
+
+	// ListingId Example: 1001
+	ListingId string `json:"listingId"`
+
+	// Url The feed address. Import it on any channel that reads iCal.
+	//
+	// Example: https://api.repull.dev/ical/4f9c2d7e1a8b3c6d5e0f9a2b7c4d1e8f3a6b9c2d5e8f1a4b7c0d3e6f9a2b5c8d.ics
+	Url string `json:"url"`
+
+	// Vrbo One entry per Vrbo unit mapped to the listing.
+	Vrbo []struct {
+		// CalendarSync Calendar sync is on for the unit.
+		CalendarSync bool `json:"calendarSync"`
+
+		// CheckedAt When Repull last read the unit's imported calendars.
+		CheckedAt *time.Time `json:"checkedAt"`
+
+		// OtherFeeds Names of other calendars the unit still imports, as Vrbo shows them.
+		//
+		// Example: []
+		OtherFeeds []string `json:"otherFeeds"`
+
+		// Status `imported`: Vrbo imports the feed. `pending`: calendar sync is on and Repull has not checked the unit yet — it adds the feed itself. `failed`: Vrbo did not take it; ask the host to add `url` in Vrbo → Calendar → Import calendar, named "Repull". `not_imported`: checked, not there, and not added (for example, the feed is turned off). `off`: calendar sync is off, so Repull leaves the unit's imported calendars alone.
+		Status GetListingIcal200JSONResponseBodyVrboStatus `json:"status"`
+
+		// UnitId The Vrbo listing number (`unitId` on `GET /v1/connections/{id}/units`).
+		//
+		// Example: 7001234
+		UnitId string `json:"unitId"`
+	} `json:"vrbo"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetListingIcalClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetListingIcalClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetListingIcalClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetListingIcalClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r GetListingIcalClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetListingIcalClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetListingIcalClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetListingIcalClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -54800,19 +55030,22 @@ type GetUsageLogsClientResponse struct {
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *struct {
 		Data *[]struct {
-			CreatedAt     *time.Time `json:"createdAt,omitempty"`
-			ErrorCode     *string    `json:"errorCode,omitempty"`
-			Id            *string    `json:"id,omitempty"`
-			IpAddress     *string    `json:"ipAddress,omitempty"`
-			LatencyMs     *int       `json:"latencyMs,omitempty"`
-			Method        *string    `json:"method,omitempty"`
-			OperationId   *string    `json:"operationId,omitempty"`
-			Path          *string    `json:"path,omitempty"`
-			RequestBytes  *int       `json:"requestBytes,omitempty"`
-			RequestId     *string    `json:"requestId,omitempty"`
-			ResponseBytes *int       `json:"responseBytes,omitempty"`
-			StatusCode    *int       `json:"statusCode,omitempty"`
-			UserAgent     *string    `json:"userAgent,omitempty"`
+			CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+			// DashboardSurface The repull.dev dashboard page this call was run from (`keys`, `playground`, `quickstart`, `connect`, `settings/connect`), or null for a call your own code made. Dashboard calls don't count toward your plan's request quota.
+			DashboardSurface *string `json:"dashboardSurface,omitempty"`
+			ErrorCode        *string `json:"errorCode,omitempty"`
+			Id               *string `json:"id,omitempty"`
+			IpAddress        *string `json:"ipAddress,omitempty"`
+			LatencyMs        *int    `json:"latencyMs,omitempty"`
+			Method           *string `json:"method,omitempty"`
+			OperationId      *string `json:"operationId,omitempty"`
+			Path             *string `json:"path,omitempty"`
+			RequestBytes     *int    `json:"requestBytes,omitempty"`
+			RequestId        *string `json:"requestId,omitempty"`
+			ResponseBytes    *int    `json:"responseBytes,omitempty"`
+			StatusCode       *int    `json:"statusCode,omitempty"`
+			UserAgent        *string `json:"userAgent,omitempty"`
 		} `json:"data,omitempty"`
 		Pagination *struct {
 			HasMore    *bool   `json:"hasMore,omitempty"`
@@ -54832,19 +55065,22 @@ type GetUsageLogsClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r GetUsageLogsClientResponse) GetJSON200() *struct {
 	Data *[]struct {
-		CreatedAt     *time.Time `json:"createdAt,omitempty"`
-		ErrorCode     *string    `json:"errorCode,omitempty"`
-		Id            *string    `json:"id,omitempty"`
-		IpAddress     *string    `json:"ipAddress,omitempty"`
-		LatencyMs     *int       `json:"latencyMs,omitempty"`
-		Method        *string    `json:"method,omitempty"`
-		OperationId   *string    `json:"operationId,omitempty"`
-		Path          *string    `json:"path,omitempty"`
-		RequestBytes  *int       `json:"requestBytes,omitempty"`
-		RequestId     *string    `json:"requestId,omitempty"`
-		ResponseBytes *int       `json:"responseBytes,omitempty"`
-		StatusCode    *int       `json:"statusCode,omitempty"`
-		UserAgent     *string    `json:"userAgent,omitempty"`
+		CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+		// DashboardSurface The repull.dev dashboard page this call was run from (`keys`, `playground`, `quickstart`, `connect`, `settings/connect`), or null for a call your own code made. Dashboard calls don't count toward your plan's request quota.
+		DashboardSurface *string `json:"dashboardSurface,omitempty"`
+		ErrorCode        *string `json:"errorCode,omitempty"`
+		Id               *string `json:"id,omitempty"`
+		IpAddress        *string `json:"ipAddress,omitempty"`
+		LatencyMs        *int    `json:"latencyMs,omitempty"`
+		Method           *string `json:"method,omitempty"`
+		OperationId      *string `json:"operationId,omitempty"`
+		Path             *string `json:"path,omitempty"`
+		RequestBytes     *int    `json:"requestBytes,omitempty"`
+		RequestId        *string `json:"requestId,omitempty"`
+		ResponseBytes    *int    `json:"responseBytes,omitempty"`
+		StatusCode       *int    `json:"statusCode,omitempty"`
+		UserAgent        *string `json:"userAgent,omitempty"`
 	} `json:"data,omitempty"`
 	Pagination *struct {
 		HasMore    *bool   `json:"hasMore,omitempty"`
@@ -61581,6 +61817,25 @@ func (c *ClientWithResponses) GenerateListingContentWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseGenerateListingContentClientResponse(rsp)
+}
+
+// GetListingIcalWithResponse Repull iCal backup feed
+//
+// The listing's Repull iCal backup feed: an iCal calendar named "Repull" with the listing's bookings and blocks as all-day events, at an unguessable address on `api.repull.dev` (created on first request, one per listing). Channels that import iCal close those nights from it on their own schedule — availability only, never prices.
+//
+// **Vrbo:** Repull imports this feed into every calendar-synced Vrbo unit by itself, as a backup for the direct calendar push, and removes other tools' imported feeds while Repull is the unit's master calendar. `vrbo` says, per unit, whether Vrbo imports it (as last checked, once a day). When `status` is `failed`, ask the host to add `url` in Vrbo → Calendar → Import calendar, named "Repull". Changes arrive as `listing.ical_feed_changed`.
+//
+// The address is a credential: anyone with it can read the listing's booked dates (no guest details). Returns `403 listing_inactive` for an inactive listing.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/listings/{id}/ical (the `GetListingIcal` operationId).
+func (c *ClientWithResponses) GetListingIcalWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetListingIcalClientResponse, error) {
+	rsp, err := c.GetListingIcal(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetListingIcalClientResponse(rsp)
 }
 
 // GetListingMarkupsWithResponse Get a listing's channel markups
@@ -71724,11 +71979,16 @@ func ParseApplyConnectionMappingsClientResponse(rsp *http.Response) (*ApplyConne
 			Channel      *string `json:"channel,omitempty"`
 			ConnectionId *string `json:"connection_id,omitempty"`
 			Results      *[]struct {
-				Created   *bool   `json:"created,omitempty"`
-				Error     *string `json:"error,omitempty"`
-				ListingId *int    `json:"listing_id,omitempty"`
-				Ok        *bool   `json:"ok,omitempty"`
-				UnitId    *string `json:"unit_id,omitempty"`
+				Created *bool   `json:"created,omitempty"`
+				Error   *string `json:"error,omitempty"`
+
+				// IcalFeedUrl Vrbo, for a mapped unit: the listing's Repull iCal backup feed (`GET /v1/listings/{id}/ical`). With calendar sync on, Repull imports it into the Vrbo unit by itself (Vrbo → Calendar → Import calendar, named "Repull") and removes other tools' imported feeds; `listing.ical_feed_changed` reports it. Only if that fails does the host add it by hand.
+				//
+				// Example: https://api.repull.dev/ical/4f9c2d7e1a8b3c6d5e0f9a2b7c4d1e8f3a6b9c2d5e8f1a4b7c0d3e6f9a2b5c8d.ics
+				IcalFeedUrl *string `json:"ical_feed_url,omitempty"`
+				ListingId   *int    `json:"listing_id,omitempty"`
+				Ok          *bool   `json:"ok,omitempty"`
+				UnitId      *string `json:"unit_id,omitempty"`
 			} `json:"results,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -71822,7 +72082,7 @@ func ParseListConnectionUnitsClientResponse(rsp *http.Response) (*ListConnection
 				CurrentListingId *int    `json:"current_listing_id,omitempty"`
 				Grain            *string `json:"grain,omitempty"`
 
-				// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`; the Vrbo listing ID is `unit_id`.
+				// Meta Channel details that identify the unit. Booking.com Extranet: `hotel` (property name), `hotelId` (Booking.com property ID), `roomId` (Booking.com room ID), `city`. Vrbo: `headline`, `address`, `vrboStatus`, `calendarSync` (whether the unit's prices and availability are pushed to Vrbo) and, while Vrbo says another tool manages the account's calendar, `calendarSyncBlocked: "calendar_managed_elsewhere"`, and for a mapped unit `icalBackup`: `{ feedUrl, status, otherFeeds }` — the listing's Repull iCal backup feed and whether Vrbo imports it (`status` as on `GET /v1/listings/{id}/ical`: `imported`, `pending`, `failed`, `not_imported`, `off`; Repull adds it itself, so only on `failed` does the host add `feedUrl` in Vrbo → Calendar → Import calendar, named "Repull"); the Vrbo listing ID is `unit_id`.
 				Meta               *map[string]interface{} `json:"meta,omitempty"`
 				SuggestedListingId *int                    `json:"suggested_listing_id,omitempty"`
 				UnitId             *string                 `json:"unit_id,omitempty"`
@@ -74442,6 +74702,96 @@ func ParseGenerateListingContentClientResponse(rsp *http.Response) (*GenerateLis
 
 	case rsp.StatusCode == 502:
 		break // No content-type
+
+	}
+
+	return response, nil
+}
+
+// ParseGetListingIcalClientResponse parses an HTTP response from a GetListingIcalWithResponse call
+func ParseGetListingIcalClientResponse(rsp *http.Response) (*GetListingIcalClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetListingIcalClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// CalendarName The calendar name the feed carries, and the name to give it when importing it by hand.
+			CalendarName GetListingIcal200JSONResponseBodyCalendarName `json:"calendarName"`
+
+			// Enabled False when the listing's feed was turned off; the address then answers 404.
+			Enabled bool `json:"enabled"`
+
+			// ListingId Example: 1001
+			ListingId string `json:"listingId"`
+
+			// Url The feed address. Import it on any channel that reads iCal.
+			//
+			// Example: https://api.repull.dev/ical/4f9c2d7e1a8b3c6d5e0f9a2b7c4d1e8f3a6b9c2d5e8f1a4b7c0d3e6f9a2b5c8d.ics
+			Url string `json:"url"`
+
+			// Vrbo One entry per Vrbo unit mapped to the listing.
+			Vrbo []struct {
+				// CalendarSync Calendar sync is on for the unit.
+				CalendarSync bool `json:"calendarSync"`
+
+				// CheckedAt When Repull last read the unit's imported calendars.
+				CheckedAt *time.Time `json:"checkedAt"`
+
+				// OtherFeeds Names of other calendars the unit still imports, as Vrbo shows them.
+				//
+				// Example: []
+				OtherFeeds []string `json:"otherFeeds"`
+
+				// Status `imported`: Vrbo imports the feed. `pending`: calendar sync is on and Repull has not checked the unit yet — it adds the feed itself. `failed`: Vrbo did not take it; ask the host to add `url` in Vrbo → Calendar → Import calendar, named "Repull". `not_imported`: checked, not there, and not added (for example, the feed is turned off). `off`: calendar sync is off, so Repull leaves the unit's imported calendars alone.
+				Status GetListingIcal200JSONResponseBodyVrboStatus `json:"status"`
+
+				// UnitId The Vrbo listing number (`unitId` on `GET /v1/connections/{id}/units`).
+				//
+				// Example: 7001234
+				UnitId string `json:"unitId"`
+			} `json:"vrbo"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -78727,19 +79077,22 @@ func ParseGetUsageLogsClientResponse(rsp *http.Response) (*GetUsageLogsClientRes
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
 			Data *[]struct {
-				CreatedAt     *time.Time `json:"createdAt,omitempty"`
-				ErrorCode     *string    `json:"errorCode,omitempty"`
-				Id            *string    `json:"id,omitempty"`
-				IpAddress     *string    `json:"ipAddress,omitempty"`
-				LatencyMs     *int       `json:"latencyMs,omitempty"`
-				Method        *string    `json:"method,omitempty"`
-				OperationId   *string    `json:"operationId,omitempty"`
-				Path          *string    `json:"path,omitempty"`
-				RequestBytes  *int       `json:"requestBytes,omitempty"`
-				RequestId     *string    `json:"requestId,omitempty"`
-				ResponseBytes *int       `json:"responseBytes,omitempty"`
-				StatusCode    *int       `json:"statusCode,omitempty"`
-				UserAgent     *string    `json:"userAgent,omitempty"`
+				CreatedAt *time.Time `json:"createdAt,omitempty"`
+
+				// DashboardSurface The repull.dev dashboard page this call was run from (`keys`, `playground`, `quickstart`, `connect`, `settings/connect`), or null for a call your own code made. Dashboard calls don't count toward your plan's request quota.
+				DashboardSurface *string `json:"dashboardSurface,omitempty"`
+				ErrorCode        *string `json:"errorCode,omitempty"`
+				Id               *string `json:"id,omitempty"`
+				IpAddress        *string `json:"ipAddress,omitempty"`
+				LatencyMs        *int    `json:"latencyMs,omitempty"`
+				Method           *string `json:"method,omitempty"`
+				OperationId      *string `json:"operationId,omitempty"`
+				Path             *string `json:"path,omitempty"`
+				RequestBytes     *int    `json:"requestBytes,omitempty"`
+				RequestId        *string `json:"requestId,omitempty"`
+				ResponseBytes    *int    `json:"responseBytes,omitempty"`
+				StatusCode       *int    `json:"statusCode,omitempty"`
+				UserAgent        *string `json:"userAgent,omitempty"`
 			} `json:"data,omitempty"`
 			Pagination *struct {
 				HasMore    *bool   `json:"hasMore,omitempty"`

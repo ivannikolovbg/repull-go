@@ -2722,6 +2722,99 @@ func (e ListingGenerateContentRequestStyle) Valid() bool {
 	}
 }
 
+// Defines values for ListingIcalFeedChangedEventEvent.
+const (
+	ListingIcalFeedChangedEventEventListingIcalFeedChanged ListingIcalFeedChangedEventEvent = "listing.ical_feed_changed"
+)
+
+// Valid indicates whether the value is a known member of the ListingIcalFeedChangedEventEvent enum.
+func (e ListingIcalFeedChangedEventEvent) Valid() bool {
+	switch e {
+	case ListingIcalFeedChangedEventEventListingIcalFeedChanged:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingIcalFeedChangedPayloadAction.
+const (
+	OtherFeedRemoveFailed ListingIcalFeedChangedPayloadAction = "other_feed_remove_failed"
+	OtherFeedRemoved      ListingIcalFeedChangedPayloadAction = "other_feed_removed"
+	RepullFeedAddFailed   ListingIcalFeedChangedPayloadAction = "repull_feed_add_failed"
+	RepullFeedAdded       ListingIcalFeedChangedPayloadAction = "repull_feed_added"
+)
+
+// Valid indicates whether the value is a known member of the ListingIcalFeedChangedPayloadAction enum.
+func (e ListingIcalFeedChangedPayloadAction) Valid() bool {
+	switch e {
+	case OtherFeedRemoveFailed:
+		return true
+	case OtherFeedRemoved:
+		return true
+	case RepullFeedAddFailed:
+		return true
+	case RepullFeedAdded:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingIcalFeedChangedPayloadProvider.
+const (
+	ListingIcalFeedChangedPayloadProviderVrbo ListingIcalFeedChangedPayloadProvider = "vrbo"
+)
+
+// Valid indicates whether the value is a known member of the ListingIcalFeedChangedPayloadProvider enum.
+func (e ListingIcalFeedChangedPayloadProvider) Valid() bool {
+	switch e {
+	case ListingIcalFeedChangedPayloadProviderVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingIcalFeedChangedPayloadReason.
+const (
+	ListingIcalFeedChangedPayloadReasonLessThannil            ListingIcalFeedChangedPayloadReason = "<nil>"
+	ListingIcalFeedChangedPayloadReasonRepullFeedMissing      ListingIcalFeedChangedPayloadReason = "repull_feed_missing"
+	ListingIcalFeedChangedPayloadReasonRepullIsMasterCalendar ListingIcalFeedChangedPayloadReason = "repull_is_master_calendar"
+)
+
+// Valid indicates whether the value is a known member of the ListingIcalFeedChangedPayloadReason enum.
+func (e ListingIcalFeedChangedPayloadReason) Valid() bool {
+	switch e {
+	case ListingIcalFeedChangedPayloadReasonLessThannil:
+		return true
+	case ListingIcalFeedChangedPayloadReasonRepullFeedMissing:
+		return true
+	case ListingIcalFeedChangedPayloadReasonRepullIsMasterCalendar:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListingIcalFeedChangedPayloadTrigger.
+const (
+	CalendarSyncEnabled ListingIcalFeedChangedPayloadTrigger = "calendar_sync_enabled"
+	DriftCheck          ListingIcalFeedChangedPayloadTrigger = "drift_check"
+)
+
+// Valid indicates whether the value is a known member of the ListingIcalFeedChangedPayloadTrigger enum.
+func (e ListingIcalFeedChangedPayloadTrigger) Valid() bool {
+	switch e {
+	case CalendarSyncEnabled:
+		return true
+	case DriftCheck:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingMarketStateResponseState.
 const (
 	ListingMarketStateResponseStateOffline ListingMarketStateResponseState = "offline"
@@ -4820,6 +4913,7 @@ const (
 	WebhookEventTypeInquiryUpdated                   WebhookEventType = "inquiry.updated"
 	WebhookEventTypeListingCreated                   WebhookEventType = "listing.created"
 	WebhookEventTypeListingDeleted                   WebhookEventType = "listing.deleted"
+	WebhookEventTypeListingIcalFeedChanged           WebhookEventType = "listing.ical_feed_changed"
 	WebhookEventTypeListingReactivated               WebhookEventType = "listing.reactivated"
 	WebhookEventTypeListingSuspended                 WebhookEventType = "listing.suspended"
 	WebhookEventTypeListingUpdated                   WebhookEventType = "listing.updated"
@@ -4889,6 +4983,8 @@ func (e WebhookEventType) Valid() bool {
 	case WebhookEventTypeListingCreated:
 		return true
 	case WebhookEventTypeListingDeleted:
+		return true
+	case WebhookEventTypeListingIcalFeedChanged:
 		return true
 	case WebhookEventTypeListingReactivated:
 		return true
@@ -7003,6 +7099,48 @@ func (e GetListingCalendarSync200JSONResponseBodyChannelsStatus) Valid() bool {
 	case GetListingCalendarSync200JSONResponseBodyChannelsStatusOff:
 		return true
 	case GetListingCalendarSync200JSONResponseBodyChannelsStatusProblems:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetListingIcal200JSONResponseBodyCalendarName.
+const (
+	GetListingIcal200JSONResponseBodyCalendarNameRepull GetListingIcal200JSONResponseBodyCalendarName = "Repull"
+)
+
+// Valid indicates whether the value is a known member of the GetListingIcal200JSONResponseBodyCalendarName enum.
+func (e GetListingIcal200JSONResponseBodyCalendarName) Valid() bool {
+	switch e {
+	case GetListingIcal200JSONResponseBodyCalendarNameRepull:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetListingIcal200JSONResponseBodyVrboStatus.
+const (
+	GetListingIcal200JSONResponseBodyVrboStatusFailed      GetListingIcal200JSONResponseBodyVrboStatus = "failed"
+	GetListingIcal200JSONResponseBodyVrboStatusImported    GetListingIcal200JSONResponseBodyVrboStatus = "imported"
+	GetListingIcal200JSONResponseBodyVrboStatusNotImported GetListingIcal200JSONResponseBodyVrboStatus = "not_imported"
+	GetListingIcal200JSONResponseBodyVrboStatusOff         GetListingIcal200JSONResponseBodyVrboStatus = "off"
+	GetListingIcal200JSONResponseBodyVrboStatusPending     GetListingIcal200JSONResponseBodyVrboStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the GetListingIcal200JSONResponseBodyVrboStatus enum.
+func (e GetListingIcal200JSONResponseBodyVrboStatus) Valid() bool {
+	switch e {
+	case GetListingIcal200JSONResponseBodyVrboStatusFailed:
+		return true
+	case GetListingIcal200JSONResponseBodyVrboStatusImported:
+		return true
+	case GetListingIcal200JSONResponseBodyVrboStatusNotImported:
+		return true
+	case GetListingIcal200JSONResponseBodyVrboStatusOff:
+		return true
+	case GetListingIcal200JSONResponseBodyVrboStatusPending:
 		return true
 	default:
 		return false
@@ -13315,6 +13453,77 @@ type ListingGenerateContentResponse struct {
 	ListingId *string         `json:"listingId,omitempty"`
 	Persisted *bool           `json:"persisted,omitempty"`
 }
+
+// ListingIcalFeedChangedEvent Repull added its iCal backup feed to a Vrbo unit, removed another tool's imported feed, or could not. On a `*_failed` action, show the host what to change on Vrbo.
+type ListingIcalFeedChangedEvent struct {
+	// Account Which connected account produced this event. Null when it cannot be resolved — present-but-null rather than omitted, so a receiver can tell "unresolvable" from "an old event".
+	Account *WebhookEventAccount `json:"account,omitempty"`
+
+	// ApiVersion Example: 2026-04
+	ApiVersion string `json:"apiVersion"`
+
+	// Data Payload for `listing.ical_feed_changed`: Repull changed a Vrbo unit's imported calendars, or could not. Repull imports the listing's Repull iCal backup feed into every calendar-synced Vrbo unit, and removes other tools' imported feeds while Repull is the unit's master calendar.
+	Data ListingIcalFeedChangedPayload `json:"data"`
+
+	// Event The event name. This field is `event`, not `type`.
+	Event ListingIcalFeedChangedEventEvent `json:"event"`
+
+	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
+	EventId openapi_types.UUID `json:"eventId"`
+
+	// Timestamp When this delivery was built.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ListingIcalFeedChangedEventEvent The event name. This field is `event`, not `type`.
+type ListingIcalFeedChangedEventEvent string
+
+// ListingIcalFeedChangedPayload Payload for `listing.ical_feed_changed`: Repull changed a Vrbo unit's imported calendars, or could not. Repull imports the listing's Repull iCal backup feed into every calendar-synced Vrbo unit, and removes other tools' imported feeds while Repull is the unit's master calendar.
+type ListingIcalFeedChangedPayload struct {
+	// Action `repull_feed_added`: the Repull feed is now imported (`reason: "repull_feed_missing"` when it had been removed on Vrbo and was put back). `repull_feed_add_failed`: Vrbo did not take it — ask the host to add `repullFeedUrl` in Vrbo → Calendar → Import calendar, named "Repull"; nothing else is changed on the unit until it is there. `other_feed_removed`: another tool's imported calendar (`feed`) was removed. `other_feed_remove_failed`: removing it failed — ask the host to remove it in Vrbo → Calendar → Import calendar. Repull also emails the workspace owner when an action failed.
+	Action ListingIcalFeedChangedPayloadAction `json:"action"`
+
+	// DocsUrl Example: https://repull.dev/docs/channels/vrbo/ical-backup
+	DocsUrl *string `json:"docsUrl,omitempty"`
+
+	// Error Vrbo's answer, on a failed action.
+	Error *string `json:"error,omitempty"`
+
+	// Feed The imported calendar acted on, as Vrbo shows it.
+	Feed struct {
+		// Name Example: Other PMS 12B
+		Name *string `json:"name,omitempty"`
+
+		// Url Example: https://pms.example.com/ical/12b.ics
+		Url *string `json:"url,omitempty"`
+	} `json:"feed"`
+
+	// Object The listing, in the shape `GET /v1/listings/{id}` returns. Hydrated at delivery, so a receiver gets the listing rather than a reason to fetch one.
+	Object     ListingWebhookObject                  `json:"object"`
+	OccurredAt time.Time                             `json:"occurredAt"`
+	Provider   ListingIcalFeedChangedPayloadProvider `json:"provider"`
+
+	// Reason Why Repull acted.
+	Reason *ListingIcalFeedChangedPayloadReason `json:"reason,omitempty"`
+
+	// RepullFeedUrl The listing's Repull iCal backup feed (`GET /v1/listings/{id}/ical`).
+	RepullFeedUrl string `json:"repullFeedUrl"`
+
+	// Trigger `calendar_sync_enabled`: calendar sync was just switched on for the unit. `drift_check`: the daily Vrbo calendar check.
+	Trigger ListingIcalFeedChangedPayloadTrigger `json:"trigger"`
+}
+
+// ListingIcalFeedChangedPayloadAction `repull_feed_added`: the Repull feed is now imported (`reason: "repull_feed_missing"` when it had been removed on Vrbo and was put back). `repull_feed_add_failed`: Vrbo did not take it — ask the host to add `repullFeedUrl` in Vrbo → Calendar → Import calendar, named "Repull"; nothing else is changed on the unit until it is there. `other_feed_removed`: another tool's imported calendar (`feed`) was removed. `other_feed_remove_failed`: removing it failed — ask the host to remove it in Vrbo → Calendar → Import calendar. Repull also emails the workspace owner when an action failed.
+type ListingIcalFeedChangedPayloadAction string
+
+// ListingIcalFeedChangedPayloadProvider defines model for ListingIcalFeedChangedPayload.Provider.
+type ListingIcalFeedChangedPayloadProvider string
+
+// ListingIcalFeedChangedPayloadReason Why Repull acted.
+type ListingIcalFeedChangedPayloadReason string
+
+// ListingIcalFeedChangedPayloadTrigger `calendar_sync_enabled`: calendar sync was just switched on for the unit. `drift_check`: the daily Vrbo calendar check.
+type ListingIcalFeedChangedPayloadTrigger string
 
 // ListingListResponse defines model for ListingListResponse.
 type ListingListResponse struct {
@@ -20440,6 +20649,12 @@ type UpdateListingContentParams struct {
 	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
 }
 
+// GetListingIcal200JSONResponseBodyCalendarName defines parameters for GetListingIcal.
+type GetListingIcal200JSONResponseBodyCalendarName string
+
+// GetListingIcal200JSONResponseBodyVrboStatus defines parameters for GetListingIcal.
+type GetListingIcal200JSONResponseBodyVrboStatus string
+
 // SetListingMarkupJSONBody defines parameters for SetListingMarkup.
 type SetListingMarkupJSONBody struct {
 	// AccountId Vrbo account (`vrbo:7001234`, Vrbo's own account id) — required when the listing is linked on more than one. The old sign-in ids (`vrbo:13`) still resolve until 2027-02-12.
@@ -24373,6 +24588,40 @@ func (t *WebhookEvent) MergeListingReactivatedEvent(v ListingReactivatedEvent) e
 	return err
 }
 
+// AsListingIcalFeedChangedEvent returns the union data inside the WebhookEvent as a ListingIcalFeedChangedEvent
+func (t WebhookEvent) AsListingIcalFeedChangedEvent() (ListingIcalFeedChangedEvent, error) {
+	var body ListingIcalFeedChangedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListingIcalFeedChangedEvent overwrites any union data inside the WebhookEvent as the provided ListingIcalFeedChangedEvent
+func (t *WebhookEvent) FromListingIcalFeedChangedEvent(v ListingIcalFeedChangedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.ical_feed_changed"}`))
+	t.union = b
+	return err
+}
+
+// MergeListingIcalFeedChangedEvent performs a merge with any union data inside the WebhookEvent, using the provided ListingIcalFeedChangedEvent
+func (t *WebhookEvent) MergeListingIcalFeedChangedEvent(v ListingIcalFeedChangedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	b, err = runtime.JSONMerge(b, []byte(`{"event":"listing.ical_feed_changed"}`))
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 // AsAccountCreatedEvent returns the union data inside the WebhookEvent as a AccountCreatedEvent
 func (t WebhookEvent) AsAccountCreatedEvent() (AccountCreatedEvent, error) {
 	var body AccountCreatedEvent
@@ -25141,6 +25390,8 @@ func (t WebhookEvent) ValueByDiscriminator() (interface{}, error) {
 		return t.AsListingCreatedEvent()
 	case "listing.deleted":
 		return t.AsListingDeletedEvent()
+	case "listing.ical_feed_changed":
+		return t.AsListingIcalFeedChangedEvent()
 	case "listing.reactivated":
 		return t.AsListingReactivatedEvent()
 	case "listing.suspended":
