@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.50 — 2026-11-19
+
+- New: `GET /v1/listings/{id}/ical`
+- Regenerated from the live spec (automated spec refresh).
+
 ## 0.2.49 — 2026-11-18
 
 - Regenerated from the live spec (automated spec refresh).
