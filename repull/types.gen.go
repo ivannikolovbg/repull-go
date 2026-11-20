@@ -11768,7 +11768,6 @@ type ConversationDetailStatus string
 
 // ConversationGuest Linked guest metadata for a conversation thread. Resolved through the thread's `reservation_id` → `reservations.guest_id`. Up to 50 contacts are returned.
 type ConversationGuest struct {
-	AvatarUrl   *string                     `json:"avatarUrl,omitempty"`
 	Contacts    *[]ConversationGuestContact `json:"contacts,omitempty"`
 	DisplayName *string                     `json:"displayName,omitempty"`
 	Id          *string                     `json:"id,omitempty"`
@@ -11788,7 +11787,6 @@ type ConversationGuestContact struct {
 type ConversationHost struct {
 	// AirbnbId Airbnb-side host id.
 	AirbnbId    *string `json:"airbnbId,omitempty"`
-	AvatarUrl   *string `json:"avatarUrl,omitempty"`
 	DisplayName *string `json:"displayName,omitempty"`
 	FirstName   *string `json:"firstName,omitempty"`
 	Id          *string `json:"id,omitempty"`
@@ -12167,8 +12165,6 @@ type ErrorErrorUpgradePlan string
 
 // Guest Guest list-row shape returned by `GET /v1/guests`. Pre-resolved primary phone/email + display name + cumulative stay aggregates so list UIs can render without a per-row round-trip.
 type Guest struct {
-	AvatarUrl *string `json:"avatarUrl,omitempty"`
-
 	// Country Guest country (from profile metadata or address).
 	Country   *string    `json:"country,omitempty"`
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -12325,7 +12321,6 @@ type GuestPhoneType string
 
 // GuestProfile Full guest profile returned by `GET /v1/guests/{id}`. Aggregates the base list-row fields plus contacts, flags, notes, risk metadata, and a reservations-summary rollup.
 type GuestProfile struct {
-	AvatarUrl         *string              `json:"avatarUrl,omitempty"`
 	BlacklistedReason *string              `json:"blacklistedReason,omitempty"`
 	Contacts          *[]GuestContact      `json:"contacts,omitempty"`
 	Country           *string              `json:"country,omitempty"`
