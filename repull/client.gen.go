@@ -2243,6 +2243,32 @@ type ClientInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhook(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateVrboAlterationWithBody Change a Vrbo reservation
+	//
+	// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
+	//
+	// Unlike Airbnb, the change is made at once (the guest does not accept it); when the guest owes more, Vrbo requests it by `payment_due_date`. **`preview: true`** returns Vrbo's dry run — `before`, `after`, the price difference (`payment`, or `priceUnchanged`) and the due-date range — and changes nothing.
+	//
+	// Vrbo's rules are checked first and refused by field: e.g. a pay-later booking's check-in cannot move, guests are capped by the listing. `GET /v1/channels/vrbo/reservations/{code}?options=change` shows the booking's values and limits. Airbnb fields with no Vrbo equivalent are refused by name: `number_of_guests` (send adults and children), `total_price` (send `rent_amount`), `listing_id` (Vrbo cannot move a booking to another unit).
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/alterations (the `CreateVrboAlteration` operationId).
+	CreateVrboAlterationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateVrboAlteration Change a Vrbo reservation
+	//
+	// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
+	//
+	// Unlike Airbnb, the change is made at once (the guest does not accept it); when the guest owes more, Vrbo requests it by `payment_due_date`. **`preview: true`** returns Vrbo's dry run — `before`, `after`, the price difference (`payment`, or `priceUnchanged`) and the due-date range — and changes nothing.
+	//
+	// Vrbo's rules are checked first and refused by field: e.g. a pay-later booking's check-in cannot move, guests are capped by the listing. `GET /v1/channels/vrbo/reservations/{code}?options=change` shows the booking's values and limits. Airbnb fields with no Vrbo equivalent are refused by name: `number_of_guests` (send adults and children), `total_price` (send `rent_amount`), `listing_id` (Vrbo cannot move a booking to another unit).
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/alterations (the `CreateVrboAlteration` operationId).
+	CreateVrboAlteration(ctx context.Context, body CreateVrboAlterationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetVrboConnection Get the Vrbo connection state
 	//
 	// Whether the workspace's Vrbo accounts are still signed in — the Vrbo counterpart of `GET /v1/channels/airbnb/connection`, with the same `status` values: `connected` (every account), `reconnect_required` (some), `disconnected` (none), `never_connected` (no Vrbo account). `fixUrl` is set whenever an account needs to be reconnected.
@@ -3384,6 +3410,53 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /v1/channels/vrbo/reservations (the `ListVrboReservations` operationId).
 	ListVrboReservations(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVrboReservation Get a Vrbo reservation
+	//
+	// A Vrbo booking by its confirmation code, as Vrbo shows it now — the counterpart of `GET /v1/channels/airbnb/reservations/{code}`: its state (`Booked`, a request, …), dates, party, the guest's charges (`guestLines`), your deductions and payout (`hostLines`, `payout`), the cancellation policy and the damage deposit, plus `availableActions` — what Vrbo's "Change or cancel the booking" menu offers right now.
+	//
+	// `?options=cancel|change|decline` returns Vrbo's choices for that action instead: the cancel reasons and message limits; the booking's current dates, times and party with Vrbo's limits (e.g. a pay-later booking's check-in is locked); or the decline reasons of a booking request. Read live from Vrbo (a few seconds).
+	//
+	// Corresponds with GET /v1/channels/vrbo/reservations/{code} (the `GetVrboReservation` operationId).
+	GetVrboReservation(ctx context.Context, code string, params *GetVrboReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VrboReservationActionWithBody Accept, decline, cancel, charge or refund a Vrbo reservation
+	//
+	// Act on a Vrbo booking by its confirmation code — the counterpart of `POST /v1/channels/airbnb/reservations/{code}`, plus Vrbo's extra charge and refund. **Write-side**: Vrbo's own host-app actions, as the account that owns the booking.
+	//
+	// - `accept` — accept a pending booking request. Optional `message` to the guest (≤ 250 characters).
+	// - `decline` — decline a pending booking request. `reason` is one of Vrbo's decline reasons (`?options=decline`); `block_dates: true` also blocks the dates (default: they stay open).
+	// - `cancel` — cancel a booking as the host. `reason`: `property-sold-or-ownership-change`, `conflict-with-house-rules`, `dates-booked-on-another-platform`, `extenuating-circumstance` or `payment-not-received` (Vrbo's list, read live: `?options=cancel`); `message` to the guest, 25–250 characters; `refund_level` (default `FULL`). **Host cancellations carry Vrbo penalties** — the listing hidden for 7 days and a fee from your payout, unless the cancellation was unavoidable.
+	// - `charge` — request an extra payment from the guest: `fee_type` (Vrbo's list, e.g. `PARKING`, `HOT_TUB`, `DEPARTURE_LATE`), `amount` (1–10,000, the booking's currency), `message` (≤ 50 characters) and `due_date`.
+	// - `refund` — refund the guest part of what they paid: `reason`, `amount`, `message`. Vrbo offers it once the guest has paid.
+	//
+	// **`preview: true`** (cancel, charge, refund) returns Vrbo's own dry run — for a cancel, the terms and penalties (`penalties.cancellationFee`, `penalties.listingHidden`, `refundToGuest`); for a charge, the guest's total with taxes — and changes nothing. Without it, the dry run runs first and the action after, once: a lost answer is `502 vrbo_unconfirmed` (read the booking before retrying), never a second cancel.
+	//
+	// Changing dates, times, guests or price is `POST /v1/channels/vrbo/alterations`. The body is validated before anything reaches Vrbo; unknown fields are refused by name. Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
+	VrboReservationActionWithBody(ctx context.Context, code string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VrboReservationAction Accept, decline, cancel, charge or refund a Vrbo reservation
+	//
+	// Act on a Vrbo booking by its confirmation code — the counterpart of `POST /v1/channels/airbnb/reservations/{code}`, plus Vrbo's extra charge and refund. **Write-side**: Vrbo's own host-app actions, as the account that owns the booking.
+	//
+	// - `accept` — accept a pending booking request. Optional `message` to the guest (≤ 250 characters).
+	// - `decline` — decline a pending booking request. `reason` is one of Vrbo's decline reasons (`?options=decline`); `block_dates: true` also blocks the dates (default: they stay open).
+	// - `cancel` — cancel a booking as the host. `reason`: `property-sold-or-ownership-change`, `conflict-with-house-rules`, `dates-booked-on-another-platform`, `extenuating-circumstance` or `payment-not-received` (Vrbo's list, read live: `?options=cancel`); `message` to the guest, 25–250 characters; `refund_level` (default `FULL`). **Host cancellations carry Vrbo penalties** — the listing hidden for 7 days and a fee from your payout, unless the cancellation was unavoidable.
+	// - `charge` — request an extra payment from the guest: `fee_type` (Vrbo's list, e.g. `PARKING`, `HOT_TUB`, `DEPARTURE_LATE`), `amount` (1–10,000, the booking's currency), `message` (≤ 50 characters) and `due_date`.
+	// - `refund` — refund the guest part of what they paid: `reason`, `amount`, `message`. Vrbo offers it once the guest has paid.
+	//
+	// **`preview: true`** (cancel, charge, refund) returns Vrbo's own dry run — for a cancel, the terms and penalties (`penalties.cancellationFee`, `penalties.listingHidden`, `refundToGuest`); for a charge, the guest's total with taxes — and changes nothing. Without it, the dry run runs first and the action after, once: a lost answer is `502 vrbo_unconfirmed` (read the booking before retrying), never a second cancel.
+	//
+	// Changing dates, times, guests or price is `POST /v1/channels/vrbo/alterations`. The body is validated before anything reaches Vrbo; unknown fields are refused by name. Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
+	VrboReservationAction(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListConnections List PMS/OTA connections
 	//
@@ -6142,11 +6215,11 @@ type ClientInterface interface {
 
 	// AcceptReservationRequest Accept a booking request
 	//
-	// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
+	// Accept a pending Airbnb or Vrbo booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb and Vrbo expire a request the host has not answered within 24 hours.
 	//
 	// Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 	//
-	// **Airbnb**, for listings connected to Airbnb directly; other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+	// **Airbnb**, for listings connected to Airbnb directly, and **Vrbo**, where the request is answered on Vrbo itself (the same as `POST /v1/channels/vrbo/reservations/{code}`); other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 	//
 	// Takes no body.
 	//
@@ -6195,9 +6268,11 @@ type ClientInterface interface {
 
 	// DeclineReservationRequestWithBody Decline a booking request
 	//
-	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+	// Decline a pending Airbnb or Vrbo booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
 	//
-	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: the channel sends it to the guest with the decline (Airbnb: at most 500 characters; Vrbo: 250). It is not defaulted — a canned message would put words in your mouth.
+	//
+	// **Vrbo** has its own decline reasons: `dates_not_available` is sent as Vrbo’s “dates unavailable” (and blocks the dates, as Vrbo does); any other reason is refused with `422 invalid_params` pointing at `POST /v1/channels/vrbo/reservations/{code}`, which takes Vrbo’s reasons directly.
 	//
 	// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 	//
@@ -6210,9 +6285,11 @@ type ClientInterface interface {
 
 	// DeclineReservationRequest Decline a booking request
 	//
-	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+	// Decline a pending Airbnb or Vrbo booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
 	//
-	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: the channel sends it to the guest with the decline (Airbnb: at most 500 characters; Vrbo: 250). It is not defaulted — a canned message would put words in your mouth.
+	//
+	// **Vrbo** has its own decline reasons: `dates_not_available` is sent as Vrbo’s “dates unavailable” (and blocks the dates, as Vrbo does); any other reason is refused with `422 invalid_params` pointing at `POST /v1/channels/vrbo/reservations/{code}`, which takes Vrbo’s reasons directly.
 	//
 	// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 	//
@@ -6245,13 +6322,11 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/reviews/{id} (the `GetReview` operationId).
 	GetReview(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// SubmitGuestReviewWithBody Review a guest (publishes, final)
+	// SubmitGuestReviewWithBody Review a guest
 	//
-	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Airbnb and Vrbo let hosts review guests; a review from another channel returns `422 unsupported_channel`.
 	//
-	// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
-	//
-	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+	// **Airbnb — publishes it, final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`. Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published.
 	//
 	// ```json
 	// {
@@ -6262,20 +6337,24 @@ type ClientInterface interface {
 	// }
 	// ```
 	//
-	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+	// **Vrbo — Vrbo's "Rate guest":** stars and "would you rent to this guest again", with no text, and never shown to the guest. `rating` (the overall experience, 1–5) is required; `categoryRatings` (cleanliness, communication, respect_house_rules) and `isRevieweeRecommended` are optional. `publicReview` and `privateFeedback` must be left out or empty (typed SDKs send them empty) — text is refused by name. A stay already rated is `409 review_already_submitted`; one Vrbo no longer takes a rating for, `409 review_window_closed`.
+	//
+	// ```json
+	// { "rating": 5, "categoryRatings": [{ "category": "cleanliness", "rating": 4 }], "isRevieweeRecommended": true }
+	// ```
+	//
+	// A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to the channel. A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review` (Vrbo: `422`); answer it with `POST /v1/reviews/{id}/reply`. Guide: https://repull.dev/docs/reviews#review-a-guest
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
 	SubmitGuestReviewWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// SubmitGuestReview Review a guest (publishes, final)
+	// SubmitGuestReview Review a guest
 	//
-	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Airbnb and Vrbo let hosts review guests; a review from another channel returns `422 unsupported_channel`.
 	//
-	// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
-	//
-	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+	// **Airbnb — publishes it, final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`. Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published.
 	//
 	// ```json
 	// {
@@ -6286,7 +6365,13 @@ type ClientInterface interface {
 	// }
 	// ```
 	//
-	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+	// **Vrbo — Vrbo's "Rate guest":** stars and "would you rent to this guest again", with no text, and never shown to the guest. `rating` (the overall experience, 1–5) is required; `categoryRatings` (cleanliness, communication, respect_house_rules) and `isRevieweeRecommended` are optional. `publicReview` and `privateFeedback` must be left out or empty (typed SDKs send them empty) — text is refused by name. A stay already rated is `409 review_already_submitted`; one Vrbo no longer takes a rating for, `409 review_window_closed`.
+	//
+	// ```json
+	// { "rating": 5, "categoryRatings": [{ "category": "cleanliness", "rating": 4 }], "isRevieweeRecommended": true }
+	// ```
+	//
+	// A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to the channel. A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review` (Vrbo: `422`); answer it with `POST /v1/reviews/{id}/reply`. Guide: https://repull.dev/docs/reviews#review-a-guest
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -6301,7 +6386,7 @@ type ClientInterface interface {
 	//
 	// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 	//
-	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
+	// To review a guest (Airbnb and Vrbo), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
@@ -6318,7 +6403,7 @@ type ClientInterface interface {
 	//
 	// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 	//
-	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
+	// To review a guest (Airbnb and Vrbo), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
@@ -10084,6 +10169,52 @@ func (c *Client) CreateBookingWebhook(ctx context.Context, body CreateBookingWeb
 	return c.Client.Do(req)
 }
 
+// CreateVrboAlterationWithBody Change a Vrbo reservation
+//
+// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
+//
+// Unlike Airbnb, the change is made at once (the guest does not accept it); when the guest owes more, Vrbo requests it by `payment_due_date`. **`preview: true`** returns Vrbo's dry run — `before`, `after`, the price difference (`payment`, or `priceUnchanged`) and the due-date range — and changes nothing.
+//
+// Vrbo's rules are checked first and refused by field: e.g. a pay-later booking's check-in cannot move, guests are capped by the listing. `GET /v1/channels/vrbo/reservations/{code}?options=change` shows the booking's values and limits. Airbnb fields with no Vrbo equivalent are refused by name: `number_of_guests` (send adults and children), `total_price` (send `rent_amount`), `listing_id` (Vrbo cannot move a booking to another unit).
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/vrbo/alterations (the `CreateVrboAlteration` operationId).
+func (c *Client) CreateVrboAlterationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateVrboAlterationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateVrboAlteration Change a Vrbo reservation
+//
+// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
+//
+// Unlike Airbnb, the change is made at once (the guest does not accept it); when the guest owes more, Vrbo requests it by `payment_due_date`. **`preview: true`** returns Vrbo's dry run — `before`, `after`, the price difference (`payment`, or `priceUnchanged`) and the due-date range — and changes nothing.
+//
+// Vrbo's rules are checked first and refused by field: e.g. a pay-later booking's check-in cannot move, guests are capped by the listing. `GET /v1/channels/vrbo/reservations/{code}?options=change` shows the booking's values and limits. Airbnb fields with no Vrbo equivalent are refused by name: `number_of_guests` (send adults and children), `total_price` (send `rent_amount`), `listing_id` (Vrbo cannot move a booking to another unit).
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/vrbo/alterations (the `CreateVrboAlteration` operationId).
+func (c *Client) CreateVrboAlteration(ctx context.Context, body CreateVrboAlterationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateVrboAlterationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetVrboConnection Get the Vrbo connection state
 //
 // Whether the workspace's Vrbo accounts are still signed in — the Vrbo counterpart of `GET /v1/channels/airbnb/connection`, with the same `status` values: `connected` (every account), `reconnect_required` (some), `disconnected` (none), `never_connected` (no Vrbo account). `fixUrl` is set whenever an account needs to be reconnected.
@@ -12096,6 +12227,83 @@ func (c *Client) AddVrboListingVideo(ctx context.Context, id string, params *Add
 // Corresponds with GET /v1/channels/vrbo/reservations (the `ListVrboReservations` operationId).
 func (c *Client) ListVrboReservations(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListVrboReservationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetVrboReservation Get a Vrbo reservation
+//
+// A Vrbo booking by its confirmation code, as Vrbo shows it now — the counterpart of `GET /v1/channels/airbnb/reservations/{code}`: its state (`Booked`, a request, …), dates, party, the guest's charges (`guestLines`), your deductions and payout (`hostLines`, `payout`), the cancellation policy and the damage deposit, plus `availableActions` — what Vrbo's "Change or cancel the booking" menu offers right now.
+//
+// `?options=cancel|change|decline` returns Vrbo's choices for that action instead: the cancel reasons and message limits; the booking's current dates, times and party with Vrbo's limits (e.g. a pay-later booking's check-in is locked); or the decline reasons of a booking request. Read live from Vrbo (a few seconds).
+//
+// Corresponds with GET /v1/channels/vrbo/reservations/{code} (the `GetVrboReservation` operationId).
+func (c *Client) GetVrboReservation(ctx context.Context, code string, params *GetVrboReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVrboReservationRequest(c.Server, code, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VrboReservationActionWithBody Accept, decline, cancel, charge or refund a Vrbo reservation
+//
+// Act on a Vrbo booking by its confirmation code — the counterpart of `POST /v1/channels/airbnb/reservations/{code}`, plus Vrbo's extra charge and refund. **Write-side**: Vrbo's own host-app actions, as the account that owns the booking.
+//
+// - `accept` — accept a pending booking request. Optional `message` to the guest (≤ 250 characters).
+// - `decline` — decline a pending booking request. `reason` is one of Vrbo's decline reasons (`?options=decline`); `block_dates: true` also blocks the dates (default: they stay open).
+// - `cancel` — cancel a booking as the host. `reason`: `property-sold-or-ownership-change`, `conflict-with-house-rules`, `dates-booked-on-another-platform`, `extenuating-circumstance` or `payment-not-received` (Vrbo's list, read live: `?options=cancel`); `message` to the guest, 25–250 characters; `refund_level` (default `FULL`). **Host cancellations carry Vrbo penalties** — the listing hidden for 7 days and a fee from your payout, unless the cancellation was unavoidable.
+// - `charge` — request an extra payment from the guest: `fee_type` (Vrbo's list, e.g. `PARKING`, `HOT_TUB`, `DEPARTURE_LATE`), `amount` (1–10,000, the booking's currency), `message` (≤ 50 characters) and `due_date`.
+// - `refund` — refund the guest part of what they paid: `reason`, `amount`, `message`. Vrbo offers it once the guest has paid.
+//
+// **`preview: true`** (cancel, charge, refund) returns Vrbo's own dry run — for a cancel, the terms and penalties (`penalties.cancellationFee`, `penalties.listingHidden`, `refundToGuest`); for a charge, the guest's total with taxes — and changes nothing. Without it, the dry run runs first and the action after, once: a lost answer is `502 vrbo_unconfirmed` (read the booking before retrying), never a second cancel.
+//
+// Changing dates, times, guests or price is `POST /v1/channels/vrbo/alterations`. The body is validated before anything reaches Vrbo; unknown fields are refused by name. Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
+func (c *Client) VrboReservationActionWithBody(ctx context.Context, code string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVrboReservationActionRequestWithBody(c.Server, code, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VrboReservationAction Accept, decline, cancel, charge or refund a Vrbo reservation
+//
+// Act on a Vrbo booking by its confirmation code — the counterpart of `POST /v1/channels/airbnb/reservations/{code}`, plus Vrbo's extra charge and refund. **Write-side**: Vrbo's own host-app actions, as the account that owns the booking.
+//
+// - `accept` — accept a pending booking request. Optional `message` to the guest (≤ 250 characters).
+// - `decline` — decline a pending booking request. `reason` is one of Vrbo's decline reasons (`?options=decline`); `block_dates: true` also blocks the dates (default: they stay open).
+// - `cancel` — cancel a booking as the host. `reason`: `property-sold-or-ownership-change`, `conflict-with-house-rules`, `dates-booked-on-another-platform`, `extenuating-circumstance` or `payment-not-received` (Vrbo's list, read live: `?options=cancel`); `message` to the guest, 25–250 characters; `refund_level` (default `FULL`). **Host cancellations carry Vrbo penalties** — the listing hidden for 7 days and a fee from your payout, unless the cancellation was unavoidable.
+// - `charge` — request an extra payment from the guest: `fee_type` (Vrbo's list, e.g. `PARKING`, `HOT_TUB`, `DEPARTURE_LATE`), `amount` (1–10,000, the booking's currency), `message` (≤ 50 characters) and `due_date`.
+// - `refund` — refund the guest part of what they paid: `reason`, `amount`, `message`. Vrbo offers it once the guest has paid.
+//
+// **`preview: true`** (cancel, charge, refund) returns Vrbo's own dry run — for a cancel, the terms and penalties (`penalties.cancellationFee`, `penalties.listingHidden`, `refundToGuest`); for a charge, the guest's total with taxes — and changes nothing. Without it, the dry run runs first and the action after, once: a lost answer is `502 vrbo_unconfirmed` (read the booking before retrying), never a second cancel.
+//
+// Changing dates, times, guests or price is `POST /v1/channels/vrbo/alterations`. The body is validated before anything reaches Vrbo; unknown fields are refused by name. Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
+func (c *Client) VrboReservationAction(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVrboReservationActionRequest(c.Server, code, body)
 	if err != nil {
 		return nil, err
 	}
@@ -16803,11 +17011,11 @@ func (c *Client) UpdateReservation(ctx context.Context, id int, params *UpdateRe
 
 // AcceptReservationRequest Accept a booking request
 //
-// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
+// Accept a pending Airbnb or Vrbo booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb and Vrbo expire a request the host has not answered within 24 hours.
 //
 // Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 //
-// **Airbnb**, for listings connected to Airbnb directly; other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+// **Airbnb**, for listings connected to Airbnb directly, and **Vrbo**, where the request is answered on Vrbo itself (the same as `POST /v1/channels/vrbo/reservations/{code}`); other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 //
 // Takes no body.
 //
@@ -16886,9 +17094,11 @@ func (c *Client) CancelReservation(ctx context.Context, id int, params *CancelRe
 
 // DeclineReservationRequestWithBody Decline a booking request
 //
-// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+// Decline a pending Airbnb or Vrbo booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
 //
-// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+// `reason` must be one of Airbnb’s own decline reasons. `message` is required: the channel sends it to the guest with the decline (Airbnb: at most 500 characters; Vrbo: 250). It is not defaulted — a canned message would put words in your mouth.
+//
+// **Vrbo** has its own decline reasons: `dates_not_available` is sent as Vrbo’s “dates unavailable” (and blocks the dates, as Vrbo does); any other reason is refused with `422 invalid_params` pointing at `POST /v1/channels/vrbo/reservations/{code}`, which takes Vrbo’s reasons directly.
 //
 // Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 //
@@ -16911,9 +17121,11 @@ func (c *Client) DeclineReservationRequestWithBody(ctx context.Context, id int, 
 
 // DeclineReservationRequest Decline a booking request
 //
-// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+// Decline a pending Airbnb or Vrbo booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
 //
-// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+// `reason` must be one of Airbnb’s own decline reasons. `message` is required: the channel sends it to the guest with the decline (Airbnb: at most 500 characters; Vrbo: 250). It is not defaulted — a canned message would put words in your mouth.
+//
+// **Vrbo** has its own decline reasons: `dates_not_available` is sent as Vrbo’s “dates unavailable” (and blocks the dates, as Vrbo does); any other reason is refused with `422 invalid_params` pointing at `POST /v1/channels/vrbo/reservations/{code}`, which takes Vrbo’s reasons directly.
 //
 // Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 //
@@ -16976,13 +17188,11 @@ func (c *Client) GetReview(ctx context.Context, id int, params *GetReviewParams,
 	return c.Client.Do(req)
 }
 
-// SubmitGuestReviewWithBody Review a guest (publishes, final)
+// SubmitGuestReviewWithBody Review a guest
 //
-// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Airbnb and Vrbo let hosts review guests; a review from another channel returns `422 unsupported_channel`.
 //
-// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
-//
-// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+// **Airbnb — publishes it, final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`. Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published.
 //
 // ```json
 //
@@ -16995,7 +17205,13 @@ func (c *Client) GetReview(ctx context.Context, id int, params *GetReviewParams,
 //
 // ```
 //
-// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+// **Vrbo — Vrbo's "Rate guest":** stars and "would you rent to this guest again", with no text, and never shown to the guest. `rating` (the overall experience, 1–5) is required; `categoryRatings` (cleanliness, communication, respect_house_rules) and `isRevieweeRecommended` are optional. `publicReview` and `privateFeedback` must be left out or empty (typed SDKs send them empty) — text is refused by name. A stay already rated is `409 review_already_submitted`; one Vrbo no longer takes a rating for, `409 review_window_closed`.
+//
+// ```json
+// { "rating": 5, "categoryRatings": [{ "category": "cleanliness", "rating": 4 }], "isRevieweeRecommended": true }
+// ```
+//
+// A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to the channel. A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review` (Vrbo: `422`); answer it with `POST /v1/reviews/{id}/reply`. Guide: https://repull.dev/docs/reviews#review-a-guest
 //
 // Takes any type of body and a specified content type.
 //
@@ -17012,13 +17228,11 @@ func (c *Client) SubmitGuestReviewWithBody(ctx context.Context, id int, contentT
 	return c.Client.Do(req)
 }
 
-// SubmitGuestReview Review a guest (publishes, final)
+// SubmitGuestReview Review a guest
 //
-// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Airbnb and Vrbo let hosts review guests; a review from another channel returns `422 unsupported_channel`.
 //
-// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
-//
-// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+// **Airbnb — publishes it, final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`. Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published.
 //
 // ```json
 //
@@ -17031,7 +17245,13 @@ func (c *Client) SubmitGuestReviewWithBody(ctx context.Context, id int, contentT
 //
 // ```
 //
-// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+// **Vrbo — Vrbo's "Rate guest":** stars and "would you rent to this guest again", with no text, and never shown to the guest. `rating` (the overall experience, 1–5) is required; `categoryRatings` (cleanliness, communication, respect_house_rules) and `isRevieweeRecommended` are optional. `publicReview` and `privateFeedback` must be left out or empty (typed SDKs send them empty) — text is refused by name. A stay already rated is `409 review_already_submitted`; one Vrbo no longer takes a rating for, `409 review_window_closed`.
+//
+// ```json
+// { "rating": 5, "categoryRatings": [{ "category": "cleanliness", "rating": 4 }], "isRevieweeRecommended": true }
+// ```
+//
+// A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to the channel. A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review` (Vrbo: `422`); answer it with `POST /v1/reviews/{id}/reply`. Guide: https://repull.dev/docs/reviews#review-a-guest
 //
 // Takes a body of the `application/json` content type.
 //
@@ -17056,7 +17276,7 @@ func (c *Client) SubmitGuestReview(ctx context.Context, id int, body SubmitGuest
 //
 // **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 //
-// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
+// To review a guest (Airbnb and Vrbo), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
@@ -17083,7 +17303,7 @@ func (c *Client) ReplyToReviewWithBody(ctx context.Context, id int, contentType 
 //
 // **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 //
-// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
+// To review a guest (Airbnb and Vrbo), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
@@ -22584,6 +22804,46 @@ func NewCreateBookingWebhookRequestWithBody(server string, contentType string, b
 	return req, nil
 }
 
+// NewCreateVrboAlterationRequest calls the generic CreateVrboAlteration builder with application/json body
+func NewCreateVrboAlterationRequest(server string, body CreateVrboAlterationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateVrboAlterationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateVrboAlterationRequestWithBody constructs an http.Request for the CreateVrboAlteration method, with any body, and a specified content type
+func NewCreateVrboAlterationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/alterations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetVrboConnectionRequest constructs an http.Request for the GetVrboConnection method
 func NewGetVrboConnectionRequest(server string) (*http.Request, error) {
 	var err error
@@ -26927,6 +27187,114 @@ func NewListVrboReservationsRequest(server string, params *ListVrboReservationsP
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewGetVrboReservationRequest constructs an http.Request for the GetVrboReservation method
+func NewGetVrboReservationRequest(server string, code string, params *GetVrboReservationParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "code", code, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/reservations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Options != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "options", *params.Options, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewVrboReservationActionRequest calls the generic VrboReservationAction builder with application/json body
+func NewVrboReservationActionRequest(server string, code string, body VrboReservationActionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewVrboReservationActionRequestWithBody(server, code, "application/json", bodyReader)
+}
+
+// NewVrboReservationActionRequestWithBody constructs an http.Request for the VrboReservationAction method, with any body, and a specified content type
+func NewVrboReservationActionRequestWithBody(server string, code string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "code", code, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/reservations/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -38515,6 +38883,32 @@ type ClientWithResponsesInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhookWithResponse(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error)
 
+	// CreateVrboAlterationWithBodyWithResponse Change a Vrbo reservation
+	//
+	// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
+	//
+	// Unlike Airbnb, the change is made at once (the guest does not accept it); when the guest owes more, Vrbo requests it by `payment_due_date`. **`preview: true`** returns Vrbo's dry run — `before`, `after`, the price difference (`payment`, or `priceUnchanged`) and the due-date range — and changes nothing.
+	//
+	// Vrbo's rules are checked first and refused by field: e.g. a pay-later booking's check-in cannot move, guests are capped by the listing. `GET /v1/channels/vrbo/reservations/{code}?options=change` shows the booking's values and limits. Airbnb fields with no Vrbo equivalent are refused by name: `number_of_guests` (send adults and children), `total_price` (send `rent_amount`), `listing_id` (Vrbo cannot move a booking to another unit).
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/alterations (the `CreateVrboAlteration` operationId).
+	CreateVrboAlterationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVrboAlterationClientResponse, error)
+
+	// CreateVrboAlterationWithResponse Change a Vrbo reservation
+	//
+	// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
+	//
+	// Unlike Airbnb, the change is made at once (the guest does not accept it); when the guest owes more, Vrbo requests it by `payment_due_date`. **`preview: true`** returns Vrbo's dry run — `before`, `after`, the price difference (`payment`, or `priceUnchanged`) and the due-date range — and changes nothing.
+	//
+	// Vrbo's rules are checked first and refused by field: e.g. a pay-later booking's check-in cannot move, guests are capped by the listing. `GET /v1/channels/vrbo/reservations/{code}?options=change` shows the booking's values and limits. Airbnb fields with no Vrbo equivalent are refused by name: `number_of_guests` (send adults and children), `total_price` (send `rent_amount`), `listing_id` (Vrbo cannot move a booking to another unit).
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/alterations (the `CreateVrboAlteration` operationId).
+	CreateVrboAlterationWithResponse(ctx context.Context, body CreateVrboAlterationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVrboAlterationClientResponse, error)
+
 	// GetVrboConnectionWithResponse Get the Vrbo connection state
 	//
 	// Whether the workspace's Vrbo accounts are still signed in — the Vrbo counterpart of `GET /v1/channels/airbnb/connection`, with the same `status` values: `connected` (every account), `reconnect_required` (some), `disconnected` (none), `never_connected` (no Vrbo account). `fixUrl` is set whenever an account needs to be reconnected.
@@ -39720,6 +40114,55 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /v1/channels/vrbo/reservations (the `ListVrboReservations` operationId).
 	ListVrboReservationsWithResponse(ctx context.Context, params *ListVrboReservationsParams, reqEditors ...RequestEditorFn) (*ListVrboReservationsClientResponse, error)
+
+	// GetVrboReservationWithResponse Get a Vrbo reservation
+	//
+	// A Vrbo booking by its confirmation code, as Vrbo shows it now — the counterpart of `GET /v1/channels/airbnb/reservations/{code}`: its state (`Booked`, a request, …), dates, party, the guest's charges (`guestLines`), your deductions and payout (`hostLines`, `payout`), the cancellation policy and the damage deposit, plus `availableActions` — what Vrbo's "Change or cancel the booking" menu offers right now.
+	//
+	// `?options=cancel|change|decline` returns Vrbo's choices for that action instead: the cancel reasons and message limits; the booking's current dates, times and party with Vrbo's limits (e.g. a pay-later booking's check-in is locked); or the decline reasons of a booking request. Read live from Vrbo (a few seconds).
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/vrbo/reservations/{code} (the `GetVrboReservation` operationId).
+	GetVrboReservationWithResponse(ctx context.Context, code string, params *GetVrboReservationParams, reqEditors ...RequestEditorFn) (*GetVrboReservationClientResponse, error)
+
+	// VrboReservationActionWithBodyWithResponse Accept, decline, cancel, charge or refund a Vrbo reservation
+	//
+	// Act on a Vrbo booking by its confirmation code — the counterpart of `POST /v1/channels/airbnb/reservations/{code}`, plus Vrbo's extra charge and refund. **Write-side**: Vrbo's own host-app actions, as the account that owns the booking.
+	//
+	// - `accept` — accept a pending booking request. Optional `message` to the guest (≤ 250 characters).
+	// - `decline` — decline a pending booking request. `reason` is one of Vrbo's decline reasons (`?options=decline`); `block_dates: true` also blocks the dates (default: they stay open).
+	// - `cancel` — cancel a booking as the host. `reason`: `property-sold-or-ownership-change`, `conflict-with-house-rules`, `dates-booked-on-another-platform`, `extenuating-circumstance` or `payment-not-received` (Vrbo's list, read live: `?options=cancel`); `message` to the guest, 25–250 characters; `refund_level` (default `FULL`). **Host cancellations carry Vrbo penalties** — the listing hidden for 7 days and a fee from your payout, unless the cancellation was unavoidable.
+	// - `charge` — request an extra payment from the guest: `fee_type` (Vrbo's list, e.g. `PARKING`, `HOT_TUB`, `DEPARTURE_LATE`), `amount` (1–10,000, the booking's currency), `message` (≤ 50 characters) and `due_date`.
+	// - `refund` — refund the guest part of what they paid: `reason`, `amount`, `message`. Vrbo offers it once the guest has paid.
+	//
+	// **`preview: true`** (cancel, charge, refund) returns Vrbo's own dry run — for a cancel, the terms and penalties (`penalties.cancellationFee`, `penalties.listingHidden`, `refundToGuest`); for a charge, the guest's total with taxes — and changes nothing. Without it, the dry run runs first and the action after, once: a lost answer is `502 vrbo_unconfirmed` (read the booking before retrying), never a second cancel.
+	//
+	// Changing dates, times, guests or price is `POST /v1/channels/vrbo/alterations`. The body is validated before anything reaches Vrbo; unknown fields are refused by name. Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
+	VrboReservationActionWithBodyWithResponse(ctx context.Context, code string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VrboReservationActionClientResponse, error)
+
+	// VrboReservationActionWithResponse Accept, decline, cancel, charge or refund a Vrbo reservation
+	//
+	// Act on a Vrbo booking by its confirmation code — the counterpart of `POST /v1/channels/airbnb/reservations/{code}`, plus Vrbo's extra charge and refund. **Write-side**: Vrbo's own host-app actions, as the account that owns the booking.
+	//
+	// - `accept` — accept a pending booking request. Optional `message` to the guest (≤ 250 characters).
+	// - `decline` — decline a pending booking request. `reason` is one of Vrbo's decline reasons (`?options=decline`); `block_dates: true` also blocks the dates (default: they stay open).
+	// - `cancel` — cancel a booking as the host. `reason`: `property-sold-or-ownership-change`, `conflict-with-house-rules`, `dates-booked-on-another-platform`, `extenuating-circumstance` or `payment-not-received` (Vrbo's list, read live: `?options=cancel`); `message` to the guest, 25–250 characters; `refund_level` (default `FULL`). **Host cancellations carry Vrbo penalties** — the listing hidden for 7 days and a fee from your payout, unless the cancellation was unavoidable.
+	// - `charge` — request an extra payment from the guest: `fee_type` (Vrbo's list, e.g. `PARKING`, `HOT_TUB`, `DEPARTURE_LATE`), `amount` (1–10,000, the booking's currency), `message` (≤ 50 characters) and `due_date`.
+	// - `refund` — refund the guest part of what they paid: `reason`, `amount`, `message`. Vrbo offers it once the guest has paid.
+	//
+	// **`preview: true`** (cancel, charge, refund) returns Vrbo's own dry run — for a cancel, the terms and penalties (`penalties.cancellationFee`, `penalties.listingHidden`, `refundToGuest`); for a charge, the guest's total with taxes — and changes nothing. Without it, the dry run runs first and the action after, once: a lost answer is `502 vrbo_unconfirmed` (read the booking before retrying), never a second cancel.
+	//
+	// Changing dates, times, guests or price is `POST /v1/channels/vrbo/alterations`. The body is validated before anything reaches Vrbo; unknown fields are refused by name. Returns `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
+	VrboReservationActionWithResponse(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*VrboReservationActionClientResponse, error)
 
 	// ListConnectionsWithResponse List PMS/OTA connections
 	//
@@ -42622,11 +43065,11 @@ type ClientWithResponsesInterface interface {
 
 	// AcceptReservationRequestWithResponse Accept a booking request
 	//
-	// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
+	// Accept a pending Airbnb or Vrbo booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb and Vrbo expire a request the host has not answered within 24 hours.
 	//
 	// Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 	//
-	// **Airbnb**, for listings connected to Airbnb directly; other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+	// **Airbnb**, for listings connected to Airbnb directly, and **Vrbo**, where the request is answered on Vrbo itself (the same as `POST /v1/channels/vrbo/reservations/{code}`); other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 	//
 	// Takes no body.
 	//
@@ -42677,9 +43120,11 @@ type ClientWithResponsesInterface interface {
 
 	// DeclineReservationRequestWithBodyWithResponse Decline a booking request
 	//
-	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+	// Decline a pending Airbnb or Vrbo booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
 	//
-	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: the channel sends it to the guest with the decline (Airbnb: at most 500 characters; Vrbo: 250). It is not defaulted — a canned message would put words in your mouth.
+	//
+	// **Vrbo** has its own decline reasons: `dates_not_available` is sent as Vrbo’s “dates unavailable” (and blocks the dates, as Vrbo does); any other reason is refused with `422 invalid_params` pointing at `POST /v1/channels/vrbo/reservations/{code}`, which takes Vrbo’s reasons directly.
 	//
 	// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 	//
@@ -42692,9 +43137,11 @@ type ClientWithResponsesInterface interface {
 
 	// DeclineReservationRequestWithResponse Decline a booking request
 	//
-	// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+	// Decline a pending Airbnb or Vrbo booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
 	//
-	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+	// `reason` must be one of Airbnb’s own decline reasons. `message` is required: the channel sends it to the guest with the decline (Airbnb: at most 500 characters; Vrbo: 250). It is not defaulted — a canned message would put words in your mouth.
+	//
+	// **Vrbo** has its own decline reasons: `dates_not_available` is sent as Vrbo’s “dates unavailable” (and blocks the dates, as Vrbo does); any other reason is refused with `422 invalid_params` pointing at `POST /v1/channels/vrbo/reservations/{code}`, which takes Vrbo’s reasons directly.
 	//
 	// Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 	//
@@ -42731,13 +43178,11 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/reviews/{id} (the `GetReview` operationId).
 	GetReviewWithResponse(ctx context.Context, id int, params *GetReviewParams, reqEditors ...RequestEditorFn) (*GetReviewClientResponse, error)
 
-	// SubmitGuestReviewWithBodyWithResponse Review a guest (publishes, final)
+	// SubmitGuestReviewWithBodyWithResponse Review a guest
 	//
-	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Airbnb and Vrbo let hosts review guests; a review from another channel returns `422 unsupported_channel`.
 	//
-	// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
-	//
-	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+	// **Airbnb — publishes it, final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`. Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published.
 	//
 	// ```json
 	// {
@@ -42748,20 +43193,24 @@ type ClientWithResponsesInterface interface {
 	// }
 	// ```
 	//
-	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+	// **Vrbo — Vrbo's "Rate guest":** stars and "would you rent to this guest again", with no text, and never shown to the guest. `rating` (the overall experience, 1–5) is required; `categoryRatings` (cleanliness, communication, respect_house_rules) and `isRevieweeRecommended` are optional. `publicReview` and `privateFeedback` must be left out or empty (typed SDKs send them empty) — text is refused by name. A stay already rated is `409 review_already_submitted`; one Vrbo no longer takes a rating for, `409 review_window_closed`.
+	//
+	// ```json
+	// { "rating": 5, "categoryRatings": [{ "category": "cleanliness", "rating": 4 }], "isRevieweeRecommended": true }
+	// ```
+	//
+	// A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to the channel. A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review` (Vrbo: `422`); answer it with `POST /v1/reviews/{id}/reply`. Guide: https://repull.dev/docs/reviews#review-a-guest
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/reviews/{id}/guest-review (the `SubmitGuestReview` operationId).
 	SubmitGuestReviewWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitGuestReviewClientResponse, error)
 
-	// SubmitGuestReviewWithResponse Review a guest (publishes, final)
+	// SubmitGuestReviewWithResponse Review a guest
 	//
-	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+	// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Airbnb and Vrbo let hosts review guests; a review from another channel returns `422 unsupported_channel`.
 	//
-	// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
-	//
-	// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+	// **Airbnb — publishes it, final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`. Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published.
 	//
 	// ```json
 	// {
@@ -42772,7 +43221,13 @@ type ClientWithResponsesInterface interface {
 	// }
 	// ```
 	//
-	// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+	// **Vrbo — Vrbo's "Rate guest":** stars and "would you rent to this guest again", with no text, and never shown to the guest. `rating` (the overall experience, 1–5) is required; `categoryRatings` (cleanliness, communication, respect_house_rules) and `isRevieweeRecommended` are optional. `publicReview` and `privateFeedback` must be left out or empty (typed SDKs send them empty) — text is refused by name. A stay already rated is `409 review_already_submitted`; one Vrbo no longer takes a rating for, `409 review_window_closed`.
+	//
+	// ```json
+	// { "rating": 5, "categoryRatings": [{ "category": "cleanliness", "rating": 4 }], "isRevieweeRecommended": true }
+	// ```
+	//
+	// A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to the channel. A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review` (Vrbo: `422`); answer it with `POST /v1/reviews/{id}/reply`. Guide: https://repull.dev/docs/reviews#review-a-guest
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -42787,7 +43242,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 	//
-	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
+	// To review a guest (Airbnb and Vrbo), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
@@ -42804,7 +43259,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 	//
-	// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
+	// To review a guest (Airbnb and Vrbo), use `POST /v1/reviews/{id}/guest-review`.
 	//
 	// **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 	//
@@ -50682,6 +51137,108 @@ func (r CreateBookingWebhookClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r CreateBookingWebhookClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateVrboAlterationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data      *CreateVrboAlteration200JSONResponseBody_Data `json:"data,omitempty"`
+		ListingId *string                                       `json:"listingId,omitempty"`
+	}
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *struct {
+		Data      *CreateVrboAlteration201JSONResponseBody_Data `json:"data,omitempty"`
+		ListingId *string                                       `json:"listingId,omitempty"`
+	}
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateVrboAlterationClientResponse) GetJSON200() *struct {
+	Data      *CreateVrboAlteration200JSONResponseBody_Data `json:"data,omitempty"`
+	ListingId *string                                       `json:"listingId,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateVrboAlterationClientResponse) GetJSON201() *struct {
+	Data      *CreateVrboAlteration201JSONResponseBody_Data `json:"data,omitempty"`
+	ListingId *string                                       `json:"listingId,omitempty"`
+} {
+	return r.JSON201
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateVrboAlterationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateVrboAlterationClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateVrboAlterationClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateVrboAlterationClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateVrboAlterationClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r CreateVrboAlterationClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateVrboAlterationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateVrboAlterationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateVrboAlterationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateVrboAlterationClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -62591,6 +63148,216 @@ func (r ListVrboReservationsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ListVrboReservationsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetVrboReservationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		ConfirmationCode *string `json:"confirmationCode,omitempty"`
+
+		// Data The booking as Vrbo shows it; with `?options=`, Vrbo's choices for that action.
+		Data          *GetVrboReservation200JSONResponseBody_Data `json:"data,omitempty"`
+		DataFreshness *struct {
+			Accounts *[]struct {
+				AccountId    *string `json:"accountId,omitempty"`
+				LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+				Reason       *string `json:"reason,omitempty"`
+				Stale        *bool   `json:"stale,omitempty"`
+			} `json:"accounts,omitempty"`
+			LastSyncedAt *string                                                   `json:"lastSyncedAt,omitempty"`
+			Reason       *string                                                   `json:"reason,omitempty"`
+			Source       *GetVrboReservation200JSONResponseBodyDataFreshnessSource `json:"source,omitempty"`
+			Stale        *bool                                                     `json:"stale,omitempty"`
+		} `json:"dataFreshness,omitempty"`
+		ListingId *string `json:"listingId,omitempty"`
+	}
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetVrboReservationClientResponse) GetJSON200() *struct {
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+
+	// Data The booking as Vrbo shows it; with `?options=`, Vrbo's choices for that action.
+	Data          *GetVrboReservation200JSONResponseBody_Data `json:"data,omitempty"`
+	DataFreshness *struct {
+		Accounts *[]struct {
+			AccountId    *string `json:"accountId,omitempty"`
+			LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+			Reason       *string `json:"reason,omitempty"`
+			Stale        *bool   `json:"stale,omitempty"`
+		} `json:"accounts,omitempty"`
+		LastSyncedAt *string                                                   `json:"lastSyncedAt,omitempty"`
+		Reason       *string                                                   `json:"reason,omitempty"`
+		Source       *GetVrboReservation200JSONResponseBodyDataFreshnessSource `json:"source,omitempty"`
+		Stale        *bool                                                     `json:"stale,omitempty"`
+	} `json:"dataFreshness,omitempty"`
+	ListingId *string `json:"listingId,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetVrboReservationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetVrboReservationClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r GetVrboReservationClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetVrboReservationClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetVrboReservationClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r GetVrboReservationClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r GetVrboReservationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVrboReservationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVrboReservationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVrboReservationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type VrboReservationActionClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		ConfirmationCode *string                                        `json:"confirmationCode,omitempty"`
+		Data             *VrboReservationAction200JSONResponseBody_Data `json:"data,omitempty"`
+		ListingId        *string                                        `json:"listingId,omitempty"`
+	}
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r VrboReservationActionClientResponse) GetJSON200() *struct {
+	ConfirmationCode *string                                        `json:"confirmationCode,omitempty"`
+	Data             *VrboReservationAction200JSONResponseBody_Data `json:"data,omitempty"`
+	ListingId        *string                                        `json:"listingId,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r VrboReservationActionClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r VrboReservationActionClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r VrboReservationActionClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r VrboReservationActionClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r VrboReservationActionClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r VrboReservationActionClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r VrboReservationActionClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r VrboReservationActionClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VrboReservationActionClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r VrboReservationActionClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -74907,7 +75674,13 @@ type SubmitGuestReviewClientResponse struct {
 	JSON200 *struct {
 		ExternalReviewId *string `json:"externalReviewId,omitempty"`
 		Id               *string `json:"id,omitempty"`
-		Submitted        *bool   `json:"submitted,omitempty"`
+
+		// Platform `vrbo` for a Vrbo rating.
+		Platform *string `json:"platform,omitempty"`
+
+		// Rating Vrbo: the rating as sent to Vrbo.
+		Rating    *map[string]interface{} `json:"rating,omitempty"`
+		Submitted *bool                   `json:"submitted,omitempty"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
 	JSON401 *Unauthorized
@@ -74929,7 +75702,13 @@ type SubmitGuestReviewClientResponse struct {
 func (r SubmitGuestReviewClientResponse) GetJSON200() *struct {
 	ExternalReviewId *string `json:"externalReviewId,omitempty"`
 	Id               *string `json:"id,omitempty"`
-	Submitted        *bool   `json:"submitted,omitempty"`
+
+	// Platform `vrbo` for a Vrbo rating.
+	Platform *string `json:"platform,omitempty"`
+
+	// Rating Vrbo: the rating as sent to Vrbo.
+	Rating    *map[string]interface{} `json:"rating,omitempty"`
+	Submitted *bool                   `json:"submitted,omitempty"`
 } {
 	return r.JSON200
 }
@@ -79801,6 +80580,44 @@ func (c *ClientWithResponses) CreateBookingWebhookWithResponse(ctx context.Conte
 	return ParseCreateBookingWebhookClientResponse(rsp)
 }
 
+// CreateVrboAlterationWithBodyWithResponse Change a Vrbo reservation
+//
+// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
+//
+// Unlike Airbnb, the change is made at once (the guest does not accept it); when the guest owes more, Vrbo requests it by `payment_due_date`. **`preview: true`** returns Vrbo's dry run — `before`, `after`, the price difference (`payment`, or `priceUnchanged`) and the due-date range — and changes nothing.
+//
+// Vrbo's rules are checked first and refused by field: e.g. a pay-later booking's check-in cannot move, guests are capped by the listing. `GET /v1/channels/vrbo/reservations/{code}?options=change` shows the booking's values and limits. Airbnb fields with no Vrbo equivalent are refused by name: `number_of_guests` (send adults and children), `total_price` (send `rent_amount`), `listing_id` (Vrbo cannot move a booking to another unit).
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/alterations (the `CreateVrboAlteration` operationId).
+func (c *ClientWithResponses) CreateVrboAlterationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVrboAlterationClientResponse, error) {
+	rsp, err := c.CreateVrboAlterationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateVrboAlterationClientResponse(rsp)
+}
+
+// CreateVrboAlterationWithResponse Change a Vrbo reservation
+//
+// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
+//
+// Unlike Airbnb, the change is made at once (the guest does not accept it); when the guest owes more, Vrbo requests it by `payment_due_date`. **`preview: true`** returns Vrbo's dry run — `before`, `after`, the price difference (`payment`, or `priceUnchanged`) and the due-date range — and changes nothing.
+//
+// Vrbo's rules are checked first and refused by field: e.g. a pay-later booking's check-in cannot move, guests are capped by the listing. `GET /v1/channels/vrbo/reservations/{code}?options=change` shows the booking's values and limits. Airbnb fields with no Vrbo equivalent are refused by name: `number_of_guests` (send adults and children), `total_price` (send `rent_amount`), `listing_id` (Vrbo cannot move a booking to another unit).
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/alterations (the `CreateVrboAlteration` operationId).
+func (c *ClientWithResponses) CreateVrboAlterationWithResponse(ctx context.Context, body CreateVrboAlterationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVrboAlterationClientResponse, error) {
+	rsp, err := c.CreateVrboAlteration(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateVrboAlterationClientResponse(rsp)
+}
+
 // GetVrboConnectionWithResponse Get the Vrbo connection state
 //
 // Whether the workspace's Vrbo accounts are still signed in — the Vrbo counterpart of `GET /v1/channels/airbnb/connection`, with the same `status` values: `connected` (every account), `reconnect_required` (some), `disconnected` (none), `never_connected` (no Vrbo account). `fixUrl` is set whenever an account needs to be reconnected.
@@ -81533,6 +82350,73 @@ func (c *ClientWithResponses) ListVrboReservationsWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseListVrboReservationsClientResponse(rsp)
+}
+
+// GetVrboReservationWithResponse Get a Vrbo reservation
+//
+// A Vrbo booking by its confirmation code, as Vrbo shows it now — the counterpart of `GET /v1/channels/airbnb/reservations/{code}`: its state (`Booked`, a request, …), dates, party, the guest's charges (`guestLines`), your deductions and payout (`hostLines`, `payout`), the cancellation policy and the damage deposit, plus `availableActions` — what Vrbo's "Change or cancel the booking" menu offers right now.
+//
+// `?options=cancel|change|decline` returns Vrbo's choices for that action instead: the cancel reasons and message limits; the booking's current dates, times and party with Vrbo's limits (e.g. a pay-later booking's check-in is locked); or the decline reasons of a booking request. Read live from Vrbo (a few seconds).
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/vrbo/reservations/{code} (the `GetVrboReservation` operationId).
+func (c *ClientWithResponses) GetVrboReservationWithResponse(ctx context.Context, code string, params *GetVrboReservationParams, reqEditors ...RequestEditorFn) (*GetVrboReservationClientResponse, error) {
+	rsp, err := c.GetVrboReservation(ctx, code, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVrboReservationClientResponse(rsp)
+}
+
+// VrboReservationActionWithBodyWithResponse Accept, decline, cancel, charge or refund a Vrbo reservation
+//
+// Act on a Vrbo booking by its confirmation code — the counterpart of `POST /v1/channels/airbnb/reservations/{code}`, plus Vrbo's extra charge and refund. **Write-side**: Vrbo's own host-app actions, as the account that owns the booking.
+//
+// - `accept` — accept a pending booking request. Optional `message` to the guest (≤ 250 characters).
+// - `decline` — decline a pending booking request. `reason` is one of Vrbo's decline reasons (`?options=decline`); `block_dates: true` also blocks the dates (default: they stay open).
+// - `cancel` — cancel a booking as the host. `reason`: `property-sold-or-ownership-change`, `conflict-with-house-rules`, `dates-booked-on-another-platform`, `extenuating-circumstance` or `payment-not-received` (Vrbo's list, read live: `?options=cancel`); `message` to the guest, 25–250 characters; `refund_level` (default `FULL`). **Host cancellations carry Vrbo penalties** — the listing hidden for 7 days and a fee from your payout, unless the cancellation was unavoidable.
+// - `charge` — request an extra payment from the guest: `fee_type` (Vrbo's list, e.g. `PARKING`, `HOT_TUB`, `DEPARTURE_LATE`), `amount` (1–10,000, the booking's currency), `message` (≤ 50 characters) and `due_date`.
+// - `refund` — refund the guest part of what they paid: `reason`, `amount`, `message`. Vrbo offers it once the guest has paid.
+//
+// **`preview: true`** (cancel, charge, refund) returns Vrbo's own dry run — for a cancel, the terms and penalties (`penalties.cancellationFee`, `penalties.listingHidden`, `refundToGuest`); for a charge, the guest's total with taxes — and changes nothing. Without it, the dry run runs first and the action after, once: a lost answer is `502 vrbo_unconfirmed` (read the booking before retrying), never a second cancel.
+//
+// Changing dates, times, guests or price is `POST /v1/channels/vrbo/alterations`. The body is validated before anything reaches Vrbo; unknown fields are refused by name. Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
+func (c *ClientWithResponses) VrboReservationActionWithBodyWithResponse(ctx context.Context, code string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VrboReservationActionClientResponse, error) {
+	rsp, err := c.VrboReservationActionWithBody(ctx, code, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVrboReservationActionClientResponse(rsp)
+}
+
+// VrboReservationActionWithResponse Accept, decline, cancel, charge or refund a Vrbo reservation
+//
+// Act on a Vrbo booking by its confirmation code — the counterpart of `POST /v1/channels/airbnb/reservations/{code}`, plus Vrbo's extra charge and refund. **Write-side**: Vrbo's own host-app actions, as the account that owns the booking.
+//
+// - `accept` — accept a pending booking request. Optional `message` to the guest (≤ 250 characters).
+// - `decline` — decline a pending booking request. `reason` is one of Vrbo's decline reasons (`?options=decline`); `block_dates: true` also blocks the dates (default: they stay open).
+// - `cancel` — cancel a booking as the host. `reason`: `property-sold-or-ownership-change`, `conflict-with-house-rules`, `dates-booked-on-another-platform`, `extenuating-circumstance` or `payment-not-received` (Vrbo's list, read live: `?options=cancel`); `message` to the guest, 25–250 characters; `refund_level` (default `FULL`). **Host cancellations carry Vrbo penalties** — the listing hidden for 7 days and a fee from your payout, unless the cancellation was unavoidable.
+// - `charge` — request an extra payment from the guest: `fee_type` (Vrbo's list, e.g. `PARKING`, `HOT_TUB`, `DEPARTURE_LATE`), `amount` (1–10,000, the booking's currency), `message` (≤ 50 characters) and `due_date`.
+// - `refund` — refund the guest part of what they paid: `reason`, `amount`, `message`. Vrbo offers it once the guest has paid.
+//
+// **`preview: true`** (cancel, charge, refund) returns Vrbo's own dry run — for a cancel, the terms and penalties (`penalties.cancellationFee`, `penalties.listingHidden`, `refundToGuest`); for a charge, the guest's total with taxes — and changes nothing. Without it, the dry run runs first and the action after, once: a lost answer is `502 vrbo_unconfirmed` (read the booking before retrying), never a second cancel.
+//
+// Changing dates, times, guests or price is `POST /v1/channels/vrbo/alterations`. The body is validated before anything reaches Vrbo; unknown fields are refused by name. Returns `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
+func (c *ClientWithResponses) VrboReservationActionWithResponse(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*VrboReservationActionClientResponse, error) {
+	rsp, err := c.VrboReservationAction(ctx, code, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVrboReservationActionClientResponse(rsp)
 }
 
 // ListConnectionsWithResponse List PMS/OTA connections
@@ -85600,11 +86484,11 @@ func (c *ClientWithResponses) UpdateReservationWithResponse(ctx context.Context,
 
 // AcceptReservationRequestWithResponse Accept a booking request
 //
-// Accept a pending Airbnb booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb expires a request the host has not answered within 24 hours.
+// Accept a pending Airbnb or Vrbo booking request — a reservation with status `pending`, made on a listing without Instant Book. Find them with `GET /v1/reservations?status=pending`. Airbnb and Vrbo expire a request the host has not answered within 24 hours.
 //
 // Airbnb confirms asynchronously: the reservation’s status moves to confirmed, and a `reservation.updated` webhook fires, when Airbnb’s notification lands (usually within seconds). The response reports what Airbnb was asked to do.
 //
-// **Airbnb**, for listings connected to Airbnb directly; other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
+// **Airbnb**, for listings connected to Airbnb directly, and **Vrbo**, where the request is answered on Vrbo itself (the same as `POST /v1/channels/vrbo/reservations/{code}`); other channels have no request step (`422 channel_not_supported`). **A request relayed by a PMS** (Guesty, Hostaway, …) is answered in that PMS, whatever channel it came from; a PMS whose API cannot answer requests returns `422 pms_write_unsupported` naming it (Hostaway today), and `GET /v1/connect/{provider}` → `capabilities.pms.reservations.respond` says so beforehand. The response then carries `pms`. A reservation that is not pending is refused before Airbnb is contacted (`409 reservation_not_pending`); one Airbnb says already moved on is `409 request_no_longer_pending`. Neither is worth retrying.
 //
 // Takes no body.
 //
@@ -85673,9 +86557,11 @@ func (c *ClientWithResponses) CancelReservationWithResponse(ctx context.Context,
 
 // DeclineReservationRequestWithBodyWithResponse Decline a booking request
 //
-// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+// Decline a pending Airbnb or Vrbo booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
 //
-// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+// `reason` must be one of Airbnb’s own decline reasons. `message` is required: the channel sends it to the guest with the decline (Airbnb: at most 500 characters; Vrbo: 250). It is not defaulted — a canned message would put words in your mouth.
+//
+// **Vrbo** has its own decline reasons: `dates_not_available` is sent as Vrbo’s “dates unavailable” (and blocks the dates, as Vrbo does); any other reason is refused with `422 invalid_params` pointing at `POST /v1/channels/vrbo/reservations/{code}`, which takes Vrbo’s reasons directly.
 //
 // Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 //
@@ -85694,9 +86580,11 @@ func (c *ClientWithResponses) DeclineReservationRequestWithBodyWithResponse(ctx 
 
 // DeclineReservationRequestWithResponse Decline a booking request
 //
-// Decline a pending Airbnb booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
+// Decline a pending Airbnb or Vrbo booking request (a reservation with status `pending`; find them with `GET /v1/reservations?status=pending`).
 //
-// `reason` must be one of Airbnb’s own decline reasons. `message` is required: Airbnb sends it to the guest with the decline (at most 500 characters). It is not defaulted — a canned message would put words in your mouth.
+// `reason` must be one of Airbnb’s own decline reasons. `message` is required: the channel sends it to the guest with the decline (Airbnb: at most 500 characters; Vrbo: 250). It is not defaulted — a canned message would put words in your mouth.
+//
+// **Vrbo** has its own decline reasons: `dates_not_available` is sent as Vrbo’s “dates unavailable” (and blocks the dates, as Vrbo does); any other reason is refused with `422 invalid_params` pointing at `POST /v1/channels/vrbo/reservations/{code}`, which takes Vrbo’s reasons directly.
 //
 // Airbnb confirms asynchronously; the reservation’s status moves, and `reservation.updated` fires, when its notification lands. Same channel and status rules as `POST /v1/reservations/{id}/accept`.
 //
@@ -85751,13 +86639,11 @@ func (c *ClientWithResponses) GetReviewWithResponse(ctx context.Context, id int,
 	return ParseGetReviewClientResponse(rsp)
 }
 
-// SubmitGuestReviewWithBodyWithResponse Review a guest (publishes, final)
+// SubmitGuestReviewWithBodyWithResponse Review a guest
 //
-// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Airbnb and Vrbo let hosts review guests; a review from another channel returns `422 unsupported_channel`.
 //
-// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
-//
-// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+// **Airbnb — publishes it, final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`. Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published.
 //
 // ```json
 //
@@ -85770,7 +86656,13 @@ func (c *ClientWithResponses) GetReviewWithResponse(ctx context.Context, id int,
 //
 // ```
 //
-// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+// **Vrbo — Vrbo's "Rate guest":** stars and "would you rent to this guest again", with no text, and never shown to the guest. `rating` (the overall experience, 1–5) is required; `categoryRatings` (cleanliness, communication, respect_house_rules) and `isRevieweeRecommended` are optional. `publicReview` and `privateFeedback` must be left out or empty (typed SDKs send them empty) — text is refused by name. A stay already rated is `409 review_already_submitted`; one Vrbo no longer takes a rating for, `409 review_window_closed`.
+//
+// ```json
+// { "rating": 5, "categoryRatings": [{ "category": "cleanliness", "rating": 4 }], "isRevieweeRecommended": true }
+// ```
+//
+// A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to the channel. A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review` (Vrbo: `422`); answer it with `POST /v1/reviews/{id}/reply`. Guide: https://repull.dev/docs/reviews#review-a-guest
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -85783,13 +86675,11 @@ func (c *ClientWithResponses) SubmitGuestReviewWithBodyWithResponse(ctx context.
 	return ParseSubmitGuestReviewClientResponse(rsp)
 }
 
-// SubmitGuestReviewWithResponse Review a guest (publishes, final)
+// SubmitGuestReviewWithResponse Review a guest
 //
-// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Only Airbnb lets hosts review guests; a review from another channel returns `422 unsupported_channel`.
+// Submit your review of a guest — a review with `reviewerRole: "host"` from `GET /v1/reviews?reviewerRole=host`. Airbnb and Vrbo let hosts review guests; a review from another channel returns `422 unsupported_channel`.
 //
-// **Submitting publishes it and is final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`.
-//
-// Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published. A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to Airbnb.
+// **Airbnb — publishes it, final:** Airbnb has no draft and does not allow edits; a second submission is `409 review_already_submitted`. Airbnb accepts it up to 14 days after checkout (`expiresAt`); after that, `409 review_window_closed`. Required: `publicReview`, `isRevieweeRecommended` (whether you would host the guest again), and a 1–5 rating for **each** of `cleanliness`, `communication` and `respect_house_rules` — send `rating` to use one score for all three, `categoryRatings` to score them individually, or both (`rating` fills any category you did not rate). Optional: `privateFeedback`, a note to the guest that is not published.
 //
 // ```json
 //
@@ -85802,7 +86692,13 @@ func (c *ClientWithResponses) SubmitGuestReviewWithBodyWithResponse(ctx context.
 //
 // ```
 //
-// A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review`; answer it with `POST /v1/reviews/{id}/reply`. Same behaviour as `PUT /v1/channels/airbnb/reviews/{id}`. Guide: https://repull.dev/docs/reviews#review-a-guest
+// **Vrbo — Vrbo's "Rate guest":** stars and "would you rent to this guest again", with no text, and never shown to the guest. `rating` (the overall experience, 1–5) is required; `categoryRatings` (cleanliness, communication, respect_house_rules) and `isRevieweeRecommended` are optional. `publicReview` and `privateFeedback` must be left out or empty (typed SDKs send them empty) — text is refused by name. A stay already rated is `409 review_already_submitted`; one Vrbo no longer takes a rating for, `409 review_window_closed`.
+//
+// ```json
+// { "rating": 5, "categoryRatings": [{ "category": "cleanliness", "rating": 4 }], "isRevieweeRecommended": true }
+// ```
+//
+// A request missing a required piece is refused with `422 invalid_params` naming it, before anything is sent to the channel. A guest's review of you (`reviewerRole: "guest"`) cannot be written here — `409 not_host_review` (Vrbo: `422`); answer it with `POST /v1/reviews/{id}/reply`. Guide: https://repull.dev/docs/reviews#review-a-guest
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -85823,7 +86719,7 @@ func (c *ClientWithResponses) SubmitGuestReviewWithResponse(ctx context.Context,
 //
 // **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 //
-// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
+// To review a guest (Airbnb and Vrbo), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
@@ -85846,7 +86742,7 @@ func (c *ClientWithResponses) ReplyToReviewWithBodyWithResponse(ctx context.Cont
 //
 // **Reviews read from a PMS** (`pms` set on the review — Guesty, Hostaway, …) are answered through that PMS. A PMS whose API has no reply returns `422 pms_write_unsupported` naming it (Hostaway today); `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says so beforehand. A revoked PMS connection is `403 connection_reauth_required`.
 //
-// To review a guest (Airbnb only), use `POST /v1/reviews/{id}/guest-review`.
+// To review a guest (Airbnb and Vrbo), use `POST /v1/reviews/{id}/guest-review`.
 //
 // **Inactive listings:** a review of an inactive listing returns `403 listing_inactive` and no reply reaches the channel. Activate the listing first.
 //
@@ -92114,6 +93010,87 @@ func ParseCreateBookingWebhookClientResponse(rsp *http.Response) (*CreateBooking
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateVrboAlterationClientResponse parses an HTTP response from a CreateVrboAlterationWithResponse call
+func ParseCreateVrboAlterationClientResponse(rsp *http.Response) (*CreateVrboAlterationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateVrboAlterationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data      *CreateVrboAlteration200JSONResponseBody_Data `json:"data,omitempty"`
+			ListingId *string                                       `json:"listingId,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			Data      *CreateVrboAlteration201JSONResponseBody_Data `json:"data,omitempty"`
+			ListingId *string                                       `json:"listingId,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -100148,6 +101125,164 @@ func ParseListVrboReservationsClientResponse(rsp *http.Response) (*ListVrboReser
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVrboReservationClientResponse parses an HTTP response from a GetVrboReservationWithResponse call
+func ParseGetVrboReservationClientResponse(rsp *http.Response) (*GetVrboReservationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVrboReservationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			ConfirmationCode *string `json:"confirmationCode,omitempty"`
+
+			// Data The booking as Vrbo shows it; with `?options=`, Vrbo's choices for that action.
+			Data          *GetVrboReservation200JSONResponseBody_Data `json:"data,omitempty"`
+			DataFreshness *struct {
+				Accounts *[]struct {
+					AccountId    *string `json:"accountId,omitempty"`
+					LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+					Reason       *string `json:"reason,omitempty"`
+					Stale        *bool   `json:"stale,omitempty"`
+				} `json:"accounts,omitempty"`
+				LastSyncedAt *string                                                   `json:"lastSyncedAt,omitempty"`
+				Reason       *string                                                   `json:"reason,omitempty"`
+				Source       *GetVrboReservation200JSONResponseBodyDataFreshnessSource `json:"source,omitempty"`
+				Stale        *bool                                                     `json:"stale,omitempty"`
+			} `json:"dataFreshness,omitempty"`
+			ListingId *string `json:"listingId,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseVrboReservationActionClientResponse parses an HTTP response from a VrboReservationActionWithResponse call
+func ParseVrboReservationActionClientResponse(rsp *http.Response) (*VrboReservationActionClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VrboReservationActionClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			ConfirmationCode *string                                        `json:"confirmationCode,omitempty"`
+			Data             *VrboReservationAction200JSONResponseBody_Data `json:"data,omitempty"`
+			ListingId        *string                                        `json:"listingId,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -108883,7 +110018,13 @@ func ParseSubmitGuestReviewClientResponse(rsp *http.Response) (*SubmitGuestRevie
 		var dest struct {
 			ExternalReviewId *string `json:"externalReviewId,omitempty"`
 			Id               *string `json:"id,omitempty"`
-			Submitted        *bool   `json:"submitted,omitempty"`
+
+			// Platform `vrbo` for a Vrbo rating.
+			Platform *string `json:"platform,omitempty"`
+
+			// Rating Vrbo: the rating as sent to Vrbo.
+			Rating    *map[string]interface{} `json:"rating,omitempty"`
+			Submitted *bool                   `json:"submitted,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

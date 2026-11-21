@@ -9247,6 +9247,69 @@ func (e AddVrboListingVideo200JSONResponseBodyDataFreshnessSource) Valid() bool 
 	}
 }
 
+// Defines values for GetVrboReservationParamsOptions.
+const (
+	GetVrboReservationParamsOptionsCancel  GetVrboReservationParamsOptions = "cancel"
+	GetVrboReservationParamsOptionsChange  GetVrboReservationParamsOptions = "change"
+	GetVrboReservationParamsOptionsDecline GetVrboReservationParamsOptions = "decline"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboReservationParamsOptions enum.
+func (e GetVrboReservationParamsOptions) Valid() bool {
+	switch e {
+	case GetVrboReservationParamsOptionsCancel:
+		return true
+	case GetVrboReservationParamsOptionsChange:
+		return true
+	case GetVrboReservationParamsOptionsDecline:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboReservation200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboReservation200JSONResponseBodyDataFreshnessSourceLive GetVrboReservation200JSONResponseBodyDataFreshnessSource = "live"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboReservation200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboReservation200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboReservation200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VrboReservationActionJSONBodyAction.
+const (
+	VrboReservationActionJSONBodyActionAccept  VrboReservationActionJSONBodyAction = "accept"
+	VrboReservationActionJSONBodyActionCancel  VrboReservationActionJSONBodyAction = "cancel"
+	VrboReservationActionJSONBodyActionCharge  VrboReservationActionJSONBodyAction = "charge"
+	VrboReservationActionJSONBodyActionDecline VrboReservationActionJSONBodyAction = "decline"
+	VrboReservationActionJSONBodyActionRefund  VrboReservationActionJSONBodyAction = "refund"
+)
+
+// Valid indicates whether the value is a known member of the VrboReservationActionJSONBodyAction enum.
+func (e VrboReservationActionJSONBodyAction) Valid() bool {
+	switch e {
+	case VrboReservationActionJSONBodyActionAccept:
+		return true
+	case VrboReservationActionJSONBodyActionCancel:
+		return true
+	case VrboReservationActionJSONBodyActionCharge:
+		return true
+	case VrboReservationActionJSONBodyActionDecline:
+		return true
+	case VrboReservationActionJSONBodyActionRefund:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateConnectSessionJSONBodyAccessType.
 const (
 	CreateConnectSessionJSONBodyAccessTypeFullAccess CreateConnectSessionJSONBodyAccessType = "full_access"
@@ -22820,6 +22883,117 @@ type CreateBookingWebhookJSONBody struct {
 	NotificationType string `json:"notification_type"`
 }
 
+// CreateVrboAlterationJSONBody defines parameters for CreateVrboAlteration.
+type CreateVrboAlterationJSONBody struct {
+	CheckIn *openapi_types.Date `json:"check_in,omitempty"`
+
+	// CheckInTime Example: 16:00
+	CheckInTime *string             `json:"check_in_time,omitempty"`
+	CheckOut    *openapi_types.Date `json:"check_out,omitempty"`
+
+	// CheckOutTime Example: 11:00
+	CheckOutTime *string `json:"check_out_time,omitempty"`
+
+	// ConfirmationCode Example: HA-C3WBX1
+	ConfirmationCode string `json:"confirmation_code"`
+
+	// KeepOriginalPrice Change the stay without changing what the guest pays.
+	KeepOriginalPrice *bool `json:"keep_original_price,omitempty"`
+	NumberOfAdults    *int  `json:"number_of_adults,omitempty"`
+	NumberOfChildren  *int  `json:"number_of_children,omitempty"`
+
+	// PaymentDueDate When the guest must pay any difference (Vrbo's default otherwise).
+	PaymentDueDate *openapi_types.Date `json:"payment_due_date,omitempty"`
+	Pets           *bool               `json:"pets,omitempty"`
+
+	// Preview Vrbo's dry run only: nothing is changed.
+	Preview *bool `json:"preview,omitempty"`
+
+	// RentAmount The new rent for the stay, in the booking's currency; Vrbo adds its fees and taxes.
+	RentAmount *float32 `json:"rent_amount,omitempty"`
+}
+
+// CreateVrboAlteration200JSONResponseBody_Data defines parameters for CreateVrboAlteration.
+type CreateVrboAlteration200JSONResponseBody_Data struct {
+	After *struct {
+		Adults       *int    `json:"adults,omitempty"`
+		CheckIn      *string `json:"checkIn,omitempty"`
+		CheckInTime  *string `json:"checkInTime,omitempty"`
+		CheckOut     *string `json:"checkOut,omitempty"`
+		CheckOutTime *string `json:"checkOutTime,omitempty"`
+		Children     *int    `json:"children,omitempty"`
+		Pets         *bool   `json:"pets,omitempty"`
+	} `json:"after,omitempty"`
+	Before *struct {
+		Adults       *int    `json:"adults,omitempty"`
+		CheckIn      *string `json:"checkIn,omitempty"`
+		CheckInTime  *string `json:"checkInTime,omitempty"`
+		CheckOut     *string `json:"checkOut,omitempty"`
+		CheckOutTime *string `json:"checkOutTime,omitempty"`
+		Children     *int    `json:"children,omitempty"`
+		Pets         *bool   `json:"pets,omitempty"`
+	} `json:"before,omitempty"`
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+	DueDate          *struct {
+		Default  *string `json:"default,omitempty"`
+		Earliest *string `json:"earliest,omitempty"`
+		Latest   *string `json:"latest,omitempty"`
+	} `json:"dueDate,omitempty"`
+	Payment *struct {
+		Lines *[]struct {
+			Amount *float32 `json:"amount,omitempty"`
+			Label  *string  `json:"label,omitempty"`
+		} `json:"lines,omitempty"`
+		Title *string `json:"title,omitempty"`
+		Total *struct {
+			// Amount With its currency, as Vrbo shows it (e.g. `CAD 1,107.04`).
+			Amount *string `json:"amount,omitempty"`
+			Label  *string `json:"label,omitempty"`
+		} `json:"total,omitempty"`
+	} `json:"payment,omitempty"`
+	Preview              *bool                  `json:"preview,omitempty"`
+	PriceUnchanged       *bool                  `json:"priceUnchanged,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// CreateVrboAlteration201JSONResponseBody_Data defines parameters for CreateVrboAlteration.
+type CreateVrboAlteration201JSONResponseBody_Data struct {
+	After *struct {
+		Adults       *int    `json:"adults,omitempty"`
+		CheckIn      *string `json:"checkIn,omitempty"`
+		CheckInTime  *string `json:"checkInTime,omitempty"`
+		CheckOut     *string `json:"checkOut,omitempty"`
+		CheckOutTime *string `json:"checkOutTime,omitempty"`
+		Children     *int    `json:"children,omitempty"`
+		Pets         *bool   `json:"pets,omitempty"`
+	} `json:"after,omitempty"`
+	Before *struct {
+		Adults       *int    `json:"adults,omitempty"`
+		CheckIn      *string `json:"checkIn,omitempty"`
+		CheckInTime  *string `json:"checkInTime,omitempty"`
+		CheckOut     *string `json:"checkOut,omitempty"`
+		CheckOutTime *string `json:"checkOutTime,omitempty"`
+		Children     *int    `json:"children,omitempty"`
+		Pets         *bool   `json:"pets,omitempty"`
+	} `json:"before,omitempty"`
+	Committed        *bool   `json:"committed,omitempty"`
+	ConfirmationCode *string `json:"confirmationCode,omitempty"`
+	Payment          *struct {
+		Lines *[]struct {
+			Amount *float32 `json:"amount,omitempty"`
+			Label  *string  `json:"label,omitempty"`
+		} `json:"lines,omitempty"`
+		Title *string `json:"title,omitempty"`
+		Total *struct {
+			// Amount With its currency, as Vrbo shows it (e.g. `CAD 1,107.04`).
+			Amount *string `json:"amount,omitempty"`
+			Label  *string `json:"label,omitempty"`
+		} `json:"total,omitempty"`
+	} `json:"payment,omitempty"`
+	Preview              *bool                  `json:"preview,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
 // GetVrboConnection200JSONResponseBodyDataAccountsAccessType defines parameters for GetVrboConnection.
 type GetVrboConnection200JSONResponseBodyDataAccountsAccessType string
 
@@ -24710,6 +24884,126 @@ type ListVrboReservationsParams struct {
 
 	// IncludeTotal When `true` (default), the response's `pagination.total` carries the count of rows matching the current filter, across all pages. Pass `false` to skip the count for very large workspaces where the per-page COUNT(*) cost matters.
 	IncludeTotal *IncludeTotal `form:"include_total,omitempty" json:"include_total,omitempty"`
+}
+
+// GetVrboReservationParams defines parameters for GetVrboReservation.
+type GetVrboReservationParams struct {
+	// Options Return Vrbo's choices for this action instead of the booking.
+	Options *GetVrboReservationParamsOptions `form:"options,omitempty" json:"options,omitempty"`
+}
+
+// GetVrboReservationParamsOptions defines parameters for GetVrboReservation.
+type GetVrboReservationParamsOptions string
+
+// GetVrboReservation200JSONResponseBody_Data defines parameters for GetVrboReservation.
+type GetVrboReservation200JSONResponseBody_Data struct {
+	Adults           *int `json:"adults,omitempty"`
+	AvailableActions *[]struct {
+		Label *string `json:"label,omitempty"`
+
+		// Type Example: CANCEL
+		Type *string `json:"type,omitempty"`
+	} `json:"availableActions,omitempty"`
+	CancellationPolicy *string  `json:"cancellationPolicy,omitempty"`
+	CheckIn            *string  `json:"checkIn,omitempty"`
+	CheckOut           *string  `json:"checkOut,omitempty"`
+	Children           *int     `json:"children,omitempty"`
+	Currency           *string  `json:"currency,omitempty"`
+	DamageDeposit      *float32 `json:"damageDeposit,omitempty"`
+	GuestLines         *[]struct {
+		Amount *float32 `json:"amount,omitempty"`
+		Label  *string  `json:"label,omitempty"`
+	} `json:"guestLines,omitempty"`
+	GuestName *string `json:"guestName,omitempty"`
+	HostLines *[]struct {
+		Amount *float32 `json:"amount,omitempty"`
+		Label  *string  `json:"label,omitempty"`
+	} `json:"hostLines,omitempty"`
+	Payout               *float32               `json:"payout,omitempty"`
+	Pets                 *int                   `json:"pets,omitempty"`
+	ReservationCode      *string                `json:"reservationCode,omitempty"`
+	ReservationUuid      *string                `json:"reservationUuid,omitempty"`
+	State                *string                `json:"state,omitempty"`
+	TotalGuestPayment    *float32               `json:"totalGuestPayment,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// GetVrboReservation200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboReservation.
+type GetVrboReservation200JSONResponseBodyDataFreshnessSource string
+
+// VrboReservationActionJSONBody defines parameters for VrboReservationAction.
+type VrboReservationActionJSONBody struct {
+	Action VrboReservationActionJSONBodyAction `json:"action"`
+
+	// Amount `charge`/`refund`: the amount, in the booking's currency.
+	//
+	// Example: 25
+	Amount *float32 `json:"amount,omitempty"`
+
+	// BlockDates `decline`: also block the requested dates.
+	BlockDates *bool `json:"block_dates,omitempty"`
+
+	// DueDate `charge`: when the guest must pay (default today).
+	DueDate *openapi_types.Date `json:"due_date,omitempty"`
+
+	// FeeType `charge`: Vrbo's fee type.
+	//
+	// Example: PARKING
+	FeeType *string `json:"fee_type,omitempty"`
+
+	// Message Sent to the guest. `cancel` 25–250 characters (required); `charge` ≤ 50 (required); `accept`/`decline` ≤ 250.
+	Message *string `json:"message,omitempty"`
+
+	// Preview Vrbo's dry run only (cancel, charge, refund): nothing is changed.
+	Preview *bool `json:"preview,omitempty"`
+
+	// Reason `cancel`: Vrbo's cancel reason; `decline`: Vrbo's decline reason; `refund`: why.
+	Reason *string `json:"reason,omitempty"`
+
+	// RefundLevel `cancel`: the refund Vrbo offers for the reason (default `FULL`).
+	//
+	// Example: FULL
+	RefundLevel *string `json:"refund_level,omitempty"`
+}
+
+// VrboReservationActionJSONBodyAction defines parameters for VrboReservationAction.
+type VrboReservationActionJSONBodyAction string
+
+// VrboReservationAction200JSONResponseBody_Data defines parameters for VrboReservationAction.
+type VrboReservationAction200JSONResponseBody_Data struct {
+	Action    *string `json:"action,omitempty"`
+	Committed *bool   `json:"committed,omitempty"`
+
+	// Payment `charge`: the guest's payment with taxes.
+	Payment *struct {
+		Lines *[]struct {
+			Amount *float32 `json:"amount,omitempty"`
+			Label  *string  `json:"label,omitempty"`
+		} `json:"lines,omitempty"`
+		Title *string `json:"title,omitempty"`
+		Total *struct {
+			// Amount With its currency, as Vrbo shows it (e.g. `CAD 1,107.04`).
+			Amount *string `json:"amount,omitempty"`
+			Label  *string `json:"label,omitempty"`
+		} `json:"total,omitempty"`
+	} `json:"payment,omitempty"`
+
+	// Penalties `cancel`: Vrbo's terms for a host cancellation.
+	Penalties *struct {
+		CancellationFee *string `json:"cancellationFee,omitempty"`
+		DatesBlocked    *bool   `json:"datesBlocked,omitempty"`
+		ListingHidden   *string `json:"listingHidden,omitempty"`
+	} `json:"penalties,omitempty"`
+	Preview *bool `json:"preview,omitempty"`
+
+	// RefundToGuest `cancel`: what the guest gets back.
+	RefundToGuest   *string `json:"refundToGuest,omitempty"`
+	ReservationCode *string `json:"reservationCode,omitempty"`
+	Terms           *[]struct {
+		Text  *string `json:"text,omitempty"`
+		Title *string `json:"title,omitempty"`
+	} `json:"terms,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // CreateConnectSessionJSONBody defines parameters for CreateConnectSession.
@@ -26624,6 +26918,9 @@ type BookingSetupJSONRequestBody BookingSetupJSONBody
 // Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type CreateBookingWebhookJSONRequestBody CreateBookingWebhookJSONBody
 
+// CreateVrboAlterationJSONRequestBody defines body for CreateVrboAlteration for application/json ContentType.
+type CreateVrboAlterationJSONRequestBody CreateVrboAlterationJSONBody
+
 // MapVrboListingJSONRequestBody defines body for MapVrboListing for application/json ContentType.
 type MapVrboListingJSONRequestBody MapVrboListingJSONBody
 
@@ -26707,6 +27004,9 @@ type UpdateVrboListingTaxesJSONRequestBody UpdateVrboListingTaxesJSONBody
 
 // AddVrboListingVideoJSONRequestBody defines body for AddVrboListingVideo for application/json ContentType.
 type AddVrboListingVideoJSONRequestBody AddVrboListingVideoJSONBody
+
+// VrboReservationActionJSONRequestBody defines body for VrboReservationAction for application/json ContentType.
+type VrboReservationActionJSONRequestBody VrboReservationActionJSONBody
 
 // CreateConnectSessionJSONRequestBody defines body for CreateConnectSession for application/json ContentType.
 type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
@@ -28342,6 +28642,788 @@ func (a BookingSetupJSONBody_LegalEntity) MarshalJSON() ([]byte, error) {
 	object["legal_contact_name"], err = json.Marshal(a.LegalContactName)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling 'legal_contact_name': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for CreateVrboAlteration200JSONResponseBody_Data. Returns the specified
+// element and whether it was found
+func (a CreateVrboAlteration200JSONResponseBody_Data) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for CreateVrboAlteration200JSONResponseBody_Data
+func (a *CreateVrboAlteration200JSONResponseBody_Data) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for CreateVrboAlteration200JSONResponseBody_Data to handle AdditionalProperties
+func (a *CreateVrboAlteration200JSONResponseBody_Data) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["after"]; found {
+		err = json.Unmarshal(raw, &a.After)
+		if err != nil {
+			return fmt.Errorf("error reading 'after': %w", err)
+		}
+		delete(object, "after")
+	}
+
+	if raw, found := object["before"]; found {
+		err = json.Unmarshal(raw, &a.Before)
+		if err != nil {
+			return fmt.Errorf("error reading 'before': %w", err)
+		}
+		delete(object, "before")
+	}
+
+	if raw, found := object["confirmationCode"]; found {
+		err = json.Unmarshal(raw, &a.ConfirmationCode)
+		if err != nil {
+			return fmt.Errorf("error reading 'confirmationCode': %w", err)
+		}
+		delete(object, "confirmationCode")
+	}
+
+	if raw, found := object["dueDate"]; found {
+		err = json.Unmarshal(raw, &a.DueDate)
+		if err != nil {
+			return fmt.Errorf("error reading 'dueDate': %w", err)
+		}
+		delete(object, "dueDate")
+	}
+
+	if raw, found := object["payment"]; found {
+		err = json.Unmarshal(raw, &a.Payment)
+		if err != nil {
+			return fmt.Errorf("error reading 'payment': %w", err)
+		}
+		delete(object, "payment")
+	}
+
+	if raw, found := object["preview"]; found {
+		err = json.Unmarshal(raw, &a.Preview)
+		if err != nil {
+			return fmt.Errorf("error reading 'preview': %w", err)
+		}
+		delete(object, "preview")
+	}
+
+	if raw, found := object["priceUnchanged"]; found {
+		err = json.Unmarshal(raw, &a.PriceUnchanged)
+		if err != nil {
+			return fmt.Errorf("error reading 'priceUnchanged': %w", err)
+		}
+		delete(object, "priceUnchanged")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for CreateVrboAlteration200JSONResponseBody_Data to handle AdditionalProperties
+func (a CreateVrboAlteration200JSONResponseBody_Data) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.After != nil {
+		object["after"], err = json.Marshal(a.After)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'after': %w", err)
+		}
+	}
+
+	if a.Before != nil {
+		object["before"], err = json.Marshal(a.Before)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'before': %w", err)
+		}
+	}
+
+	if a.ConfirmationCode != nil {
+		object["confirmationCode"], err = json.Marshal(a.ConfirmationCode)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'confirmationCode': %w", err)
+		}
+	}
+
+	if a.DueDate != nil {
+		object["dueDate"], err = json.Marshal(a.DueDate)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'dueDate': %w", err)
+		}
+	}
+
+	if a.Payment != nil {
+		object["payment"], err = json.Marshal(a.Payment)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'payment': %w", err)
+		}
+	}
+
+	if a.Preview != nil {
+		object["preview"], err = json.Marshal(a.Preview)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'preview': %w", err)
+		}
+	}
+
+	if a.PriceUnchanged != nil {
+		object["priceUnchanged"], err = json.Marshal(a.PriceUnchanged)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'priceUnchanged': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for CreateVrboAlteration201JSONResponseBody_Data. Returns the specified
+// element and whether it was found
+func (a CreateVrboAlteration201JSONResponseBody_Data) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for CreateVrboAlteration201JSONResponseBody_Data
+func (a *CreateVrboAlteration201JSONResponseBody_Data) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for CreateVrboAlteration201JSONResponseBody_Data to handle AdditionalProperties
+func (a *CreateVrboAlteration201JSONResponseBody_Data) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["after"]; found {
+		err = json.Unmarshal(raw, &a.After)
+		if err != nil {
+			return fmt.Errorf("error reading 'after': %w", err)
+		}
+		delete(object, "after")
+	}
+
+	if raw, found := object["before"]; found {
+		err = json.Unmarshal(raw, &a.Before)
+		if err != nil {
+			return fmt.Errorf("error reading 'before': %w", err)
+		}
+		delete(object, "before")
+	}
+
+	if raw, found := object["committed"]; found {
+		err = json.Unmarshal(raw, &a.Committed)
+		if err != nil {
+			return fmt.Errorf("error reading 'committed': %w", err)
+		}
+		delete(object, "committed")
+	}
+
+	if raw, found := object["confirmationCode"]; found {
+		err = json.Unmarshal(raw, &a.ConfirmationCode)
+		if err != nil {
+			return fmt.Errorf("error reading 'confirmationCode': %w", err)
+		}
+		delete(object, "confirmationCode")
+	}
+
+	if raw, found := object["payment"]; found {
+		err = json.Unmarshal(raw, &a.Payment)
+		if err != nil {
+			return fmt.Errorf("error reading 'payment': %w", err)
+		}
+		delete(object, "payment")
+	}
+
+	if raw, found := object["preview"]; found {
+		err = json.Unmarshal(raw, &a.Preview)
+		if err != nil {
+			return fmt.Errorf("error reading 'preview': %w", err)
+		}
+		delete(object, "preview")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for CreateVrboAlteration201JSONResponseBody_Data to handle AdditionalProperties
+func (a CreateVrboAlteration201JSONResponseBody_Data) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.After != nil {
+		object["after"], err = json.Marshal(a.After)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'after': %w", err)
+		}
+	}
+
+	if a.Before != nil {
+		object["before"], err = json.Marshal(a.Before)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'before': %w", err)
+		}
+	}
+
+	if a.Committed != nil {
+		object["committed"], err = json.Marshal(a.Committed)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'committed': %w", err)
+		}
+	}
+
+	if a.ConfirmationCode != nil {
+		object["confirmationCode"], err = json.Marshal(a.ConfirmationCode)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'confirmationCode': %w", err)
+		}
+	}
+
+	if a.Payment != nil {
+		object["payment"], err = json.Marshal(a.Payment)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'payment': %w", err)
+		}
+	}
+
+	if a.Preview != nil {
+		object["preview"], err = json.Marshal(a.Preview)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'preview': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for GetVrboReservation200JSONResponseBody_Data. Returns the specified
+// element and whether it was found
+func (a GetVrboReservation200JSONResponseBody_Data) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GetVrboReservation200JSONResponseBody_Data
+func (a *GetVrboReservation200JSONResponseBody_Data) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GetVrboReservation200JSONResponseBody_Data to handle AdditionalProperties
+func (a *GetVrboReservation200JSONResponseBody_Data) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["adults"]; found {
+		err = json.Unmarshal(raw, &a.Adults)
+		if err != nil {
+			return fmt.Errorf("error reading 'adults': %w", err)
+		}
+		delete(object, "adults")
+	}
+
+	if raw, found := object["availableActions"]; found {
+		err = json.Unmarshal(raw, &a.AvailableActions)
+		if err != nil {
+			return fmt.Errorf("error reading 'availableActions': %w", err)
+		}
+		delete(object, "availableActions")
+	}
+
+	if raw, found := object["cancellationPolicy"]; found {
+		err = json.Unmarshal(raw, &a.CancellationPolicy)
+		if err != nil {
+			return fmt.Errorf("error reading 'cancellationPolicy': %w", err)
+		}
+		delete(object, "cancellationPolicy")
+	}
+
+	if raw, found := object["checkIn"]; found {
+		err = json.Unmarshal(raw, &a.CheckIn)
+		if err != nil {
+			return fmt.Errorf("error reading 'checkIn': %w", err)
+		}
+		delete(object, "checkIn")
+	}
+
+	if raw, found := object["checkOut"]; found {
+		err = json.Unmarshal(raw, &a.CheckOut)
+		if err != nil {
+			return fmt.Errorf("error reading 'checkOut': %w", err)
+		}
+		delete(object, "checkOut")
+	}
+
+	if raw, found := object["children"]; found {
+		err = json.Unmarshal(raw, &a.Children)
+		if err != nil {
+			return fmt.Errorf("error reading 'children': %w", err)
+		}
+		delete(object, "children")
+	}
+
+	if raw, found := object["currency"]; found {
+		err = json.Unmarshal(raw, &a.Currency)
+		if err != nil {
+			return fmt.Errorf("error reading 'currency': %w", err)
+		}
+		delete(object, "currency")
+	}
+
+	if raw, found := object["damageDeposit"]; found {
+		err = json.Unmarshal(raw, &a.DamageDeposit)
+		if err != nil {
+			return fmt.Errorf("error reading 'damageDeposit': %w", err)
+		}
+		delete(object, "damageDeposit")
+	}
+
+	if raw, found := object["guestLines"]; found {
+		err = json.Unmarshal(raw, &a.GuestLines)
+		if err != nil {
+			return fmt.Errorf("error reading 'guestLines': %w", err)
+		}
+		delete(object, "guestLines")
+	}
+
+	if raw, found := object["guestName"]; found {
+		err = json.Unmarshal(raw, &a.GuestName)
+		if err != nil {
+			return fmt.Errorf("error reading 'guestName': %w", err)
+		}
+		delete(object, "guestName")
+	}
+
+	if raw, found := object["hostLines"]; found {
+		err = json.Unmarshal(raw, &a.HostLines)
+		if err != nil {
+			return fmt.Errorf("error reading 'hostLines': %w", err)
+		}
+		delete(object, "hostLines")
+	}
+
+	if raw, found := object["payout"]; found {
+		err = json.Unmarshal(raw, &a.Payout)
+		if err != nil {
+			return fmt.Errorf("error reading 'payout': %w", err)
+		}
+		delete(object, "payout")
+	}
+
+	if raw, found := object["pets"]; found {
+		err = json.Unmarshal(raw, &a.Pets)
+		if err != nil {
+			return fmt.Errorf("error reading 'pets': %w", err)
+		}
+		delete(object, "pets")
+	}
+
+	if raw, found := object["reservationCode"]; found {
+		err = json.Unmarshal(raw, &a.ReservationCode)
+		if err != nil {
+			return fmt.Errorf("error reading 'reservationCode': %w", err)
+		}
+		delete(object, "reservationCode")
+	}
+
+	if raw, found := object["reservationUuid"]; found {
+		err = json.Unmarshal(raw, &a.ReservationUuid)
+		if err != nil {
+			return fmt.Errorf("error reading 'reservationUuid': %w", err)
+		}
+		delete(object, "reservationUuid")
+	}
+
+	if raw, found := object["state"]; found {
+		err = json.Unmarshal(raw, &a.State)
+		if err != nil {
+			return fmt.Errorf("error reading 'state': %w", err)
+		}
+		delete(object, "state")
+	}
+
+	if raw, found := object["totalGuestPayment"]; found {
+		err = json.Unmarshal(raw, &a.TotalGuestPayment)
+		if err != nil {
+			return fmt.Errorf("error reading 'totalGuestPayment': %w", err)
+		}
+		delete(object, "totalGuestPayment")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GetVrboReservation200JSONResponseBody_Data to handle AdditionalProperties
+func (a GetVrboReservation200JSONResponseBody_Data) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Adults != nil {
+		object["adults"], err = json.Marshal(a.Adults)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'adults': %w", err)
+		}
+	}
+
+	if a.AvailableActions != nil {
+		object["availableActions"], err = json.Marshal(a.AvailableActions)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'availableActions': %w", err)
+		}
+	}
+
+	if a.CancellationPolicy != nil {
+		object["cancellationPolicy"], err = json.Marshal(a.CancellationPolicy)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'cancellationPolicy': %w", err)
+		}
+	}
+
+	if a.CheckIn != nil {
+		object["checkIn"], err = json.Marshal(a.CheckIn)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'checkIn': %w", err)
+		}
+	}
+
+	if a.CheckOut != nil {
+		object["checkOut"], err = json.Marshal(a.CheckOut)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'checkOut': %w", err)
+		}
+	}
+
+	if a.Children != nil {
+		object["children"], err = json.Marshal(a.Children)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'children': %w", err)
+		}
+	}
+
+	if a.Currency != nil {
+		object["currency"], err = json.Marshal(a.Currency)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'currency': %w", err)
+		}
+	}
+
+	if a.DamageDeposit != nil {
+		object["damageDeposit"], err = json.Marshal(a.DamageDeposit)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'damageDeposit': %w", err)
+		}
+	}
+
+	if a.GuestLines != nil {
+		object["guestLines"], err = json.Marshal(a.GuestLines)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'guestLines': %w", err)
+		}
+	}
+
+	if a.GuestName != nil {
+		object["guestName"], err = json.Marshal(a.GuestName)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'guestName': %w", err)
+		}
+	}
+
+	if a.HostLines != nil {
+		object["hostLines"], err = json.Marshal(a.HostLines)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'hostLines': %w", err)
+		}
+	}
+
+	if a.Payout != nil {
+		object["payout"], err = json.Marshal(a.Payout)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'payout': %w", err)
+		}
+	}
+
+	if a.Pets != nil {
+		object["pets"], err = json.Marshal(a.Pets)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'pets': %w", err)
+		}
+	}
+
+	if a.ReservationCode != nil {
+		object["reservationCode"], err = json.Marshal(a.ReservationCode)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'reservationCode': %w", err)
+		}
+	}
+
+	if a.ReservationUuid != nil {
+		object["reservationUuid"], err = json.Marshal(a.ReservationUuid)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'reservationUuid': %w", err)
+		}
+	}
+
+	if a.State != nil {
+		object["state"], err = json.Marshal(a.State)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'state': %w", err)
+		}
+	}
+
+	if a.TotalGuestPayment != nil {
+		object["totalGuestPayment"], err = json.Marshal(a.TotalGuestPayment)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'totalGuestPayment': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for VrboReservationAction200JSONResponseBody_Data. Returns the specified
+// element and whether it was found
+func (a VrboReservationAction200JSONResponseBody_Data) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for VrboReservationAction200JSONResponseBody_Data
+func (a *VrboReservationAction200JSONResponseBody_Data) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for VrboReservationAction200JSONResponseBody_Data to handle AdditionalProperties
+func (a *VrboReservationAction200JSONResponseBody_Data) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["action"]; found {
+		err = json.Unmarshal(raw, &a.Action)
+		if err != nil {
+			return fmt.Errorf("error reading 'action': %w", err)
+		}
+		delete(object, "action")
+	}
+
+	if raw, found := object["committed"]; found {
+		err = json.Unmarshal(raw, &a.Committed)
+		if err != nil {
+			return fmt.Errorf("error reading 'committed': %w", err)
+		}
+		delete(object, "committed")
+	}
+
+	if raw, found := object["payment"]; found {
+		err = json.Unmarshal(raw, &a.Payment)
+		if err != nil {
+			return fmt.Errorf("error reading 'payment': %w", err)
+		}
+		delete(object, "payment")
+	}
+
+	if raw, found := object["penalties"]; found {
+		err = json.Unmarshal(raw, &a.Penalties)
+		if err != nil {
+			return fmt.Errorf("error reading 'penalties': %w", err)
+		}
+		delete(object, "penalties")
+	}
+
+	if raw, found := object["preview"]; found {
+		err = json.Unmarshal(raw, &a.Preview)
+		if err != nil {
+			return fmt.Errorf("error reading 'preview': %w", err)
+		}
+		delete(object, "preview")
+	}
+
+	if raw, found := object["refundToGuest"]; found {
+		err = json.Unmarshal(raw, &a.RefundToGuest)
+		if err != nil {
+			return fmt.Errorf("error reading 'refundToGuest': %w", err)
+		}
+		delete(object, "refundToGuest")
+	}
+
+	if raw, found := object["reservationCode"]; found {
+		err = json.Unmarshal(raw, &a.ReservationCode)
+		if err != nil {
+			return fmt.Errorf("error reading 'reservationCode': %w", err)
+		}
+		delete(object, "reservationCode")
+	}
+
+	if raw, found := object["terms"]; found {
+		err = json.Unmarshal(raw, &a.Terms)
+		if err != nil {
+			return fmt.Errorf("error reading 'terms': %w", err)
+		}
+		delete(object, "terms")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for VrboReservationAction200JSONResponseBody_Data to handle AdditionalProperties
+func (a VrboReservationAction200JSONResponseBody_Data) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Action != nil {
+		object["action"], err = json.Marshal(a.Action)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'action': %w", err)
+		}
+	}
+
+	if a.Committed != nil {
+		object["committed"], err = json.Marshal(a.Committed)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'committed': %w", err)
+		}
+	}
+
+	if a.Payment != nil {
+		object["payment"], err = json.Marshal(a.Payment)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'payment': %w", err)
+		}
+	}
+
+	if a.Penalties != nil {
+		object["penalties"], err = json.Marshal(a.Penalties)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'penalties': %w", err)
+		}
+	}
+
+	if a.Preview != nil {
+		object["preview"], err = json.Marshal(a.Preview)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'preview': %w", err)
+		}
+	}
+
+	if a.RefundToGuest != nil {
+		object["refundToGuest"], err = json.Marshal(a.RefundToGuest)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'refundToGuest': %w", err)
+		}
+	}
+
+	if a.ReservationCode != nil {
+		object["reservationCode"], err = json.Marshal(a.ReservationCode)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'reservationCode': %w", err)
+		}
+	}
+
+	if a.Terms != nil {
+		object["terms"], err = json.Marshal(a.Terms)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'terms': %w", err)
+		}
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
