@@ -9310,6 +9310,66 @@ func (e VrboReservationActionJSONBodyAction) Valid() bool {
 	}
 }
 
+// Defines values for ListVrboTransactionsParamsStatus.
+const (
+	ListVrboTransactionsParamsStatusCOMPLETED ListVrboTransactionsParamsStatus = "COMPLETED"
+	ListVrboTransactionsParamsStatusUPCOMING  ListVrboTransactionsParamsStatus = "UPCOMING"
+)
+
+// Valid indicates whether the value is a known member of the ListVrboTransactionsParamsStatus enum.
+func (e ListVrboTransactionsParamsStatus) Valid() bool {
+	switch e {
+	case ListVrboTransactionsParamsStatusCOMPLETED:
+		return true
+	case ListVrboTransactionsParamsStatusUPCOMING:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListVrboTransactions200JSONResponseBodyDataStatus.
+const (
+	ListVrboTransactions200JSONResponseBodyDataStatusCOMPLETED ListVrboTransactions200JSONResponseBodyDataStatus = "COMPLETED"
+	ListVrboTransactions200JSONResponseBodyDataStatusUPCOMING  ListVrboTransactions200JSONResponseBodyDataStatus = "UPCOMING"
+)
+
+// Valid indicates whether the value is a known member of the ListVrboTransactions200JSONResponseBodyDataStatus enum.
+func (e ListVrboTransactions200JSONResponseBodyDataStatus) Valid() bool {
+	switch e {
+	case ListVrboTransactions200JSONResponseBodyDataStatusCOMPLETED:
+		return true
+	case ListVrboTransactions200JSONResponseBodyDataStatusUPCOMING:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListVrboTransactions200JSONResponseBodyDataFreshnessReason.
+const (
+	ListVrboTransactions200JSONResponseBodyDataFreshnessReasonNeverSynced       ListVrboTransactions200JSONResponseBodyDataFreshnessReason = "never_synced"
+	ListVrboTransactions200JSONResponseBodyDataFreshnessReasonOk                ListVrboTransactions200JSONResponseBodyDataFreshnessReason = "ok"
+	ListVrboTransactions200JSONResponseBodyDataFreshnessReasonReconnectRequired ListVrboTransactions200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	ListVrboTransactions200JSONResponseBodyDataFreshnessReasonRefreshing        ListVrboTransactions200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the ListVrboTransactions200JSONResponseBodyDataFreshnessReason enum.
+func (e ListVrboTransactions200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case ListVrboTransactions200JSONResponseBodyDataFreshnessReasonNeverSynced:
+		return true
+	case ListVrboTransactions200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case ListVrboTransactions200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case ListVrboTransactions200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateConnectSessionJSONBodyAccessType.
 const (
 	CreateConnectSessionJSONBodyAccessTypeFullAccess CreateConnectSessionJSONBodyAccessType = "full_access"
@@ -22894,7 +22954,7 @@ type CreateVrboAlterationJSONBody struct {
 	// CheckOutTime Example: 11:00
 	CheckOutTime *string `json:"check_out_time,omitempty"`
 
-	// ConfirmationCode Example: HA-C3WBX1
+	// ConfirmationCode Example: HA-8K2P3Q
 	ConfirmationCode string `json:"confirmation_code"`
 
 	// KeepOriginalPrice Change the stay without changing what the guest pays.
@@ -25006,6 +25066,53 @@ type VrboReservationAction200JSONResponseBody_Data struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// ListVrboTransactionsParams defines parameters for ListVrboTransactions.
+type ListVrboTransactionsParams struct {
+	// AccountId Only this Vrbo account (`accountId` from `GET /v1/channels/vrbo/connection`).
+	AccountId *string `form:"account_id,omitempty" json:"account_id,omitempty"`
+
+	// StartDate Inclusive lower bound on the deposit's date. YYYY-MM-DD.
+	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+
+	// EndDate Inclusive upper bound on the deposit's date. YYYY-MM-DD.
+	EndDate *openapi_types.Date               `form:"end_date,omitempty" json:"end_date,omitempty"`
+	Status  *ListVrboTransactionsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Type `Payout`, `Reservation` or `Adjustment`.
+	Type *string `form:"type,omitempty" json:"type,omitempty"`
+
+	// PayoutId One deposit (its reference number) and its lines.
+	PayoutId         *string `form:"payout_id,omitempty" json:"payout_id,omitempty"`
+	ConfirmationCode *string `form:"confirmation_code,omitempty" json:"confirmation_code,omitempty"`
+
+	// Cursor From the previous page's `pagination.nextCursor`.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Rows per page (default 100, at most 500).
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// ListVrboTransactionsParamsStatus defines parameters for ListVrboTransactions.
+type ListVrboTransactionsParamsStatus string
+
+// ListVrboTransactions200JSONResponseBodyDataStatus defines parameters for ListVrboTransactions.
+type ListVrboTransactions200JSONResponseBodyDataStatus string
+
+// ListVrboTransactions200JSONResponseBodyDataFreshnessReason defines parameters for ListVrboTransactions.
+type ListVrboTransactions200JSONResponseBodyDataFreshnessReason string
+
+// SyncVrboTransactionsJSONBody defines parameters for SyncVrboTransactions.
+type SyncVrboTransactionsJSONBody struct {
+	EndDate   *openapi_types.Date `json:"end_date,omitempty"`
+	StartDate *openapi_types.Date `json:"start_date,omitempty"`
+}
+
+// SyncVrboTransactionsParams defines parameters for SyncVrboTransactions.
+type SyncVrboTransactionsParams struct {
+	// AccountId Only this Vrbo account (`accountId` from `GET /v1/channels/vrbo/connection`).
+	AccountId *string `form:"account_id,omitempty" json:"account_id,omitempty"`
+}
+
 // CreateConnectSessionJSONBody defines parameters for CreateConnectSession.
 type CreateConnectSessionJSONBody struct {
 	// AccessType What the connection may do. Airbnb: the OAuth scope tier. Vrbo: `messaging` (or `read_only`) imports bookings and messages and never pushes the calendar; `full_access` also pushes prices and availability. Setting it locks the choice; omit it to let the host choose on the hosted page (default `full_access`).
@@ -27007,6 +27114,9 @@ type AddVrboListingVideoJSONRequestBody AddVrboListingVideoJSONBody
 
 // VrboReservationActionJSONRequestBody defines body for VrboReservationAction for application/json ContentType.
 type VrboReservationActionJSONRequestBody VrboReservationActionJSONBody
+
+// SyncVrboTransactionsJSONRequestBody defines body for SyncVrboTransactions for application/json ContentType.
+type SyncVrboTransactionsJSONRequestBody SyncVrboTransactionsJSONBody
 
 // CreateConnectSessionJSONRequestBody defines body for CreateConnectSession for application/json ContentType.
 type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
