@@ -753,16 +753,16 @@ func (e AirbnbPricingWriteRequestFeesAmountType) Valid() bool {
 
 // Defines values for AirbnbPricingWriteRequestFeesChargePeriod.
 const (
-	PERBOOKING AirbnbPricingWriteRequestFeesChargePeriod = "PER_BOOKING"
-	PERNIGHT   AirbnbPricingWriteRequestFeesChargePeriod = "PER_NIGHT"
+	AirbnbPricingWriteRequestFeesChargePeriodPERBOOKING AirbnbPricingWriteRequestFeesChargePeriod = "PER_BOOKING"
+	AirbnbPricingWriteRequestFeesChargePeriodPERNIGHT   AirbnbPricingWriteRequestFeesChargePeriod = "PER_NIGHT"
 )
 
 // Valid indicates whether the value is a known member of the AirbnbPricingWriteRequestFeesChargePeriod enum.
 func (e AirbnbPricingWriteRequestFeesChargePeriod) Valid() bool {
 	switch e {
-	case PERBOOKING:
+	case AirbnbPricingWriteRequestFeesChargePeriodPERBOOKING:
 		return true
-	case PERNIGHT:
+	case AirbnbPricingWriteRequestFeesChargePeriodPERNIGHT:
 		return true
 	default:
 		return false
@@ -5235,94 +5235,94 @@ func (e GetAirbnbBookingSettings200JSONResponseBodyDataInstantBookGuestCategory)
 
 // Defines values for UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours.
 const (
-	N0   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 0
-	N1   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 1
-	N10  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 10
-	N11  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 11
-	N12  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 12
-	N13  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 13
-	N14  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 14
-	N15  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 15
-	N16  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 16
-	N168 UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 168
-	N17  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 17
-	N18  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 18
-	N19  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 19
-	N2   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 2
-	N20  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 20
-	N21  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 21
-	N22  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 22
-	N23  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 23
-	N24  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 24
-	N3   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 3
-	N4   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 4
-	N48  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 48
-	N5   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 5
-	N6   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 6
-	N7   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 7
-	N72  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 72
-	N8   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 8
-	N9   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 9
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN0   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 0
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN1   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 1
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN10  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 10
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN11  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 11
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN12  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 12
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN13  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 13
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN14  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 14
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN15  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 15
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN16  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 16
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN168 UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 168
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN17  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 17
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN18  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 18
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN19  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 19
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN2   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 2
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN20  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 20
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN21  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 21
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN22  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 22
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN23  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 23
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN24  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 24
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN3   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 3
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN4   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 4
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN48  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 48
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN5   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 5
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN6   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 6
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN7   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 7
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN72  UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 72
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN8   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 8
+	UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN9   UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours = 9
 )
 
 // Valid indicates whether the value is a known member of the UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours enum.
 func (e UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHours) Valid() bool {
 	switch e {
-	case N0:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN0:
 		return true
-	case N1:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN1:
 		return true
-	case N10:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN10:
 		return true
-	case N11:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN11:
 		return true
-	case N12:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN12:
 		return true
-	case N13:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN13:
 		return true
-	case N14:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN14:
 		return true
-	case N15:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN15:
 		return true
-	case N16:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN16:
 		return true
-	case N168:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN168:
 		return true
-	case N17:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN17:
 		return true
-	case N18:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN18:
 		return true
-	case N19:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN19:
 		return true
-	case N2:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN2:
 		return true
-	case N20:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN20:
 		return true
-	case N21:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN21:
 		return true
-	case N22:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN22:
 		return true
-	case N23:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN23:
 		return true
-	case N24:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN24:
 		return true
-	case N3:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN3:
 		return true
-	case N4:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN4:
 		return true
-	case N48:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN48:
 		return true
-	case N5:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN5:
 		return true
-	case N6:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN6:
 		return true
-	case N7:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN7:
 		return true
-	case N72:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN72:
 		return true
-	case N8:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN8:
 		return true
-	case N9:
+	case UpdateAirbnbBookingSettingsJSONBodyAdvanceNoticeHoursN9:
 		return true
 	default:
 		return false
@@ -6241,6 +6241,339 @@ func (e ListVrboListingsParamsStatus) Valid() bool {
 	case ListVrboListingsParamsStatusAll:
 		return true
 	case ListVrboListingsParamsStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType.
+const (
+	GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckbox      GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "checkbox"
+	GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckboxGroup GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "checkboxGroup"
+	GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeChoice        GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "choice"
+	GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeMeasurement   GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "measurement"
+	GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeNumber        GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "number"
+	GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeText          GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "text"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType enum.
+func (e GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType) Valid() bool {
+	switch e {
+	case GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckbox:
+		return true
+	case GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckboxGroup:
+		return true
+	case GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeChoice:
+		return true
+	case GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeMeasurement:
+		return true
+	case GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeNumber:
+		return true
+	case GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeText:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType.
+const (
+	UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckbox      UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "checkbox"
+	UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckboxGroup UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "checkboxGroup"
+	UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeChoice        UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "choice"
+	UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeMeasurement   UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "measurement"
+	UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeNumber        UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "number"
+	UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeText          UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "text"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType enum.
+func (e UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType) Valid() bool {
+	switch e {
+	case UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckbox:
+		return true
+	case UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckboxGroup:
+		return true
+	case UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeChoice:
+		return true
+	case UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeMeasurement:
+		return true
+	case UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeNumber:
+		return true
+	case UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeText:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingBookingSettings200JSONResponseBodyDataBookingType.
+const (
+	GetVrboListingBookingSettings200JSONResponseBodyDataBookingTypeINSTANT   GetVrboListingBookingSettings200JSONResponseBodyDataBookingType = "INSTANT"
+	GetVrboListingBookingSettings200JSONResponseBodyDataBookingTypeQUOTEHOLD GetVrboListingBookingSettings200JSONResponseBodyDataBookingType = "QUOTEHOLD"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingBookingSettings200JSONResponseBodyDataBookingType enum.
+func (e GetVrboListingBookingSettings200JSONResponseBodyDataBookingType) Valid() bool {
+	switch e {
+	case GetVrboListingBookingSettings200JSONResponseBodyDataBookingTypeINSTANT:
+		return true
+	case GetVrboListingBookingSettings200JSONResponseBodyDataBookingTypeQUOTEHOLD:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingBookingSettingsJSONBodyBookingType.
+const (
+	UpdateVrboListingBookingSettingsJSONBodyBookingTypeINSTANT   UpdateVrboListingBookingSettingsJSONBodyBookingType = "INSTANT"
+	UpdateVrboListingBookingSettingsJSONBodyBookingTypeQUOTEHOLD UpdateVrboListingBookingSettingsJSONBodyBookingType = "QUOTEHOLD"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingBookingSettingsJSONBodyBookingType enum.
+func (e UpdateVrboListingBookingSettingsJSONBodyBookingType) Valid() bool {
+	switch e {
+	case UpdateVrboListingBookingSettingsJSONBodyBookingTypeINSTANT:
+		return true
+	case UpdateVrboListingBookingSettingsJSONBodyBookingTypeQUOTEHOLD:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking.
+const (
+	UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN12 UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking = 12
+	UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN18 UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking = 18
+	UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN24 UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking = 24
+	UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN6  UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking = 6
+	UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN9  UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking = 9
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking enum.
+func (e UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking) Valid() bool {
+	switch e {
+	case UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN12:
+		return true
+	case UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN18:
+		return true
+	case UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN24:
+		return true
+	case UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN6:
+		return true
+	case UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBookingN9:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType.
+const (
+	UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingTypeINSTANT   UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType = "INSTANT"
+	UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingTypeQUOTEHOLD UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType = "QUOTEHOLD"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType enum.
+func (e UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType) Valid() bool {
+	switch e {
+	case UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingTypeINSTANT:
+		return true
+	case UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingTypeQUOTEHOLD:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType.
+const (
+	GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeCheckbox      GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType = "checkbox"
+	GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeCheckboxGroup GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType = "checkboxGroup"
+	GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeChoice        GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType = "choice"
+	GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeMeasurement   GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType = "measurement"
+	GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeNumber        GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType = "number"
+	GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeText          GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType = "text"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType enum.
+func (e GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType) Valid() bool {
+	switch e {
+	case GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeCheckbox:
+		return true
+	case GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeCheckboxGroup:
+		return true
+	case GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeChoice:
+		return true
+	case GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeMeasurement:
+		return true
+	case GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeNumber:
+		return true
+	case GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeText:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType.
+const (
+	GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingTypeINSTANT   GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType = "INSTANT"
+	GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingTypeQUOTEHOLD GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType = "QUOTEHOLD"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType enum.
+func (e GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType) Valid() bool {
+	switch e {
+	case GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingTypeINSTANT:
+		return true
+	case GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingTypeQUOTEHOLD:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit.
+const (
+	GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnitSqft GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit = "sqft"
+	GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnitSqm  GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit = "sqm"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit enum.
+func (e GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit) Valid() bool {
+	switch e {
+	case GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnitSqft:
+		return true
+	case GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnitSqm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingFeesJSONBodyCleaningType.
+const (
+	UpdateVrboListingFeesJSONBodyCleaningTypePERNIGHT UpdateVrboListingFeesJSONBodyCleaningType = "PER_NIGHT"
+	UpdateVrboListingFeesJSONBodyCleaningTypePERSTAY  UpdateVrboListingFeesJSONBodyCleaningType = "PER_STAY"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingFeesJSONBodyCleaningType enum.
+func (e UpdateVrboListingFeesJSONBodyCleaningType) Valid() bool {
+	switch e {
+	case UpdateVrboListingFeesJSONBodyCleaningTypePERNIGHT:
+		return true
+	case UpdateVrboListingFeesJSONBodyCleaningTypePERSTAY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingFeesJSONBodyCustomType.
+const (
+	UpdateVrboListingFeesJSONBodyCustomTypePERNIGHT UpdateVrboListingFeesJSONBodyCustomType = "PER_NIGHT"
+	UpdateVrboListingFeesJSONBodyCustomTypePERSTAY  UpdateVrboListingFeesJSONBodyCustomType = "PER_STAY"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingFeesJSONBodyCustomType enum.
+func (e UpdateVrboListingFeesJSONBodyCustomType) Valid() bool {
+	switch e {
+	case UpdateVrboListingFeesJSONBodyCustomTypePERNIGHT:
+		return true
+	case UpdateVrboListingFeesJSONBodyCustomTypePERSTAY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingFeesJSONBodyExtraGuestsType.
+const (
+	PERNIGHTPERGUEST UpdateVrboListingFeesJSONBodyExtraGuestsType = "PER_NIGHT_PER_GUEST"
+	PERSTAYPERGUEST  UpdateVrboListingFeesJSONBodyExtraGuestsType = "PER_STAY_PER_GUEST"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingFeesJSONBodyExtraGuestsType enum.
+func (e UpdateVrboListingFeesJSONBodyExtraGuestsType) Valid() bool {
+	switch e {
+	case PERNIGHTPERGUEST:
+		return true
+	case PERSTAYPERGUEST:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingFeesJSONBodyPetsType.
+const (
+	UpdateVrboListingFeesJSONBodyPetsTypePERNIGHT UpdateVrboListingFeesJSONBodyPetsType = "PER_NIGHT"
+	UpdateVrboListingFeesJSONBodyPetsTypePERSTAY  UpdateVrboListingFeesJSONBodyPetsType = "PER_STAY"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingFeesJSONBodyPetsType enum.
+func (e UpdateVrboListingFeesJSONBodyPetsType) Valid() bool {
+	switch e {
+	case UpdateVrboListingFeesJSONBodyPetsTypePERNIGHT:
+		return true
+	case UpdateVrboListingFeesJSONBodyPetsTypePERSTAY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit.
+const (
+	GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqft GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit = "sqft"
+	GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqm  GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit = "sqm"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit enum.
+func (e GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit) Valid() bool {
+	switch e {
+	case GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqft:
+		return true
+	case GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPropertyJSONBodyInteriorSizeUnit.
+const (
+	UpdateVrboListingPropertyJSONBodyInteriorSizeUnitSqft UpdateVrboListingPropertyJSONBodyInteriorSizeUnit = "sqft"
+	UpdateVrboListingPropertyJSONBodyInteriorSizeUnitSqm  UpdateVrboListingPropertyJSONBodyInteriorSizeUnit = "sqm"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPropertyJSONBodyInteriorSizeUnit enum.
+func (e UpdateVrboListingPropertyJSONBodyInteriorSizeUnit) Valid() bool {
+	switch e {
+	case UpdateVrboListingPropertyJSONBodyInteriorSizeUnitSqft:
+		return true
+	case UpdateVrboListingPropertyJSONBodyInteriorSizeUnitSqm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit.
+const (
+	UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqft UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit = "sqft"
+	UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqm  UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit = "sqm"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit enum.
+func (e UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit) Valid() bool {
+	switch e {
+	case UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqft:
+		return true
+	case UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqm:
 		return true
 	default:
 		return false
@@ -7183,6 +7516,51 @@ func (e GetVrboPublishJob200JSONResponseBodyChannel) Valid() bool {
 	}
 }
 
+// Defines values for GetVrboPublishJob200JSONResponseBodyJobMode.
+const (
+	GetVrboPublishJob200JSONResponseBodyJobModeCreate GetVrboPublishJob200JSONResponseBodyJobMode = "create"
+	GetVrboPublishJob200JSONResponseBodyJobModeUpdate GetVrboPublishJob200JSONResponseBodyJobMode = "update"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboPublishJob200JSONResponseBodyJobMode enum.
+func (e GetVrboPublishJob200JSONResponseBodyJobMode) Valid() bool {
+	switch e {
+	case GetVrboPublishJob200JSONResponseBodyJobModeCreate:
+		return true
+	case GetVrboPublishJob200JSONResponseBodyJobModeUpdate:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboPublishJob200JSONResponseBodyJobSectionsStatus.
+const (
+	GetVrboPublishJob200JSONResponseBodyJobSectionsStatusDone     GetVrboPublishJob200JSONResponseBodyJobSectionsStatus = "done"
+	GetVrboPublishJob200JSONResponseBodyJobSectionsStatusFailed   GetVrboPublishJob200JSONResponseBodyJobSectionsStatus = "failed"
+	GetVrboPublishJob200JSONResponseBodyJobSectionsStatusPending  GetVrboPublishJob200JSONResponseBodyJobSectionsStatus = "pending"
+	GetVrboPublishJob200JSONResponseBodyJobSectionsStatusRejected GetVrboPublishJob200JSONResponseBodyJobSectionsStatus = "rejected"
+	GetVrboPublishJob200JSONResponseBodyJobSectionsStatusRunning  GetVrboPublishJob200JSONResponseBodyJobSectionsStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboPublishJob200JSONResponseBodyJobSectionsStatus enum.
+func (e GetVrboPublishJob200JSONResponseBodyJobSectionsStatus) Valid() bool {
+	switch e {
+	case GetVrboPublishJob200JSONResponseBodyJobSectionsStatusDone:
+		return true
+	case GetVrboPublishJob200JSONResponseBodyJobSectionsStatusFailed:
+		return true
+	case GetVrboPublishJob200JSONResponseBodyJobSectionsStatusPending:
+		return true
+	case GetVrboPublishJob200JSONResponseBodyJobSectionsStatusRejected:
+		return true
+	case GetVrboPublishJob200JSONResponseBodyJobSectionsStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetVrboPublishJob200JSONResponseBodyJobStatus.
 const (
 	GetVrboPublishJob200JSONResponseBodyJobStatusDone    GetVrboPublishJob200JSONResponseBodyJobStatus = "done"
@@ -7204,6 +7582,63 @@ func (e GetVrboPublishJob200JSONResponseBodyJobStatus) Valid() bool {
 	}
 }
 
+// Defines values for GetVrboPublishJob200JSONResponseBodyMode.
+const (
+	GetVrboPublishJob200JSONResponseBodyModeCreate GetVrboPublishJob200JSONResponseBodyMode = "create"
+	GetVrboPublishJob200JSONResponseBodyModeUpdate GetVrboPublishJob200JSONResponseBodyMode = "update"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboPublishJob200JSONResponseBodyMode enum.
+func (e GetVrboPublishJob200JSONResponseBodyMode) Valid() bool {
+	switch e {
+	case GetVrboPublishJob200JSONResponseBodyModeCreate:
+		return true
+	case GetVrboPublishJob200JSONResponseBodyModeUpdate:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublishListingToVrboJSONBodySections.
+const (
+	PublishListingToVrboJSONBodySectionsAmenities       PublishListingToVrboJSONBodySections = "amenities"
+	PublishListingToVrboJSONBodySectionsBookingSettings PublishListingToVrboJSONBodySections = "booking-settings"
+	PublishListingToVrboJSONBodySectionsCancellation    PublishListingToVrboJSONBodySections = "cancellation"
+	PublishListingToVrboJSONBodySectionsDescription     PublishListingToVrboJSONBodySections = "description"
+	PublishListingToVrboJSONBodySectionsFees            PublishListingToVrboJSONBodySections = "fees"
+	PublishListingToVrboJSONBodySectionsHouseRules      PublishListingToVrboJSONBodySections = "house-rules"
+	PublishListingToVrboJSONBodySectionsPricing         PublishListingToVrboJSONBodySections = "pricing"
+	PublishListingToVrboJSONBodySectionsProperty        PublishListingToVrboJSONBodySections = "property"
+	PublishListingToVrboJSONBodySectionsRates           PublishListingToVrboJSONBodySections = "rates"
+)
+
+// Valid indicates whether the value is a known member of the PublishListingToVrboJSONBodySections enum.
+func (e PublishListingToVrboJSONBodySections) Valid() bool {
+	switch e {
+	case PublishListingToVrboJSONBodySectionsAmenities:
+		return true
+	case PublishListingToVrboJSONBodySectionsBookingSettings:
+		return true
+	case PublishListingToVrboJSONBodySectionsCancellation:
+		return true
+	case PublishListingToVrboJSONBodySectionsDescription:
+		return true
+	case PublishListingToVrboJSONBodySectionsFees:
+		return true
+	case PublishListingToVrboJSONBodySectionsHouseRules:
+		return true
+	case PublishListingToVrboJSONBodySectionsPricing:
+		return true
+	case PublishListingToVrboJSONBodySectionsProperty:
+		return true
+	case PublishListingToVrboJSONBodySectionsRates:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PublishListingToVrbo202JSONResponseBodyChannel.
 const (
 	PublishListingToVrbo202JSONResponseBodyChannelVrbo PublishListingToVrbo202JSONResponseBodyChannel = "vrbo"
@@ -7213,6 +7648,51 @@ const (
 func (e PublishListingToVrbo202JSONResponseBodyChannel) Valid() bool {
 	switch e {
 	case PublishListingToVrbo202JSONResponseBodyChannelVrbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublishListingToVrbo202JSONResponseBodyJobMode.
+const (
+	PublishListingToVrbo202JSONResponseBodyJobModeCreate PublishListingToVrbo202JSONResponseBodyJobMode = "create"
+	PublishListingToVrbo202JSONResponseBodyJobModeUpdate PublishListingToVrbo202JSONResponseBodyJobMode = "update"
+)
+
+// Valid indicates whether the value is a known member of the PublishListingToVrbo202JSONResponseBodyJobMode enum.
+func (e PublishListingToVrbo202JSONResponseBodyJobMode) Valid() bool {
+	switch e {
+	case PublishListingToVrbo202JSONResponseBodyJobModeCreate:
+		return true
+	case PublishListingToVrbo202JSONResponseBodyJobModeUpdate:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublishListingToVrbo202JSONResponseBodyJobSectionsStatus.
+const (
+	PublishListingToVrbo202JSONResponseBodyJobSectionsStatusDone     PublishListingToVrbo202JSONResponseBodyJobSectionsStatus = "done"
+	PublishListingToVrbo202JSONResponseBodyJobSectionsStatusFailed   PublishListingToVrbo202JSONResponseBodyJobSectionsStatus = "failed"
+	PublishListingToVrbo202JSONResponseBodyJobSectionsStatusPending  PublishListingToVrbo202JSONResponseBodyJobSectionsStatus = "pending"
+	PublishListingToVrbo202JSONResponseBodyJobSectionsStatusRejected PublishListingToVrbo202JSONResponseBodyJobSectionsStatus = "rejected"
+	PublishListingToVrbo202JSONResponseBodyJobSectionsStatusRunning  PublishListingToVrbo202JSONResponseBodyJobSectionsStatus = "running"
+)
+
+// Valid indicates whether the value is a known member of the PublishListingToVrbo202JSONResponseBodyJobSectionsStatus enum.
+func (e PublishListingToVrbo202JSONResponseBodyJobSectionsStatus) Valid() bool {
+	switch e {
+	case PublishListingToVrbo202JSONResponseBodyJobSectionsStatusDone:
+		return true
+	case PublishListingToVrbo202JSONResponseBodyJobSectionsStatusFailed:
+		return true
+	case PublishListingToVrbo202JSONResponseBodyJobSectionsStatusPending:
+		return true
+	case PublishListingToVrbo202JSONResponseBodyJobSectionsStatusRejected:
+		return true
+	case PublishListingToVrbo202JSONResponseBodyJobSectionsStatusRunning:
 		return true
 	default:
 		return false
@@ -7234,6 +7714,24 @@ func (e PublishListingToVrbo202JSONResponseBodyJobStatus) Valid() bool {
 	case PublishListingToVrbo202JSONResponseBodyJobStatusFailed:
 		return true
 	case PublishListingToVrbo202JSONResponseBodyJobStatusRunning:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublishListingToVrbo202JSONResponseBodyMode.
+const (
+	PublishListingToVrbo202JSONResponseBodyModeCreate PublishListingToVrbo202JSONResponseBodyMode = "create"
+	PublishListingToVrbo202JSONResponseBodyModeUpdate PublishListingToVrbo202JSONResponseBodyMode = "update"
+)
+
+// Valid indicates whether the value is a known member of the PublishListingToVrbo202JSONResponseBodyMode enum.
+func (e PublishListingToVrbo202JSONResponseBodyMode) Valid() bool {
+	switch e {
+	case PublishListingToVrbo202JSONResponseBodyModeCreate:
+		return true
+	case PublishListingToVrbo202JSONResponseBodyModeUpdate:
 		return true
 	default:
 		return false
@@ -19664,6 +20162,1121 @@ type ListVrboListingsParams struct {
 // ListVrboListingsParamsStatus defines parameters for ListVrboListings.
 type ListVrboListingsParamsStatus string
 
+// GetVrboListingAdditionalInfoParams defines parameters for GetVrboListingAdditionalInfo.
+type GetVrboListingAdditionalInfoParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingAdditionalInfoJSONBody defines parameters for UpdateVrboListingAdditionalInfo.
+type UpdateVrboListingAdditionalInfoJSONBody struct {
+	Bathrooms *string `json:"bathrooms,omitempty"`
+	Bedrooms  *string `json:"bedrooms,omitempty"`
+	Property  *string `json:"property,omitempty"`
+}
+
+// UpdateVrboListingAdditionalInfoParams defines parameters for UpdateVrboListingAdditionalInfo.
+type UpdateVrboListingAdditionalInfoParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingAmenitiesParams defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenitiesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Groups Amenity groups to read, comma-separated (default: all 19 — one Vrbo call each): essentials, internet, climateControl, general, office, kitchenAndDining, parking, poolAndSpa, sustainability, entertainment, outdoor, onsiteService, accessibility, homeSafety, safetyDevices, enhancedCleaning, locationAndView, localAttractionsAndActivities, checkoutInstructions.
+	Groups *string `form:"groups,omitempty" json:"groups,omitempty"`
+}
+
+// GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType string
+
+// GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 = string
+
+// GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 = float32
+
+// GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 = bool
+
+// GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBody defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody struct {
+	// Groups Keyed by group: essentials, internet, climateControl, general, office, kitchenAndDining, parking, poolAndSpa, sustainability, entertainment, outdoor, onsiteService, accessibility, homeSafety, safetyDevices, enhancedCleaning, locationAndView, localAttractionsAndActivities, checkoutInstructions.
+	Groups struct {
+		Accessibility *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties `json:"values"`
+		} `json:"accessibility,omitempty"`
+		CheckoutInstructions *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties `json:"values"`
+		} `json:"checkoutInstructions,omitempty"`
+		ClimateControl *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties `json:"values"`
+		} `json:"climateControl,omitempty"`
+		EnhancedCleaning *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties `json:"values"`
+		} `json:"enhancedCleaning,omitempty"`
+		Entertainment *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties `json:"values"`
+		} `json:"entertainment,omitempty"`
+		Essentials *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties `json:"values"`
+		} `json:"essentials,omitempty"`
+		General *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties `json:"values"`
+		} `json:"general,omitempty"`
+		HomeSafety *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties `json:"values"`
+		} `json:"homeSafety,omitempty"`
+		Internet *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties `json:"values"`
+		} `json:"internet,omitempty"`
+		KitchenAndDining *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties `json:"values"`
+		} `json:"kitchenAndDining,omitempty"`
+		LocalAttractionsAndActivities *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties `json:"values"`
+		} `json:"localAttractionsAndActivities,omitempty"`
+		LocationAndView *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties `json:"values"`
+		} `json:"locationAndView,omitempty"`
+		Office *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties `json:"values"`
+		} `json:"office,omitempty"`
+		OnsiteService *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties `json:"values"`
+		} `json:"onsiteService,omitempty"`
+		Outdoor *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties `json:"values"`
+		} `json:"outdoor,omitempty"`
+		Parking *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties `json:"values"`
+		} `json:"parking,omitempty"`
+		PoolAndSpa *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties `json:"values"`
+		} `json:"poolAndSpa,omitempty"`
+		SafetyDevices *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties `json:"values"`
+		} `json:"safetyDevices,omitempty"`
+		Sustainability *struct {
+			// Values `{fieldId: value}`
+			Values map[string]*UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties `json:"values"`
+		} `json:"sustainability,omitempty"`
+	} `json:"groups"`
+}
+
+// UpdateVrboListingAmenitiesParams defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0 = bool
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1 = string
+
+// UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2 = float32
+
+// UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType string
+
+// UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 = string
+
+// UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 = float32
+
+// UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 = bool
+
+// UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value struct {
+	union json.RawMessage
+}
+
+// GetVrboListingBookingSettingsParams defines parameters for GetVrboListingBookingSettings.
+type GetVrboListingBookingSettingsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingBookingSettings200JSONResponseBodyDataBookingType defines parameters for GetVrboListingBookingSettings.
+type GetVrboListingBookingSettings200JSONResponseBodyDataBookingType string
+
+// UpdateVrboListingBookingSettingsJSONBody defines parameters for UpdateVrboListingBookingSettings.
+type UpdateVrboListingBookingSettingsJSONBody struct {
+	// AccessType One of the read's `accessTypeOptions[].value`.
+	AccessType             *string                                                         `json:"accessType,omitempty"`
+	BookingType            *UpdateVrboListingBookingSettingsJSONBodyBookingType            `json:"bookingType,omitempty"`
+	MaxLengthOfStay        *int                                                            `json:"maxLengthOfStay,omitempty"`
+	MaxMonthsBeforeBooking *UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking `json:"maxMonthsBeforeBooking,omitempty"`
+
+	// MinDaysBeforeBooking One of the read's `minDaysBeforeBookingOptions`.
+	MinDaysBeforeBooking *int `json:"minDaysBeforeBooking,omitempty"`
+	MinNights            *int `json:"minNights,omitempty"`
+}
+
+// UpdateVrboListingBookingSettingsParams defines parameters for UpdateVrboListingBookingSettings.
+type UpdateVrboListingBookingSettingsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingBookingSettingsJSONBodyBookingType defines parameters for UpdateVrboListingBookingSettings.
+type UpdateVrboListingBookingSettingsJSONBodyBookingType string
+
+// UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking defines parameters for UpdateVrboListingBookingSettings.
+type UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking int
+
+// UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType defines parameters for UpdateVrboListingBookingSettings.
+type UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType string
+
+// GetVrboListingCancellationParams defines parameters for GetVrboListingCancellation.
+type GetVrboListingCancellationParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingCancellationJSONBody defines parameters for UpdateVrboListingCancellation.
+type UpdateVrboListingCancellationJSONBody struct {
+	// PolicyType POLICY_TYPE_VR_RELAXED (14/7 days), _MODERATE (30/14), _FIRM (60/30), _STRICT (60), … or POLICY_TYPE_CUSTOM with `tiers`. The read lists Vrbo's named policies in `options`.
+	//
+	// Example: POLICY_TYPE_VR_MODERATE
+	PolicyType string `json:"policyType"`
+	Tiers      *[]struct {
+		DaysBefore    int     `json:"daysBefore"`
+		RefundPercent float32 `json:"refundPercent"`
+	} `json:"tiers,omitempty"`
+}
+
+// UpdateVrboListingCancellationParams defines parameters for UpdateVrboListingCancellation.
+type UpdateVrboListingCancellationParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingContentParams defines parameters for GetVrboListingContent.
+type GetVrboListingContentParams struct {
+	// Sections Comma-separated sections, or `all`: description, property, story, additional-info, translations, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, rates, payment-terms, protection, taxes, registration, welcome-guide, videos.
+	Sections string `form:"sections" json:"sections"`
+
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType string
+
+// GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0 defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0 = string
+
+// GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1 defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1 = float32
+
+// GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2 defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2 = bool
+
+// GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value struct {
+	union json.RawMessage
+}
+
+// GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType string
+
+// GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit string
+
+// GetVrboListingDescriptionParams defines parameters for GetVrboListingDescription.
+type GetVrboListingDescriptionParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingDescriptionJSONBody defines parameters for UpdateVrboListingDescription.
+type UpdateVrboListingDescriptionJSONBody struct {
+	Description *string `json:"description,omitempty"`
+	Headline    *string `json:"headline,omitempty"`
+}
+
+// UpdateVrboListingDescriptionParams defines parameters for UpdateVrboListingDescription.
+type UpdateVrboListingDescriptionParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingFeesParams defines parameters for GetVrboListingFees.
+type GetVrboListingFeesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingFeesJSONBody defines parameters for UpdateVrboListingFees.
+type UpdateVrboListingFeesJSONBody struct {
+	Cleaning *struct {
+		Amount  float32                                    `json:"amount"`
+		Taxable *bool                                      `json:"taxable,omitempty"`
+		Type    *UpdateVrboListingFeesJSONBodyCleaningType `json:"type,omitempty"`
+	} `json:"cleaning,omitempty"`
+	Custom *[]struct {
+		Amount float32 `json:"amount"`
+
+		// ProductCode One of the read's `customFeeCodes` (e.g. ADMINISTRATIVE, HOT_TUB, LINENS, PARKING, POOL).
+		//
+		// Example: PARKING
+		ProductCode string                                   `json:"productCode"`
+		TaxRate     *float32                                 `json:"taxRate,omitempty"`
+		Taxable     *bool                                    `json:"taxable,omitempty"`
+		Type        *UpdateVrboListingFeesJSONBodyCustomType `json:"type,omitempty"`
+	} `json:"custom,omitempty"`
+	ExtraGuests *struct {
+		AfterGuests *int                                          `json:"afterGuests,omitempty"`
+		Amount      *float32                                      `json:"amount,omitempty"`
+		Taxable     *bool                                         `json:"taxable,omitempty"`
+		Type        *UpdateVrboListingFeesJSONBodyExtraGuestsType `json:"type,omitempty"`
+	} `json:"extraGuests,omitempty"`
+	Pets *struct {
+		Amount  float32                                `json:"amount"`
+		Taxable *bool                                  `json:"taxable,omitempty"`
+		Type    *UpdateVrboListingFeesJSONBodyPetsType `json:"type,omitempty"`
+	} `json:"pets,omitempty"`
+}
+
+// UpdateVrboListingFeesParams defines parameters for UpdateVrboListingFees.
+type UpdateVrboListingFeesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingFeesJSONBodyCleaningType defines parameters for UpdateVrboListingFees.
+type UpdateVrboListingFeesJSONBodyCleaningType string
+
+// UpdateVrboListingFeesJSONBodyCustomType defines parameters for UpdateVrboListingFees.
+type UpdateVrboListingFeesJSONBodyCustomType string
+
+// UpdateVrboListingFeesJSONBodyExtraGuestsType defines parameters for UpdateVrboListingFees.
+type UpdateVrboListingFeesJSONBodyExtraGuestsType string
+
+// UpdateVrboListingFeesJSONBodyPetsType defines parameters for UpdateVrboListingFees.
+type UpdateVrboListingFeesJSONBodyPetsType string
+
+// GetVrboListingHouseRulesParams defines parameters for GetVrboListingHouseRules.
+type GetVrboListingHouseRulesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingHouseRulesJSONBody defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRulesJSONBody struct {
+	// CheckInTime Example: 16:00
+	CheckInTime *string `json:"checkInTime,omitempty"`
+
+	// CheckOutTime Example: 16:00
+	CheckOutTime *string `json:"checkOutTime,omitempty"`
+	Children     *struct {
+		Ages *[]struct {
+			Max *int `json:"max,omitempty"`
+			Min *int `json:"min,omitempty"`
+		} `json:"ages,omitempty"`
+		Allowed *bool   `json:"allowed,omitempty"`
+		Note    *string `json:"note,omitempty"`
+	} `json:"children,omitempty"`
+	CustomRules *[]string `json:"customRules,omitempty"`
+	Events      *struct {
+		Allowed           *bool   `json:"allowed,omitempty"`
+		AllowedEventsNote *string `json:"allowedEventsNote,omitempty"`
+		MaxAttendees      *int    `json:"maxAttendees,omitempty"`
+		Note              *string `json:"note,omitempty"`
+	} `json:"events,omitempty"`
+	MaxAdults      *int    `json:"maxAdults,omitempty"`
+	MaxGuests      *int    `json:"maxGuests,omitempty"`
+	MinimumAge     *int    `json:"minimumAge,omitempty"`
+	MinimumAgeNote *string `json:"minimumAgeNote,omitempty"`
+	OccupancyNote  *string `json:"occupancyNote,omitempty"`
+	Pets           *struct {
+		Allowed     *bool                                                 `json:"allowed,omitempty"`
+		AllowedPets *UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets `json:"allowedPets,omitempty"`
+		Max         *int                                                  `json:"max,omitempty"`
+		MaxWeight   *UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight   `json:"maxWeight,omitempty"`
+		Note        *string                                               `json:"note,omitempty"`
+	} `json:"pets,omitempty"`
+	Smoking *struct {
+		Allowed *bool   `json:"allowed,omitempty"`
+		Inside  *bool   `json:"inside,omitempty"`
+		Note    *string `json:"note,omitempty"`
+		Outside *bool   `json:"outside,omitempty"`
+	} `json:"smoking,omitempty"`
+}
+
+// UpdateVrboListingHouseRulesParams defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRulesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0 defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0 = string
+
+// UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1 defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1 = []string
+
+// UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0 defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0 = float32
+
+// UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1 defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1 = string
+
+// UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight struct {
+	union json.RawMessage
+}
+
+// GetVrboListingLocationParams defines parameters for GetVrboListingLocation.
+type GetVrboListingLocationParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingLocationJSONBody defines parameters for UpdateVrboListingLocation.
+type UpdateVrboListingLocationJSONBody struct {
+	ShowExactLocation bool `json:"showExactLocation"`
+}
+
+// UpdateVrboListingLocationParams defines parameters for UpdateVrboListingLocation.
+type UpdateVrboListingLocationParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingPaymentTermsParams defines parameters for GetVrboListingPaymentTerms.
+type GetVrboListingPaymentTermsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingPaymentTermsJSONBody defines parameters for UpdateVrboListingPaymentTerms.
+type UpdateVrboListingPaymentTermsJSONBody struct {
+	Payments *[]struct {
+		DaysBeforeArrival int     `json:"daysBeforeArrival"`
+		Percent           float32 `json:"percent"`
+	} `json:"payments,omitempty"`
+	PercentDueNow float32 `json:"percentDueNow"`
+}
+
+// UpdateVrboListingPaymentTermsParams defines parameters for UpdateVrboListingPaymentTerms.
+type UpdateVrboListingPaymentTermsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingPhotosParams defines parameters for GetVrboListingPhotos.
+type GetVrboListingPhotosParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingPhotosJSONBody defines parameters for UpdateVrboListingPhotos.
+type UpdateVrboListingPhotosJSONBody struct {
+	Add *[]struct {
+		Caption *string `json:"caption,omitempty"`
+		Url     string  `json:"url"`
+	} `json:"add,omitempty"`
+
+	// Captions `{photoId: caption}`
+	Captions *map[string]string `json:"captions,omitempty"`
+	Cover    *string            `json:"cover,omitempty"`
+	Delete   *[]string          `json:"delete,omitempty"`
+	Order    *[]string          `json:"order,omitempty"`
+}
+
+// UpdateVrboListingPhotosParams defines parameters for UpdateVrboListingPhotos.
+type UpdateVrboListingPhotosParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingPricingParams defines parameters for GetVrboListingPricing.
+type GetVrboListingPricingParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingPricingJSONBody defines parameters for UpdateVrboListingPricing.
+type UpdateVrboListingPricingJSONBody struct {
+	BaseRate float32 `json:"baseRate"`
+}
+
+// UpdateVrboListingPricingParams defines parameters for UpdateVrboListingPricing.
+type UpdateVrboListingPricingParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingPropertyParams defines parameters for GetVrboListingProperty.
+type GetVrboListingPropertyParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit defines parameters for GetVrboListingProperty.
+type GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit string
+
+// UpdateVrboListingPropertyJSONBody defines parameters for UpdateVrboListingProperty.
+type UpdateVrboListingPropertyJSONBody struct {
+	InteriorSize *struct {
+		Unit  UpdateVrboListingPropertyJSONBodyInteriorSizeUnit `json:"unit"`
+		Value float32                                           `json:"value"`
+	} `json:"interiorSize,omitempty"`
+	LongTermRentersWelcome *bool `json:"longTermRentersWelcome,omitempty"`
+
+	// PropertyName Internal name (not shown to guests).
+	PropertyName *string `json:"propertyName,omitempty"`
+
+	// PropertyType One of the read's `propertyTypeOptions[].value`.
+	PropertyType *string `json:"propertyType,omitempty"`
+	SeniorsOnly  *bool   `json:"seniorsOnly,omitempty"`
+}
+
+// UpdateVrboListingPropertyParams defines parameters for UpdateVrboListingProperty.
+type UpdateVrboListingPropertyParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingPropertyJSONBodyInteriorSizeUnit defines parameters for UpdateVrboListingProperty.
+type UpdateVrboListingPropertyJSONBodyInteriorSizeUnit string
+
+// UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit defines parameters for UpdateVrboListingProperty.
+type UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit string
+
+// GetVrboListingProtectionParams defines parameters for GetVrboListingProtection.
+type GetVrboListingProtectionParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingProtectionJSONBody defines parameters for UpdateVrboListingProtection.
+type UpdateVrboListingProtectionJSONBody struct {
+	DamageDeposit *UpdateVrboListingProtectionJSONBody_DamageDeposit `json:"damageDeposit,omitempty"`
+
+	// DamageProtection In Vrbo's shape, as the read returns it.
+	DamageProtection interface{} `json:"damageProtection,omitempty"`
+}
+
+// UpdateVrboListingProtectionParams defines parameters for UpdateVrboListingProtection.
+type UpdateVrboListingProtectionParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingProtectionJSONBodyDamageDeposit0 defines parameters for UpdateVrboListingProtection.
+type UpdateVrboListingProtectionJSONBodyDamageDeposit0 struct {
+	Amount float32 `json:"amount"`
+}
+
+// UpdateVrboListingProtectionJSONBodyDamageDeposit1 defines parameters for UpdateVrboListingProtection.
+type UpdateVrboListingProtectionJSONBodyDamageDeposit1 = float32
+
+// UpdateVrboListingProtectionJSONBody_DamageDeposit defines parameters for UpdateVrboListingProtection.
+type UpdateVrboListingProtectionJSONBody_DamageDeposit struct {
+	union json.RawMessage
+}
+
+// GetVrboListingRatesParams defines parameters for GetVrboListingRates.
+type GetVrboListingRatesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Start First night to read (default today).
+	Start *openapi_types.Date `form:"start,omitempty" json:"start,omitempty"`
+
+	// End Last night to read (default start + 13 days; at most 3 years).
+	End *openapi_types.Date `form:"end,omitempty" json:"end,omitempty"`
+}
+
+// UpdateVrboListingRatesJSONBody defines parameters for UpdateVrboListingRates.
+type UpdateVrboListingRatesJSONBody struct {
+	// EndDate On or after `startDate`, at most 3 years later.
+	EndDate openapi_types.Date `json:"endDate"`
+
+	// MonthlyDiscountPercent Stays of 28 nights or more.
+	MonthlyDiscountPercent *float32 `json:"monthlyDiscountPercent,omitempty"`
+
+	// NightlyRate One price for every night in the range.
+	NightlyRate *float32 `json:"nightlyRate,omitempty"`
+
+	// NightlyRates A price per weekday; every weekday in the range needs one.
+	NightlyRates *struct {
+		Friday    *float32 `json:"friday,omitempty"`
+		Monday    *float32 `json:"monday,omitempty"`
+		Saturday  *float32 `json:"saturday,omitempty"`
+		Sunday    *float32 `json:"sunday,omitempty"`
+		Thursday  *float32 `json:"thursday,omitempty"`
+		Tuesday   *float32 `json:"tuesday,omitempty"`
+		Wednesday *float32 `json:"wednesday,omitempty"`
+	} `json:"nightlyRates,omitempty"`
+	StartDate openapi_types.Date `json:"startDate"`
+
+	// WeeklyDiscountPercent Stays of 7–27 nights.
+	WeeklyDiscountPercent *float32 `json:"weeklyDiscountPercent,omitempty"`
+}
+
+// UpdateVrboListingRatesParams defines parameters for UpdateVrboListingRates.
+type UpdateVrboListingRatesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingRegistrationParams defines parameters for GetVrboListingRegistration.
+type GetVrboListingRegistrationParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingRegistrationJSONBody defines parameters for UpdateVrboListingRegistration.
+type UpdateVrboListingRegistrationJSONBody struct {
+	Settings []struct {
+		// Name A `fields[].name` from the read (they differ per jurisdiction).
+		Name  string                                                `json:"name"`
+		Value *UpdateVrboListingRegistrationJSONBody_Settings_Value `json:"value"`
+	} `json:"settings"`
+}
+
+// UpdateVrboListingRegistrationParams defines parameters for UpdateVrboListingRegistration.
+type UpdateVrboListingRegistrationParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingRegistrationJSONBodySettingsValue0 defines parameters for UpdateVrboListingRegistration.
+type UpdateVrboListingRegistrationJSONBodySettingsValue0 = string
+
+// UpdateVrboListingRegistrationJSONBodySettingsValue1 defines parameters for UpdateVrboListingRegistration.
+type UpdateVrboListingRegistrationJSONBodySettingsValue1 = float32
+
+// UpdateVrboListingRegistrationJSONBodySettingsValue2 defines parameters for UpdateVrboListingRegistration.
+type UpdateVrboListingRegistrationJSONBodySettingsValue2 = bool
+
+// UpdateVrboListingRegistrationJSONBody_Settings_Value defines parameters for UpdateVrboListingRegistration.
+type UpdateVrboListingRegistrationJSONBody_Settings_Value struct {
+	union json.RawMessage
+}
+
+// GetVrboListingRoomsParams defines parameters for GetVrboListingRooms.
+type GetVrboListingRoomsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingRoomsJSONBody defines parameters for UpdateVrboListingRooms.
+type UpdateVrboListingRoomsJSONBody struct {
+	Add *[]struct {
+		// Amenities `{amenityId: true|false}` or `[{id, selected, detail?}]` — only the ones given change.
+		Amenities *UpdateVrboListingRoomsJSONBody_Add_Amenities `json:"amenities,omitempty"`
+		Beds      *[]struct {
+			Quantity *int `json:"quantity,omitempty"`
+
+			// Size Example: QUEEN
+			Size *string `json:"size,omitempty"`
+
+			// Type Example: QUEEN_BED
+			Type *string `json:"type,omitempty"`
+		} `json:"beds,omitempty"`
+		Description *string `json:"description,omitempty"`
+		Name        *string `json:"name,omitempty"`
+
+		// SubType Bathrooms: one of the read's `bathroomTypes` (FULL_BATH, HALF_BATH, …).
+		SubType *string `json:"subType,omitempty"`
+
+		// Type One of the read's `addableTypes` (BEDROOM, BATHROOM, LIVING_ROOM, OFFICE, …).
+		//
+		// Example: BEDROOM
+		Type string `json:"type"`
+	} `json:"add,omitempty"`
+	Delete *[]string `json:"delete,omitempty"`
+	Update *[]struct {
+		// Amenities `{amenityId: true|false}` or `[{id, selected, detail?}]` — only the ones given change.
+		Amenities *UpdateVrboListingRoomsJSONBody_Update_Amenities `json:"amenities,omitempty"`
+		Beds      *[]struct {
+			Quantity *int `json:"quantity,omitempty"`
+
+			// Size Example: QUEEN
+			Size *string `json:"size,omitempty"`
+
+			// Type Example: QUEEN_BED
+			Type *string `json:"type,omitempty"`
+		} `json:"beds,omitempty"`
+		Description *string `json:"description,omitempty"`
+		Name        *string `json:"name,omitempty"`
+		SpaceId     string  `json:"spaceId"`
+
+		// SubType Bathrooms: one of the read's `bathroomTypes` (FULL_BATH, HALF_BATH, …).
+		SubType *string `json:"subType,omitempty"`
+	} `json:"update,omitempty"`
+}
+
+// UpdateVrboListingRoomsParams defines parameters for UpdateVrboListingRooms.
+type UpdateVrboListingRoomsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingRoomsJSONBodyAddAmenities0 defines parameters for UpdateVrboListingRooms.
+type UpdateVrboListingRoomsJSONBodyAddAmenities0 map[string]interface{}
+
+// UpdateVrboListingRoomsJSONBodyAddAmenities1 defines parameters for UpdateVrboListingRooms.
+type UpdateVrboListingRoomsJSONBodyAddAmenities1 = []struct {
+	Detail   *string `json:"detail,omitempty"`
+	Id       *string `json:"id,omitempty"`
+	Selected *bool   `json:"selected,omitempty"`
+}
+
+// UpdateVrboListingRoomsJSONBody_Add_Amenities defines parameters for UpdateVrboListingRooms.
+type UpdateVrboListingRoomsJSONBody_Add_Amenities struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingRoomsJSONBodyUpdateAmenities0 defines parameters for UpdateVrboListingRooms.
+type UpdateVrboListingRoomsJSONBodyUpdateAmenities0 map[string]interface{}
+
+// UpdateVrboListingRoomsJSONBodyUpdateAmenities1 defines parameters for UpdateVrboListingRooms.
+type UpdateVrboListingRoomsJSONBodyUpdateAmenities1 = []struct {
+	Detail   *string `json:"detail,omitempty"`
+	Id       *string `json:"id,omitempty"`
+	Selected *bool   `json:"selected,omitempty"`
+}
+
+// UpdateVrboListingRoomsJSONBody_Update_Amenities defines parameters for UpdateVrboListingRooms.
+type UpdateVrboListingRoomsJSONBody_Update_Amenities struct {
+	union json.RawMessage
+}
+
+// GetVrboListingStoryParams defines parameters for GetVrboListingStory.
+type GetVrboListingStoryParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingStoryJSONBody defines parameters for UpdateVrboListingStory.
+type UpdateVrboListingStoryJSONBody struct {
+	AboutYou        *string `json:"aboutYou,omitempty"`
+	UniqueBenefits  *string `json:"uniqueBenefits,omitempty"`
+	WhyThisProperty *string `json:"whyThisProperty,omitempty"`
+}
+
+// UpdateVrboListingStoryParams defines parameters for UpdateVrboListingStory.
+type UpdateVrboListingStoryParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingTaxesParams defines parameters for GetVrboListingTaxes.
+type GetVrboListingTaxesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingTaxesJSONBody defines parameters for UpdateVrboListingTaxes.
+type UpdateVrboListingTaxesJSONBody struct {
+	PartnerTaxSettings *struct {
+		Attributes *[]interface{} `json:"attributes,omitempty"`
+		Category   string         `json:"category"`
+	} `json:"partnerTaxSettings,omitempty"`
+	StayTax *struct {
+		Amount float32 `json:"amount"`
+		MinAge *int    `json:"minAge,omitempty"`
+	} `json:"stayTax,omitempty"`
+	Tax *map[string]interface{} `json:"tax,omitempty"`
+}
+
+// UpdateVrboListingTaxesParams defines parameters for UpdateVrboListingTaxes.
+type UpdateVrboListingTaxesParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingTranslationsParams defines parameters for GetVrboListingTranslations.
+type GetVrboListingTranslationsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingTranslationsJSONBody defines parameters for UpdateVrboListingTranslations.
+type UpdateVrboListingTranslationsJSONBody struct {
+	Delete *[]string `json:"delete,omitempty"`
+	Set    *[]struct {
+		Description *string `json:"description,omitempty"`
+		Headline    *string `json:"headline,omitempty"`
+		Locale      string  `json:"locale"`
+	} `json:"set,omitempty"`
+}
+
+// UpdateVrboListingTranslationsParams defines parameters for UpdateVrboListingTranslations.
+type UpdateVrboListingTranslationsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// DeleteVrboListingVideosParams defines parameters for DeleteVrboListingVideos.
+type DeleteVrboListingVideosParams struct {
+	// VideoId The `id` of the video to remove (comma-separated for several).
+	VideoId string `form:"videoId" json:"videoId"`
+
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingVideosParams defines parameters for GetVrboListingVideos.
+type GetVrboListingVideosParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// AddVrboListingVideoJSONBody defines parameters for AddVrboListingVideo.
+type AddVrboListingVideoJSONBody struct {
+	// Url An MP4, MOV, WEBM, AVI or QT file under 2 GB.
+	Url string `json:"url"`
+}
+
+// AddVrboListingVideoParams defines parameters for AddVrboListingVideo.
+type AddVrboListingVideoParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingWelcomeGuideParams defines parameters for GetVrboListingWelcomeGuide.
+type GetVrboListingWelcomeGuideParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingWelcomeGuideJSONBody defines parameters for UpdateVrboListingWelcomeGuide.
+type UpdateVrboListingWelcomeGuideJSONBody struct {
+	Access *struct {
+		Code         *string `json:"code,omitempty"`
+		Instructions *string `json:"instructions,omitempty"`
+		Type         *string `json:"type,omitempty"`
+	} `json:"access,omitempty"`
+
+	// Amenities `{AMENITY_ID: {instructions}}` — notes are one-way (not removable).
+	Amenities *map[string]struct {
+		Instructions string `json:"instructions"`
+	} `json:"amenities,omitempty"`
+	CheckIn *struct {
+		Instructions string `json:"instructions"`
+	} `json:"checkIn,omitempty"`
+	CheckOut *struct {
+		Instructions string `json:"instructions"`
+	} `json:"checkOut,omitempty"`
+	DrivingDirections *struct {
+		Instructions string `json:"instructions"`
+	} `json:"drivingDirections,omitempty"`
+	ParkingDirections *struct {
+		Instructions string `json:"instructions"`
+	} `json:"parkingDirections,omitempty"`
+	Wifi *struct {
+		Instructions *string `json:"instructions,omitempty"`
+		NetworkName  *string `json:"networkName,omitempty"`
+		Password     *string `json:"password,omitempty"`
+	} `json:"wifi,omitempty"`
+}
+
+// UpdateVrboListingWelcomeGuideParams defines parameters for UpdateVrboListingWelcomeGuide.
+type UpdateVrboListingWelcomeGuideParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
 // ListVrboReservationsParams defines parameters for ListVrboReservations.
 type ListVrboReservationsParams struct {
 	// Cursor Opaque cursor returned in the previous response's `pagination.nextCursor`.
@@ -20748,8 +22361,17 @@ type GetVrboPublishJobParams struct {
 // GetVrboPublishJob200JSONResponseBodyChannel defines parameters for GetVrboPublishJob.
 type GetVrboPublishJob200JSONResponseBodyChannel string
 
+// GetVrboPublishJob200JSONResponseBodyJobMode defines parameters for GetVrboPublishJob.
+type GetVrboPublishJob200JSONResponseBodyJobMode string
+
+// GetVrboPublishJob200JSONResponseBodyJobSectionsStatus defines parameters for GetVrboPublishJob.
+type GetVrboPublishJob200JSONResponseBodyJobSectionsStatus string
+
 // GetVrboPublishJob200JSONResponseBodyJobStatus defines parameters for GetVrboPublishJob.
 type GetVrboPublishJob200JSONResponseBodyJobStatus string
+
+// GetVrboPublishJob200JSONResponseBodyMode defines parameters for GetVrboPublishJob.
+type GetVrboPublishJob200JSONResponseBodyMode string
 
 // PublishListingToVrboJSONBody defines parameters for PublishListingToVrbo.
 type PublishListingToVrboJSONBody struct {
@@ -20758,13 +22380,31 @@ type PublishListingToVrboJSONBody struct {
 
 	// PropertyId Finish this unpublished Vrbo property (from a failed run's `job.propertyId`) instead of starting a new one.
 	PropertyId *string `json:"propertyId,omitempty"`
+
+	// Sections Update only: push just these sections (default: all of them).
+	Sections *[]PublishListingToVrboJSONBodySections `json:"sections,omitempty"`
+
+	// VrboListingNumber Update only: the Vrbo listing to push to, when the listing is linked to several.
+	VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
 }
+
+// PublishListingToVrboJSONBodySections defines parameters for PublishListingToVrbo.
+type PublishListingToVrboJSONBodySections string
 
 // PublishListingToVrbo202JSONResponseBodyChannel defines parameters for PublishListingToVrbo.
 type PublishListingToVrbo202JSONResponseBodyChannel string
 
+// PublishListingToVrbo202JSONResponseBodyJobMode defines parameters for PublishListingToVrbo.
+type PublishListingToVrbo202JSONResponseBodyJobMode string
+
+// PublishListingToVrbo202JSONResponseBodyJobSectionsStatus defines parameters for PublishListingToVrbo.
+type PublishListingToVrbo202JSONResponseBodyJobSectionsStatus string
+
 // PublishListingToVrbo202JSONResponseBodyJobStatus defines parameters for PublishListingToVrbo.
 type PublishListingToVrbo202JSONResponseBodyJobStatus string
+
+// PublishListingToVrbo202JSONResponseBodyMode defines parameters for PublishListingToVrbo.
+type PublishListingToVrbo202JSONResponseBodyMode string
 
 // GetListingSegmentsParams defines parameters for GetListingSegments.
 type GetListingSegmentsParams struct {
@@ -21561,6 +23201,69 @@ type BookingSetupJSONRequestBody BookingSetupJSONBody
 //
 // Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type CreateBookingWebhookJSONRequestBody CreateBookingWebhookJSONBody
+
+// UpdateVrboListingAdditionalInfoJSONRequestBody defines body for UpdateVrboListingAdditionalInfo for application/json ContentType.
+type UpdateVrboListingAdditionalInfoJSONRequestBody UpdateVrboListingAdditionalInfoJSONBody
+
+// UpdateVrboListingAmenitiesJSONRequestBody defines body for UpdateVrboListingAmenities for application/json ContentType.
+type UpdateVrboListingAmenitiesJSONRequestBody UpdateVrboListingAmenitiesJSONBody
+
+// UpdateVrboListingBookingSettingsJSONRequestBody defines body for UpdateVrboListingBookingSettings for application/json ContentType.
+type UpdateVrboListingBookingSettingsJSONRequestBody UpdateVrboListingBookingSettingsJSONBody
+
+// UpdateVrboListingCancellationJSONRequestBody defines body for UpdateVrboListingCancellation for application/json ContentType.
+type UpdateVrboListingCancellationJSONRequestBody UpdateVrboListingCancellationJSONBody
+
+// UpdateVrboListingDescriptionJSONRequestBody defines body for UpdateVrboListingDescription for application/json ContentType.
+type UpdateVrboListingDescriptionJSONRequestBody UpdateVrboListingDescriptionJSONBody
+
+// UpdateVrboListingFeesJSONRequestBody defines body for UpdateVrboListingFees for application/json ContentType.
+type UpdateVrboListingFeesJSONRequestBody UpdateVrboListingFeesJSONBody
+
+// UpdateVrboListingHouseRulesJSONRequestBody defines body for UpdateVrboListingHouseRules for application/json ContentType.
+type UpdateVrboListingHouseRulesJSONRequestBody UpdateVrboListingHouseRulesJSONBody
+
+// UpdateVrboListingLocationJSONRequestBody defines body for UpdateVrboListingLocation for application/json ContentType.
+type UpdateVrboListingLocationJSONRequestBody UpdateVrboListingLocationJSONBody
+
+// UpdateVrboListingPaymentTermsJSONRequestBody defines body for UpdateVrboListingPaymentTerms for application/json ContentType.
+type UpdateVrboListingPaymentTermsJSONRequestBody UpdateVrboListingPaymentTermsJSONBody
+
+// UpdateVrboListingPhotosJSONRequestBody defines body for UpdateVrboListingPhotos for application/json ContentType.
+type UpdateVrboListingPhotosJSONRequestBody UpdateVrboListingPhotosJSONBody
+
+// UpdateVrboListingPricingJSONRequestBody defines body for UpdateVrboListingPricing for application/json ContentType.
+type UpdateVrboListingPricingJSONRequestBody UpdateVrboListingPricingJSONBody
+
+// UpdateVrboListingPropertyJSONRequestBody defines body for UpdateVrboListingProperty for application/json ContentType.
+type UpdateVrboListingPropertyJSONRequestBody UpdateVrboListingPropertyJSONBody
+
+// UpdateVrboListingProtectionJSONRequestBody defines body for UpdateVrboListingProtection for application/json ContentType.
+type UpdateVrboListingProtectionJSONRequestBody UpdateVrboListingProtectionJSONBody
+
+// UpdateVrboListingRatesJSONRequestBody defines body for UpdateVrboListingRates for application/json ContentType.
+type UpdateVrboListingRatesJSONRequestBody UpdateVrboListingRatesJSONBody
+
+// UpdateVrboListingRegistrationJSONRequestBody defines body for UpdateVrboListingRegistration for application/json ContentType.
+type UpdateVrboListingRegistrationJSONRequestBody UpdateVrboListingRegistrationJSONBody
+
+// UpdateVrboListingRoomsJSONRequestBody defines body for UpdateVrboListingRooms for application/json ContentType.
+type UpdateVrboListingRoomsJSONRequestBody UpdateVrboListingRoomsJSONBody
+
+// UpdateVrboListingStoryJSONRequestBody defines body for UpdateVrboListingStory for application/json ContentType.
+type UpdateVrboListingStoryJSONRequestBody UpdateVrboListingStoryJSONBody
+
+// UpdateVrboListingTaxesJSONRequestBody defines body for UpdateVrboListingTaxes for application/json ContentType.
+type UpdateVrboListingTaxesJSONRequestBody UpdateVrboListingTaxesJSONBody
+
+// UpdateVrboListingTranslationsJSONRequestBody defines body for UpdateVrboListingTranslations for application/json ContentType.
+type UpdateVrboListingTranslationsJSONRequestBody UpdateVrboListingTranslationsJSONBody
+
+// AddVrboListingVideoJSONRequestBody defines body for AddVrboListingVideo for application/json ContentType.
+type AddVrboListingVideoJSONRequestBody AddVrboListingVideoJSONBody
+
+// UpdateVrboListingWelcomeGuideJSONRequestBody defines body for UpdateVrboListingWelcomeGuide for application/json ContentType.
+type UpdateVrboListingWelcomeGuideJSONRequestBody UpdateVrboListingWelcomeGuideJSONBody
 
 // CreateConnectSessionJSONRequestBody defines body for CreateConnectSession for application/json ContentType.
 type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
@@ -26420,6 +28123,2340 @@ func (t ListBookingReservations200JSONResponseBody) MarshalJSON() ([]byte, error
 }
 
 func (t *ListBookingReservations200JSONResponseBody) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 returns the union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as a GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0
+func (t GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) AsGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0() (GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0, error) {
+	var body GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 overwrites any union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as the provided GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0
+func (t *GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) FromGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0(v GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 performs a merge with any union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value, using the provided GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0
+func (t *GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) MergeGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0(v GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 returns the union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as a GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1
+func (t GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) AsGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1() (GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1, error) {
+	var body GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 overwrites any union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as the provided GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1
+func (t *GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) FromGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1(v GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 performs a merge with any union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value, using the provided GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1
+func (t *GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) MergeGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1(v GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 returns the union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as a GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2
+func (t GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) AsGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2() (GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2, error) {
+	var body GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 overwrites any union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as the provided GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2
+func (t *GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) FromGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2(v GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 performs a merge with any union data inside the GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value, using the provided GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2
+func (t *GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) MergeGetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2(v GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsAccessibilityValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Accessibility_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsCheckoutInstructionsValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_CheckoutInstructions_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsClimateControlValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_ClimateControl_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsEnhancedCleaningValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_EnhancedCleaning_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsEntertainmentValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Entertainment_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsEssentialsValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Essentials_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsGeneralValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_General_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsHomeSafetyValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_HomeSafety_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsInternetValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Internet_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsKitchenAndDiningValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_KitchenAndDining_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsLocalAttractionsAndActivitiesValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocalAttractionsAndActivities_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsLocationAndViewValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_LocationAndView_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsOfficeValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Office_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsOnsiteServiceValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_OnsiteService_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsOutdoorValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Outdoor_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsParkingValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Parking_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsPoolAndSpaValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_PoolAndSpa_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsSafetyDevicesValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0() (UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0(v UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1() (UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1(v UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2 returns the union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties as a UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) AsUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2() (UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2, error) {
+	var body UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2 overwrites any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties as the provided UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) FromUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2 performs a merge with any union data inside the UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties, using the provided UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) MergeUpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2(v UpdateVrboListingAmenitiesJSONBodyGroupsSustainabilityValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenitiesJSONBody_Groups_Sustainability_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 returns the union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as a UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0
+func (t UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) AsUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0() (UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0, error) {
+	var body UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 overwrites any union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as the provided UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0
+func (t *UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) FromUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0(v UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0 performs a merge with any union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value, using the provided UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0
+func (t *UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) MergeUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0(v UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 returns the union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as a UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1
+func (t UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) AsUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1() (UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1, error) {
+	var body UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 overwrites any union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as the provided UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1
+func (t *UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) FromUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1(v UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1 performs a merge with any union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value, using the provided UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1
+func (t *UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) MergeUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1(v UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 returns the union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as a UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2
+func (t UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) AsUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2() (UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2, error) {
+	var body UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 overwrites any union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value as the provided UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2
+func (t *UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) FromUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2(v UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 performs a merge with any union data inside the UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value, using the provided UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2
+func (t *UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) MergeUpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2(v UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0 returns the union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value as a GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0
+func (t GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) AsGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0() (GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0, error) {
+	var body GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0 overwrites any union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value as the provided GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0
+func (t *GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) FromGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0(v GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0 performs a merge with any union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value, using the provided GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0
+func (t *GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) MergeGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0(v GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1 returns the union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value as a GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1
+func (t GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) AsGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1() (GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1, error) {
+	var body GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1 overwrites any union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value as the provided GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1
+func (t *GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) FromGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1(v GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1 performs a merge with any union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value, using the provided GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1
+func (t *GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) MergeGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1(v GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2 returns the union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value as a GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2
+func (t GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) AsGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2() (GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2, error) {
+	var body GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2 overwrites any union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value as the provided GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2
+func (t *GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) FromGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2(v GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2 performs a merge with any union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value, using the provided GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2
+func (t *GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) MergeGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2(v GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0 returns the union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets as a UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0
+func (t UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets) AsUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0() (UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0, error) {
+	var body UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0 overwrites any union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets as the provided UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets) FromUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0(v UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0 performs a merge with any union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets, using the provided UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets) MergeUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0(v UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1 returns the union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets as a UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1
+func (t UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets) AsUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1() (UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1, error) {
+	var body UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1 overwrites any union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets as the provided UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets) FromUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1(v UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1 performs a merge with any union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets, using the provided UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets) MergeUpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1(v UpdateVrboListingHouseRulesJSONBodyPetsAllowedPets1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_AllowedPets) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0 returns the union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight as a UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0
+func (t UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) AsUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0() (UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0, error) {
+	var body UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0 overwrites any union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight as the provided UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) FromUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0(v UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0 performs a merge with any union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight, using the provided UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) MergeUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0(v UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1 returns the union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight as a UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1
+func (t UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) AsUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1() (UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1, error) {
+	var body UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1 overwrites any union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight as the provided UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) FromUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1(v UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1 performs a merge with any union data inside the UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight, using the provided UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) MergeUpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1(v UpdateVrboListingHouseRulesJSONBodyPetsMaxWeight1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingProtectionJSONBodyDamageDeposit0 returns the union data inside the UpdateVrboListingProtectionJSONBody_DamageDeposit as a UpdateVrboListingProtectionJSONBodyDamageDeposit0
+func (t UpdateVrboListingProtectionJSONBody_DamageDeposit) AsUpdateVrboListingProtectionJSONBodyDamageDeposit0() (UpdateVrboListingProtectionJSONBodyDamageDeposit0, error) {
+	var body UpdateVrboListingProtectionJSONBodyDamageDeposit0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingProtectionJSONBodyDamageDeposit0 overwrites any union data inside the UpdateVrboListingProtectionJSONBody_DamageDeposit as the provided UpdateVrboListingProtectionJSONBodyDamageDeposit0
+func (t *UpdateVrboListingProtectionJSONBody_DamageDeposit) FromUpdateVrboListingProtectionJSONBodyDamageDeposit0(v UpdateVrboListingProtectionJSONBodyDamageDeposit0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingProtectionJSONBodyDamageDeposit0 performs a merge with any union data inside the UpdateVrboListingProtectionJSONBody_DamageDeposit, using the provided UpdateVrboListingProtectionJSONBodyDamageDeposit0
+func (t *UpdateVrboListingProtectionJSONBody_DamageDeposit) MergeUpdateVrboListingProtectionJSONBodyDamageDeposit0(v UpdateVrboListingProtectionJSONBodyDamageDeposit0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingProtectionJSONBodyDamageDeposit1 returns the union data inside the UpdateVrboListingProtectionJSONBody_DamageDeposit as a UpdateVrboListingProtectionJSONBodyDamageDeposit1
+func (t UpdateVrboListingProtectionJSONBody_DamageDeposit) AsUpdateVrboListingProtectionJSONBodyDamageDeposit1() (UpdateVrboListingProtectionJSONBodyDamageDeposit1, error) {
+	var body UpdateVrboListingProtectionJSONBodyDamageDeposit1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingProtectionJSONBodyDamageDeposit1 overwrites any union data inside the UpdateVrboListingProtectionJSONBody_DamageDeposit as the provided UpdateVrboListingProtectionJSONBodyDamageDeposit1
+func (t *UpdateVrboListingProtectionJSONBody_DamageDeposit) FromUpdateVrboListingProtectionJSONBodyDamageDeposit1(v UpdateVrboListingProtectionJSONBodyDamageDeposit1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingProtectionJSONBodyDamageDeposit1 performs a merge with any union data inside the UpdateVrboListingProtectionJSONBody_DamageDeposit, using the provided UpdateVrboListingProtectionJSONBodyDamageDeposit1
+func (t *UpdateVrboListingProtectionJSONBody_DamageDeposit) MergeUpdateVrboListingProtectionJSONBodyDamageDeposit1(v UpdateVrboListingProtectionJSONBodyDamageDeposit1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingProtectionJSONBody_DamageDeposit) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingProtectionJSONBody_DamageDeposit) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingRegistrationJSONBodySettingsValue0 returns the union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as a UpdateVrboListingRegistrationJSONBodySettingsValue0
+func (t UpdateVrboListingRegistrationJSONBody_Settings_Value) AsUpdateVrboListingRegistrationJSONBodySettingsValue0() (UpdateVrboListingRegistrationJSONBodySettingsValue0, error) {
+	var body UpdateVrboListingRegistrationJSONBodySettingsValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingRegistrationJSONBodySettingsValue0 overwrites any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as the provided UpdateVrboListingRegistrationJSONBodySettingsValue0
+func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) FromUpdateVrboListingRegistrationJSONBodySettingsValue0(v UpdateVrboListingRegistrationJSONBodySettingsValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingRegistrationJSONBodySettingsValue0 performs a merge with any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value, using the provided UpdateVrboListingRegistrationJSONBodySettingsValue0
+func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) MergeUpdateVrboListingRegistrationJSONBodySettingsValue0(v UpdateVrboListingRegistrationJSONBodySettingsValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingRegistrationJSONBodySettingsValue1 returns the union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as a UpdateVrboListingRegistrationJSONBodySettingsValue1
+func (t UpdateVrboListingRegistrationJSONBody_Settings_Value) AsUpdateVrboListingRegistrationJSONBodySettingsValue1() (UpdateVrboListingRegistrationJSONBodySettingsValue1, error) {
+	var body UpdateVrboListingRegistrationJSONBodySettingsValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingRegistrationJSONBodySettingsValue1 overwrites any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as the provided UpdateVrboListingRegistrationJSONBodySettingsValue1
+func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) FromUpdateVrboListingRegistrationJSONBodySettingsValue1(v UpdateVrboListingRegistrationJSONBodySettingsValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingRegistrationJSONBodySettingsValue1 performs a merge with any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value, using the provided UpdateVrboListingRegistrationJSONBodySettingsValue1
+func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) MergeUpdateVrboListingRegistrationJSONBodySettingsValue1(v UpdateVrboListingRegistrationJSONBodySettingsValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingRegistrationJSONBodySettingsValue2 returns the union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as a UpdateVrboListingRegistrationJSONBodySettingsValue2
+func (t UpdateVrboListingRegistrationJSONBody_Settings_Value) AsUpdateVrboListingRegistrationJSONBodySettingsValue2() (UpdateVrboListingRegistrationJSONBodySettingsValue2, error) {
+	var body UpdateVrboListingRegistrationJSONBodySettingsValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingRegistrationJSONBodySettingsValue2 overwrites any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as the provided UpdateVrboListingRegistrationJSONBodySettingsValue2
+func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) FromUpdateVrboListingRegistrationJSONBodySettingsValue2(v UpdateVrboListingRegistrationJSONBodySettingsValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingRegistrationJSONBodySettingsValue2 performs a merge with any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value, using the provided UpdateVrboListingRegistrationJSONBodySettingsValue2
+func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) MergeUpdateVrboListingRegistrationJSONBodySettingsValue2(v UpdateVrboListingRegistrationJSONBodySettingsValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingRegistrationJSONBody_Settings_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingRoomsJSONBodyAddAmenities0 returns the union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities as a UpdateVrboListingRoomsJSONBodyAddAmenities0
+func (t UpdateVrboListingRoomsJSONBody_Add_Amenities) AsUpdateVrboListingRoomsJSONBodyAddAmenities0() (UpdateVrboListingRoomsJSONBodyAddAmenities0, error) {
+	var body UpdateVrboListingRoomsJSONBodyAddAmenities0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingRoomsJSONBodyAddAmenities0 overwrites any union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities as the provided UpdateVrboListingRoomsJSONBodyAddAmenities0
+func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) FromUpdateVrboListingRoomsJSONBodyAddAmenities0(v UpdateVrboListingRoomsJSONBodyAddAmenities0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingRoomsJSONBodyAddAmenities0 performs a merge with any union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities, using the provided UpdateVrboListingRoomsJSONBodyAddAmenities0
+func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) MergeUpdateVrboListingRoomsJSONBodyAddAmenities0(v UpdateVrboListingRoomsJSONBodyAddAmenities0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingRoomsJSONBodyAddAmenities1 returns the union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities as a UpdateVrboListingRoomsJSONBodyAddAmenities1
+func (t UpdateVrboListingRoomsJSONBody_Add_Amenities) AsUpdateVrboListingRoomsJSONBodyAddAmenities1() (UpdateVrboListingRoomsJSONBodyAddAmenities1, error) {
+	var body UpdateVrboListingRoomsJSONBodyAddAmenities1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingRoomsJSONBodyAddAmenities1 overwrites any union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities as the provided UpdateVrboListingRoomsJSONBodyAddAmenities1
+func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) FromUpdateVrboListingRoomsJSONBodyAddAmenities1(v UpdateVrboListingRoomsJSONBodyAddAmenities1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingRoomsJSONBodyAddAmenities1 performs a merge with any union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities, using the provided UpdateVrboListingRoomsJSONBodyAddAmenities1
+func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) MergeUpdateVrboListingRoomsJSONBodyAddAmenities1(v UpdateVrboListingRoomsJSONBodyAddAmenities1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingRoomsJSONBody_Add_Amenities) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingRoomsJSONBodyUpdateAmenities0 returns the union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities as a UpdateVrboListingRoomsJSONBodyUpdateAmenities0
+func (t UpdateVrboListingRoomsJSONBody_Update_Amenities) AsUpdateVrboListingRoomsJSONBodyUpdateAmenities0() (UpdateVrboListingRoomsJSONBodyUpdateAmenities0, error) {
+	var body UpdateVrboListingRoomsJSONBodyUpdateAmenities0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingRoomsJSONBodyUpdateAmenities0 overwrites any union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities as the provided UpdateVrboListingRoomsJSONBodyUpdateAmenities0
+func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) FromUpdateVrboListingRoomsJSONBodyUpdateAmenities0(v UpdateVrboListingRoomsJSONBodyUpdateAmenities0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingRoomsJSONBodyUpdateAmenities0 performs a merge with any union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities, using the provided UpdateVrboListingRoomsJSONBodyUpdateAmenities0
+func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) MergeUpdateVrboListingRoomsJSONBodyUpdateAmenities0(v UpdateVrboListingRoomsJSONBodyUpdateAmenities0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingRoomsJSONBodyUpdateAmenities1 returns the union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities as a UpdateVrboListingRoomsJSONBodyUpdateAmenities1
+func (t UpdateVrboListingRoomsJSONBody_Update_Amenities) AsUpdateVrboListingRoomsJSONBodyUpdateAmenities1() (UpdateVrboListingRoomsJSONBodyUpdateAmenities1, error) {
+	var body UpdateVrboListingRoomsJSONBodyUpdateAmenities1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingRoomsJSONBodyUpdateAmenities1 overwrites any union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities as the provided UpdateVrboListingRoomsJSONBodyUpdateAmenities1
+func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) FromUpdateVrboListingRoomsJSONBodyUpdateAmenities1(v UpdateVrboListingRoomsJSONBodyUpdateAmenities1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingRoomsJSONBodyUpdateAmenities1 performs a merge with any union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities, using the provided UpdateVrboListingRoomsJSONBodyUpdateAmenities1
+func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) MergeUpdateVrboListingRoomsJSONBodyUpdateAmenities1(v UpdateVrboListingRoomsJSONBodyUpdateAmenities1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingRoomsJSONBody_Update_Amenities) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
