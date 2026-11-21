@@ -3458,6 +3458,39 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
 	VrboReservationAction(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListVrboTransactions List Vrbo transactions (payout ledger)
+	//
+	// The Vrbo payout ledger for this workspace — the counterpart of `GET /v1/channels/airbnb/transactions`: every bank deposit Vrbo made to the host, each followed by the bookings it paid. A deposit's lines' signed `amount`s sum to its `payout.paidOutAmount` exactly; a negative line (`type: Adjustment`) is money taken back from that deposit. `status: UPCOMING` lines are payouts Vrbo has scheduled and not made yet, with Vrbo's `upcomingStatus` (`Scheduled`, `Blocked`).
+	//
+	// **Ids are stable**, so you can upsert on `transactionId`: a Payout row's id is Vrbo's deposit reference number; a line's is `<reference>:<confirmationCode>:<n>`.
+	//
+	// **Order:** newest deposit first, each followed by its lines in Vrbo's order (`payout.lineIndex`). `start_date` / `end_date` match the deposit's date (a scheduled line's estimated payout date).
+	//
+	// **From Repull's copy.** The ledger is read from the Vrbo account (the last 12 months of deposits, and the payouts scheduled for the next 6) and kept: a read answers from it at once. A copy over a day old — or never filled — answers and is refreshed in the background (`dataFreshness.reason`: `refreshing` / `never_synced`); `POST` refreshes it now.
+	//
+	// Lines on listings that are inactive in Repull are included and flagged `onInactiveListing: true`, so every deposit reconciles. **Not in Vrbo's payout reports** (`unavailableFields`): the fee split per booking, taxes, and the stay's nights and dates — see the reservation for those.
+	//
+	// Corresponds with GET /v1/channels/vrbo/transactions (the `ListVrboTransactions` operationId).
+	ListVrboTransactions(ctx context.Context, params *ListVrboTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SyncVrboTransactionsWithBody Refresh the Vrbo payout ledger
+	//
+	// Read the ledger from Vrbo now — every connected Vrbo account, or the one in `?account_id=` — and keep it; then read it with GET. Body (optional): `start_date` / `end_date` (YYYY-MM-DD) for the deposits to read; without them, the last 12 months. The payouts Vrbo has scheduled are always read again. One account failing never stops the others: it carries `error` in `accounts[]`. About 15 seconds per account.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/transactions (the `SyncVrboTransactions` operationId).
+	SyncVrboTransactionsWithBody(ctx context.Context, params *SyncVrboTransactionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SyncVrboTransactions Refresh the Vrbo payout ledger
+	//
+	// Read the ledger from Vrbo now — every connected Vrbo account, or the one in `?account_id=` — and keep it; then read it with GET. Body (optional): `start_date` / `end_date` (YYYY-MM-DD) for the deposits to read; without them, the last 12 months. The payouts Vrbo has scheduled are always read again. One account failing never stops the others: it carries `error` in `accounts[]`. About 15 seconds per account.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/transactions (the `SyncVrboTransactions` operationId).
+	SyncVrboTransactions(ctx context.Context, params *SyncVrboTransactionsParams, body SyncVrboTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListConnections List PMS/OTA connections
 	//
 	// Returns every PMS and OTA connection in the workspace, each with its `status`.
@@ -12304,6 +12337,69 @@ func (c *Client) VrboReservationActionWithBody(ctx context.Context, code string,
 // Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
 func (c *Client) VrboReservationAction(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewVrboReservationActionRequest(c.Server, code, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListVrboTransactions List Vrbo transactions (payout ledger)
+//
+// The Vrbo payout ledger for this workspace — the counterpart of `GET /v1/channels/airbnb/transactions`: every bank deposit Vrbo made to the host, each followed by the bookings it paid. A deposit's lines' signed `amount`s sum to its `payout.paidOutAmount` exactly; a negative line (`type: Adjustment`) is money taken back from that deposit. `status: UPCOMING` lines are payouts Vrbo has scheduled and not made yet, with Vrbo's `upcomingStatus` (`Scheduled`, `Blocked`).
+//
+// **Ids are stable**, so you can upsert on `transactionId`: a Payout row's id is Vrbo's deposit reference number; a line's is `<reference>:<confirmationCode>:<n>`.
+//
+// **Order:** newest deposit first, each followed by its lines in Vrbo's order (`payout.lineIndex`). `start_date` / `end_date` match the deposit's date (a scheduled line's estimated payout date).
+//
+// **From Repull's copy.** The ledger is read from the Vrbo account (the last 12 months of deposits, and the payouts scheduled for the next 6) and kept: a read answers from it at once. A copy over a day old — or never filled — answers and is refreshed in the background (`dataFreshness.reason`: `refreshing` / `never_synced`); `POST` refreshes it now.
+//
+// Lines on listings that are inactive in Repull are included and flagged `onInactiveListing: true`, so every deposit reconciles. **Not in Vrbo's payout reports** (`unavailableFields`): the fee split per booking, taxes, and the stay's nights and dates — see the reservation for those.
+//
+// Corresponds with GET /v1/channels/vrbo/transactions (the `ListVrboTransactions` operationId).
+func (c *Client) ListVrboTransactions(ctx context.Context, params *ListVrboTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVrboTransactionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SyncVrboTransactionsWithBody Refresh the Vrbo payout ledger
+//
+// Read the ledger from Vrbo now — every connected Vrbo account, or the one in `?account_id=` — and keep it; then read it with GET. Body (optional): `start_date` / `end_date` (YYYY-MM-DD) for the deposits to read; without them, the last 12 months. The payouts Vrbo has scheduled are always read again. One account failing never stops the others: it carries `error` in `accounts[]`. About 15 seconds per account.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/vrbo/transactions (the `SyncVrboTransactions` operationId).
+func (c *Client) SyncVrboTransactionsWithBody(ctx context.Context, params *SyncVrboTransactionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSyncVrboTransactionsRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SyncVrboTransactions Refresh the Vrbo payout ledger
+//
+// Read the ledger from Vrbo now — every connected Vrbo account, or the one in `?account_id=` — and keep it; then read it with GET. Body (optional): `start_date` / `end_date` (YYYY-MM-DD) for the deposits to read; without them, the last 12 months. The payouts Vrbo has scheduled are always read again. One account failing never stops the others: it carries `error` in `accounts[]`. About 15 seconds per account.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/vrbo/transactions (the `SyncVrboTransactions` operationId).
+func (c *Client) SyncVrboTransactions(ctx context.Context, params *SyncVrboTransactionsParams, body SyncVrboTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSyncVrboTransactionsRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -27299,6 +27395,223 @@ func NewVrboReservationActionRequestWithBody(server string, code string, content
 	return req, nil
 }
 
+// NewListVrboTransactionsRequest constructs an http.Request for the ListVrboTransactions method
+func NewListVrboTransactionsRequest(server string, params *ListVrboTransactionsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/transactions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.AccountId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account_id", *params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.PayoutId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "payout_id", *params.PayoutId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ConfirmationCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "confirmation_code", *params.ConfirmationCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSyncVrboTransactionsRequest calls the generic SyncVrboTransactions builder with application/json body
+func NewSyncVrboTransactionsRequest(server string, params *SyncVrboTransactionsParams, body SyncVrboTransactionsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSyncVrboTransactionsRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewSyncVrboTransactionsRequestWithBody constructs an http.Request for the SyncVrboTransactions method, with any body, and a specified content type
+func NewSyncVrboTransactionsRequestWithBody(server string, params *SyncVrboTransactionsParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/transactions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.AccountId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account_id", *params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListConnectionsRequest constructs an http.Request for the ListConnections method
 func NewListConnectionsRequest(server string) (*http.Request, error) {
 	var err error
@@ -40163,6 +40476,41 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
 	VrboReservationActionWithResponse(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*VrboReservationActionClientResponse, error)
+
+	// ListVrboTransactionsWithResponse List Vrbo transactions (payout ledger)
+	//
+	// The Vrbo payout ledger for this workspace — the counterpart of `GET /v1/channels/airbnb/transactions`: every bank deposit Vrbo made to the host, each followed by the bookings it paid. A deposit's lines' signed `amount`s sum to its `payout.paidOutAmount` exactly; a negative line (`type: Adjustment`) is money taken back from that deposit. `status: UPCOMING` lines are payouts Vrbo has scheduled and not made yet, with Vrbo's `upcomingStatus` (`Scheduled`, `Blocked`).
+	//
+	// **Ids are stable**, so you can upsert on `transactionId`: a Payout row's id is Vrbo's deposit reference number; a line's is `<reference>:<confirmationCode>:<n>`.
+	//
+	// **Order:** newest deposit first, each followed by its lines in Vrbo's order (`payout.lineIndex`). `start_date` / `end_date` match the deposit's date (a scheduled line's estimated payout date).
+	//
+	// **From Repull's copy.** The ledger is read from the Vrbo account (the last 12 months of deposits, and the payouts scheduled for the next 6) and kept: a read answers from it at once. A copy over a day old — or never filled — answers and is refreshed in the background (`dataFreshness.reason`: `refreshing` / `never_synced`); `POST` refreshes it now.
+	//
+	// Lines on listings that are inactive in Repull are included and flagged `onInactiveListing: true`, so every deposit reconciles. **Not in Vrbo's payout reports** (`unavailableFields`): the fee split per booking, taxes, and the stay's nights and dates — see the reservation for those.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/vrbo/transactions (the `ListVrboTransactions` operationId).
+	ListVrboTransactionsWithResponse(ctx context.Context, params *ListVrboTransactionsParams, reqEditors ...RequestEditorFn) (*ListVrboTransactionsClientResponse, error)
+
+	// SyncVrboTransactionsWithBodyWithResponse Refresh the Vrbo payout ledger
+	//
+	// Read the ledger from Vrbo now — every connected Vrbo account, or the one in `?account_id=` — and keep it; then read it with GET. Body (optional): `start_date` / `end_date` (YYYY-MM-DD) for the deposits to read; without them, the last 12 months. The payouts Vrbo has scheduled are always read again. One account failing never stops the others: it carries `error` in `accounts[]`. About 15 seconds per account.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/transactions (the `SyncVrboTransactions` operationId).
+	SyncVrboTransactionsWithBodyWithResponse(ctx context.Context, params *SyncVrboTransactionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SyncVrboTransactionsClientResponse, error)
+
+	// SyncVrboTransactionsWithResponse Refresh the Vrbo payout ledger
+	//
+	// Read the ledger from Vrbo now — every connected Vrbo account, or the one in `?account_id=` — and keep it; then read it with GET. Body (optional): `start_date` / `end_date` (YYYY-MM-DD) for the deposits to read; without them, the last 12 months. The payouts Vrbo has scheduled are always read again. One account failing never stops the others: it carries `error` in `accounts[]`. About 15 seconds per account.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/transactions (the `SyncVrboTransactions` operationId).
+	SyncVrboTransactionsWithResponse(ctx context.Context, params *SyncVrboTransactionsParams, body SyncVrboTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*SyncVrboTransactionsClientResponse, error)
 
 	// ListConnectionsWithResponse List PMS/OTA connections
 	//
@@ -63364,6 +63712,251 @@ func (r VrboReservationActionClientResponse) ContentType() string {
 	return ""
 }
 
+type ListVrboTransactionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]struct {
+			AccountId   *string `json:"accountId,omitempty"`
+			AccountName *string `json:"accountName,omitempty"`
+
+			// Amount Signed: what this line adds to its deposit. On a Payout row, the amount deposited.
+			Amount            *float32            `json:"amount,omitempty"`
+			ConfirmationCode  *string             `json:"confirmationCode,omitempty"`
+			Currency          *string             `json:"currency,omitempty"`
+			Date              *openapi_types.Date `json:"date,omitempty"`
+			GuestName         *string             `json:"guestName,omitempty"`
+			IsPayout          *bool               `json:"isPayout,omitempty"`
+			ListingId         *int                `json:"listingId,omitempty"`
+			OnInactiveListing *bool               `json:"onInactiveListing,omitempty"`
+			Payout            *struct {
+				// BankDestination The bank account, as Vrbo shows it (masked).
+				BankDestination *string             `json:"bankDestination,omitempty"`
+				LineIndex       *int                `json:"lineIndex,omitempty"`
+				PaidOutAmount   *float32            `json:"paidOutAmount,omitempty"`
+				PayoutDate      *openapi_types.Date `json:"payoutDate,omitempty"`
+				PayoutId        *string             `json:"payoutId,omitempty"`
+			} `json:"payout,omitempty"`
+
+			// ReservationId The Repull reservation, when the booking is in the workspace.
+			ReservationId *int                                               `json:"reservationId,omitempty"`
+			Status        *ListVrboTransactions200JSONResponseBodyDataStatus `json:"status,omitempty"`
+			SyncedAt      *string                                            `json:"syncedAt,omitempty"`
+
+			// TransactionId Stable: the deposit's reference number on a Payout row; `<reference>:<confirmationCode>:<n>` on a line; `upcoming:<confirmationCode>:<n>` on a scheduled payout.
+			TransactionId *string `json:"transactionId,omitempty"`
+
+			// Type `Payout` (the bank deposit), `Reservation` (a booking it paid), `Adjustment` (money taken back from it).
+			//
+			// Example: Reservation
+			Type              *string   `json:"type,omitempty"`
+			UnavailableFields *[]string `json:"unavailableFields,omitempty"`
+
+			// UpcomingStatus On an UPCOMING line: Vrbo's status for the payout (`Scheduled`, `Blocked`, …).
+			UpcomingStatus    *string `json:"upcomingStatus,omitempty"`
+			VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+		} `json:"data,omitempty"`
+		DataFreshness *struct {
+			Accounts *[]struct {
+				AccountId    *string `json:"accountId,omitempty"`
+				AccountName  *string `json:"accountName,omitempty"`
+				FixUrl       *string `json:"fixUrl,omitempty"`
+				LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+				Reason       *string `json:"reason,omitempty"`
+				Stale        *bool   `json:"stale,omitempty"`
+			} `json:"accounts,omitempty"`
+			FixUrl       *string                                                     `json:"fixUrl,omitempty"`
+			LastSyncedAt *string                                                     `json:"lastSyncedAt,omitempty"`
+			Reason       *ListVrboTransactions200JSONResponseBodyDataFreshnessReason `json:"reason,omitempty"`
+			Stale        *bool                                                       `json:"stale,omitempty"`
+		} `json:"dataFreshness,omitempty"`
+
+		// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+		Pagination *CursorPagination `json:"pagination,omitempty"`
+	}
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListVrboTransactionsClientResponse) GetJSON200() *struct {
+	Data *[]struct {
+		AccountId   *string `json:"accountId,omitempty"`
+		AccountName *string `json:"accountName,omitempty"`
+
+		// Amount Signed: what this line adds to its deposit. On a Payout row, the amount deposited.
+		Amount            *float32            `json:"amount,omitempty"`
+		ConfirmationCode  *string             `json:"confirmationCode,omitempty"`
+		Currency          *string             `json:"currency,omitempty"`
+		Date              *openapi_types.Date `json:"date,omitempty"`
+		GuestName         *string             `json:"guestName,omitempty"`
+		IsPayout          *bool               `json:"isPayout,omitempty"`
+		ListingId         *int                `json:"listingId,omitempty"`
+		OnInactiveListing *bool               `json:"onInactiveListing,omitempty"`
+		Payout            *struct {
+			// BankDestination The bank account, as Vrbo shows it (masked).
+			BankDestination *string             `json:"bankDestination,omitempty"`
+			LineIndex       *int                `json:"lineIndex,omitempty"`
+			PaidOutAmount   *float32            `json:"paidOutAmount,omitempty"`
+			PayoutDate      *openapi_types.Date `json:"payoutDate,omitempty"`
+			PayoutId        *string             `json:"payoutId,omitempty"`
+		} `json:"payout,omitempty"`
+
+		// ReservationId The Repull reservation, when the booking is in the workspace.
+		ReservationId *int                                               `json:"reservationId,omitempty"`
+		Status        *ListVrboTransactions200JSONResponseBodyDataStatus `json:"status,omitempty"`
+		SyncedAt      *string                                            `json:"syncedAt,omitempty"`
+
+		// TransactionId Stable: the deposit's reference number on a Payout row; `<reference>:<confirmationCode>:<n>` on a line; `upcoming:<confirmationCode>:<n>` on a scheduled payout.
+		TransactionId *string `json:"transactionId,omitempty"`
+
+		// Type `Payout` (the bank deposit), `Reservation` (a booking it paid), `Adjustment` (money taken back from it).
+		//
+		// Example: Reservation
+		Type              *string   `json:"type,omitempty"`
+		UnavailableFields *[]string `json:"unavailableFields,omitempty"`
+
+		// UpcomingStatus On an UPCOMING line: Vrbo's status for the payout (`Scheduled`, `Blocked`, …).
+		UpcomingStatus    *string `json:"upcomingStatus,omitempty"`
+		VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+	} `json:"data,omitempty"`
+	DataFreshness *struct {
+		Accounts *[]struct {
+			AccountId    *string `json:"accountId,omitempty"`
+			AccountName  *string `json:"accountName,omitempty"`
+			FixUrl       *string `json:"fixUrl,omitempty"`
+			LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+			Reason       *string `json:"reason,omitempty"`
+			Stale        *bool   `json:"stale,omitempty"`
+		} `json:"accounts,omitempty"`
+		FixUrl       *string                                                     `json:"fixUrl,omitempty"`
+		LastSyncedAt *string                                                     `json:"lastSyncedAt,omitempty"`
+		Reason       *ListVrboTransactions200JSONResponseBodyDataFreshnessReason `json:"reason,omitempty"`
+		Stale        *bool                                                       `json:"stale,omitempty"`
+	} `json:"dataFreshness,omitempty"`
+
+	// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+	Pagination *CursorPagination `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListVrboTransactionsClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r ListVrboTransactionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListVrboTransactionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListVrboTransactionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListVrboTransactionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SyncVrboTransactionsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Accounts *[]struct {
+			AccountId *string `json:"accountId,omitempty"`
+			Count     *int    `json:"count,omitempty"`
+			Error     *struct {
+				Code    *string `json:"code,omitempty"`
+				Message *string `json:"message,omitempty"`
+			} `json:"error,omitempty"`
+			Payouts  *int `json:"payouts,omitempty"`
+			Upcoming *int `json:"upcoming,omitempty"`
+		} `json:"accounts,omitempty"`
+		Count  *int  `json:"count,omitempty"`
+		Synced *bool `json:"synced,omitempty"`
+	}
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SyncVrboTransactionsClientResponse) GetJSON200() *struct {
+	Accounts *[]struct {
+		AccountId *string `json:"accountId,omitempty"`
+		Count     *int    `json:"count,omitempty"`
+		Error     *struct {
+			Code    *string `json:"code,omitempty"`
+			Message *string `json:"message,omitempty"`
+		} `json:"error,omitempty"`
+		Payouts  *int `json:"payouts,omitempty"`
+		Upcoming *int `json:"upcoming,omitempty"`
+	} `json:"accounts,omitempty"`
+	Count  *int  `json:"count,omitempty"`
+	Synced *bool `json:"synced,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r SyncVrboTransactionsClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SyncVrboTransactionsClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetBody returns the raw response body bytes
+func (r SyncVrboTransactionsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SyncVrboTransactionsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SyncVrboTransactionsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SyncVrboTransactionsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListConnectionsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -82419,6 +83012,59 @@ func (c *ClientWithResponses) VrboReservationActionWithResponse(ctx context.Cont
 	return ParseVrboReservationActionClientResponse(rsp)
 }
 
+// ListVrboTransactionsWithResponse List Vrbo transactions (payout ledger)
+//
+// The Vrbo payout ledger for this workspace — the counterpart of `GET /v1/channels/airbnb/transactions`: every bank deposit Vrbo made to the host, each followed by the bookings it paid. A deposit's lines' signed `amount`s sum to its `payout.paidOutAmount` exactly; a negative line (`type: Adjustment`) is money taken back from that deposit. `status: UPCOMING` lines are payouts Vrbo has scheduled and not made yet, with Vrbo's `upcomingStatus` (`Scheduled`, `Blocked`).
+//
+// **Ids are stable**, so you can upsert on `transactionId`: a Payout row's id is Vrbo's deposit reference number; a line's is `<reference>:<confirmationCode>:<n>`.
+//
+// **Order:** newest deposit first, each followed by its lines in Vrbo's order (`payout.lineIndex`). `start_date` / `end_date` match the deposit's date (a scheduled line's estimated payout date).
+//
+// **From Repull's copy.** The ledger is read from the Vrbo account (the last 12 months of deposits, and the payouts scheduled for the next 6) and kept: a read answers from it at once. A copy over a day old — or never filled — answers and is refreshed in the background (`dataFreshness.reason`: `refreshing` / `never_synced`); `POST` refreshes it now.
+//
+// Lines on listings that are inactive in Repull are included and flagged `onInactiveListing: true`, so every deposit reconciles. **Not in Vrbo's payout reports** (`unavailableFields`): the fee split per booking, taxes, and the stay's nights and dates — see the reservation for those.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/vrbo/transactions (the `ListVrboTransactions` operationId).
+func (c *ClientWithResponses) ListVrboTransactionsWithResponse(ctx context.Context, params *ListVrboTransactionsParams, reqEditors ...RequestEditorFn) (*ListVrboTransactionsClientResponse, error) {
+	rsp, err := c.ListVrboTransactions(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListVrboTransactionsClientResponse(rsp)
+}
+
+// SyncVrboTransactionsWithBodyWithResponse Refresh the Vrbo payout ledger
+//
+// Read the ledger from Vrbo now — every connected Vrbo account, or the one in `?account_id=` — and keep it; then read it with GET. Body (optional): `start_date` / `end_date` (YYYY-MM-DD) for the deposits to read; without them, the last 12 months. The payouts Vrbo has scheduled are always read again. One account failing never stops the others: it carries `error` in `accounts[]`. About 15 seconds per account.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/transactions (the `SyncVrboTransactions` operationId).
+func (c *ClientWithResponses) SyncVrboTransactionsWithBodyWithResponse(ctx context.Context, params *SyncVrboTransactionsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SyncVrboTransactionsClientResponse, error) {
+	rsp, err := c.SyncVrboTransactionsWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSyncVrboTransactionsClientResponse(rsp)
+}
+
+// SyncVrboTransactionsWithResponse Refresh the Vrbo payout ledger
+//
+// Read the ledger from Vrbo now — every connected Vrbo account, or the one in `?account_id=` — and keep it; then read it with GET. Body (optional): `start_date` / `end_date` (YYYY-MM-DD) for the deposits to read; without them, the last 12 months. The payouts Vrbo has scheduled are always read again. One account failing never stops the others: it carries `error` in `accounts[]`. About 15 seconds per account.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/transactions (the `SyncVrboTransactions` operationId).
+func (c *ClientWithResponses) SyncVrboTransactionsWithResponse(ctx context.Context, params *SyncVrboTransactionsParams, body SyncVrboTransactionsJSONRequestBody, reqEditors ...RequestEditorFn) (*SyncVrboTransactionsClientResponse, error) {
+	rsp, err := c.SyncVrboTransactions(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSyncVrboTransactionsClientResponse(rsp)
+}
+
 // ListConnectionsWithResponse List PMS/OTA connections
 //
 // Returns every PMS and OTA connection in the workspace, each with its `status`.
@@ -101283,6 +101929,150 @@ func ParseVrboReservationActionClientResponse(rsp *http.Response) (*VrboReservat
 			return nil, err
 		}
 		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListVrboTransactionsClientResponse parses an HTTP response from a ListVrboTransactionsWithResponse call
+func ParseListVrboTransactionsClientResponse(rsp *http.Response) (*ListVrboTransactionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListVrboTransactionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]struct {
+				AccountId   *string `json:"accountId,omitempty"`
+				AccountName *string `json:"accountName,omitempty"`
+
+				// Amount Signed: what this line adds to its deposit. On a Payout row, the amount deposited.
+				Amount            *float32            `json:"amount,omitempty"`
+				ConfirmationCode  *string             `json:"confirmationCode,omitempty"`
+				Currency          *string             `json:"currency,omitempty"`
+				Date              *openapi_types.Date `json:"date,omitempty"`
+				GuestName         *string             `json:"guestName,omitempty"`
+				IsPayout          *bool               `json:"isPayout,omitempty"`
+				ListingId         *int                `json:"listingId,omitempty"`
+				OnInactiveListing *bool               `json:"onInactiveListing,omitempty"`
+				Payout            *struct {
+					// BankDestination The bank account, as Vrbo shows it (masked).
+					BankDestination *string             `json:"bankDestination,omitempty"`
+					LineIndex       *int                `json:"lineIndex,omitempty"`
+					PaidOutAmount   *float32            `json:"paidOutAmount,omitempty"`
+					PayoutDate      *openapi_types.Date `json:"payoutDate,omitempty"`
+					PayoutId        *string             `json:"payoutId,omitempty"`
+				} `json:"payout,omitempty"`
+
+				// ReservationId The Repull reservation, when the booking is in the workspace.
+				ReservationId *int                                               `json:"reservationId,omitempty"`
+				Status        *ListVrboTransactions200JSONResponseBodyDataStatus `json:"status,omitempty"`
+				SyncedAt      *string                                            `json:"syncedAt,omitempty"`
+
+				// TransactionId Stable: the deposit's reference number on a Payout row; `<reference>:<confirmationCode>:<n>` on a line; `upcoming:<confirmationCode>:<n>` on a scheduled payout.
+				TransactionId *string `json:"transactionId,omitempty"`
+
+				// Type `Payout` (the bank deposit), `Reservation` (a booking it paid), `Adjustment` (money taken back from it).
+				//
+				// Example: Reservation
+				Type              *string   `json:"type,omitempty"`
+				UnavailableFields *[]string `json:"unavailableFields,omitempty"`
+
+				// UpcomingStatus On an UPCOMING line: Vrbo's status for the payout (`Scheduled`, `Blocked`, …).
+				UpcomingStatus    *string `json:"upcomingStatus,omitempty"`
+				VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+			} `json:"data,omitempty"`
+			DataFreshness *struct {
+				Accounts *[]struct {
+					AccountId    *string `json:"accountId,omitempty"`
+					AccountName  *string `json:"accountName,omitempty"`
+					FixUrl       *string `json:"fixUrl,omitempty"`
+					LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+					Reason       *string `json:"reason,omitempty"`
+					Stale        *bool   `json:"stale,omitempty"`
+				} `json:"accounts,omitempty"`
+				FixUrl       *string                                                     `json:"fixUrl,omitempty"`
+				LastSyncedAt *string                                                     `json:"lastSyncedAt,omitempty"`
+				Reason       *ListVrboTransactions200JSONResponseBodyDataFreshnessReason `json:"reason,omitempty"`
+				Stale        *bool                                                       `json:"stale,omitempty"`
+			} `json:"dataFreshness,omitempty"`
+
+			// Pagination Canonical cursor-based pagination envelope. Pass `nextCursor` back as `?cursor=` to fetch the next page; stop when `hasMore` is `false`. The cursor is opaque base64 — do not parse or construct it by hand.
+			Pagination *CursorPagination `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSyncVrboTransactionsClientResponse parses an HTTP response from a SyncVrboTransactionsWithResponse call
+func ParseSyncVrboTransactionsClientResponse(rsp *http.Response) (*SyncVrboTransactionsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SyncVrboTransactionsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Accounts *[]struct {
+				AccountId *string `json:"accountId,omitempty"`
+				Count     *int    `json:"count,omitempty"`
+				Error     *struct {
+					Code    *string `json:"code,omitempty"`
+					Message *string `json:"message,omitempty"`
+				} `json:"error,omitempty"`
+				Payouts  *int `json:"payouts,omitempty"`
+				Upcoming *int `json:"upcoming,omitempty"`
+			} `json:"accounts,omitempty"`
+			Count  *int  `json:"count,omitempty"`
+			Synced *bool `json:"synced,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
