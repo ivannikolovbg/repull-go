@@ -6226,6 +6226,69 @@ func (e BookingSetupJSONBodyAction) Valid() bool {
 	}
 }
 
+// Defines values for GetVrboConnection200JSONResponseBodyDataAccountsAccessType.
+const (
+	GetVrboConnection200JSONResponseBodyDataAccountsAccessTypeFullAccess  GetVrboConnection200JSONResponseBodyDataAccountsAccessType = "full_access"
+	GetVrboConnection200JSONResponseBodyDataAccountsAccessTypeLessThannil GetVrboConnection200JSONResponseBodyDataAccountsAccessType = "<nil>"
+	GetVrboConnection200JSONResponseBodyDataAccountsAccessTypeMessaging   GetVrboConnection200JSONResponseBodyDataAccountsAccessType = "messaging"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboConnection200JSONResponseBodyDataAccountsAccessType enum.
+func (e GetVrboConnection200JSONResponseBodyDataAccountsAccessType) Valid() bool {
+	switch e {
+	case GetVrboConnection200JSONResponseBodyDataAccountsAccessTypeFullAccess:
+		return true
+	case GetVrboConnection200JSONResponseBodyDataAccountsAccessTypeLessThannil:
+		return true
+	case GetVrboConnection200JSONResponseBodyDataAccountsAccessTypeMessaging:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboConnection200JSONResponseBodyDataAccountsStatus.
+const (
+	GetVrboConnection200JSONResponseBodyDataAccountsStatusConnected         GetVrboConnection200JSONResponseBodyDataAccountsStatus = "connected"
+	GetVrboConnection200JSONResponseBodyDataAccountsStatusReconnectRequired GetVrboConnection200JSONResponseBodyDataAccountsStatus = "reconnect_required"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboConnection200JSONResponseBodyDataAccountsStatus enum.
+func (e GetVrboConnection200JSONResponseBodyDataAccountsStatus) Valid() bool {
+	switch e {
+	case GetVrboConnection200JSONResponseBodyDataAccountsStatusConnected:
+		return true
+	case GetVrboConnection200JSONResponseBodyDataAccountsStatusReconnectRequired:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboConnection200JSONResponseBodyDataStatus.
+const (
+	GetVrboConnection200JSONResponseBodyDataStatusConnected         GetVrboConnection200JSONResponseBodyDataStatus = "connected"
+	GetVrboConnection200JSONResponseBodyDataStatusDisconnected      GetVrboConnection200JSONResponseBodyDataStatus = "disconnected"
+	GetVrboConnection200JSONResponseBodyDataStatusNeverConnected    GetVrboConnection200JSONResponseBodyDataStatus = "never_connected"
+	GetVrboConnection200JSONResponseBodyDataStatusReconnectRequired GetVrboConnection200JSONResponseBodyDataStatus = "reconnect_required"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboConnection200JSONResponseBodyDataStatus enum.
+func (e GetVrboConnection200JSONResponseBodyDataStatus) Valid() bool {
+	switch e {
+	case GetVrboConnection200JSONResponseBodyDataStatusConnected:
+		return true
+	case GetVrboConnection200JSONResponseBodyDataStatusDisconnected:
+		return true
+	case GetVrboConnection200JSONResponseBodyDataStatusNeverConnected:
+		return true
+	case GetVrboConnection200JSONResponseBodyDataStatusReconnectRequired:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListVrboListingsParamsStatus.
 const (
 	ListVrboListingsParamsStatusActive   ListVrboListingsParamsStatus = "active"
@@ -6241,6 +6304,183 @@ func (e ListVrboListingsParamsStatus) Valid() bool {
 	case ListVrboListingsParamsStatusAll:
 		return true
 	case ListVrboListingsParamsStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingParamsInclude.
+const (
+	GetVrboListingParamsIncludeContent GetVrboListingParamsInclude = "content"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingParamsInclude enum.
+func (e GetVrboListingParamsInclude) Valid() bool {
+	switch e {
+	case GetVrboListingParamsIncludeContent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListing200JSONResponseBodyDataAccessType.
+const (
+	GetVrboListing200JSONResponseBodyDataAccessTypeFullAccess  GetVrboListing200JSONResponseBodyDataAccessType = "full_access"
+	GetVrboListing200JSONResponseBodyDataAccessTypeLessThannil GetVrboListing200JSONResponseBodyDataAccessType = "<nil>"
+	GetVrboListing200JSONResponseBodyDataAccessTypeMessaging   GetVrboListing200JSONResponseBodyDataAccessType = "messaging"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListing200JSONResponseBodyDataAccessType enum.
+func (e GetVrboListing200JSONResponseBodyDataAccessType) Valid() bool {
+	switch e {
+	case GetVrboListing200JSONResponseBodyDataAccessTypeFullAccess:
+		return true
+	case GetVrboListing200JSONResponseBodyDataAccessTypeLessThannil:
+		return true
+	case GetVrboListing200JSONResponseBodyDataAccessTypeMessaging:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for VrboListingActionJSONBodyAction.
+const (
+	VrboListingActionJSONBodyActionDelete  VrboListingActionJSONBodyAction = "delete"
+	VrboListingActionJSONBodyActionPublish VrboListingActionJSONBodyAction = "publish"
+	VrboListingActionJSONBodyActionPush    VrboListingActionJSONBodyAction = "push"
+	VrboListingActionJSONBodyActionRelist  VrboListingActionJSONBodyAction = "relist"
+	VrboListingActionJSONBodyActionUnlist  VrboListingActionJSONBodyAction = "unlist"
+)
+
+// Valid indicates whether the value is a known member of the VrboListingActionJSONBodyAction enum.
+func (e VrboListingActionJSONBodyAction) Valid() bool {
+	switch e {
+	case VrboListingActionJSONBodyActionDelete:
+		return true
+	case VrboListingActionJSONBodyActionPublish:
+		return true
+	case VrboListingActionJSONBodyActionPush:
+		return true
+	case VrboListingActionJSONBodyActionRelist:
+		return true
+	case VrboListingActionJSONBodyActionUnlist:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingAdditionalInfoParamsSource.
+const (
+	GetVrboListingAdditionalInfoParamsSourceLive   GetVrboListingAdditionalInfoParamsSource = "live"
+	GetVrboListingAdditionalInfoParamsSourceStored GetVrboListingAdditionalInfoParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingAdditionalInfoParamsSource enum.
+func (e GetVrboListingAdditionalInfoParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingAdditionalInfoParamsSourceLive:
+		return true
+	case GetVrboListingAdditionalInfoParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSourceStored GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingAmenitiesParamsSource.
+const (
+	GetVrboListingAmenitiesParamsSourceLive   GetVrboListingAmenitiesParamsSource = "live"
+	GetVrboListingAmenitiesParamsSourceStored GetVrboListingAmenitiesParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingAmenitiesParamsSource enum.
+func (e GetVrboListingAmenitiesParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingAmenitiesParamsSourceLive:
+		return true
+	case GetVrboListingAmenitiesParamsSourceStored:
 		return true
 	default:
 		return false
@@ -6277,6 +6517,45 @@ func (e GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType) Valid() 
 	}
 }
 
+// Defines values for GetVrboListingAmenities200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingAmenities200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingAmenities200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingAmenities200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingAmenities200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingAmenities200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingAmenities200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingAmenities200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingAmenities200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingAmenities200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingAmenities200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingAmenities200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingAmenities200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingAmenities200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingAmenities200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingAmenities200JSONResponseBodyDataFreshnessSourceStored GetVrboListingAmenities200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingAmenities200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingAmenities200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingAmenities200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingAmenities200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType.
 const (
 	UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsTypeCheckbox      UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType = "checkbox"
@@ -6307,6 +6586,120 @@ func (e UpdateVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType) Valid
 	}
 }
 
+// Defines values for UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingAvailability200JSONResponseBodyData0BlockedBy.
+const (
+	GetVrboListingAvailability200JSONResponseBodyData0BlockedByBlock       GetVrboListingAvailability200JSONResponseBodyData0BlockedBy = "block"
+	GetVrboListingAvailability200JSONResponseBodyData0BlockedByIcal        GetVrboListingAvailability200JSONResponseBodyData0BlockedBy = "ical"
+	GetVrboListingAvailability200JSONResponseBodyData0BlockedByLessThannil GetVrboListingAvailability200JSONResponseBodyData0BlockedBy = "<nil>"
+	GetVrboListingAvailability200JSONResponseBodyData0BlockedByReservation GetVrboListingAvailability200JSONResponseBodyData0BlockedBy = "reservation"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingAvailability200JSONResponseBodyData0BlockedBy enum.
+func (e GetVrboListingAvailability200JSONResponseBodyData0BlockedBy) Valid() bool {
+	switch e {
+	case GetVrboListingAvailability200JSONResponseBodyData0BlockedByBlock:
+		return true
+	case GetVrboListingAvailability200JSONResponseBodyData0BlockedByIcal:
+		return true
+	case GetVrboListingAvailability200JSONResponseBodyData0BlockedByLessThannil:
+		return true
+	case GetVrboListingAvailability200JSONResponseBodyData0BlockedByReservation:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingAvailabilityJSONBodyOperationsAvailability.
+const (
+	UpdateVrboListingAvailabilityJSONBodyOperationsAvailabilityAvailable   UpdateVrboListingAvailabilityJSONBodyOperationsAvailability = "available"
+	UpdateVrboListingAvailabilityJSONBodyOperationsAvailabilityUnavailable UpdateVrboListingAvailabilityJSONBodyOperationsAvailability = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingAvailabilityJSONBodyOperationsAvailability enum.
+func (e UpdateVrboListingAvailabilityJSONBodyOperationsAvailability) Valid() bool {
+	switch e {
+	case UpdateVrboListingAvailabilityJSONBodyOperationsAvailabilityAvailable:
+		return true
+	case UpdateVrboListingAvailabilityJSONBodyOperationsAvailabilityUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingAvailabilityJSONBodyType.
+const (
+	UpdateVrboListingAvailabilityJSONBodyTypeCalendar UpdateVrboListingAvailabilityJSONBodyType = "calendar"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingAvailabilityJSONBodyType enum.
+func (e UpdateVrboListingAvailabilityJSONBodyType) Valid() bool {
+	switch e {
+	case UpdateVrboListingAvailabilityJSONBodyTypeCalendar:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingBookingSettingsParamsSource.
+const (
+	GetVrboListingBookingSettingsParamsSourceLive   GetVrboListingBookingSettingsParamsSource = "live"
+	GetVrboListingBookingSettingsParamsSourceStored GetVrboListingBookingSettingsParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingBookingSettingsParamsSource enum.
+func (e GetVrboListingBookingSettingsParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingBookingSettingsParamsSourceLive:
+		return true
+	case GetVrboListingBookingSettingsParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetVrboListingBookingSettings200JSONResponseBodyDataBookingType.
 const (
 	GetVrboListingBookingSettings200JSONResponseBodyDataBookingTypeINSTANT   GetVrboListingBookingSettings200JSONResponseBodyDataBookingType = "INSTANT"
@@ -6319,6 +6712,45 @@ func (e GetVrboListingBookingSettings200JSONResponseBodyDataBookingType) Valid()
 	case GetVrboListingBookingSettings200JSONResponseBodyDataBookingTypeINSTANT:
 		return true
 	case GetVrboListingBookingSettings200JSONResponseBodyDataBookingTypeQUOTEHOLD:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSourceStored GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSourceStored:
 		return true
 	default:
 		return false
@@ -6388,6 +6820,351 @@ func (e UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType) Vali
 	}
 }
 
+// Defines values for UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCancellationParamsSource.
+const (
+	GetVrboListingCancellationParamsSourceLive   GetVrboListingCancellationParamsSource = "live"
+	GetVrboListingCancellationParamsSourceStored GetVrboListingCancellationParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCancellationParamsSource enum.
+func (e GetVrboListingCancellationParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingCancellationParamsSourceLive:
+		return true
+	case GetVrboListingCancellationParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCancellation200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingCancellation200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingCancellation200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingCancellation200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingCancellation200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingCancellation200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingCancellation200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCancellation200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingCancellation200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingCancellation200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingCancellation200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingCancellation200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCancellation200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingCancellation200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingCancellation200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingCancellation200JSONResponseBodyDataFreshnessSourceStored GetVrboListingCancellation200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCancellation200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingCancellation200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingCancellation200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingCancellation200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCheckinGuideParamsSource.
+const (
+	GetVrboListingCheckinGuideParamsSourceLive   GetVrboListingCheckinGuideParamsSource = "live"
+	GetVrboListingCheckinGuideParamsSourceStored GetVrboListingCheckinGuideParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCheckinGuideParamsSource enum.
+func (e GetVrboListingCheckinGuideParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingCheckinGuideParamsSourceLive:
+		return true
+	case GetVrboListingCheckinGuideParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSourceStored GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCheckoutGuideParamsSource.
+const (
+	GetVrboListingCheckoutGuideParamsSourceLive   GetVrboListingCheckoutGuideParamsSource = "live"
+	GetVrboListingCheckoutGuideParamsSourceStored GetVrboListingCheckoutGuideParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCheckoutGuideParamsSource enum.
+func (e GetVrboListingCheckoutGuideParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingCheckoutGuideParamsSourceLive:
+		return true
+	case GetVrboListingCheckoutGuideParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSourceStored GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingContentParamsSource.
+const (
+	GetVrboListingContentParamsSourceLive   GetVrboListingContentParamsSource = "live"
+	GetVrboListingContentParamsSourceStored GetVrboListingContentParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingContentParamsSource enum.
+func (e GetVrboListingContentParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingContentParamsSourceLive:
+		return true
+	case GetVrboListingContentParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingContent200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingContent200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingContent200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingContent200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingContent200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingContent200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingContent200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingContent200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingContent200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingContent200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingContent200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingContent200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingContent200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingContent200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingContent200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingContent200JSONResponseBodyDataFreshnessSourceStored GetVrboListingContent200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingContent200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingContent200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingContent200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingContent200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType.
 const (
 	GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsTypeCheckbox      GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType = "checkbox"
@@ -6436,18 +7213,360 @@ func (e GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingTy
 	}
 }
 
-// Defines values for GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit.
+// Defines values for GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnit.
 const (
-	GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnitSqft GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit = "sqft"
-	GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnitSqm  GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit = "sqm"
+	GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnitSqft GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnit = "sqft"
+	GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnitSqm  GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnit = "sqm"
 )
 
-// Valid indicates whether the value is a known member of the GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit enum.
-func (e GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit) Valid() bool {
+// Valid indicates whether the value is a known member of the GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnit enum.
+func (e GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnit) Valid() bool {
 	switch e {
-	case GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnitSqft:
+	case GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnitSqft:
 		return true
-	case GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnitSqm:
+	case GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnitSqm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReason.
+const (
+	DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReasonOk                DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReason = "ok"
+	DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReasonReconnectRequired DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReasonRefreshing        DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReason enum.
+func (e DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSource.
+const (
+	DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSourceLive   DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSource = "live"
+	DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSourceStored DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSource enum.
+func (e DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingDescriptionsParamsSource.
+const (
+	GetVrboListingDescriptionsParamsSourceLive   GetVrboListingDescriptionsParamsSource = "live"
+	GetVrboListingDescriptionsParamsSourceStored GetVrboListingDescriptionsParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingDescriptionsParamsSource enum.
+func (e GetVrboListingDescriptionsParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingDescriptionsParamsSourceLive:
+		return true
+	case GetVrboListingDescriptionsParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSourceStored GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingDetailsParamsSource.
+const (
+	GetVrboListingDetailsParamsSourceLive   GetVrboListingDetailsParamsSource = "live"
+	GetVrboListingDetailsParamsSourceStored GetVrboListingDetailsParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingDetailsParamsSource enum.
+func (e GetVrboListingDetailsParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingDetailsParamsSourceLive:
+		return true
+	case GetVrboListingDetailsParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit.
+const (
+	GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnitSqft GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit = "sqft"
+	GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnitSqm  GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit = "sqm"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit enum.
+func (e GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit) Valid() bool {
+	switch e {
+	case GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnitSqft:
+		return true
+	case GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnitSqm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingDetails200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingDetails200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingDetails200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingDetails200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingDetails200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingDetails200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingDetails200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingDetails200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingDetails200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingDetails200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingDetails200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingDetails200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingDetails200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingDetails200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingDetails200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingDetails200JSONResponseBodyDataFreshnessSourceStored GetVrboListingDetails200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingDetails200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingDetails200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingDetails200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingDetails200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingDetailsJSONBodyInteriorSizeUnit.
+const (
+	UpdateVrboListingDetailsJSONBodyInteriorSizeUnitSqft UpdateVrboListingDetailsJSONBodyInteriorSizeUnit = "sqft"
+	UpdateVrboListingDetailsJSONBodyInteriorSizeUnitSqm  UpdateVrboListingDetailsJSONBodyInteriorSizeUnit = "sqm"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingDetailsJSONBodyInteriorSizeUnit enum.
+func (e UpdateVrboListingDetailsJSONBodyInteriorSizeUnit) Valid() bool {
+	switch e {
+	case UpdateVrboListingDetailsJSONBodyInteriorSizeUnitSqft:
+		return true
+	case UpdateVrboListingDetailsJSONBodyInteriorSizeUnitSqm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit.
+const (
+	UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnitSqft UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit = "sqft"
+	UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnitSqm  UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit = "sqm"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit enum.
+func (e UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit) Valid() bool {
+	switch e {
+	case UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnitSqft:
+		return true
+	case UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnitSqm:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingFeesParamsSource.
+const (
+	GetVrboListingFeesParamsSourceLive   GetVrboListingFeesParamsSource = "live"
+	GetVrboListingFeesParamsSourceStored GetVrboListingFeesParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingFeesParamsSource enum.
+func (e GetVrboListingFeesParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingFeesParamsSourceLive:
+		return true
+	case GetVrboListingFeesParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingFees200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingFees200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingFees200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingFees200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingFees200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingFees200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingFees200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingFees200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingFees200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingFees200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingFees200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingFees200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingFees200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingFees200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingFees200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingFees200JSONResponseBodyDataFreshnessSourceStored GetVrboListingFees200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingFees200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingFees200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingFees200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingFees200JSONResponseBodyDataFreshnessSourceStored:
 		return true
 	default:
 		return false
@@ -6526,54 +7645,1602 @@ func (e UpdateVrboListingFeesJSONBodyPetsType) Valid() bool {
 	}
 }
 
-// Defines values for GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit.
+// Defines values for UpdateVrboListingFees200JSONResponseBodyDataFreshnessReason.
 const (
-	GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqft GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit = "sqft"
-	GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqm  GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit = "sqm"
+	UpdateVrboListingFees200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingFees200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingFees200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingFees200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingFees200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingFees200JSONResponseBodyDataFreshnessReason = "refreshing"
 )
 
-// Valid indicates whether the value is a known member of the GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit enum.
-func (e GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit) Valid() bool {
+// Valid indicates whether the value is a known member of the UpdateVrboListingFees200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingFees200JSONResponseBodyDataFreshnessReason) Valid() bool {
 	switch e {
-	case GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqft:
+	case UpdateVrboListingFees200JSONResponseBodyDataFreshnessReasonOk:
 		return true
-	case GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqm:
+	case UpdateVrboListingFees200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingFees200JSONResponseBodyDataFreshnessReasonRefreshing:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for UpdateVrboListingPropertyJSONBodyInteriorSizeUnit.
+// Defines values for UpdateVrboListingFees200JSONResponseBodyDataFreshnessSource.
 const (
-	UpdateVrboListingPropertyJSONBodyInteriorSizeUnitSqft UpdateVrboListingPropertyJSONBodyInteriorSizeUnit = "sqft"
-	UpdateVrboListingPropertyJSONBodyInteriorSizeUnitSqm  UpdateVrboListingPropertyJSONBodyInteriorSizeUnit = "sqm"
+	UpdateVrboListingFees200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingFees200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingFees200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingFees200JSONResponseBodyDataFreshnessSource = "stored"
 )
 
-// Valid indicates whether the value is a known member of the UpdateVrboListingPropertyJSONBodyInteriorSizeUnit enum.
-func (e UpdateVrboListingPropertyJSONBodyInteriorSizeUnit) Valid() bool {
+// Valid indicates whether the value is a known member of the UpdateVrboListingFees200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingFees200JSONResponseBodyDataFreshnessSource) Valid() bool {
 	switch e {
-	case UpdateVrboListingPropertyJSONBodyInteriorSizeUnitSqft:
+	case UpdateVrboListingFees200JSONResponseBodyDataFreshnessSourceLive:
 		return true
-	case UpdateVrboListingPropertyJSONBodyInteriorSizeUnitSqm:
+	case UpdateVrboListingFees200JSONResponseBodyDataFreshnessSourceStored:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit.
+// Defines values for GetVrboListingHouseRulesParamsSource.
 const (
-	UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqft UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit = "sqft"
-	UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqm  UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit = "sqm"
+	GetVrboListingHouseRulesParamsSourceLive   GetVrboListingHouseRulesParamsSource = "live"
+	GetVrboListingHouseRulesParamsSourceStored GetVrboListingHouseRulesParamsSource = "stored"
 )
 
-// Valid indicates whether the value is a known member of the UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit enum.
-func (e UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit) Valid() bool {
+// Valid indicates whether the value is a known member of the GetVrboListingHouseRulesParamsSource enum.
+func (e GetVrboListingHouseRulesParamsSource) Valid() bool {
 	switch e {
-	case UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqft:
+	case GetVrboListingHouseRulesParamsSourceLive:
 		return true
-	case UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnitSqm:
+	case GetVrboListingHouseRulesParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSourceStored GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingLocationParamsSource.
+const (
+	GetVrboListingLocationParamsSourceLive   GetVrboListingLocationParamsSource = "live"
+	GetVrboListingLocationParamsSourceStored GetVrboListingLocationParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingLocationParamsSource enum.
+func (e GetVrboListingLocationParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingLocationParamsSourceLive:
+		return true
+	case GetVrboListingLocationParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingLocation200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingLocation200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingLocation200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingLocation200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingLocation200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingLocation200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingLocation200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingLocation200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingLocation200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingLocation200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingLocation200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingLocation200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingLocation200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingLocation200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingLocation200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingLocation200JSONResponseBodyDataFreshnessSourceStored GetVrboListingLocation200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingLocation200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingLocation200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingLocation200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingLocation200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPaymentTermsParamsSource.
+const (
+	GetVrboListingPaymentTermsParamsSourceLive   GetVrboListingPaymentTermsParamsSource = "live"
+	GetVrboListingPaymentTermsParamsSourceStored GetVrboListingPaymentTermsParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPaymentTermsParamsSource enum.
+func (e GetVrboListingPaymentTermsParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingPaymentTermsParamsSourceLive:
+		return true
+	case GetVrboListingPaymentTermsParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSourceStored GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPermitsParamsSource.
+const (
+	GetVrboListingPermitsParamsSourceLive   GetVrboListingPermitsParamsSource = "live"
+	GetVrboListingPermitsParamsSourceStored GetVrboListingPermitsParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPermitsParamsSource enum.
+func (e GetVrboListingPermitsParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingPermitsParamsSourceLive:
+		return true
+	case GetVrboListingPermitsParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPermits200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingPermits200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingPermits200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingPermits200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingPermits200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingPermits200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingPermits200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPermits200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingPermits200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingPermits200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingPermits200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingPermits200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPermits200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingPermits200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingPermits200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingPermits200JSONResponseBodyDataFreshnessSourceStored GetVrboListingPermits200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPermits200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingPermits200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingPermits200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingPermits200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReason.
+const (
+	DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReasonOk                DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "ok"
+	DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReasonReconnectRequired DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReasonRefreshing        DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReason enum.
+func (e DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSource.
+const (
+	DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSourceLive   DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSource = "live"
+	DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSourceStored DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSource enum.
+func (e DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPhotosParamsSource.
+const (
+	GetVrboListingPhotosParamsSourceLive   GetVrboListingPhotosParamsSource = "live"
+	GetVrboListingPhotosParamsSourceStored GetVrboListingPhotosParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPhotosParamsSource enum.
+func (e GetVrboListingPhotosParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingPhotosParamsSourceLive:
+		return true
+	case GetVrboListingPhotosParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPhotos200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingPhotos200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingPhotos200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingPhotos200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPhotos200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingPhotos200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingPhotos200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingPhotos200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingPhotos200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPhotos200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingPhotos200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingPhotos200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingPhotos200JSONResponseBodyDataFreshnessSourceStored GetVrboListingPhotos200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPhotos200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingPhotos200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingPhotos200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingPhotos200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AddVrboListingPhotos200JSONResponseBodyDataFreshnessReason.
+const (
+	AddVrboListingPhotos200JSONResponseBodyDataFreshnessReasonOk                AddVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "ok"
+	AddVrboListingPhotos200JSONResponseBodyDataFreshnessReasonReconnectRequired AddVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	AddVrboListingPhotos200JSONResponseBodyDataFreshnessReasonRefreshing        AddVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the AddVrboListingPhotos200JSONResponseBodyDataFreshnessReason enum.
+func (e AddVrboListingPhotos200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case AddVrboListingPhotos200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case AddVrboListingPhotos200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case AddVrboListingPhotos200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AddVrboListingPhotos200JSONResponseBodyDataFreshnessSource.
+const (
+	AddVrboListingPhotos200JSONResponseBodyDataFreshnessSourceLive   AddVrboListingPhotos200JSONResponseBodyDataFreshnessSource = "live"
+	AddVrboListingPhotos200JSONResponseBodyDataFreshnessSourceStored AddVrboListingPhotos200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the AddVrboListingPhotos200JSONResponseBodyDataFreshnessSource enum.
+func (e AddVrboListingPhotos200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case AddVrboListingPhotos200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case AddVrboListingPhotos200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReason.
+const (
+	SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReasonOk                SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReason = "ok"
+	SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReasonReconnectRequired SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReasonRefreshing        SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReason enum.
+func (e SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSource.
+const (
+	SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSourceLive   SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSource = "live"
+	SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSourceStored SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSource enum.
+func (e SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReason.
+const (
+	ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReasonOk                ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "ok"
+	ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReasonReconnectRequired ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReasonRefreshing        ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReason enum.
+func (e ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSource.
+const (
+	ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSourceLive   ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSource = "live"
+	ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSourceStored ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSource enum.
+func (e ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPricingParamsSource.
+const (
+	GetVrboListingPricingParamsSourceLive   GetVrboListingPricingParamsSource = "live"
+	GetVrboListingPricingParamsSourceStored GetVrboListingPricingParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPricingParamsSource enum.
+func (e GetVrboListingPricingParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingPricingParamsSourceLive:
+		return true
+	case GetVrboListingPricingParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPricing200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingPricing200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingPricing200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingPricing200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingPricing200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingPricing200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingPricing200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPricing200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingPricing200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingPricing200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingPricing200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingPricing200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingPricing200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingPricing200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingPricing200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingPricing200JSONResponseBodyDataFreshnessSourceStored GetVrboListingPricing200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingPricing200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingPricing200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingPricing200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingPricing200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingProtectionParamsSource.
+const (
+	GetVrboListingProtectionParamsSourceLive   GetVrboListingProtectionParamsSource = "live"
+	GetVrboListingProtectionParamsSourceStored GetVrboListingProtectionParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingProtectionParamsSource enum.
+func (e GetVrboListingProtectionParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingProtectionParamsSourceLive:
+		return true
+	case GetVrboListingProtectionParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingProtection200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingProtection200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingProtection200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingProtection200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingProtection200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingProtection200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingProtection200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingProtection200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingProtection200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingProtection200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingProtection200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingProtection200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingProtection200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingProtection200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingProtection200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingProtection200JSONResponseBodyDataFreshnessSourceStored GetVrboListingProtection200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingProtection200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingProtection200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingProtection200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingProtection200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingRates200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingRates200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingRates200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingRates200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingRates200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingRates200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingRates200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingRates200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingRates200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingRates200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingRates200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingRates200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingRates200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingRates200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingRates200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingRates200JSONResponseBodyDataFreshnessSourceStored GetVrboListingRates200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingRates200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingRates200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingRates200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingRates200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingRates200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingRates200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingRates200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingRates200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingRates200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingRates200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingRates200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingRates200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingRates200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingRates200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingRates200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingRates200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingRates200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingRates200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingRates200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingRates200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingRates200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingRates200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingRates200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingRates200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingRates200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReason.
+const (
+	DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReasonOk                DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReason = "ok"
+	DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReasonReconnectRequired DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReasonRefreshing        DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReason enum.
+func (e DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSource.
+const (
+	DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSourceLive   DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSource = "live"
+	DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSourceStored DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSource enum.
+func (e DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingRoomsParamsSource.
+const (
+	GetVrboListingRoomsParamsSourceLive   GetVrboListingRoomsParamsSource = "live"
+	GetVrboListingRoomsParamsSourceStored GetVrboListingRoomsParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingRoomsParamsSource enum.
+func (e GetVrboListingRoomsParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingRoomsParamsSourceLive:
+		return true
+	case GetVrboListingRoomsParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingRooms200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingRooms200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingRooms200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingRooms200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingRooms200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingRooms200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingRooms200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingRooms200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingRooms200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingRooms200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingRooms200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingRooms200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingRooms200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingRooms200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingRooms200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingRooms200JSONResponseBodyDataFreshnessSourceStored GetVrboListingRooms200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingRooms200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingRooms200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingRooms200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingRooms200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AddVrboListingRoom200JSONResponseBodyDataFreshnessReason.
+const (
+	AddVrboListingRoom200JSONResponseBodyDataFreshnessReasonOk                AddVrboListingRoom200JSONResponseBodyDataFreshnessReason = "ok"
+	AddVrboListingRoom200JSONResponseBodyDataFreshnessReasonReconnectRequired AddVrboListingRoom200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	AddVrboListingRoom200JSONResponseBodyDataFreshnessReasonRefreshing        AddVrboListingRoom200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the AddVrboListingRoom200JSONResponseBodyDataFreshnessReason enum.
+func (e AddVrboListingRoom200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case AddVrboListingRoom200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case AddVrboListingRoom200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case AddVrboListingRoom200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AddVrboListingRoom200JSONResponseBodyDataFreshnessSource.
+const (
+	AddVrboListingRoom200JSONResponseBodyDataFreshnessSourceLive   AddVrboListingRoom200JSONResponseBodyDataFreshnessSource = "live"
+	AddVrboListingRoom200JSONResponseBodyDataFreshnessSourceStored AddVrboListingRoom200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the AddVrboListingRoom200JSONResponseBodyDataFreshnessSource enum.
+func (e AddVrboListingRoom200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case AddVrboListingRoom200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case AddVrboListingRoom200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingSafetyDisclosuresParamsSource.
+const (
+	GetVrboListingSafetyDisclosuresParamsSourceLive   GetVrboListingSafetyDisclosuresParamsSource = "live"
+	GetVrboListingSafetyDisclosuresParamsSourceStored GetVrboListingSafetyDisclosuresParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingSafetyDisclosuresParamsSource enum.
+func (e GetVrboListingSafetyDisclosuresParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingSafetyDisclosuresParamsSourceLive:
+		return true
+	case GetVrboListingSafetyDisclosuresParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType.
+const (
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeCheckbox      GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "checkbox"
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeCheckboxGroup GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "checkboxGroup"
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeChoice        GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "choice"
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeMeasurement   GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "measurement"
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeNumber        GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "number"
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeText          GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "text"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType enum.
+func (e GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType) Valid() bool {
+	switch e {
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeCheckbox:
+		return true
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeCheckboxGroup:
+		return true
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeChoice:
+		return true
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeMeasurement:
+		return true
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeNumber:
+		return true
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeText:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSourceStored GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType.
+const (
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeCheckbox      UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "checkbox"
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeCheckboxGroup UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "checkboxGroup"
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeChoice        UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "choice"
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeMeasurement   UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "measurement"
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeNumber        UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "number"
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeText          UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType = "text"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType enum.
+func (e UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType) Valid() bool {
+	switch e {
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeCheckbox:
+		return true
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeCheckboxGroup:
+		return true
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeChoice:
+		return true
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeMeasurement:
+		return true
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeNumber:
+		return true
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsTypeText:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingStoryParamsSource.
+const (
+	GetVrboListingStoryParamsSourceLive   GetVrboListingStoryParamsSource = "live"
+	GetVrboListingStoryParamsSourceStored GetVrboListingStoryParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingStoryParamsSource enum.
+func (e GetVrboListingStoryParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingStoryParamsSourceLive:
+		return true
+	case GetVrboListingStoryParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingStory200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingStory200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingStory200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingStory200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingStory200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingStory200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingStory200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingStory200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingStory200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingStory200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingStory200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingStory200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingStory200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingStory200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingStory200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingStory200JSONResponseBodyDataFreshnessSourceStored GetVrboListingStory200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingStory200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingStory200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingStory200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingStory200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingStory200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingStory200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingStory200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingStory200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingStory200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingStory200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingStory200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingStory200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingStory200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingStory200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingStory200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingStory200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingStory200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingStory200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingStory200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingStory200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingStory200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingStory200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingStory200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingStory200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingStory200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingTaxesParamsSource.
+const (
+	GetVrboListingTaxesParamsSourceLive   GetVrboListingTaxesParamsSource = "live"
+	GetVrboListingTaxesParamsSourceStored GetVrboListingTaxesParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingTaxesParamsSource enum.
+func (e GetVrboListingTaxesParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingTaxesParamsSourceLive:
+		return true
+	case GetVrboListingTaxesParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingTaxes200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingTaxes200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingTaxes200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingTaxes200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingTaxes200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingTaxes200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingTaxes200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingTaxes200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingTaxes200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingTaxes200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingTaxes200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingTaxes200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingTaxes200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingTaxes200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingTaxes200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingTaxes200JSONResponseBodyDataFreshnessSourceStored GetVrboListingTaxes200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingTaxes200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingTaxes200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingTaxes200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingTaxes200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReason.
+const (
+	UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReasonOk                UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReason = "ok"
+	UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReasonReconnectRequired UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReasonRefreshing        UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReason enum.
+func (e UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSource.
+const (
+	UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSourceLive   UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSource = "live"
+	UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSourceStored UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSource enum.
+func (e UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReason.
+const (
+	DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReasonOk                DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReason = "ok"
+	DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReasonReconnectRequired DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReasonRefreshing        DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReason enum.
+func (e DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSource.
+const (
+	DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSourceLive   DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSource = "live"
+	DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSourceStored DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSource enum.
+func (e DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingVideosParamsSource.
+const (
+	GetVrboListingVideosParamsSourceLive   GetVrboListingVideosParamsSource = "live"
+	GetVrboListingVideosParamsSourceStored GetVrboListingVideosParamsSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingVideosParamsSource enum.
+func (e GetVrboListingVideosParamsSource) Valid() bool {
+	switch e {
+	case GetVrboListingVideosParamsSourceLive:
+		return true
+	case GetVrboListingVideosParamsSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingVideos200JSONResponseBodyDataFreshnessReason.
+const (
+	GetVrboListingVideos200JSONResponseBodyDataFreshnessReasonOk                GetVrboListingVideos200JSONResponseBodyDataFreshnessReason = "ok"
+	GetVrboListingVideos200JSONResponseBodyDataFreshnessReasonReconnectRequired GetVrboListingVideos200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	GetVrboListingVideos200JSONResponseBodyDataFreshnessReasonRefreshing        GetVrboListingVideos200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingVideos200JSONResponseBodyDataFreshnessReason enum.
+func (e GetVrboListingVideos200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case GetVrboListingVideos200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case GetVrboListingVideos200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case GetVrboListingVideos200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetVrboListingVideos200JSONResponseBodyDataFreshnessSource.
+const (
+	GetVrboListingVideos200JSONResponseBodyDataFreshnessSourceLive   GetVrboListingVideos200JSONResponseBodyDataFreshnessSource = "live"
+	GetVrboListingVideos200JSONResponseBodyDataFreshnessSourceStored GetVrboListingVideos200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the GetVrboListingVideos200JSONResponseBodyDataFreshnessSource enum.
+func (e GetVrboListingVideos200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case GetVrboListingVideos200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case GetVrboListingVideos200JSONResponseBodyDataFreshnessSourceStored:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AddVrboListingVideo200JSONResponseBodyDataFreshnessReason.
+const (
+	AddVrboListingVideo200JSONResponseBodyDataFreshnessReasonOk                AddVrboListingVideo200JSONResponseBodyDataFreshnessReason = "ok"
+	AddVrboListingVideo200JSONResponseBodyDataFreshnessReasonReconnectRequired AddVrboListingVideo200JSONResponseBodyDataFreshnessReason = "reconnect_required"
+	AddVrboListingVideo200JSONResponseBodyDataFreshnessReasonRefreshing        AddVrboListingVideo200JSONResponseBodyDataFreshnessReason = "refreshing"
+)
+
+// Valid indicates whether the value is a known member of the AddVrboListingVideo200JSONResponseBodyDataFreshnessReason enum.
+func (e AddVrboListingVideo200JSONResponseBodyDataFreshnessReason) Valid() bool {
+	switch e {
+	case AddVrboListingVideo200JSONResponseBodyDataFreshnessReasonOk:
+		return true
+	case AddVrboListingVideo200JSONResponseBodyDataFreshnessReasonReconnectRequired:
+		return true
+	case AddVrboListingVideo200JSONResponseBodyDataFreshnessReasonRefreshing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AddVrboListingVideo200JSONResponseBodyDataFreshnessSource.
+const (
+	AddVrboListingVideo200JSONResponseBodyDataFreshnessSourceLive   AddVrboListingVideo200JSONResponseBodyDataFreshnessSource = "live"
+	AddVrboListingVideo200JSONResponseBodyDataFreshnessSourceStored AddVrboListingVideo200JSONResponseBodyDataFreshnessSource = "stored"
+)
+
+// Valid indicates whether the value is a known member of the AddVrboListingVideo200JSONResponseBodyDataFreshnessSource enum.
+func (e AddVrboListingVideo200JSONResponseBodyDataFreshnessSource) Valid() bool {
+	switch e {
+	case AddVrboListingVideo200JSONResponseBodyDataFreshnessSourceLive:
+		return true
+	case AddVrboListingVideo200JSONResponseBodyDataFreshnessSourceStored:
 		return true
 	default:
 		return false
@@ -7605,11 +10272,11 @@ const (
 	PublishListingToVrboJSONBodySectionsAmenities       PublishListingToVrboJSONBodySections = "amenities"
 	PublishListingToVrboJSONBodySectionsBookingSettings PublishListingToVrboJSONBodySections = "booking-settings"
 	PublishListingToVrboJSONBodySectionsCancellation    PublishListingToVrboJSONBodySections = "cancellation"
-	PublishListingToVrboJSONBodySectionsDescription     PublishListingToVrboJSONBodySections = "description"
+	PublishListingToVrboJSONBodySectionsDescriptions    PublishListingToVrboJSONBodySections = "descriptions"
+	PublishListingToVrboJSONBodySectionsDetails         PublishListingToVrboJSONBodySections = "details"
 	PublishListingToVrboJSONBodySectionsFees            PublishListingToVrboJSONBodySections = "fees"
 	PublishListingToVrboJSONBodySectionsHouseRules      PublishListingToVrboJSONBodySections = "house-rules"
 	PublishListingToVrboJSONBodySectionsPricing         PublishListingToVrboJSONBodySections = "pricing"
-	PublishListingToVrboJSONBodySectionsProperty        PublishListingToVrboJSONBodySections = "property"
 	PublishListingToVrboJSONBodySectionsRates           PublishListingToVrboJSONBodySections = "rates"
 )
 
@@ -7622,15 +10289,15 @@ func (e PublishListingToVrboJSONBodySections) Valid() bool {
 		return true
 	case PublishListingToVrboJSONBodySectionsCancellation:
 		return true
-	case PublishListingToVrboJSONBodySectionsDescription:
+	case PublishListingToVrboJSONBodySectionsDescriptions:
+		return true
+	case PublishListingToVrboJSONBodySectionsDetails:
 		return true
 	case PublishListingToVrboJSONBodySectionsFees:
 		return true
 	case PublishListingToVrboJSONBodySectionsHouseRules:
 		return true
 	case PublishListingToVrboJSONBodySectionsPricing:
-		return true
-	case PublishListingToVrboJSONBodySectionsProperty:
 		return true
 	case PublishListingToVrboJSONBodySectionsRates:
 		return true
@@ -20153,6 +22820,15 @@ type CreateBookingWebhookJSONBody struct {
 	NotificationType string `json:"notification_type"`
 }
 
+// GetVrboConnection200JSONResponseBodyDataAccountsAccessType defines parameters for GetVrboConnection.
+type GetVrboConnection200JSONResponseBodyDataAccountsAccessType string
+
+// GetVrboConnection200JSONResponseBodyDataAccountsStatus defines parameters for GetVrboConnection.
+type GetVrboConnection200JSONResponseBodyDataAccountsStatus string
+
+// GetVrboConnection200JSONResponseBodyDataStatus defines parameters for GetVrboConnection.
+type GetVrboConnection200JSONResponseBodyDataStatus string
+
 // ListVrboListingsParams defines parameters for ListVrboListings.
 type ListVrboListingsParams struct {
 	// Status `active` (default) leaves inactive listings out. `inactive` returns only them and `all` returns both. An inactive listing comes back with identity fields only (ids, `name`, `city`, `status`, `inactiveReason`, its account), which is enough to show what can be activated. Every row carries `status`.
@@ -20162,11 +22838,73 @@ type ListVrboListingsParams struct {
 // ListVrboListingsParamsStatus defines parameters for ListVrboListings.
 type ListVrboListingsParamsStatus string
 
+// MapVrboListingJSONBody defines parameters for MapVrboListing.
+type MapVrboListingJSONBody struct {
+	// AccountId The Vrbo account the unit is on, when the workspace has several.
+	//
+	// Example: vrbo:7001234
+	AccountId *string `json:"accountId,omitempty"`
+
+	// Create Create a Repull listing from what Vrbo shows, instead of `listingId`.
+	Create *bool `json:"create,omitempty"`
+
+	// ListingId The Repull listing to link it to. Or `create: true`.
+	//
+	// Example: 6199
+	ListingId *int `json:"listingId,omitempty"`
+
+	// SyncEnabled Also send the listing's calendar to Vrbo.
+	SyncEnabled *bool `json:"syncEnabled,omitempty"`
+
+	// VrboListingNumber The number in the Vrbo URL (vrbo.com/5506023).
+	//
+	// Example: 5506023
+	VrboListingNumber string `json:"vrboListingNumber"`
+}
+
+// GetVrboListingParams defines parameters for GetVrboListing.
+type GetVrboListingParams struct {
+	// Include `content`: add the stored listing-content sections.
+	Include *GetVrboListingParamsInclude `form:"include,omitempty" json:"include,omitempty"`
+}
+
+// GetVrboListingParamsInclude defines parameters for GetVrboListing.
+type GetVrboListingParamsInclude string
+
+// GetVrboListing200JSONResponseBodyDataAccessType defines parameters for GetVrboListing.
+type GetVrboListing200JSONResponseBodyDataAccessType string
+
+// VrboListingActionJSONBody defines parameters for VrboListingAction.
+type VrboListingActionJSONBody struct {
+	Action VrboListingActionJSONBodyAction `json:"action"`
+
+	// Sections `push`: only these sections (as for `POST /v1/listings/{id}/publish/vrbo`).
+	Sections *[]string `json:"sections,omitempty"`
+
+	// VrboListingNumber `push` / `unlist` / `relist`: the Vrbo listing, when the listing is linked to several.
+	VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
+}
+
+// VrboListingActionJSONBodyAction defines parameters for VrboListingAction.
+type VrboListingActionJSONBodyAction string
+
 // GetVrboListingAdditionalInfoParams defines parameters for GetVrboListingAdditionalInfo.
 type GetVrboListingAdditionalInfoParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingAdditionalInfoParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingAdditionalInfoParamsSource defines parameters for GetVrboListingAdditionalInfo.
+type GetVrboListingAdditionalInfoParamsSource string
+
+// GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingAdditionalInfo.
+type GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingAdditionalInfo.
+type GetVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingAdditionalInfoJSONBody defines parameters for UpdateVrboListingAdditionalInfo.
 type UpdateVrboListingAdditionalInfoJSONBody struct {
@@ -20181,14 +22919,26 @@ type UpdateVrboListingAdditionalInfoParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
+// UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingAdditionalInfo.
+type UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingAdditionalInfo.
+type UpdateVrboListingAdditionalInfo200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingAmenitiesParams defines parameters for GetVrboListingAmenities.
 type GetVrboListingAmenitiesParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 
-	// Groups Amenity groups to read, comma-separated (default: all 19 — one Vrbo call each): essentials, internet, climateControl, general, office, kitchenAndDining, parking, poolAndSpa, sustainability, entertainment, outdoor, onsiteService, accessibility, homeSafety, safetyDevices, enhancedCleaning, locationAndView, localAttractionsAndActivities, checkoutInstructions.
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingAmenitiesParamsSource `form:"source,omitempty" json:"source,omitempty"`
+
+	// Groups Amenity groups to read, comma-separated (default: all 19): essentials, internet, climateControl, general, office, kitchenAndDining, parking, poolAndSpa, sustainability, entertainment, outdoor, onsiteService, accessibility, homeSafety, safetyDevices, enhancedCleaning, locationAndView, localAttractionsAndActivities, checkoutInstructions.
 	Groups *string `form:"groups,omitempty" json:"groups,omitempty"`
 }
+
+// GetVrboListingAmenitiesParamsSource defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenitiesParamsSource string
 
 // GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType defines parameters for GetVrboListingAmenities.
 type GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsType string
@@ -20206,6 +22956,12 @@ type GetVrboListingAmenities200JSONResponseBodyDataGroupsFieldsValue2 = bool
 type GetVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value struct {
 	union json.RawMessage
 }
+
+// GetVrboListingAmenities200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenities200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingAmenities200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingAmenities.
+type GetVrboListingAmenities200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingAmenitiesJSONBody defines parameters for UpdateVrboListingAmenities.
 type UpdateVrboListingAmenitiesJSONBody struct {
@@ -20579,14 +23335,117 @@ type UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value stru
 	union json.RawMessage
 }
 
+// UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingAmenities.
+type UpdateVrboListingAmenities200JSONResponseBodyDataFreshnessSource string
+
+// GetVrboListingAvailabilityParams defines parameters for GetVrboListingAvailability.
+type GetVrboListingAvailabilityParams struct {
+	// StartDate First night (default today).
+	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+
+	// EndDate Last night (default start + 29 days).
+	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+
+	// JobId The `jobId` a PUT returned: read that write's status.
+	JobId *string `form:"jobId,omitempty" json:"jobId,omitempty"`
+
+	// VrboListingNumber The Vrbo listing number, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingAvailability200JSONResponseBodyData0 defines parameters for GetVrboListingAvailability.
+type GetVrboListingAvailability200JSONResponseBodyData0 = []struct {
+	Available      *bool                                                        `json:"available,omitempty"`
+	BlockedBy      *GetVrboListingAvailability200JSONResponseBodyData0BlockedBy `json:"blockedBy,omitempty"`
+	CheckIn        *bool                                                        `json:"checkIn,omitempty"`
+	CheckOut       *bool                                                        `json:"checkOut,omitempty"`
+	Currency       *string                                                      `json:"currency,omitempty"`
+	Date           *openapi_types.Date                                          `json:"date,omitempty"`
+	MinStay        *int                                                         `json:"minStay,omitempty"`
+	NightlyRate    *float32                                                     `json:"nightlyRate,omitempty"`
+	ReservationRef *string                                                      `json:"reservationRef,omitempty"`
+}
+
+// GetVrboListingAvailability200JSONResponseBodyData0BlockedBy defines parameters for GetVrboListingAvailability.
+type GetVrboListingAvailability200JSONResponseBodyData0BlockedBy string
+
+// GetVrboListingAvailability200JSONResponseBodyData1 defines parameters for GetVrboListingAvailability.
+type GetVrboListingAvailability200JSONResponseBodyData1 struct {
+	Error      *string                 `json:"error,omitempty"`
+	FinishedAt *string                 `json:"finishedAt,omitempty"`
+	JobId      *int                    `json:"jobId,omitempty"`
+	Nights     *int                    `json:"nights,omitempty"`
+	QueuedAt   *string                 `json:"queuedAt,omitempty"`
+	Stats      *map[string]interface{} `json:"stats,omitempty"`
+
+	// Status Example: done
+	Status *string `json:"status,omitempty"`
+}
+
+// GetVrboListingAvailability200JSONResponseBody_Data defines parameters for GetVrboListingAvailability.
+type GetVrboListingAvailability200JSONResponseBody_Data struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingAvailabilityJSONBody defines parameters for UpdateVrboListingAvailability.
+type UpdateVrboListingAvailabilityJSONBody struct {
+	Operations []struct {
+		// Availability `unavailable` blocks the nights on Vrbo; `available` opens them (never a night a booking holds).
+		Availability *UpdateVrboListingAvailabilityJSONBodyOperationsAvailability `json:"availability,omitempty"`
+
+		// ClosedToArrival No check-in on these nights.
+		ClosedToArrival *bool `json:"closed_to_arrival,omitempty"`
+
+		// ClosedToDeparture No check-out on these nights.
+		ClosedToDeparture *bool `json:"closed_to_departure,omitempty"`
+
+		// DailyPrice The nightly price on Vrbo, in the listing's Vrbo currency (sent as is — no markup).
+		DailyPrice *float32 `json:"daily_price,omitempty"`
+
+		// Dates `YYYY-MM-DD`, or ranges as `YYYY-MM-DD:YYYY-MM-DD`.
+		Dates     *[]string           `json:"dates,omitempty"`
+		EndDate   *openapi_types.Date `json:"end_date,omitempty"`
+		MinNights *int                `json:"min_nights,omitempty"`
+		StartDate *openapi_types.Date `json:"start_date,omitempty"`
+	} `json:"operations"`
+	Type *UpdateVrboListingAvailabilityJSONBodyType `json:"type,omitempty"`
+}
+
+// UpdateVrboListingAvailabilityParams defines parameters for UpdateVrboListingAvailability.
+type UpdateVrboListingAvailabilityParams struct {
+	// VrboListingNumber The Vrbo listing number, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingAvailabilityJSONBodyOperationsAvailability defines parameters for UpdateVrboListingAvailability.
+type UpdateVrboListingAvailabilityJSONBodyOperationsAvailability string
+
+// UpdateVrboListingAvailabilityJSONBodyType defines parameters for UpdateVrboListingAvailability.
+type UpdateVrboListingAvailabilityJSONBodyType string
+
 // GetVrboListingBookingSettingsParams defines parameters for GetVrboListingBookingSettings.
 type GetVrboListingBookingSettingsParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingBookingSettingsParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingBookingSettingsParamsSource defines parameters for GetVrboListingBookingSettings.
+type GetVrboListingBookingSettingsParamsSource string
 
 // GetVrboListingBookingSettings200JSONResponseBodyDataBookingType defines parameters for GetVrboListingBookingSettings.
 type GetVrboListingBookingSettings200JSONResponseBodyDataBookingType string
+
+// GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingBookingSettings.
+type GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingBookingSettings.
+type GetVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingBookingSettingsJSONBody defines parameters for UpdateVrboListingBookingSettings.
 type UpdateVrboListingBookingSettingsJSONBody struct {
@@ -20616,11 +23475,29 @@ type UpdateVrboListingBookingSettingsJSONBodyMaxMonthsBeforeBooking int
 // UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType defines parameters for UpdateVrboListingBookingSettings.
 type UpdateVrboListingBookingSettings200JSONResponseBodyDataBookingType string
 
+// UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingBookingSettings.
+type UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingBookingSettings.
+type UpdateVrboListingBookingSettings200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingCancellationParams defines parameters for GetVrboListingCancellation.
 type GetVrboListingCancellationParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingCancellationParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingCancellationParamsSource defines parameters for GetVrboListingCancellation.
+type GetVrboListingCancellationParamsSource string
+
+// GetVrboListingCancellation200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingCancellation.
+type GetVrboListingCancellation200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingCancellation200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingCancellation.
+type GetVrboListingCancellation200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingCancellationJSONBody defines parameters for UpdateVrboListingCancellation.
 type UpdateVrboListingCancellationJSONBody struct {
@@ -20640,14 +23517,111 @@ type UpdateVrboListingCancellationParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// GetVrboListingContentParams defines parameters for GetVrboListingContent.
-type GetVrboListingContentParams struct {
-	// Sections Comma-separated sections, or `all`: description, property, story, additional-info, translations, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, rates, payment-terms, protection, taxes, registration, welcome-guide, videos.
-	Sections string `form:"sections" json:"sections"`
+// UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingCancellation.
+type UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingCancellation.
+type UpdateVrboListingCancellation200JSONResponseBodyDataFreshnessSource string
+
+// GetVrboListingCheckinGuideParams defines parameters for GetVrboListingCheckinGuide.
+type GetVrboListingCheckinGuideParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingCheckinGuideParamsSource `form:"source,omitempty" json:"source,omitempty"`
+}
+
+// GetVrboListingCheckinGuideParamsSource defines parameters for GetVrboListingCheckinGuide.
+type GetVrboListingCheckinGuideParamsSource string
+
+// GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingCheckinGuide.
+type GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingCheckinGuide.
+type GetVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource string
+
+// UpdateVrboListingCheckinGuideJSONBody defines parameters for UpdateVrboListingCheckinGuide.
+type UpdateVrboListingCheckinGuideJSONBody struct {
+	Access *struct {
+		Code         *string `json:"code,omitempty"`
+		Instructions *string `json:"instructions,omitempty"`
+		Type         *string `json:"type,omitempty"`
+	} `json:"access,omitempty"`
+
+	// Amenities `{AMENITY_ID: {instructions}}` — notes are one-way (not removable).
+	Amenities *map[string]struct {
+		Instructions string `json:"instructions"`
+	} `json:"amenities,omitempty"`
+	CheckIn *struct {
+		Instructions string `json:"instructions"`
+	} `json:"checkIn,omitempty"`
+	CheckOut *struct {
+		Instructions string `json:"instructions"`
+	} `json:"checkOut,omitempty"`
+	DrivingDirections *struct {
+		Instructions string `json:"instructions"`
+	} `json:"drivingDirections,omitempty"`
+	ParkingDirections *struct {
+		Instructions string `json:"instructions"`
+	} `json:"parkingDirections,omitempty"`
+	Wifi *struct {
+		Instructions *string `json:"instructions,omitempty"`
+		NetworkName  *string `json:"networkName,omitempty"`
+		Password     *string `json:"password,omitempty"`
+	} `json:"wifi,omitempty"`
+}
+
+// UpdateVrboListingCheckinGuideParams defines parameters for UpdateVrboListingCheckinGuide.
+type UpdateVrboListingCheckinGuideParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingCheckinGuide.
+type UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingCheckinGuide.
+type UpdateVrboListingCheckinGuide200JSONResponseBodyDataFreshnessSource string
+
+// GetVrboListingCheckoutGuideParams defines parameters for GetVrboListingCheckoutGuide.
+type GetVrboListingCheckoutGuideParams struct {
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingCheckoutGuideParamsSource `form:"source,omitempty" json:"source,omitempty"`
 
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
+
+// GetVrboListingCheckoutGuideParamsSource defines parameters for GetVrboListingCheckoutGuide.
+type GetVrboListingCheckoutGuideParamsSource string
+
+// GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingCheckoutGuide.
+type GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingCheckoutGuide.
+type GetVrboListingCheckoutGuide200JSONResponseBodyDataFreshnessSource string
+
+// GetVrboListingContentParams defines parameters for GetVrboListingContent.
+type GetVrboListingContentParams struct {
+	// Sections Comma-separated sections, or `all`: descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos.
+	Sections string `form:"sections" json:"sections"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingContentParamsSource `form:"source,omitempty" json:"source,omitempty"`
+
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingContentParamsSource defines parameters for GetVrboListingContent.
+type GetVrboListingContentParamsSource string
+
+// GetVrboListingContent200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingContent200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodyDataFreshnessSource string
 
 // GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType defines parameters for GetVrboListingContent.
 type GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsType string
@@ -20669,32 +23643,140 @@ type GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_V
 // GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType defines parameters for GetVrboListingContent.
 type GetVrboListingContent200JSONResponseBodySectionsBookingSettingsBookingType string
 
-// GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit defines parameters for GetVrboListingContent.
-type GetVrboListingContent200JSONResponseBodySectionsPropertyInteriorSizeUnit string
+// GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnit defines parameters for GetVrboListingContent.
+type GetVrboListingContent200JSONResponseBodySectionsDetailsInteriorSizeUnit string
 
-// GetVrboListingDescriptionParams defines parameters for GetVrboListingDescription.
-type GetVrboListingDescriptionParams struct {
+// DeleteVrboListingDescriptionParams defines parameters for DeleteVrboListingDescription.
+type DeleteVrboListingDescriptionParams struct {
+	// Locale The language to remove.
+	Locale string `form:"locale" json:"locale"`
+
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// UpdateVrboListingDescriptionJSONBody defines parameters for UpdateVrboListingDescription.
-type UpdateVrboListingDescriptionJSONBody struct {
+// DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReason defines parameters for DeleteVrboListingDescription.
+type DeleteVrboListingDescription200JSONResponseBodyDataFreshnessReason string
+
+// DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSource defines parameters for DeleteVrboListingDescription.
+type DeleteVrboListingDescription200JSONResponseBodyDataFreshnessSource string
+
+// GetVrboListingDescriptionsParams defines parameters for GetVrboListingDescriptions.
+type GetVrboListingDescriptionsParams struct {
+	// Locale Only this language (a code from `languages`).
+	Locale *string `form:"locale,omitempty" json:"locale,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingDescriptionsParamsSource `form:"source,omitempty" json:"source,omitempty"`
+
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingDescriptionsParamsSource defines parameters for GetVrboListingDescriptions.
+type GetVrboListingDescriptionsParamsSource string
+
+// GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingDescriptions.
+type GetVrboListingDescriptions200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingDescriptions.
+type GetVrboListingDescriptions200JSONResponseBodyDataFreshnessSource string
+
+// UpdateVrboListingDescriptionsJSONBody defines parameters for UpdateVrboListingDescriptions.
+type UpdateVrboListingDescriptionsJSONBody struct {
 	Description *string `json:"description,omitempty"`
 	Headline    *string `json:"headline,omitempty"`
+
+	// Locale Leave out for the listing's own language. A language code (one of `languages` in the read) writes that language's hand-written translation, which replaces Vrbo's automatic one.
+	//
+	// Example: fr-FR
+	Locale *string `json:"locale,omitempty"`
 }
 
-// UpdateVrboListingDescriptionParams defines parameters for UpdateVrboListingDescription.
-type UpdateVrboListingDescriptionParams struct {
+// UpdateVrboListingDescriptionsParams defines parameters for UpdateVrboListingDescriptions.
+type UpdateVrboListingDescriptionsParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
+
+// UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingDescriptions.
+type UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingDescriptions.
+type UpdateVrboListingDescriptions200JSONResponseBodyDataFreshnessSource string
+
+// GetVrboListingDetailsParams defines parameters for GetVrboListingDetails.
+type GetVrboListingDetailsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingDetailsParamsSource `form:"source,omitempty" json:"source,omitempty"`
+}
+
+// GetVrboListingDetailsParamsSource defines parameters for GetVrboListingDetails.
+type GetVrboListingDetailsParamsSource string
+
+// GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit defines parameters for GetVrboListingDetails.
+type GetVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit string
+
+// GetVrboListingDetails200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingDetails.
+type GetVrboListingDetails200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingDetails200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingDetails.
+type GetVrboListingDetails200JSONResponseBodyDataFreshnessSource string
+
+// UpdateVrboListingDetailsJSONBody defines parameters for UpdateVrboListingDetails.
+type UpdateVrboListingDetailsJSONBody struct {
+	InteriorSize *struct {
+		Unit  UpdateVrboListingDetailsJSONBodyInteriorSizeUnit `json:"unit"`
+		Value float32                                          `json:"value"`
+	} `json:"interiorSize,omitempty"`
+	LongTermRentersWelcome *bool `json:"longTermRentersWelcome,omitempty"`
+
+	// PropertyName Internal name (not shown to guests).
+	PropertyName *string `json:"propertyName,omitempty"`
+
+	// PropertyType One of the read's `propertyTypeOptions[].value`.
+	PropertyType *string `json:"propertyType,omitempty"`
+	SeniorsOnly  *bool   `json:"seniorsOnly,omitempty"`
+}
+
+// UpdateVrboListingDetailsParams defines parameters for UpdateVrboListingDetails.
+type UpdateVrboListingDetailsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingDetailsJSONBodyInteriorSizeUnit defines parameters for UpdateVrboListingDetails.
+type UpdateVrboListingDetailsJSONBodyInteriorSizeUnit string
+
+// UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit defines parameters for UpdateVrboListingDetails.
+type UpdateVrboListingDetails200JSONResponseBodyDataInteriorSizeUnit string
+
+// UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingDetails.
+type UpdateVrboListingDetails200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingDetails.
+type UpdateVrboListingDetails200JSONResponseBodyDataFreshnessSource string
 
 // GetVrboListingFeesParams defines parameters for GetVrboListingFees.
 type GetVrboListingFeesParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingFeesParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingFeesParamsSource defines parameters for GetVrboListingFees.
+type GetVrboListingFeesParamsSource string
+
+// GetVrboListingFees200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingFees.
+type GetVrboListingFees200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingFees200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingFees.
+type GetVrboListingFees200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingFeesJSONBody defines parameters for UpdateVrboListingFees.
 type UpdateVrboListingFeesJSONBody struct {
@@ -20745,11 +23827,29 @@ type UpdateVrboListingFeesJSONBodyExtraGuestsType string
 // UpdateVrboListingFeesJSONBodyPetsType defines parameters for UpdateVrboListingFees.
 type UpdateVrboListingFeesJSONBodyPetsType string
 
+// UpdateVrboListingFees200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingFees.
+type UpdateVrboListingFees200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingFees200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingFees.
+type UpdateVrboListingFees200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingHouseRulesParams defines parameters for GetVrboListingHouseRules.
 type GetVrboListingHouseRulesParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingHouseRulesParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingHouseRulesParamsSource defines parameters for GetVrboListingHouseRules.
+type GetVrboListingHouseRulesParamsSource string
+
+// GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingHouseRules.
+type GetVrboListingHouseRules200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingHouseRules.
+type GetVrboListingHouseRules200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingHouseRulesJSONBody defines parameters for UpdateVrboListingHouseRules.
 type UpdateVrboListingHouseRulesJSONBody struct {
@@ -20821,11 +23921,29 @@ type UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight struct {
 	union json.RawMessage
 }
 
+// UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingHouseRules.
+type UpdateVrboListingHouseRules200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingLocationParams defines parameters for GetVrboListingLocation.
 type GetVrboListingLocationParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingLocationParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingLocationParamsSource defines parameters for GetVrboListingLocation.
+type GetVrboListingLocationParamsSource string
+
+// GetVrboListingLocation200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingLocation.
+type GetVrboListingLocation200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingLocation200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingLocation.
+type GetVrboListingLocation200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingLocationJSONBody defines parameters for UpdateVrboListingLocation.
 type UpdateVrboListingLocationJSONBody struct {
@@ -20838,11 +23956,29 @@ type UpdateVrboListingLocationParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
+// UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingLocation.
+type UpdateVrboListingLocation200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingLocation.
+type UpdateVrboListingLocation200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingPaymentTermsParams defines parameters for GetVrboListingPaymentTerms.
 type GetVrboListingPaymentTermsParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingPaymentTermsParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingPaymentTermsParamsSource defines parameters for GetVrboListingPaymentTerms.
+type GetVrboListingPaymentTermsParamsSource string
+
+// GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingPaymentTerms.
+type GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingPaymentTerms.
+type GetVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingPaymentTermsJSONBody defines parameters for UpdateVrboListingPaymentTerms.
 type UpdateVrboListingPaymentTermsJSONBody struct {
@@ -20859,37 +23995,193 @@ type UpdateVrboListingPaymentTermsParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
+// UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingPaymentTerms.
+type UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingPaymentTerms.
+type UpdateVrboListingPaymentTerms200JSONResponseBodyDataFreshnessSource string
+
+// GetVrboListingPermitsParams defines parameters for GetVrboListingPermits.
+type GetVrboListingPermitsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingPermitsParamsSource `form:"source,omitempty" json:"source,omitempty"`
+}
+
+// GetVrboListingPermitsParamsSource defines parameters for GetVrboListingPermits.
+type GetVrboListingPermitsParamsSource string
+
+// GetVrboListingPermits200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingPermits.
+type GetVrboListingPermits200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingPermits200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingPermits.
+type GetVrboListingPermits200JSONResponseBodyDataFreshnessSource string
+
+// UpdateVrboListingPermitsJSONBody defines parameters for UpdateVrboListingPermits.
+type UpdateVrboListingPermitsJSONBody struct {
+	Settings []struct {
+		// Name A `fields[].name` from the read (they differ per jurisdiction).
+		Name  string                                           `json:"name"`
+		Value *UpdateVrboListingPermitsJSONBody_Settings_Value `json:"value"`
+	} `json:"settings"`
+}
+
+// UpdateVrboListingPermitsParams defines parameters for UpdateVrboListingPermits.
+type UpdateVrboListingPermitsParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingPermitsJSONBodySettingsValue0 defines parameters for UpdateVrboListingPermits.
+type UpdateVrboListingPermitsJSONBodySettingsValue0 = string
+
+// UpdateVrboListingPermitsJSONBodySettingsValue1 defines parameters for UpdateVrboListingPermits.
+type UpdateVrboListingPermitsJSONBodySettingsValue1 = float32
+
+// UpdateVrboListingPermitsJSONBodySettingsValue2 defines parameters for UpdateVrboListingPermits.
+type UpdateVrboListingPermitsJSONBodySettingsValue2 = bool
+
+// UpdateVrboListingPermitsJSONBody_Settings_Value defines parameters for UpdateVrboListingPermits.
+type UpdateVrboListingPermitsJSONBody_Settings_Value struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingPermits.
+type UpdateVrboListingPermits200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingPermits.
+type UpdateVrboListingPermits200JSONResponseBodyDataFreshnessSource string
+
+// DeleteVrboListingPhotosParams defines parameters for DeleteVrboListingPhotos.
+type DeleteVrboListingPhotosParams struct {
+	// PhotoId The `id` of the photo to remove (comma-separated for several).
+	PhotoId string `form:"photoId" json:"photoId"`
+
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReason defines parameters for DeleteVrboListingPhotos.
+type DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessReason string
+
+// DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSource defines parameters for DeleteVrboListingPhotos.
+type DeleteVrboListingPhotos200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingPhotosParams defines parameters for GetVrboListingPhotos.
 type GetVrboListingPhotosParams struct {
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingPhotosParamsSource `form:"source,omitempty" json:"source,omitempty"`
+
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// UpdateVrboListingPhotosJSONBody defines parameters for UpdateVrboListingPhotos.
-type UpdateVrboListingPhotosJSONBody struct {
-	Add *[]struct {
+// GetVrboListingPhotosParamsSource defines parameters for GetVrboListingPhotos.
+type GetVrboListingPhotosParamsSource string
+
+// GetVrboListingPhotos200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingPhotos.
+type GetVrboListingPhotos200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingPhotos200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingPhotos.
+type GetVrboListingPhotos200JSONResponseBodyDataFreshnessSource string
+
+// UpdateVrboListingPhotoJSONBody defines parameters for UpdateVrboListingPhoto.
+type UpdateVrboListingPhotoJSONBody struct {
+	Caption   *string `json:"caption,omitempty"`
+	PhotoId   string  `json:"photo_id"`
+	SortOrder *int    `json:"sort_order,omitempty"`
+}
+
+// UpdateVrboListingPhotoParams defines parameters for UpdateVrboListingPhoto.
+type UpdateVrboListingPhotoParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingPhoto.
+type UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingPhoto.
+type UpdateVrboListingPhoto200JSONResponseBodyDataFreshnessSource string
+
+// AddVrboListingPhotosJSONBody defines parameters for AddVrboListingPhotos.
+type AddVrboListingPhotosJSONBody struct {
+	Photos []struct {
 		Caption *string `json:"caption,omitempty"`
-		Url     string  `json:"url"`
-	} `json:"add,omitempty"`
 
-	// Captions `{photoId: caption}`
-	Captions *map[string]string `json:"captions,omitempty"`
-	Cover    *string            `json:"cover,omitempty"`
-	Delete   *[]string          `json:"delete,omitempty"`
-	Order    *[]string          `json:"order,omitempty"`
+		// Image Or: the image as base64 (a `data:image/jpeg;base64,` prefix is accepted).
+		Image *string `json:"image,omitempty"`
+
+		// Url An https JPEG or PNG Vrbo can download.
+		Url *string `json:"url,omitempty"`
+	} `json:"photos"`
 }
 
-// UpdateVrboListingPhotosParams defines parameters for UpdateVrboListingPhotos.
-type UpdateVrboListingPhotosParams struct {
+// AddVrboListingPhotosParams defines parameters for AddVrboListingPhotos.
+type AddVrboListingPhotosParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
+
+// AddVrboListingPhotos200JSONResponseBodyDataFreshnessReason defines parameters for AddVrboListingPhotos.
+type AddVrboListingPhotos200JSONResponseBodyDataFreshnessReason string
+
+// AddVrboListingPhotos200JSONResponseBodyDataFreshnessSource defines parameters for AddVrboListingPhotos.
+type AddVrboListingPhotos200JSONResponseBodyDataFreshnessSource string
+
+// SetVrboListingCoverPhotoJSONBody defines parameters for SetVrboListingCoverPhoto.
+type SetVrboListingCoverPhotoJSONBody struct {
+	PhotoId string `json:"photo_id"`
+}
+
+// SetVrboListingCoverPhotoParams defines parameters for SetVrboListingCoverPhoto.
+type SetVrboListingCoverPhotoParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReason defines parameters for SetVrboListingCoverPhoto.
+type SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessReason string
+
+// SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSource defines parameters for SetVrboListingCoverPhoto.
+type SetVrboListingCoverPhoto200JSONResponseBodyDataFreshnessSource string
+
+// ReorderVrboListingPhotosJSONBody defines parameters for ReorderVrboListingPhotos.
+type ReorderVrboListingPhotosJSONBody struct {
+	PhotoIds []string `json:"photo_ids"`
+}
+
+// ReorderVrboListingPhotosParams defines parameters for ReorderVrboListingPhotos.
+type ReorderVrboListingPhotosParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReason defines parameters for ReorderVrboListingPhotos.
+type ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessReason string
+
+// ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSource defines parameters for ReorderVrboListingPhotos.
+type ReorderVrboListingPhotos200JSONResponseBodyDataFreshnessSource string
 
 // GetVrboListingPricingParams defines parameters for GetVrboListingPricing.
 type GetVrboListingPricingParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingPricingParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingPricingParamsSource defines parameters for GetVrboListingPricing.
+type GetVrboListingPricingParamsSource string
+
+// GetVrboListingPricing200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingPricing.
+type GetVrboListingPricing200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingPricing200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingPricing.
+type GetVrboListingPricing200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingPricingJSONBody defines parameters for UpdateVrboListingPricing.
 type UpdateVrboListingPricingJSONBody struct {
@@ -20902,48 +24194,29 @@ type UpdateVrboListingPricingParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// GetVrboListingPropertyParams defines parameters for GetVrboListingProperty.
-type GetVrboListingPropertyParams struct {
-	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
-	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
-}
+// UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingPricing.
+type UpdateVrboListingPricing200JSONResponseBodyDataFreshnessReason string
 
-// GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit defines parameters for GetVrboListingProperty.
-type GetVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit string
-
-// UpdateVrboListingPropertyJSONBody defines parameters for UpdateVrboListingProperty.
-type UpdateVrboListingPropertyJSONBody struct {
-	InteriorSize *struct {
-		Unit  UpdateVrboListingPropertyJSONBodyInteriorSizeUnit `json:"unit"`
-		Value float32                                           `json:"value"`
-	} `json:"interiorSize,omitempty"`
-	LongTermRentersWelcome *bool `json:"longTermRentersWelcome,omitempty"`
-
-	// PropertyName Internal name (not shown to guests).
-	PropertyName *string `json:"propertyName,omitempty"`
-
-	// PropertyType One of the read's `propertyTypeOptions[].value`.
-	PropertyType *string `json:"propertyType,omitempty"`
-	SeniorsOnly  *bool   `json:"seniorsOnly,omitempty"`
-}
-
-// UpdateVrboListingPropertyParams defines parameters for UpdateVrboListingProperty.
-type UpdateVrboListingPropertyParams struct {
-	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
-	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
-}
-
-// UpdateVrboListingPropertyJSONBodyInteriorSizeUnit defines parameters for UpdateVrboListingProperty.
-type UpdateVrboListingPropertyJSONBodyInteriorSizeUnit string
-
-// UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit defines parameters for UpdateVrboListingProperty.
-type UpdateVrboListingProperty200JSONResponseBodyDataInteriorSizeUnit string
+// UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingPricing.
+type UpdateVrboListingPricing200JSONResponseBodyDataFreshnessSource string
 
 // GetVrboListingProtectionParams defines parameters for GetVrboListingProtection.
 type GetVrboListingProtectionParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingProtectionParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingProtectionParamsSource defines parameters for GetVrboListingProtection.
+type GetVrboListingProtectionParamsSource string
+
+// GetVrboListingProtection200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingProtection.
+type GetVrboListingProtection200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingProtection200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingProtection.
+type GetVrboListingProtection200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingProtectionJSONBody defines parameters for UpdateVrboListingProtection.
 type UpdateVrboListingProtectionJSONBody struct {
@@ -20972,6 +24245,12 @@ type UpdateVrboListingProtectionJSONBody_DamageDeposit struct {
 	union json.RawMessage
 }
 
+// UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingProtection.
+type UpdateVrboListingProtection200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingProtection.
+type UpdateVrboListingProtection200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingRatesParams defines parameters for GetVrboListingRates.
 type GetVrboListingRatesParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
@@ -20983,6 +24262,12 @@ type GetVrboListingRatesParams struct {
 	// End Last night to read (default start + 13 days; at most 3 years).
 	End *openapi_types.Date `form:"end,omitempty" json:"end,omitempty"`
 }
+
+// GetVrboListingRates200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingRates.
+type GetVrboListingRates200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingRates200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingRates.
+type GetVrboListingRates200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingRatesJSONBody defines parameters for UpdateVrboListingRates.
 type UpdateVrboListingRatesJSONBody struct {
@@ -21017,135 +24302,289 @@ type UpdateVrboListingRatesParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// GetVrboListingRegistrationParams defines parameters for GetVrboListingRegistration.
-type GetVrboListingRegistrationParams struct {
+// UpdateVrboListingRates200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingRates.
+type UpdateVrboListingRates200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingRates200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingRates.
+type UpdateVrboListingRates200JSONResponseBodyDataFreshnessSource string
+
+// DeleteVrboListingRoomParams defines parameters for DeleteVrboListingRoom.
+type DeleteVrboListingRoomParams struct {
+	// RoomId The room's `spaceId` from GET …/rooms.
+	RoomId string `form:"roomId" json:"roomId"`
+
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// UpdateVrboListingRegistrationJSONBody defines parameters for UpdateVrboListingRegistration.
-type UpdateVrboListingRegistrationJSONBody struct {
-	Settings []struct {
-		// Name A `fields[].name` from the read (they differ per jurisdiction).
-		Name  string                                                `json:"name"`
-		Value *UpdateVrboListingRegistrationJSONBody_Settings_Value `json:"value"`
-	} `json:"settings"`
-}
+// DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReason defines parameters for DeleteVrboListingRoom.
+type DeleteVrboListingRoom200JSONResponseBodyDataFreshnessReason string
 
-// UpdateVrboListingRegistrationParams defines parameters for UpdateVrboListingRegistration.
-type UpdateVrboListingRegistrationParams struct {
-	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
-	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
-}
-
-// UpdateVrboListingRegistrationJSONBodySettingsValue0 defines parameters for UpdateVrboListingRegistration.
-type UpdateVrboListingRegistrationJSONBodySettingsValue0 = string
-
-// UpdateVrboListingRegistrationJSONBodySettingsValue1 defines parameters for UpdateVrboListingRegistration.
-type UpdateVrboListingRegistrationJSONBodySettingsValue1 = float32
-
-// UpdateVrboListingRegistrationJSONBodySettingsValue2 defines parameters for UpdateVrboListingRegistration.
-type UpdateVrboListingRegistrationJSONBodySettingsValue2 = bool
-
-// UpdateVrboListingRegistrationJSONBody_Settings_Value defines parameters for UpdateVrboListingRegistration.
-type UpdateVrboListingRegistrationJSONBody_Settings_Value struct {
-	union json.RawMessage
-}
+// DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSource defines parameters for DeleteVrboListingRoom.
+type DeleteVrboListingRoom200JSONResponseBodyDataFreshnessSource string
 
 // GetVrboListingRoomsParams defines parameters for GetVrboListingRooms.
 type GetVrboListingRoomsParams struct {
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingRoomsParamsSource `form:"source,omitempty" json:"source,omitempty"`
+
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// UpdateVrboListingRoomsJSONBody defines parameters for UpdateVrboListingRooms.
-type UpdateVrboListingRoomsJSONBody struct {
-	Add *[]struct {
-		// Amenities `{amenityId: true|false}` or `[{id, selected, detail?}]` — only the ones given change.
-		Amenities *UpdateVrboListingRoomsJSONBody_Add_Amenities `json:"amenities,omitempty"`
-		Beds      *[]struct {
-			Quantity *int `json:"quantity,omitempty"`
+// GetVrboListingRoomsParamsSource defines parameters for GetVrboListingRooms.
+type GetVrboListingRoomsParamsSource string
 
-			// Size Example: QUEEN
-			Size *string `json:"size,omitempty"`
+// GetVrboListingRooms200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingRooms.
+type GetVrboListingRooms200JSONResponseBodyDataFreshnessReason string
 
-			// Type Example: QUEEN_BED
-			Type *string `json:"type,omitempty"`
-		} `json:"beds,omitempty"`
-		Description *string `json:"description,omitempty"`
-		Name        *string `json:"name,omitempty"`
+// GetVrboListingRooms200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingRooms.
+type GetVrboListingRooms200JSONResponseBodyDataFreshnessSource string
 
-		// SubType Bathrooms: one of the read's `bathroomTypes` (FULL_BATH, HALF_BATH, …).
-		SubType *string `json:"subType,omitempty"`
+// AddVrboListingRoomJSONBody defines parameters for AddVrboListingRoom.
+type AddVrboListingRoomJSONBody struct {
+	// Amenities `{amenityId: true|false}` or `[{id, selected, detail?}]` — only the ones given change. Ids are in GET …/rooms.
+	Amenities *AddVrboListingRoomJSONBody_Amenities `json:"amenities,omitempty"`
 
-		// Type One of the read's `addableTypes` (BEDROOM, BATHROOM, LIVING_ROOM, OFFICE, …).
+	// Beds The room's whole sleeping arrangement: every bed, not just the changed one.
+	Beds *[]struct {
+		Quantity int `json:"quantity"`
+
+		// Size Vrbo's size, for beds that come in several (BUNK_BED, SOFA_BED, FUTON, MURPHY_BED). Defaults to the usual one.
 		//
-		// Example: BEDROOM
+		// Example: KING
+		Size *string `json:"size,omitempty"`
+
+		// Type Airbnb's bed words (king_bed, queen_bed, double_bed, single_bed, bunk_bed, sofa_bed, couch, toddler_bed, crib) or Vrbo's (KING_BED, FUTON, MURPHY_BED, …).
+		//
+		// Example: king_bed
 		Type string `json:"type"`
-	} `json:"add,omitempty"`
-	Delete *[]string `json:"delete,omitempty"`
-	Update *[]struct {
-		// Amenities `{amenityId: true|false}` or `[{id, selected, detail?}]` — only the ones given change.
-		Amenities *UpdateVrboListingRoomsJSONBody_Update_Amenities `json:"amenities,omitempty"`
-		Beds      *[]struct {
-			Quantity *int `json:"quantity,omitempty"`
+	} `json:"beds,omitempty"`
 
-			// Size Example: QUEEN
-			Size *string `json:"size,omitempty"`
+	// Description Vrbo cannot clear a room description once set.
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
 
-			// Type Example: QUEEN_BED
-			Type *string `json:"type,omitempty"`
-		} `json:"beds,omitempty"`
-		Description *string `json:"description,omitempty"`
-		Name        *string `json:"name,omitempty"`
-		SpaceId     string  `json:"spaceId"`
+	// RoomNumber Names the room "Bedroom 2" etc. when no `name` is given.
+	RoomNumber *int `json:"room_number,omitempty"`
 
-		// SubType Bathrooms: one of the read's `bathroomTypes` (FULL_BATH, HALF_BATH, …).
-		SubType *string `json:"subType,omitempty"`
-	} `json:"update,omitempty"`
+	// RoomType Example: bedroom
+	RoomType string `json:"room_type"`
+
+	// SubType Bathrooms: FULL_BATH (default) or NO_TUB_OR_SHOWER (half bath).
+	//
+	// Example: FULL_BATH
+	SubType *string `json:"sub_type,omitempty"`
 }
 
-// UpdateVrboListingRoomsParams defines parameters for UpdateVrboListingRooms.
-type UpdateVrboListingRoomsParams struct {
+// AddVrboListingRoomParams defines parameters for AddVrboListingRoom.
+type AddVrboListingRoomParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// UpdateVrboListingRoomsJSONBodyAddAmenities0 defines parameters for UpdateVrboListingRooms.
-type UpdateVrboListingRoomsJSONBodyAddAmenities0 map[string]interface{}
+// AddVrboListingRoomJSONBodyAmenities0 defines parameters for AddVrboListingRoom.
+type AddVrboListingRoomJSONBodyAmenities0 map[string]interface{}
 
-// UpdateVrboListingRoomsJSONBodyAddAmenities1 defines parameters for UpdateVrboListingRooms.
-type UpdateVrboListingRoomsJSONBodyAddAmenities1 = []struct {
+// AddVrboListingRoomJSONBodyAmenities1 defines parameters for AddVrboListingRoom.
+type AddVrboListingRoomJSONBodyAmenities1 = []struct {
 	Detail   *string `json:"detail,omitempty"`
 	Id       *string `json:"id,omitempty"`
 	Selected *bool   `json:"selected,omitempty"`
 }
 
-// UpdateVrboListingRoomsJSONBody_Add_Amenities defines parameters for UpdateVrboListingRooms.
-type UpdateVrboListingRoomsJSONBody_Add_Amenities struct {
+// AddVrboListingRoomJSONBody_Amenities defines parameters for AddVrboListingRoom.
+type AddVrboListingRoomJSONBody_Amenities struct {
 	union json.RawMessage
 }
 
-// UpdateVrboListingRoomsJSONBodyUpdateAmenities0 defines parameters for UpdateVrboListingRooms.
-type UpdateVrboListingRoomsJSONBodyUpdateAmenities0 map[string]interface{}
+// AddVrboListingRoom200JSONResponseBodyDataFreshnessReason defines parameters for AddVrboListingRoom.
+type AddVrboListingRoom200JSONResponseBodyDataFreshnessReason string
 
-// UpdateVrboListingRoomsJSONBodyUpdateAmenities1 defines parameters for UpdateVrboListingRooms.
-type UpdateVrboListingRoomsJSONBodyUpdateAmenities1 = []struct {
+// AddVrboListingRoom200JSONResponseBodyDataFreshnessSource defines parameters for AddVrboListingRoom.
+type AddVrboListingRoom200JSONResponseBodyDataFreshnessSource string
+
+// UpdateVrboListingRoomJSONBody defines parameters for UpdateVrboListingRoom.
+type UpdateVrboListingRoomJSONBody struct {
+	// Amenities `{amenityId: true|false}` or `[{id, selected, detail?}]` — only the ones given change. Ids are in GET …/rooms.
+	Amenities *UpdateVrboListingRoomJSONBody_Amenities `json:"amenities,omitempty"`
+
+	// Beds The room's whole sleeping arrangement: every bed, not just the changed one.
+	Beds *[]struct {
+		Quantity int `json:"quantity"`
+
+		// Size Vrbo's size, for beds that come in several (BUNK_BED, SOFA_BED, FUTON, MURPHY_BED). Defaults to the usual one.
+		//
+		// Example: KING
+		Size *string `json:"size,omitempty"`
+
+		// Type Airbnb's bed words (king_bed, queen_bed, double_bed, single_bed, bunk_bed, sofa_bed, couch, toddler_bed, crib) or Vrbo's (KING_BED, FUTON, MURPHY_BED, …).
+		//
+		// Example: king_bed
+		Type string `json:"type"`
+	} `json:"beds,omitempty"`
+
+	// Description Vrbo cannot clear a room description once set.
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+
+	// SubType Bathrooms: FULL_BATH (default) or NO_TUB_OR_SHOWER (half bath).
+	//
+	// Example: FULL_BATH
+	SubType *string `json:"sub_type,omitempty"`
+}
+
+// UpdateVrboListingRoomParams defines parameters for UpdateVrboListingRoom.
+type UpdateVrboListingRoomParams struct {
+	// RoomId The room's `spaceId` from GET …/rooms.
+	RoomId string `form:"roomId" json:"roomId"`
+
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingRoomJSONBodyAmenities0 defines parameters for UpdateVrboListingRoom.
+type UpdateVrboListingRoomJSONBodyAmenities0 map[string]interface{}
+
+// UpdateVrboListingRoomJSONBodyAmenities1 defines parameters for UpdateVrboListingRoom.
+type UpdateVrboListingRoomJSONBodyAmenities1 = []struct {
 	Detail   *string `json:"detail,omitempty"`
 	Id       *string `json:"id,omitempty"`
 	Selected *bool   `json:"selected,omitempty"`
 }
 
-// UpdateVrboListingRoomsJSONBody_Update_Amenities defines parameters for UpdateVrboListingRooms.
-type UpdateVrboListingRoomsJSONBody_Update_Amenities struct {
+// UpdateVrboListingRoomJSONBody_Amenities defines parameters for UpdateVrboListingRoom.
+type UpdateVrboListingRoomJSONBody_Amenities struct {
 	union json.RawMessage
 }
+
+// UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingRoom.
+type UpdateVrboListingRoom200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingRoom.
+type UpdateVrboListingRoom200JSONResponseBodyDataFreshnessSource string
+
+// GetVrboListingSafetyDisclosuresParams defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosuresParams struct {
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingSafetyDisclosuresParamsSource `form:"source,omitempty" json:"source,omitempty"`
+
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// GetVrboListingSafetyDisclosuresParamsSource defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosuresParamsSource string
+
+// GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType string
+
+// GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 = string
+
+// GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 = float32
+
+// GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 = bool
+
+// GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value struct {
+	union json.RawMessage
+}
+
+// GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingSafetyDisclosures.
+type GetVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource string
+
+// UpdateVrboListingSafetyDisclosuresJSONBody defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBody struct {
+	Groups struct {
+		HomeSafety *struct {
+			Values map[string]*UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties `json:"values"`
+		} `json:"homeSafety,omitempty"`
+		SafetyDevices *struct {
+			Values map[string]*UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties `json:"values"`
+		} `json:"safetyDevices,omitempty"`
+	} `json:"groups"`
+}
+
+// UpdateVrboListingSafetyDisclosuresParams defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresParams struct {
+	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
+	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+}
+
+// UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0 = bool
+
+// UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1 = string
+
+// UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2 = float32
+
+// UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0 = bool
+
+// UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1 = string
+
+// UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2 = float32
+
+// UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsType string
+
+// UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 = string
+
+// UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 = float32
+
+// UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 = bool
+
+// UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value struct {
+	union json.RawMessage
+}
+
+// UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingSafetyDisclosures.
+type UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataFreshnessSource string
 
 // GetVrboListingStoryParams defines parameters for GetVrboListingStory.
 type GetVrboListingStoryParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingStoryParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingStoryParamsSource defines parameters for GetVrboListingStory.
+type GetVrboListingStoryParamsSource string
+
+// GetVrboListingStory200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingStory.
+type GetVrboListingStory200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingStory200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingStory.
+type GetVrboListingStory200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingStoryJSONBody defines parameters for UpdateVrboListingStory.
 type UpdateVrboListingStoryJSONBody struct {
@@ -21160,11 +24599,29 @@ type UpdateVrboListingStoryParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
+// UpdateVrboListingStory200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingStory.
+type UpdateVrboListingStory200JSONResponseBodyDataFreshnessReason string
+
+// UpdateVrboListingStory200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingStory.
+type UpdateVrboListingStory200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingTaxesParams defines parameters for GetVrboListingTaxes.
 type GetVrboListingTaxesParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingTaxesParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingTaxesParamsSource defines parameters for GetVrboListingTaxes.
+type GetVrboListingTaxesParamsSource string
+
+// GetVrboListingTaxes200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingTaxes.
+type GetVrboListingTaxes200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingTaxes200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingTaxes.
+type GetVrboListingTaxes200JSONResponseBodyDataFreshnessSource string
 
 // UpdateVrboListingTaxesJSONBody defines parameters for UpdateVrboListingTaxes.
 type UpdateVrboListingTaxesJSONBody struct {
@@ -21185,27 +24642,11 @@ type UpdateVrboListingTaxesParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// GetVrboListingTranslationsParams defines parameters for GetVrboListingTranslations.
-type GetVrboListingTranslationsParams struct {
-	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
-	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
-}
+// UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReason defines parameters for UpdateVrboListingTaxes.
+type UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessReason string
 
-// UpdateVrboListingTranslationsJSONBody defines parameters for UpdateVrboListingTranslations.
-type UpdateVrboListingTranslationsJSONBody struct {
-	Delete *[]string `json:"delete,omitempty"`
-	Set    *[]struct {
-		Description *string `json:"description,omitempty"`
-		Headline    *string `json:"headline,omitempty"`
-		Locale      string  `json:"locale"`
-	} `json:"set,omitempty"`
-}
-
-// UpdateVrboListingTranslationsParams defines parameters for UpdateVrboListingTranslations.
-type UpdateVrboListingTranslationsParams struct {
-	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
-	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
-}
+// UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSource defines parameters for UpdateVrboListingTaxes.
+type UpdateVrboListingTaxes200JSONResponseBodyDataFreshnessSource string
 
 // DeleteVrboListingVideosParams defines parameters for DeleteVrboListingVideos.
 type DeleteVrboListingVideosParams struct {
@@ -21216,11 +24657,29 @@ type DeleteVrboListingVideosParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
+// DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReason defines parameters for DeleteVrboListingVideos.
+type DeleteVrboListingVideos200JSONResponseBodyDataFreshnessReason string
+
+// DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSource defines parameters for DeleteVrboListingVideos.
+type DeleteVrboListingVideos200JSONResponseBodyDataFreshnessSource string
+
 // GetVrboListingVideosParams defines parameters for GetVrboListingVideos.
 type GetVrboListingVideosParams struct {
 	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
+
+	// Source `stored` (default): Repull's copy, in milliseconds. `live`: read Vrbo now (seconds) and refresh the copy.
+	Source *GetVrboListingVideosParamsSource `form:"source,omitempty" json:"source,omitempty"`
 }
+
+// GetVrboListingVideosParamsSource defines parameters for GetVrboListingVideos.
+type GetVrboListingVideosParamsSource string
+
+// GetVrboListingVideos200JSONResponseBodyDataFreshnessReason defines parameters for GetVrboListingVideos.
+type GetVrboListingVideos200JSONResponseBodyDataFreshnessReason string
+
+// GetVrboListingVideos200JSONResponseBodyDataFreshnessSource defines parameters for GetVrboListingVideos.
+type GetVrboListingVideos200JSONResponseBodyDataFreshnessSource string
 
 // AddVrboListingVideoJSONBody defines parameters for AddVrboListingVideo.
 type AddVrboListingVideoJSONBody struct {
@@ -21234,48 +24693,11 @@ type AddVrboListingVideoParams struct {
 	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
 }
 
-// GetVrboListingWelcomeGuideParams defines parameters for GetVrboListingWelcomeGuide.
-type GetVrboListingWelcomeGuideParams struct {
-	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
-	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
-}
+// AddVrboListingVideo200JSONResponseBodyDataFreshnessReason defines parameters for AddVrboListingVideo.
+type AddVrboListingVideo200JSONResponseBodyDataFreshnessReason string
 
-// UpdateVrboListingWelcomeGuideJSONBody defines parameters for UpdateVrboListingWelcomeGuide.
-type UpdateVrboListingWelcomeGuideJSONBody struct {
-	Access *struct {
-		Code         *string `json:"code,omitempty"`
-		Instructions *string `json:"instructions,omitempty"`
-		Type         *string `json:"type,omitempty"`
-	} `json:"access,omitempty"`
-
-	// Amenities `{AMENITY_ID: {instructions}}` — notes are one-way (not removable).
-	Amenities *map[string]struct {
-		Instructions string `json:"instructions"`
-	} `json:"amenities,omitempty"`
-	CheckIn *struct {
-		Instructions string `json:"instructions"`
-	} `json:"checkIn,omitempty"`
-	CheckOut *struct {
-		Instructions string `json:"instructions"`
-	} `json:"checkOut,omitempty"`
-	DrivingDirections *struct {
-		Instructions string `json:"instructions"`
-	} `json:"drivingDirections,omitempty"`
-	ParkingDirections *struct {
-		Instructions string `json:"instructions"`
-	} `json:"parkingDirections,omitempty"`
-	Wifi *struct {
-		Instructions *string `json:"instructions,omitempty"`
-		NetworkName  *string `json:"networkName,omitempty"`
-		Password     *string `json:"password,omitempty"`
-	} `json:"wifi,omitempty"`
-}
-
-// UpdateVrboListingWelcomeGuideParams defines parameters for UpdateVrboListingWelcomeGuide.
-type UpdateVrboListingWelcomeGuideParams struct {
-	// VrboListingNumber The Vrbo listing number to work on, when the listing is linked to more than one Vrbo unit.
-	VrboListingNumber *string `form:"vrboListingNumber,omitempty" json:"vrboListingNumber,omitempty"`
-}
+// AddVrboListingVideo200JSONResponseBodyDataFreshnessSource defines parameters for AddVrboListingVideo.
+type AddVrboListingVideo200JSONResponseBodyDataFreshnessSource string
 
 // ListVrboReservationsParams defines parameters for ListVrboReservations.
 type ListVrboReservationsParams struct {
@@ -23202,11 +26624,20 @@ type BookingSetupJSONRequestBody BookingSetupJSONBody
 // Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type CreateBookingWebhookJSONRequestBody CreateBookingWebhookJSONBody
 
+// MapVrboListingJSONRequestBody defines body for MapVrboListing for application/json ContentType.
+type MapVrboListingJSONRequestBody MapVrboListingJSONBody
+
+// VrboListingActionJSONRequestBody defines body for VrboListingAction for application/json ContentType.
+type VrboListingActionJSONRequestBody VrboListingActionJSONBody
+
 // UpdateVrboListingAdditionalInfoJSONRequestBody defines body for UpdateVrboListingAdditionalInfo for application/json ContentType.
 type UpdateVrboListingAdditionalInfoJSONRequestBody UpdateVrboListingAdditionalInfoJSONBody
 
 // UpdateVrboListingAmenitiesJSONRequestBody defines body for UpdateVrboListingAmenities for application/json ContentType.
 type UpdateVrboListingAmenitiesJSONRequestBody UpdateVrboListingAmenitiesJSONBody
+
+// UpdateVrboListingAvailabilityJSONRequestBody defines body for UpdateVrboListingAvailability for application/json ContentType.
+type UpdateVrboListingAvailabilityJSONRequestBody UpdateVrboListingAvailabilityJSONBody
 
 // UpdateVrboListingBookingSettingsJSONRequestBody defines body for UpdateVrboListingBookingSettings for application/json ContentType.
 type UpdateVrboListingBookingSettingsJSONRequestBody UpdateVrboListingBookingSettingsJSONBody
@@ -23214,8 +26645,14 @@ type UpdateVrboListingBookingSettingsJSONRequestBody UpdateVrboListingBookingSet
 // UpdateVrboListingCancellationJSONRequestBody defines body for UpdateVrboListingCancellation for application/json ContentType.
 type UpdateVrboListingCancellationJSONRequestBody UpdateVrboListingCancellationJSONBody
 
-// UpdateVrboListingDescriptionJSONRequestBody defines body for UpdateVrboListingDescription for application/json ContentType.
-type UpdateVrboListingDescriptionJSONRequestBody UpdateVrboListingDescriptionJSONBody
+// UpdateVrboListingCheckinGuideJSONRequestBody defines body for UpdateVrboListingCheckinGuide for application/json ContentType.
+type UpdateVrboListingCheckinGuideJSONRequestBody UpdateVrboListingCheckinGuideJSONBody
+
+// UpdateVrboListingDescriptionsJSONRequestBody defines body for UpdateVrboListingDescriptions for application/json ContentType.
+type UpdateVrboListingDescriptionsJSONRequestBody UpdateVrboListingDescriptionsJSONBody
+
+// UpdateVrboListingDetailsJSONRequestBody defines body for UpdateVrboListingDetails for application/json ContentType.
+type UpdateVrboListingDetailsJSONRequestBody UpdateVrboListingDetailsJSONBody
 
 // UpdateVrboListingFeesJSONRequestBody defines body for UpdateVrboListingFees for application/json ContentType.
 type UpdateVrboListingFeesJSONRequestBody UpdateVrboListingFeesJSONBody
@@ -23229,14 +26666,23 @@ type UpdateVrboListingLocationJSONRequestBody UpdateVrboListingLocationJSONBody
 // UpdateVrboListingPaymentTermsJSONRequestBody defines body for UpdateVrboListingPaymentTerms for application/json ContentType.
 type UpdateVrboListingPaymentTermsJSONRequestBody UpdateVrboListingPaymentTermsJSONBody
 
-// UpdateVrboListingPhotosJSONRequestBody defines body for UpdateVrboListingPhotos for application/json ContentType.
-type UpdateVrboListingPhotosJSONRequestBody UpdateVrboListingPhotosJSONBody
+// UpdateVrboListingPermitsJSONRequestBody defines body for UpdateVrboListingPermits for application/json ContentType.
+type UpdateVrboListingPermitsJSONRequestBody UpdateVrboListingPermitsJSONBody
+
+// UpdateVrboListingPhotoJSONRequestBody defines body for UpdateVrboListingPhoto for application/json ContentType.
+type UpdateVrboListingPhotoJSONRequestBody UpdateVrboListingPhotoJSONBody
+
+// AddVrboListingPhotosJSONRequestBody defines body for AddVrboListingPhotos for application/json ContentType.
+type AddVrboListingPhotosJSONRequestBody AddVrboListingPhotosJSONBody
+
+// SetVrboListingCoverPhotoJSONRequestBody defines body for SetVrboListingCoverPhoto for application/json ContentType.
+type SetVrboListingCoverPhotoJSONRequestBody SetVrboListingCoverPhotoJSONBody
+
+// ReorderVrboListingPhotosJSONRequestBody defines body for ReorderVrboListingPhotos for application/json ContentType.
+type ReorderVrboListingPhotosJSONRequestBody ReorderVrboListingPhotosJSONBody
 
 // UpdateVrboListingPricingJSONRequestBody defines body for UpdateVrboListingPricing for application/json ContentType.
 type UpdateVrboListingPricingJSONRequestBody UpdateVrboListingPricingJSONBody
-
-// UpdateVrboListingPropertyJSONRequestBody defines body for UpdateVrboListingProperty for application/json ContentType.
-type UpdateVrboListingPropertyJSONRequestBody UpdateVrboListingPropertyJSONBody
 
 // UpdateVrboListingProtectionJSONRequestBody defines body for UpdateVrboListingProtection for application/json ContentType.
 type UpdateVrboListingProtectionJSONRequestBody UpdateVrboListingProtectionJSONBody
@@ -23244,11 +26690,14 @@ type UpdateVrboListingProtectionJSONRequestBody UpdateVrboListingProtectionJSONB
 // UpdateVrboListingRatesJSONRequestBody defines body for UpdateVrboListingRates for application/json ContentType.
 type UpdateVrboListingRatesJSONRequestBody UpdateVrboListingRatesJSONBody
 
-// UpdateVrboListingRegistrationJSONRequestBody defines body for UpdateVrboListingRegistration for application/json ContentType.
-type UpdateVrboListingRegistrationJSONRequestBody UpdateVrboListingRegistrationJSONBody
+// AddVrboListingRoomJSONRequestBody defines body for AddVrboListingRoom for application/json ContentType.
+type AddVrboListingRoomJSONRequestBody AddVrboListingRoomJSONBody
 
-// UpdateVrboListingRoomsJSONRequestBody defines body for UpdateVrboListingRooms for application/json ContentType.
-type UpdateVrboListingRoomsJSONRequestBody UpdateVrboListingRoomsJSONBody
+// UpdateVrboListingRoomJSONRequestBody defines body for UpdateVrboListingRoom for application/json ContentType.
+type UpdateVrboListingRoomJSONRequestBody UpdateVrboListingRoomJSONBody
+
+// UpdateVrboListingSafetyDisclosuresJSONRequestBody defines body for UpdateVrboListingSafetyDisclosures for application/json ContentType.
+type UpdateVrboListingSafetyDisclosuresJSONRequestBody UpdateVrboListingSafetyDisclosuresJSONBody
 
 // UpdateVrboListingStoryJSONRequestBody defines body for UpdateVrboListingStory for application/json ContentType.
 type UpdateVrboListingStoryJSONRequestBody UpdateVrboListingStoryJSONBody
@@ -23256,14 +26705,8 @@ type UpdateVrboListingStoryJSONRequestBody UpdateVrboListingStoryJSONBody
 // UpdateVrboListingTaxesJSONRequestBody defines body for UpdateVrboListingTaxes for application/json ContentType.
 type UpdateVrboListingTaxesJSONRequestBody UpdateVrboListingTaxesJSONBody
 
-// UpdateVrboListingTranslationsJSONRequestBody defines body for UpdateVrboListingTranslations for application/json ContentType.
-type UpdateVrboListingTranslationsJSONRequestBody UpdateVrboListingTranslationsJSONBody
-
 // AddVrboListingVideoJSONRequestBody defines body for AddVrboListingVideo for application/json ContentType.
 type AddVrboListingVideoJSONRequestBody AddVrboListingVideoJSONBody
-
-// UpdateVrboListingWelcomeGuideJSONRequestBody defines body for UpdateVrboListingWelcomeGuide for application/json ContentType.
-type UpdateVrboListingWelcomeGuideJSONRequestBody UpdateVrboListingWelcomeGuideJSONBody
 
 // CreateConnectSessionJSONRequestBody defines body for CreateConnectSession for application/json ContentType.
 type CreateConnectSessionJSONRequestBody CreateConnectSessionJSONBody
@@ -29975,6 +33418,68 @@ func (t *UpdateVrboListingAmenities200JSONResponseBody_Data_Groups_Fields_Value)
 	return err
 }
 
+// AsGetVrboListingAvailability200JSONResponseBodyData0 returns the union data inside the GetVrboListingAvailability200JSONResponseBody_Data as a GetVrboListingAvailability200JSONResponseBodyData0
+func (t GetVrboListingAvailability200JSONResponseBody_Data) AsGetVrboListingAvailability200JSONResponseBodyData0() (GetVrboListingAvailability200JSONResponseBodyData0, error) {
+	var body GetVrboListingAvailability200JSONResponseBodyData0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingAvailability200JSONResponseBodyData0 overwrites any union data inside the GetVrboListingAvailability200JSONResponseBody_Data as the provided GetVrboListingAvailability200JSONResponseBodyData0
+func (t *GetVrboListingAvailability200JSONResponseBody_Data) FromGetVrboListingAvailability200JSONResponseBodyData0(v GetVrboListingAvailability200JSONResponseBodyData0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingAvailability200JSONResponseBodyData0 performs a merge with any union data inside the GetVrboListingAvailability200JSONResponseBody_Data, using the provided GetVrboListingAvailability200JSONResponseBodyData0
+func (t *GetVrboListingAvailability200JSONResponseBody_Data) MergeGetVrboListingAvailability200JSONResponseBodyData0(v GetVrboListingAvailability200JSONResponseBodyData0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGetVrboListingAvailability200JSONResponseBodyData1 returns the union data inside the GetVrboListingAvailability200JSONResponseBody_Data as a GetVrboListingAvailability200JSONResponseBodyData1
+func (t GetVrboListingAvailability200JSONResponseBody_Data) AsGetVrboListingAvailability200JSONResponseBodyData1() (GetVrboListingAvailability200JSONResponseBodyData1, error) {
+	var body GetVrboListingAvailability200JSONResponseBodyData1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingAvailability200JSONResponseBodyData1 overwrites any union data inside the GetVrboListingAvailability200JSONResponseBody_Data as the provided GetVrboListingAvailability200JSONResponseBodyData1
+func (t *GetVrboListingAvailability200JSONResponseBody_Data) FromGetVrboListingAvailability200JSONResponseBodyData1(v GetVrboListingAvailability200JSONResponseBodyData1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingAvailability200JSONResponseBodyData1 performs a merge with any union data inside the GetVrboListingAvailability200JSONResponseBody_Data, using the provided GetVrboListingAvailability200JSONResponseBodyData1
+func (t *GetVrboListingAvailability200JSONResponseBody_Data) MergeGetVrboListingAvailability200JSONResponseBodyData1(v GetVrboListingAvailability200JSONResponseBodyData1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GetVrboListingAvailability200JSONResponseBody_Data) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GetVrboListingAvailability200JSONResponseBody_Data) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0 returns the union data inside the GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value as a GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0
 func (t GetVrboListingContent200JSONResponseBody_Sections_Amenities_Groups_Fields_Value) AsGetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0() (GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0, error) {
 	var body GetVrboListingContent200JSONResponseBodySectionsAmenitiesGroupsFieldsValue0
@@ -30187,6 +33692,94 @@ func (t *UpdateVrboListingHouseRulesJSONBody_Pets_MaxWeight) UnmarshalJSON(b []b
 	return err
 }
 
+// AsUpdateVrboListingPermitsJSONBodySettingsValue0 returns the union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value as a UpdateVrboListingPermitsJSONBodySettingsValue0
+func (t UpdateVrboListingPermitsJSONBody_Settings_Value) AsUpdateVrboListingPermitsJSONBodySettingsValue0() (UpdateVrboListingPermitsJSONBodySettingsValue0, error) {
+	var body UpdateVrboListingPermitsJSONBodySettingsValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingPermitsJSONBodySettingsValue0 overwrites any union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value as the provided UpdateVrboListingPermitsJSONBodySettingsValue0
+func (t *UpdateVrboListingPermitsJSONBody_Settings_Value) FromUpdateVrboListingPermitsJSONBodySettingsValue0(v UpdateVrboListingPermitsJSONBodySettingsValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingPermitsJSONBodySettingsValue0 performs a merge with any union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value, using the provided UpdateVrboListingPermitsJSONBodySettingsValue0
+func (t *UpdateVrboListingPermitsJSONBody_Settings_Value) MergeUpdateVrboListingPermitsJSONBodySettingsValue0(v UpdateVrboListingPermitsJSONBodySettingsValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingPermitsJSONBodySettingsValue1 returns the union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value as a UpdateVrboListingPermitsJSONBodySettingsValue1
+func (t UpdateVrboListingPermitsJSONBody_Settings_Value) AsUpdateVrboListingPermitsJSONBodySettingsValue1() (UpdateVrboListingPermitsJSONBodySettingsValue1, error) {
+	var body UpdateVrboListingPermitsJSONBodySettingsValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingPermitsJSONBodySettingsValue1 overwrites any union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value as the provided UpdateVrboListingPermitsJSONBodySettingsValue1
+func (t *UpdateVrboListingPermitsJSONBody_Settings_Value) FromUpdateVrboListingPermitsJSONBodySettingsValue1(v UpdateVrboListingPermitsJSONBodySettingsValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingPermitsJSONBodySettingsValue1 performs a merge with any union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value, using the provided UpdateVrboListingPermitsJSONBodySettingsValue1
+func (t *UpdateVrboListingPermitsJSONBody_Settings_Value) MergeUpdateVrboListingPermitsJSONBodySettingsValue1(v UpdateVrboListingPermitsJSONBodySettingsValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingPermitsJSONBodySettingsValue2 returns the union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value as a UpdateVrboListingPermitsJSONBodySettingsValue2
+func (t UpdateVrboListingPermitsJSONBody_Settings_Value) AsUpdateVrboListingPermitsJSONBodySettingsValue2() (UpdateVrboListingPermitsJSONBodySettingsValue2, error) {
+	var body UpdateVrboListingPermitsJSONBodySettingsValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingPermitsJSONBodySettingsValue2 overwrites any union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value as the provided UpdateVrboListingPermitsJSONBodySettingsValue2
+func (t *UpdateVrboListingPermitsJSONBody_Settings_Value) FromUpdateVrboListingPermitsJSONBodySettingsValue2(v UpdateVrboListingPermitsJSONBodySettingsValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingPermitsJSONBodySettingsValue2 performs a merge with any union data inside the UpdateVrboListingPermitsJSONBody_Settings_Value, using the provided UpdateVrboListingPermitsJSONBodySettingsValue2
+func (t *UpdateVrboListingPermitsJSONBody_Settings_Value) MergeUpdateVrboListingPermitsJSONBodySettingsValue2(v UpdateVrboListingPermitsJSONBodySettingsValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingPermitsJSONBody_Settings_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingPermitsJSONBody_Settings_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsUpdateVrboListingProtectionJSONBodyDamageDeposit0 returns the union data inside the UpdateVrboListingProtectionJSONBody_DamageDeposit as a UpdateVrboListingProtectionJSONBodyDamageDeposit0
 func (t UpdateVrboListingProtectionJSONBody_DamageDeposit) AsUpdateVrboListingProtectionJSONBodyDamageDeposit0() (UpdateVrboListingProtectionJSONBodyDamageDeposit0, error) {
 	var body UpdateVrboListingProtectionJSONBodyDamageDeposit0
@@ -30249,22 +33842,22 @@ func (t *UpdateVrboListingProtectionJSONBody_DamageDeposit) UnmarshalJSON(b []by
 	return err
 }
 
-// AsUpdateVrboListingRegistrationJSONBodySettingsValue0 returns the union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as a UpdateVrboListingRegistrationJSONBodySettingsValue0
-func (t UpdateVrboListingRegistrationJSONBody_Settings_Value) AsUpdateVrboListingRegistrationJSONBodySettingsValue0() (UpdateVrboListingRegistrationJSONBodySettingsValue0, error) {
-	var body UpdateVrboListingRegistrationJSONBodySettingsValue0
+// AsAddVrboListingRoomJSONBodyAmenities0 returns the union data inside the AddVrboListingRoomJSONBody_Amenities as a AddVrboListingRoomJSONBodyAmenities0
+func (t AddVrboListingRoomJSONBody_Amenities) AsAddVrboListingRoomJSONBodyAmenities0() (AddVrboListingRoomJSONBodyAmenities0, error) {
+	var body AddVrboListingRoomJSONBodyAmenities0
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromUpdateVrboListingRegistrationJSONBodySettingsValue0 overwrites any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as the provided UpdateVrboListingRegistrationJSONBodySettingsValue0
-func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) FromUpdateVrboListingRegistrationJSONBodySettingsValue0(v UpdateVrboListingRegistrationJSONBodySettingsValue0) error {
+// FromAddVrboListingRoomJSONBodyAmenities0 overwrites any union data inside the AddVrboListingRoomJSONBody_Amenities as the provided AddVrboListingRoomJSONBodyAmenities0
+func (t *AddVrboListingRoomJSONBody_Amenities) FromAddVrboListingRoomJSONBodyAmenities0(v AddVrboListingRoomJSONBodyAmenities0) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeUpdateVrboListingRegistrationJSONBodySettingsValue0 performs a merge with any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value, using the provided UpdateVrboListingRegistrationJSONBodySettingsValue0
-func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) MergeUpdateVrboListingRegistrationJSONBodySettingsValue0(v UpdateVrboListingRegistrationJSONBodySettingsValue0) error {
+// MergeAddVrboListingRoomJSONBodyAmenities0 performs a merge with any union data inside the AddVrboListingRoomJSONBody_Amenities, using the provided AddVrboListingRoomJSONBodyAmenities0
+func (t *AddVrboListingRoomJSONBody_Amenities) MergeAddVrboListingRoomJSONBodyAmenities0(v AddVrboListingRoomJSONBodyAmenities0) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -30275,22 +33868,22 @@ func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) MergeUpdateVrboLi
 	return err
 }
 
-// AsUpdateVrboListingRegistrationJSONBodySettingsValue1 returns the union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as a UpdateVrboListingRegistrationJSONBodySettingsValue1
-func (t UpdateVrboListingRegistrationJSONBody_Settings_Value) AsUpdateVrboListingRegistrationJSONBodySettingsValue1() (UpdateVrboListingRegistrationJSONBodySettingsValue1, error) {
-	var body UpdateVrboListingRegistrationJSONBodySettingsValue1
+// AsAddVrboListingRoomJSONBodyAmenities1 returns the union data inside the AddVrboListingRoomJSONBody_Amenities as a AddVrboListingRoomJSONBodyAmenities1
+func (t AddVrboListingRoomJSONBody_Amenities) AsAddVrboListingRoomJSONBodyAmenities1() (AddVrboListingRoomJSONBodyAmenities1, error) {
+	var body AddVrboListingRoomJSONBodyAmenities1
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromUpdateVrboListingRegistrationJSONBodySettingsValue1 overwrites any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as the provided UpdateVrboListingRegistrationJSONBodySettingsValue1
-func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) FromUpdateVrboListingRegistrationJSONBodySettingsValue1(v UpdateVrboListingRegistrationJSONBodySettingsValue1) error {
+// FromAddVrboListingRoomJSONBodyAmenities1 overwrites any union data inside the AddVrboListingRoomJSONBody_Amenities as the provided AddVrboListingRoomJSONBodyAmenities1
+func (t *AddVrboListingRoomJSONBody_Amenities) FromAddVrboListingRoomJSONBodyAmenities1(v AddVrboListingRoomJSONBodyAmenities1) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeUpdateVrboListingRegistrationJSONBodySettingsValue1 performs a merge with any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value, using the provided UpdateVrboListingRegistrationJSONBodySettingsValue1
-func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) MergeUpdateVrboListingRegistrationJSONBodySettingsValue1(v UpdateVrboListingRegistrationJSONBodySettingsValue1) error {
+// MergeAddVrboListingRoomJSONBodyAmenities1 performs a merge with any union data inside the AddVrboListingRoomJSONBody_Amenities, using the provided AddVrboListingRoomJSONBodyAmenities1
+func (t *AddVrboListingRoomJSONBody_Amenities) MergeAddVrboListingRoomJSONBodyAmenities1(v AddVrboListingRoomJSONBodyAmenities1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -30301,58 +33894,32 @@ func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) MergeUpdateVrboLi
 	return err
 }
 
-// AsUpdateVrboListingRegistrationJSONBodySettingsValue2 returns the union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as a UpdateVrboListingRegistrationJSONBodySettingsValue2
-func (t UpdateVrboListingRegistrationJSONBody_Settings_Value) AsUpdateVrboListingRegistrationJSONBodySettingsValue2() (UpdateVrboListingRegistrationJSONBodySettingsValue2, error) {
-	var body UpdateVrboListingRegistrationJSONBodySettingsValue2
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromUpdateVrboListingRegistrationJSONBodySettingsValue2 overwrites any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value as the provided UpdateVrboListingRegistrationJSONBodySettingsValue2
-func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) FromUpdateVrboListingRegistrationJSONBodySettingsValue2(v UpdateVrboListingRegistrationJSONBodySettingsValue2) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeUpdateVrboListingRegistrationJSONBodySettingsValue2 performs a merge with any union data inside the UpdateVrboListingRegistrationJSONBody_Settings_Value, using the provided UpdateVrboListingRegistrationJSONBodySettingsValue2
-func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) MergeUpdateVrboListingRegistrationJSONBodySettingsValue2(v UpdateVrboListingRegistrationJSONBodySettingsValue2) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t UpdateVrboListingRegistrationJSONBody_Settings_Value) MarshalJSON() ([]byte, error) {
+func (t AddVrboListingRoomJSONBody_Amenities) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *UpdateVrboListingRegistrationJSONBody_Settings_Value) UnmarshalJSON(b []byte) error {
+func (t *AddVrboListingRoomJSONBody_Amenities) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
-// AsUpdateVrboListingRoomsJSONBodyAddAmenities0 returns the union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities as a UpdateVrboListingRoomsJSONBodyAddAmenities0
-func (t UpdateVrboListingRoomsJSONBody_Add_Amenities) AsUpdateVrboListingRoomsJSONBodyAddAmenities0() (UpdateVrboListingRoomsJSONBodyAddAmenities0, error) {
-	var body UpdateVrboListingRoomsJSONBodyAddAmenities0
+// AsUpdateVrboListingRoomJSONBodyAmenities0 returns the union data inside the UpdateVrboListingRoomJSONBody_Amenities as a UpdateVrboListingRoomJSONBodyAmenities0
+func (t UpdateVrboListingRoomJSONBody_Amenities) AsUpdateVrboListingRoomJSONBodyAmenities0() (UpdateVrboListingRoomJSONBodyAmenities0, error) {
+	var body UpdateVrboListingRoomJSONBodyAmenities0
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromUpdateVrboListingRoomsJSONBodyAddAmenities0 overwrites any union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities as the provided UpdateVrboListingRoomsJSONBodyAddAmenities0
-func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) FromUpdateVrboListingRoomsJSONBodyAddAmenities0(v UpdateVrboListingRoomsJSONBodyAddAmenities0) error {
+// FromUpdateVrboListingRoomJSONBodyAmenities0 overwrites any union data inside the UpdateVrboListingRoomJSONBody_Amenities as the provided UpdateVrboListingRoomJSONBodyAmenities0
+func (t *UpdateVrboListingRoomJSONBody_Amenities) FromUpdateVrboListingRoomJSONBodyAmenities0(v UpdateVrboListingRoomJSONBodyAmenities0) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeUpdateVrboListingRoomsJSONBodyAddAmenities0 performs a merge with any union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities, using the provided UpdateVrboListingRoomsJSONBodyAddAmenities0
-func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) MergeUpdateVrboListingRoomsJSONBodyAddAmenities0(v UpdateVrboListingRoomsJSONBodyAddAmenities0) error {
+// MergeUpdateVrboListingRoomJSONBodyAmenities0 performs a merge with any union data inside the UpdateVrboListingRoomJSONBody_Amenities, using the provided UpdateVrboListingRoomJSONBodyAmenities0
+func (t *UpdateVrboListingRoomJSONBody_Amenities) MergeUpdateVrboListingRoomJSONBodyAmenities0(v UpdateVrboListingRoomJSONBodyAmenities0) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -30363,22 +33930,22 @@ func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) MergeUpdateVrboListingRoo
 	return err
 }
 
-// AsUpdateVrboListingRoomsJSONBodyAddAmenities1 returns the union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities as a UpdateVrboListingRoomsJSONBodyAddAmenities1
-func (t UpdateVrboListingRoomsJSONBody_Add_Amenities) AsUpdateVrboListingRoomsJSONBodyAddAmenities1() (UpdateVrboListingRoomsJSONBodyAddAmenities1, error) {
-	var body UpdateVrboListingRoomsJSONBodyAddAmenities1
+// AsUpdateVrboListingRoomJSONBodyAmenities1 returns the union data inside the UpdateVrboListingRoomJSONBody_Amenities as a UpdateVrboListingRoomJSONBodyAmenities1
+func (t UpdateVrboListingRoomJSONBody_Amenities) AsUpdateVrboListingRoomJSONBodyAmenities1() (UpdateVrboListingRoomJSONBodyAmenities1, error) {
+	var body UpdateVrboListingRoomJSONBodyAmenities1
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromUpdateVrboListingRoomsJSONBodyAddAmenities1 overwrites any union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities as the provided UpdateVrboListingRoomsJSONBodyAddAmenities1
-func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) FromUpdateVrboListingRoomsJSONBodyAddAmenities1(v UpdateVrboListingRoomsJSONBodyAddAmenities1) error {
+// FromUpdateVrboListingRoomJSONBodyAmenities1 overwrites any union data inside the UpdateVrboListingRoomJSONBody_Amenities as the provided UpdateVrboListingRoomJSONBodyAmenities1
+func (t *UpdateVrboListingRoomJSONBody_Amenities) FromUpdateVrboListingRoomJSONBodyAmenities1(v UpdateVrboListingRoomJSONBodyAmenities1) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeUpdateVrboListingRoomsJSONBodyAddAmenities1 performs a merge with any union data inside the UpdateVrboListingRoomsJSONBody_Add_Amenities, using the provided UpdateVrboListingRoomsJSONBodyAddAmenities1
-func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) MergeUpdateVrboListingRoomsJSONBodyAddAmenities1(v UpdateVrboListingRoomsJSONBodyAddAmenities1) error {
+// MergeUpdateVrboListingRoomJSONBodyAmenities1 performs a merge with any union data inside the UpdateVrboListingRoomJSONBody_Amenities, using the provided UpdateVrboListingRoomJSONBodyAmenities1
+func (t *UpdateVrboListingRoomJSONBody_Amenities) MergeUpdateVrboListingRoomJSONBodyAmenities1(v UpdateVrboListingRoomJSONBodyAmenities1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -30389,32 +33956,32 @@ func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) MergeUpdateVrboListingRoo
 	return err
 }
 
-func (t UpdateVrboListingRoomsJSONBody_Add_Amenities) MarshalJSON() ([]byte, error) {
+func (t UpdateVrboListingRoomJSONBody_Amenities) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *UpdateVrboListingRoomsJSONBody_Add_Amenities) UnmarshalJSON(b []byte) error {
+func (t *UpdateVrboListingRoomJSONBody_Amenities) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
-// AsUpdateVrboListingRoomsJSONBodyUpdateAmenities0 returns the union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities as a UpdateVrboListingRoomsJSONBodyUpdateAmenities0
-func (t UpdateVrboListingRoomsJSONBody_Update_Amenities) AsUpdateVrboListingRoomsJSONBodyUpdateAmenities0() (UpdateVrboListingRoomsJSONBodyUpdateAmenities0, error) {
-	var body UpdateVrboListingRoomsJSONBodyUpdateAmenities0
+// AsGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 returns the union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as a GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0
+func (t GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) AsGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0() (GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0, error) {
+	var body GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromUpdateVrboListingRoomsJSONBodyUpdateAmenities0 overwrites any union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities as the provided UpdateVrboListingRoomsJSONBodyUpdateAmenities0
-func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) FromUpdateVrboListingRoomsJSONBodyUpdateAmenities0(v UpdateVrboListingRoomsJSONBodyUpdateAmenities0) error {
+// FromGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 overwrites any union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as the provided GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0
+func (t *GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) FromGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0(v GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeUpdateVrboListingRoomsJSONBodyUpdateAmenities0 performs a merge with any union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities, using the provided UpdateVrboListingRoomsJSONBodyUpdateAmenities0
-func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) MergeUpdateVrboListingRoomsJSONBodyUpdateAmenities0(v UpdateVrboListingRoomsJSONBodyUpdateAmenities0) error {
+// MergeGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 performs a merge with any union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value, using the provided GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0
+func (t *GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) MergeGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0(v GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -30425,22 +33992,22 @@ func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) MergeUpdateVrboListing
 	return err
 }
 
-// AsUpdateVrboListingRoomsJSONBodyUpdateAmenities1 returns the union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities as a UpdateVrboListingRoomsJSONBodyUpdateAmenities1
-func (t UpdateVrboListingRoomsJSONBody_Update_Amenities) AsUpdateVrboListingRoomsJSONBodyUpdateAmenities1() (UpdateVrboListingRoomsJSONBodyUpdateAmenities1, error) {
-	var body UpdateVrboListingRoomsJSONBodyUpdateAmenities1
+// AsGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 returns the union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as a GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1
+func (t GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) AsGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1() (GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1, error) {
+	var body GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromUpdateVrboListingRoomsJSONBodyUpdateAmenities1 overwrites any union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities as the provided UpdateVrboListingRoomsJSONBodyUpdateAmenities1
-func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) FromUpdateVrboListingRoomsJSONBodyUpdateAmenities1(v UpdateVrboListingRoomsJSONBodyUpdateAmenities1) error {
+// FromGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 overwrites any union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as the provided GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1
+func (t *GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) FromGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1(v GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeUpdateVrboListingRoomsJSONBodyUpdateAmenities1 performs a merge with any union data inside the UpdateVrboListingRoomsJSONBody_Update_Amenities, using the provided UpdateVrboListingRoomsJSONBodyUpdateAmenities1
-func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) MergeUpdateVrboListingRoomsJSONBodyUpdateAmenities1(v UpdateVrboListingRoomsJSONBodyUpdateAmenities1) error {
+// MergeGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 performs a merge with any union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value, using the provided GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1
+func (t *GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) MergeGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1(v GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -30451,12 +34018,302 @@ func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) MergeUpdateVrboListing
 	return err
 }
 
-func (t UpdateVrboListingRoomsJSONBody_Update_Amenities) MarshalJSON() ([]byte, error) {
+// AsGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 returns the union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as a GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2
+func (t GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) AsGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2() (GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2, error) {
+	var body GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 overwrites any union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as the provided GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2
+func (t *GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) FromGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2(v GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 performs a merge with any union data inside the GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value, using the provided GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2
+func (t *GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) MergeGetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2(v GetVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *UpdateVrboListingRoomsJSONBody_Update_Amenities) UnmarshalJSON(b []byte) error {
+func (t *GetVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0 returns the union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties as a UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0
+func (t UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0() (UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0, error) {
+	var body UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0 overwrites any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties as the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties, using the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1 returns the union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties as a UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1
+func (t UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1() (UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1, error) {
+	var body UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1 overwrites any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties as the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties, using the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2 returns the union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties as a UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2
+func (t UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2() (UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2, error) {
+	var body UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2 overwrites any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties as the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties, using the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsHomeSafetyValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_HomeSafety_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0 returns the union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as a UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0
+func (t UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0() (UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0, error) {
+	var body UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0 overwrites any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties, using the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1 returns the union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as a UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1
+func (t UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1() (UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1, error) {
+	var body UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1 overwrites any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties, using the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2 returns the union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as a UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2
+func (t UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) AsUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2() (UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2, error) {
+	var body UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2 overwrites any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties as the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) FromUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties, using the provided UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) MergeUpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2(v UpdateVrboListingSafetyDisclosuresJSONBodyGroupsSafetyDevicesValues2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingSafetyDisclosuresJSONBody_Groups_SafetyDevices_Values_AdditionalProperties) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 returns the union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as a UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0
+func (t UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) AsUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0() (UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0, error) {
+	var body UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 overwrites any union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as the provided UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0
+func (t *UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) FromUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0(v UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value, using the provided UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0
+func (t *UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) MergeUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0(v UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 returns the union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as a UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1
+func (t UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) AsUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1() (UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1, error) {
+	var body UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 overwrites any union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as the provided UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1
+func (t *UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) FromUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1(v UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value, using the provided UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1
+func (t *UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) MergeUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1(v UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 returns the union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as a UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2
+func (t UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) AsUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2() (UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2, error) {
+	var body UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 overwrites any union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value as the provided UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2
+func (t *UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) FromUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2(v UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2 performs a merge with any union data inside the UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value, using the provided UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2
+func (t *UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) MergeUpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2(v UpdateVrboListingSafetyDisclosures200JSONResponseBodyDataGroupsFieldsValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *UpdateVrboListingSafetyDisclosures200JSONResponseBody_Data_Groups_Fields_Value) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
