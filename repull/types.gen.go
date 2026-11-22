@@ -9630,19 +9630,22 @@ func (e VrboLoginJSONBodyAccessType) Valid() bool {
 
 // Defines values for VrboLoginJSONBodyAction.
 const (
-	Login  VrboLoginJSONBodyAction = "login"
-	Otp    VrboLoginJSONBodyAction = "otp"
-	Resend VrboLoginJSONBodyAction = "resend"
+	VrboLoginJSONBodyActionLogin  VrboLoginJSONBodyAction = "login"
+	VrboLoginJSONBodyActionOtp    VrboLoginJSONBodyAction = "otp"
+	VrboLoginJSONBodyActionPhone  VrboLoginJSONBodyAction = "phone"
+	VrboLoginJSONBodyActionResend VrboLoginJSONBodyAction = "resend"
 )
 
 // Valid indicates whether the value is a known member of the VrboLoginJSONBodyAction enum.
 func (e VrboLoginJSONBodyAction) Valid() bool {
 	switch e {
-	case Login:
+	case VrboLoginJSONBodyActionLogin:
 		return true
-	case Otp:
+	case VrboLoginJSONBodyActionOtp:
 		return true
-	case Resend:
+	case VrboLoginJSONBodyActionPhone:
+		return true
+	case VrboLoginJSONBodyActionResend:
 		return true
 	default:
 		return false
@@ -9651,10 +9654,11 @@ func (e VrboLoginJSONBodyAction) Valid() bool {
 
 // Defines values for VrboLogin200JSONResponseBodyStatus.
 const (
-	VrboLogin200JSONResponseBodyStatusConnected   VrboLogin200JSONResponseBodyStatus = "connected"
-	VrboLogin200JSONResponseBodyStatusFailed      VrboLogin200JSONResponseBodyStatus = "failed"
-	VrboLogin200JSONResponseBodyStatusOtpRequired VrboLogin200JSONResponseBodyStatus = "otp_required"
-	VrboLogin200JSONResponseBodyStatusPending     VrboLogin200JSONResponseBodyStatus = "pending"
+	VrboLogin200JSONResponseBodyStatusConnected     VrboLogin200JSONResponseBodyStatus = "connected"
+	VrboLogin200JSONResponseBodyStatusFailed        VrboLogin200JSONResponseBodyStatus = "failed"
+	VrboLogin200JSONResponseBodyStatusOtpRequired   VrboLogin200JSONResponseBodyStatus = "otp_required"
+	VrboLogin200JSONResponseBodyStatusPending       VrboLogin200JSONResponseBodyStatus = "pending"
+	VrboLogin200JSONResponseBodyStatusPhoneRequired VrboLogin200JSONResponseBodyStatus = "phone_required"
 )
 
 // Valid indicates whether the value is a known member of the VrboLogin200JSONResponseBodyStatus enum.
@@ -9667,6 +9671,8 @@ func (e VrboLogin200JSONResponseBodyStatus) Valid() bool {
 	case VrboLogin200JSONResponseBodyStatusOtpRequired:
 		return true
 	case VrboLogin200JSONResponseBodyStatusPending:
+		return true
+	case VrboLogin200JSONResponseBodyStatusPhoneRequired:
 		return true
 	default:
 		return false
@@ -25497,7 +25503,10 @@ type VrboLoginJSONBody struct {
 	Code       *string                      `json:"code,omitempty"`
 	Email      *string                      `json:"email,omitempty"`
 	Password   *string                      `json:"password,omitempty"`
-	SessionId  string                       `json:"sessionId"`
+
+	// Phone `action: phone` — the contact phone with its country code, e.g. `+373 69 123 456`.
+	Phone     *string `json:"phone,omitempty"`
+	SessionId string  `json:"sessionId"`
 }
 
 // VrboLoginJSONBodyAccessType defines parameters for VrboLogin.

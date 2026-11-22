@@ -4157,7 +4157,7 @@ type ClientInterface interface {
 
 	// VrboLoginWithBody Sign in with a Vrbo host account
 	//
-	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code.
+	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code. `phone_required` means Vrbo accepted the login and its "complete your profile" step wants a contact phone: `action: phone` (with `accountId` and `phone`, international format with the country code, any country) fills it in, then answers like the others (`otp_required` when Vrbo texts a code to that number; `phone_required` with `reason: bad_phone` when Vrbo refuses it).
 	//
 	// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
 	//
@@ -4170,7 +4170,7 @@ type ClientInterface interface {
 
 	// VrboLogin Sign in with a Vrbo host account
 	//
-	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code.
+	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code. `phone_required` means Vrbo accepted the login and its "complete your profile" step wants a contact phone: `action: phone` (with `accountId` and `phone`, international format with the country code, any country) fills it in, then answers like the others (`otp_required` when Vrbo texts a code to that number; `phone_required` with `reason: bad_phone` when Vrbo refuses it).
 	//
 	// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
 	//
@@ -13586,7 +13586,7 @@ func (c *Client) GetVrboConnectImport(ctx context.Context, params *GetVrboConnec
 
 // VrboLoginWithBody Sign in with a Vrbo host account
 //
-// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code.
+// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code. `phone_required` means Vrbo accepted the login and its "complete your profile" step wants a contact phone: `action: phone` (with `accountId` and `phone`, international format with the country code, any country) fills it in, then answers like the others (`otp_required` when Vrbo texts a code to that number; `phone_required` with `reason: bad_phone` when Vrbo refuses it).
 //
 // Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
 //
@@ -13609,7 +13609,7 @@ func (c *Client) VrboLoginWithBody(ctx context.Context, contentType string, body
 
 // VrboLogin Sign in with a Vrbo host account
 //
-// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code.
+// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code. `phone_required` means Vrbo accepted the login and its "complete your profile" step wants a contact phone: `action: phone` (with `accountId` and `phone`, international format with the country code, any country) fills it in, then answers like the others (`otp_required` when Vrbo texts a code to that number; `phone_required` with `reason: bad_phone` when Vrbo refuses it).
 //
 // Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
 //
@@ -41196,7 +41196,7 @@ type ClientWithResponsesInterface interface {
 
 	// VrboLoginWithBodyWithResponse Sign in with a Vrbo host account
 	//
-	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code.
+	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code. `phone_required` means Vrbo accepted the login and its "complete your profile" step wants a contact phone: `action: phone` (with `accountId` and `phone`, international format with the country code, any country) fills it in, then answers like the others (`otp_required` when Vrbo texts a code to that number; `phone_required` with `reason: bad_phone` when Vrbo refuses it).
 	//
 	// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
 	//
@@ -41209,7 +41209,7 @@ type ClientWithResponsesInterface interface {
 
 	// VrboLoginWithResponse Sign in with a Vrbo host account
 	//
-	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code.
+	// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code. `phone_required` means Vrbo accepted the login and its "complete your profile" step wants a contact phone: `action: phone` (with `accountId` and `phone`, international format with the country code, any country) fills it in, then answers like the others (`otp_required` when Vrbo texts a code to that number; `phone_required` with `reason: bad_phone` when Vrbo refuses it).
 	//
 	// Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
 	//
@@ -84055,7 +84055,7 @@ func (c *ClientWithResponses) GetVrboConnectImportWithResponse(ctx context.Conte
 
 // VrboLoginWithBodyWithResponse Sign in with a Vrbo host account
 //
-// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code.
+// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code. `phone_required` means Vrbo accepted the login and its "complete your profile" step wants a contact phone: `action: phone` (with `accountId` and `phone`, international format with the country code, any country) fills it in, then answers like the others (`otp_required` when Vrbo texts a code to that number; `phone_required` with `reason: bad_phone` when Vrbo refuses it).
 //
 // Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
 //
@@ -84074,7 +84074,7 @@ func (c *ClientWithResponses) VrboLoginWithBodyWithResponse(ctx context.Context,
 
 // VrboLoginWithResponse Sign in with a Vrbo host account
 //
-// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code.
+// `action: login` checks the email and password and answers in seconds: `connected`, `otp_required` (Vrbo sent a code to `destination`) or `failed` with a `reason` (`bad_credentials`, `blocked`, …). `action: otp` submits the code; a refused code comes back as `otp_required` with `reason: bad_code`. `action: resend` (with `accountId`) signs in again with the details already given, so Vrbo sends a new code. `phone_required` means Vrbo accepted the login and its "complete your profile" step wants a contact phone: `action: phone` (with `accountId` and `phone`, international format with the country code, any country) fills it in, then answers like the others (`otp_required` when Vrbo texts a code to that number; `phone_required` with `reason: bad_phone` when Vrbo refuses it).
 //
 // Signing in imports nothing. `accessType` (`full_access` or `messaging`, when the session did not lock it) is the host's choice of whether mapped listings push the calendar. The import starts when the mapping is confirmed.
 //
