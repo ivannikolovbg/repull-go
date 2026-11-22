@@ -602,6 +602,37 @@ type ClientInterface interface {
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/booking-settings (the `UpdateAirbnbBookingSettings` operationId).
 	UpdateAirbnbBookingSettings(ctx context.Context, id string, body UpdateAirbnbBookingSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetAirbnbListingCancellation Get the Airbnb cancellation policy
+	//
+	// The short-stay and long-stay cancellation policies and the non-refundable option — the same section as `GET /v1/channels/vrbo/listings/{id}/cancellation`, and the `cancellation` of `GET …/booking-settings`. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/cancellation (the `GetAirbnbListingCancellation` operationId).
+	GetAirbnbListingCancellation(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbListingCancellationWithBody Update the Airbnb cancellation policy
+	//
+	// Set any of `shortStayPolicy`, `longStayPolicy`, `nonRefundable` (`{ enabled, discountPercent }`, 0–30%). The same write as `PUT …/booking-settings` `{ "cancellation": … }`; the answer is the policy Airbnb holds after it.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/cancellation (the `UpdateAirbnbListingCancellation` operationId).
+	UpdateAirbnbListingCancellationWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbListingCancellation Update the Airbnb cancellation policy
+	//
+	// Set any of `shortStayPolicy`, `longStayPolicy`, `nonRefundable` (`{ enabled, discountPercent }`, 0–30%). The same write as `PUT …/booking-settings` `{ "cancellation": … }`; the answer is the policy Airbnb holds after it.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/cancellation (the `UpdateAirbnbListingCancellation` operationId).
+	UpdateAirbnbListingCancellation(ctx context.Context, id string, body UpdateAirbnbListingCancellationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetAirbnbCheckinGuide Get Airbnb check-in guide
 	//
 	// Return every published locale variant of an Airbnb listing's check-in guide. **Pure DB read** from `listings_airbnb_check_in_guides`. Pass `?locale=en` to filter to one locale (prefix match). Returns `404` when the listing has no Airbnb connection in this workspace.
@@ -751,6 +782,77 @@ type ClientInterface interface {
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/details (the `UpdateAirbnbListingDetails` operationId).
 	UpdateAirbnbListingDetails(ctx context.Context, id string, params *UpdateAirbnbListingDetailsParams, body UpdateAirbnbListingDetailsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbListingFees Get Airbnb fees
+	//
+	// The listing's Airbnb fees (cleaning, pets, extra guests, management, linens, …) — the same section as `GET /v1/channels/vrbo/listings/{id}/fees`, and the `fees` of `GET …/pricing`. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/fees (the `GetAirbnbListingFees` operationId).
+	GetAirbnbListingFees(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbListingFeesWithBody Update Airbnb fees
+	//
+	// Set Airbnb fees by type: each fee you send replaces that type, the others are kept. The same write as `PUT …/pricing` `{ "type": "fees", "fees": […] }`; `amount: null` removes a fee. `fee_type` is Airbnb's (`PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, …).
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/fees (the `UpdateAirbnbListingFees` operationId).
+	UpdateAirbnbListingFeesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbListingFees Update Airbnb fees
+	//
+	// Set Airbnb fees by type: each fee you send replaces that type, the others are kept. The same write as `PUT …/pricing` `{ "type": "fees", "fees": […] }`; `amount: null` removes a fee. `fee_type` is Airbnb's (`PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, …).
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/fees (the `UpdateAirbnbListingFees` operationId).
+	UpdateAirbnbListingFees(ctx context.Context, id string, body UpdateAirbnbListingFeesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbHouseRules Get Airbnb house rules
+	//
+	// The listing's house rules under the names Vrbo's `GET /v1/channels/vrbo/listings/{id}/house-rules` uses: check-in and check-out times, guest capacity, whether children, infants, pets, smoking and events are allowed, Airbnb's "things to know" (`expectations`), and the written rules per language. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/house-rules (the `GetAirbnbHouseRules` operationId).
+	GetAirbnbHouseRules(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbHouseRulesWithBody Update Airbnb house rules
+	//
+	// Write the house rules text for one language — the same write as `PUT …/descriptions` `{ locale, description: { house_rules } }`, with the same answer (`written`, `blockedFields`). On Airbnb the check-in and check-out times are booking settings: set them with `PUT …/booking-settings`. Whether pets, smoking, events or children are allowed is set in the Airbnb app.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/house-rules (the `UpdateAirbnbHouseRules` operationId).
+	UpdateAirbnbHouseRulesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAirbnbHouseRules Update Airbnb house rules
+	//
+	// Write the house rules text for one language — the same write as `PUT …/descriptions` `{ locale, description: { house_rules } }`, with the same answer (`written`, `blockedFields`). On Airbnb the check-in and check-out times are booking settings: set them with `PUT …/booking-settings`. Whether pets, smoking, events or children are allowed is set in the Airbnb app.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/house-rules (the `UpdateAirbnbHouseRules` operationId).
+	UpdateAirbnbHouseRules(ctx context.Context, id string, body UpdateAirbnbHouseRulesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAirbnbLocation Get the Airbnb location
+	//
+	// The listing's address, map pin, directions and whether guests see the exact location — the same section as `GET /v1/channels/vrbo/listings/{id}/location`. Read-only: Airbnb changes a listed address only in its own flow in the host app (`addressEditable: false`). **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/location (the `GetAirbnbLocation` operationId).
+	GetAirbnbLocation(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListAirbnbListingPermits List Airbnb permits and licences
 	//
@@ -1149,9 +1251,18 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/settings (the `GetAirbnbListingSettings` operationId).
 	GetAirbnbListingSettings(ctx context.Context, id string, params *GetAirbnbListingSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetAirbnbListingTaxes Get Airbnb taxes
+	//
+	// The listing's taxes — host-remitted pass-through taxes and the taxes Airbnb collects itself, each with `source` (`pass_through` | `airbnb_collected`) — the same section as `GET /v1/channels/vrbo/listings/{id}/taxes`, and the `taxes` of `GET …/pricing`. Read-only here: Airbnb's pass-through taxes are part of its pricing settings (`PUT …/pricing` `{ "type": "standard" }`). **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/taxes (the `GetAirbnbListingTaxes` operationId).
+	GetAirbnbListingTaxes(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAirbnbThreads List Airbnb message threads
 	//
-	// List Airbnb message threads (one per guest conversation). Cursor-paginated. Each thread includes a preview of the latest message.
+	// List Airbnb message threads (one per guest conversation), newest activity first (up to 200). Only Airbnb threads: conversations from other channels are on their own channel routes (`GET /v1/channels/vrbo/messaging`) or `GET /v1/conversations`.
 	//
 	// Threads on inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
@@ -3274,6 +3385,19 @@ type ClientInterface interface {
 	// Corresponds with PUT /v1/channels/vrbo/listings/{id}/safety-disclosures (the `UpdateVrboListingSafetyDisclosures` operationId).
 	UpdateVrboListingSafetyDisclosures(ctx context.Context, id string, params *UpdateVrboListingSafetyDisclosuresParams, body UpdateVrboListingSafetyDisclosuresJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetVrboListingSettings Get Vrbo listing settings
+	//
+	// The counterpart of `GET /v1/channels/airbnb/listings/{id}/settings`: the languages the listing has a hand-written description in (`locales`), and with `?type=permits` its registration / licence (the `data` of `GET …/permits`). `type=all` (default) returns `{ locales }`, `type=locales` the array.
+	//
+	// Vrbo has no co-host roles, so `type=hosts` answers `422 not_available_on_vrbo`: a Vrbo listing belongs to the one Vrbo account it is in (`accountId` on `GET /v1/channels/vrbo/listings`).
+	//
+	// Answers from Repull's stored copy of the listing's Vrbo content, like the Airbnb endpoints (`dataFreshness.lastSyncedAt` says when it was read from Vrbo). The first read of a section reads Vrbo and stores it; a copy over 24 h old answers and is refreshed in the background (`reason: refreshing`); every write through Repull stores what Vrbo has after it. `?source=live` reads Vrbo now.
+	//
+	// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Corresponds with GET /v1/channels/vrbo/listings/{id}/settings (the `GetVrboListingSettings` operationId).
+	GetVrboListingSettings(ctx context.Context, id string, params *GetVrboListingSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetVrboListingStory Get the Vrbo host story
 	//
 	// "Your story" on the listing: about you, why this property, what makes it unique.
@@ -3402,6 +3526,105 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/channels/vrbo/listings/{id}/videos (the `AddVrboListingVideo` operationId).
 	AddVrboListingVideo(ctx context.Context, id string, params *AddVrboListingVideoParams, body AddVrboListingVideoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListVrboThreads List Vrbo message threads
+	//
+	// The workspace's Vrbo conversations, newest activity first (up to 200) — the counterpart of `GET /v1/channels/airbnb/messaging`, read from Repull's copy of the Vrbo inbox. Each thread carries the Vrbo account it belongs to (`accountId`, `accountName`). `externalThreadId` (`vrbo:<uuid>`) addresses the thread on these routes; `id` is the Repull conversation id of `/v1/conversations/{id}`.
+	//
+	// Only conversations Vrbo itself holds are listed: a Vrbo booking that reached Repull another way (a PMS, iCal) has no Vrbo conversation to message.
+	//
+	// Threads on inactive listings are left out. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
+	//
+	// Corresponds with GET /v1/channels/vrbo/messaging (the `ListVrboThreads` operationId).
+	ListVrboThreads(ctx context.Context, params *ListVrboThreadsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVrboThread Get a Vrbo message thread
+	//
+	// One Vrbo conversation by its Vrbo id — the counterpart of `GET /v1/channels/airbnb/messaging/{threadId}`.
+	//
+	// Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Corresponds with GET /v1/channels/vrbo/messaging/{threadId} (the `GetVrboThread` operationId).
+	GetVrboThread(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListVrboThreadMessages Get Vrbo messages
+	//
+	// The messages of a Vrbo conversation, as recorded rows — the counterpart of `GET /v1/channels/airbnb/messaging/{threadId}/messages`, same shape. 50 per page, newest first; walk older pages with `?cursor=` until `pagination.hasMore` is `false`. `?all=true` returns up to 1000 oldest first, without `pagination`.
+	//
+	// Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Corresponds with GET /v1/channels/vrbo/messaging/{threadId}/messages (the `ListVrboThreadMessages` operationId).
+	ListVrboThreadMessages(ctx context.Context, threadId string, params *ListVrboThreadMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SendVrboMessageWithBody Send a Vrbo message
+	//
+	// Send a message in a Vrbo conversation through the host's connected Vrbo account — the counterpart of `POST /v1/channels/airbnb/messaging/{threadId}/messages`, with the same body. It is sent the way the dashboard sends it and recorded in the conversation, so it also appears on `GET /v1/conversations/{id}/messages`.
+	//
+	// `201` with `status: "sent"` when Vrbo took it; `202` with `status: "queued"` when Vrbo was slow and the send finishes in the background — do not send it again, watch `conversation.message.status_changed`. Vrbo messages are text: a `mediaUrl` is refused with `422 attachments_not_supported`. Send `Idempotency-Key` to make a retry safe.
+	//
+	// Vrbo has no edit, unsend or reaction on a sent message (Airbnb's `PATCH …/messages/{messageId}`).
+	//
+	// Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/messaging/{threadId}/messages (the `SendVrboMessage` operationId).
+	SendVrboMessageWithBody(ctx context.Context, threadId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SendVrboMessage Send a Vrbo message
+	//
+	// Send a message in a Vrbo conversation through the host's connected Vrbo account — the counterpart of `POST /v1/channels/airbnb/messaging/{threadId}/messages`, with the same body. It is sent the way the dashboard sends it and recorded in the conversation, so it also appears on `GET /v1/conversations/{id}/messages`.
+	//
+	// `201` with `status: "sent"` when Vrbo took it; `202` with `status: "queued"` when Vrbo was slow and the send finishes in the background — do not send it again, watch `conversation.message.status_changed`. Vrbo messages are text: a `mediaUrl` is refused with `422 attachments_not_supported`. Send `Idempotency-Key` to make a retry safe.
+	//
+	// Vrbo has no edit, unsend or reaction on a sent message (Airbnb's `PATCH …/messages/{messageId}`).
+	//
+	// Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/messaging/{threadId}/messages (the `SendVrboMessage` operationId).
+	SendVrboMessage(ctx context.Context, threadId string, body SendVrboMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// WithdrawVrboOffer Withdraw the Vrbo pre-approval or quote
+	//
+	// Withdraw the conversation's pre-approval or quote: the guest can no longer book on it. The counterpart of `DELETE /v1/channels/airbnb/offers`, by `thread_id`.
+	//
+	// Corresponds with DELETE /v1/channels/vrbo/offers (the `WithdrawVrboOffer` operationId).
+	WithdrawVrboOffer(ctx context.Context, params *WithdrawVrboOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVrboOffer Get the Vrbo quote
+	//
+	// The conversation's live quote as Vrbo shows it — its parts and Vrbo's guest total. The counterpart of `GET /v1/channels/airbnb/offers`; Vrbo keeps one quote per conversation, so it is read by `thread_id` rather than an offer id.
+	//
+	// Corresponds with GET /v1/channels/vrbo/offers (the `GetVrboOffer` operationId).
+	GetVrboOffer(ctx context.Context, params *GetVrboOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateVrboOfferWithBody Pre-approve or quote a Vrbo inquiry
+	//
+	// Answer a Vrbo inquiry — the counterpart of `POST /v1/channels/airbnb/offers`, the same body addressed by the Vrbo conversation. `type: "preapproval"` invites the guest to book their dates at the listed price; `type: "offer"` sends Vrbo's edited quote.
+	//
+	// **Priced by its parts, not a total.** Vrbo adds its taxes and service fee itself, so a quote takes `rental_amount`, `fees` (`[{ type, value }]`, Vrbo fee types such as `CLEANING`, `PET`) and `damage_deposit`; `total_price` is refused. The stay is `start_date` + `nights` and `guest_details`, as on Airbnb; leave them out to keep the guest's own. Both types may carry a `message` to the guest. Vrbo has no instant-book switch on a pre-approval (`block_instant_booking` is refused) and a quote is always for the conversation's property (`listing_id` is refused).
+	//
+	// The same as `POST /v1/conversations/{id}/pre-approval` and `/special-offers` on a Vrbo conversation, which take the Repull conversation id. Send `Idempotency-Key`: a retry without it can send the guest two quotes. Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/offers (the `CreateVrboOffer` operationId).
+	CreateVrboOfferWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateVrboOffer Pre-approve or quote a Vrbo inquiry
+	//
+	// Answer a Vrbo inquiry — the counterpart of `POST /v1/channels/airbnb/offers`, the same body addressed by the Vrbo conversation. `type: "preapproval"` invites the guest to book their dates at the listed price; `type: "offer"` sends Vrbo's edited quote.
+	//
+	// **Priced by its parts, not a total.** Vrbo adds its taxes and service fee itself, so a quote takes `rental_amount`, `fees` (`[{ type, value }]`, Vrbo fee types such as `CLEANING`, `PET`) and `damage_deposit`; `total_price` is refused. The stay is `start_date` + `nights` and `guest_details`, as on Airbnb; leave them out to keep the guest's own. Both types may carry a `message` to the guest. Vrbo has no instant-book switch on a pre-approval (`block_instant_booking` is refused) and a quote is always for the conversation's property (`listing_id` is refused).
+	//
+	// The same as `POST /v1/conversations/{id}/pre-approval` and `/special-offers` on a Vrbo conversation, which take the Repull conversation id. Send `Idempotency-Key`: a retry without it can send the guest two quotes. Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/vrbo/offers (the `CreateVrboOffer` operationId).
+	CreateVrboOffer(ctx context.Context, body CreateVrboOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListVrboReservations List VRBO reservations
 	//
 	// Cursor-paginated list of Vrbo reservations imported from the host's connected Vrbo account (host sign-in, beta). The full normalised record — guest, price breakdown, policy — is on `GET /v1/reservations?platform=vrbo`. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
@@ -3457,6 +3680,37 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
 	VrboReservationAction(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListVrboReviews List Vrbo reviews
+	//
+	// The workspace's Vrbo reviews — the counterpart of `GET /v1/channels/airbnb/reviews`. The same list, filters, paging and review shape as `GET /v1/reviews?platform=vrbo`, with the channel fixed: `reviewerRole=guest` (default) is what guests wrote, `reviewerRole=host` your ratings of guests. Reply to a review with `POST /v1/reviews/{id}/reply`; rate a guest with `PUT /v1/channels/vrbo/reviews/{id}`.
+	//
+	// Reviews of inactive listings are left out; `listingId` naming an inactive listing returns `403 listing_inactive`. `platform` other than `vrbo` is refused.
+	//
+	// Corresponds with GET /v1/channels/vrbo/reviews (the `ListVrboReviews` operationId).
+	ListVrboReviews(ctx context.Context, params *ListVrboReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitVrboGuestReviewWithBody Rate a Vrbo guest
+	//
+	// Rate the guest of a Vrbo stay — Vrbo's "Rate guest", the counterpart of `PUT /v1/channels/airbnb/reviews/{id}`, and the same as `POST /v1/reviews/{id}/guest-review` on a Vrbo review. `rating` (overall, 1–5), `categoryRatings` (`cleanliness`, `communication`, `respect_house_rules`) and `isRevieweeRecommended` (would host again). Vrbo's rating has no text: `publicReview` / `privateFeedback` are refused when not empty. Publishing is final.
+	//
+	// `{id}` is the review `id` from `GET /v1/channels/vrbo/reviews?reviewerRole=host`; a review from another channel is `404`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/channels/vrbo/reviews/{id} (the `SubmitVrboGuestReview` operationId).
+	SubmitVrboGuestReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SubmitVrboGuestReview Rate a Vrbo guest
+	//
+	// Rate the guest of a Vrbo stay — Vrbo's "Rate guest", the counterpart of `PUT /v1/channels/airbnb/reviews/{id}`, and the same as `POST /v1/reviews/{id}/guest-review` on a Vrbo review. `rating` (overall, 1–5), `categoryRatings` (`cleanliness`, `communication`, `respect_house_rules`) and `isRevieweeRecommended` (would host again). Vrbo's rating has no text: `publicReview` / `privateFeedback` are refused when not empty. Publishing is final.
+	//
+	// `{id}` is the review `id` from `GET /v1/channels/vrbo/reviews?reviewerRole=host`; a review from another channel is `404`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/channels/vrbo/reviews/{id} (the `SubmitVrboGuestReview` operationId).
+	SubmitVrboGuestReview(ctx context.Context, id string, body SubmitVrboGuestReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVrboTransactions List Vrbo transactions (payout ledger)
 	//
@@ -5746,6 +6000,40 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/listings/{id}/pull/airbnb (the `PullListingFromAirbnb` operationId).
 	PullListingFromAirbnb(ctx context.Context, id int, body PullListingFromAirbnbJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PullListingFromVrboWithBody Refresh a listing from Vrbo
+	//
+	// Re-read every content section of the listing's Vrbo listing from Vrbo and keep it as Repull's copy, then report what was refreshed and when — the counterpart of `POST /v1/listings/{id}/pull/airbnb`. Use it after the host changed something on Vrbo, so the `/v1/channels/vrbo/listings/{id}/…` reads answer with what Vrbo holds now.
+	//
+	// **What it refreshes:** descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos. **Not** the calendar, rates per night, bookings, messages, reviews or payouts — those arrive through the channel's own sync.
+	//
+	// **Runs synchronously:** about 45 Vrbo calls spaced ~3 s apart per account, **around 2.5 minutes**. A section Vrbo fails to return is listed in `failedSections`; the others are refreshed.
+	//
+	// **One pull per listing per 15 minutes**, as on Airbnb: a second call inside the window returns `429 rate_limit_exceeded` with `Retry-After` and `nextPullAvailableAt`, and makes no Vrbo calls.
+	//
+	// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/pull/vrbo (the `PullListingFromVrbo` operationId).
+	PullListingFromVrboWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PullListingFromVrbo Refresh a listing from Vrbo
+	//
+	// Re-read every content section of the listing's Vrbo listing from Vrbo and keep it as Repull's copy, then report what was refreshed and when — the counterpart of `POST /v1/listings/{id}/pull/airbnb`. Use it after the host changed something on Vrbo, so the `/v1/channels/vrbo/listings/{id}/…` reads answer with what Vrbo holds now.
+	//
+	// **What it refreshes:** descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos. **Not** the calendar, rates per night, bookings, messages, reviews or payouts — those arrive through the channel's own sync.
+	//
+	// **Runs synchronously:** about 45 Vrbo calls spaced ~3 s apart per account, **around 2.5 minutes**. A section Vrbo fails to return is listed in `failedSections`; the others are refreshed.
+	//
+	// **One pull per listing per 15 minutes**, as on Airbnb: a second call inside the window returns `429 rate_limit_exceeded` with `Retry-After` and `nextPullAvailableAt`, and makes no Vrbo calls.
+	//
+	// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/pull/vrbo (the `PullListingFromVrbo` operationId).
+	PullListingFromVrbo(ctx context.Context, id string, body PullListingFromVrboJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetListingSegments Atlas DNA segment intelligence for a listing
 	//
 	// Aggregates Atlas DNA segment signal (quality tier, design style, bedrooms) across the listing's geographic neighborhood (default: 5km radius) or the whole city, so consumers can answer:
@@ -7564,6 +7852,67 @@ func (c *Client) UpdateAirbnbBookingSettings(ctx context.Context, id string, bod
 	return c.Client.Do(req)
 }
 
+// GetAirbnbListingCancellation Get the Airbnb cancellation policy
+//
+// The short-stay and long-stay cancellation policies and the non-refundable option — the same section as `GET /v1/channels/vrbo/listings/{id}/cancellation`, and the `cancellation` of `GET …/booking-settings`. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/cancellation (the `GetAirbnbListingCancellation` operationId).
+func (c *Client) GetAirbnbListingCancellation(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingCancellationRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateAirbnbListingCancellationWithBody Update the Airbnb cancellation policy
+//
+// Set any of `shortStayPolicy`, `longStayPolicy`, `nonRefundable` (`{ enabled, discountPercent }`, 0–30%). The same write as `PUT …/booking-settings` `{ "cancellation": … }`; the answer is the policy Airbnb holds after it.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/cancellation (the `UpdateAirbnbListingCancellation` operationId).
+func (c *Client) UpdateAirbnbListingCancellationWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbListingCancellationRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateAirbnbListingCancellation Update the Airbnb cancellation policy
+//
+// Set any of `shortStayPolicy`, `longStayPolicy`, `nonRefundable` (`{ enabled, discountPercent }`, 0–30%). The same write as `PUT …/booking-settings` `{ "cancellation": … }`; the answer is the policy Airbnb holds after it.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/cancellation (the `UpdateAirbnbListingCancellation` operationId).
+func (c *Client) UpdateAirbnbListingCancellation(ctx context.Context, id string, body UpdateAirbnbListingCancellationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbListingCancellationRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetAirbnbCheckinGuide Get Airbnb check-in guide
 //
 // Return every published locale variant of an Airbnb listing's check-in guide. **Pure DB read** from `listings_airbnb_check_in_guides`. Pass `?locale=en` to filter to one locale (prefix match). Returns `404` when the listing has no Airbnb connection in this workspace.
@@ -7804,6 +8153,147 @@ func (c *Client) UpdateAirbnbListingDetailsWithBody(ctx context.Context, id stri
 // Corresponds with PUT /v1/channels/airbnb/listings/{id}/details (the `UpdateAirbnbListingDetails` operationId).
 func (c *Client) UpdateAirbnbListingDetails(ctx context.Context, id string, params *UpdateAirbnbListingDetailsParams, body UpdateAirbnbListingDetailsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateAirbnbListingDetailsRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetAirbnbListingFees Get Airbnb fees
+//
+// The listing's Airbnb fees (cleaning, pets, extra guests, management, linens, …) — the same section as `GET /v1/channels/vrbo/listings/{id}/fees`, and the `fees` of `GET …/pricing`. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/fees (the `GetAirbnbListingFees` operationId).
+func (c *Client) GetAirbnbListingFees(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingFeesRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateAirbnbListingFeesWithBody Update Airbnb fees
+//
+// Set Airbnb fees by type: each fee you send replaces that type, the others are kept. The same write as `PUT …/pricing` `{ "type": "fees", "fees": […] }`; `amount: null` removes a fee. `fee_type` is Airbnb's (`PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, …).
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/fees (the `UpdateAirbnbListingFees` operationId).
+func (c *Client) UpdateAirbnbListingFeesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbListingFeesRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateAirbnbListingFees Update Airbnb fees
+//
+// Set Airbnb fees by type: each fee you send replaces that type, the others are kept. The same write as `PUT …/pricing` `{ "type": "fees", "fees": […] }`; `amount: null` removes a fee. `fee_type` is Airbnb's (`PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, …).
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/fees (the `UpdateAirbnbListingFees` operationId).
+func (c *Client) UpdateAirbnbListingFees(ctx context.Context, id string, body UpdateAirbnbListingFeesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbListingFeesRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetAirbnbHouseRules Get Airbnb house rules
+//
+// The listing's house rules under the names Vrbo's `GET /v1/channels/vrbo/listings/{id}/house-rules` uses: check-in and check-out times, guest capacity, whether children, infants, pets, smoking and events are allowed, Airbnb's "things to know" (`expectations`), and the written rules per language. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/house-rules (the `GetAirbnbHouseRules` operationId).
+func (c *Client) GetAirbnbHouseRules(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbHouseRulesRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateAirbnbHouseRulesWithBody Update Airbnb house rules
+//
+// Write the house rules text for one language — the same write as `PUT …/descriptions` `{ locale, description: { house_rules } }`, with the same answer (`written`, `blockedFields`). On Airbnb the check-in and check-out times are booking settings: set them with `PUT …/booking-settings`. Whether pets, smoking, events or children are allowed is set in the Airbnb app.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/house-rules (the `UpdateAirbnbHouseRules` operationId).
+func (c *Client) UpdateAirbnbHouseRulesWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbHouseRulesRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateAirbnbHouseRules Update Airbnb house rules
+//
+// Write the house rules text for one language — the same write as `PUT …/descriptions` `{ locale, description: { house_rules } }`, with the same answer (`written`, `blockedFields`). On Airbnb the check-in and check-out times are booking settings: set them with `PUT …/booking-settings`. Whether pets, smoking, events or children are allowed is set in the Airbnb app.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/house-rules (the `UpdateAirbnbHouseRules` operationId).
+func (c *Client) UpdateAirbnbHouseRules(ctx context.Context, id string, body UpdateAirbnbHouseRulesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAirbnbHouseRulesRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetAirbnbLocation Get the Airbnb location
+//
+// The listing's address, map pin, directions and whether guests see the exact location — the same section as `GET /v1/channels/vrbo/listings/{id}/location`. Read-only: Airbnb changes a listed address only in its own flow in the host app (`addressEditable: false`). **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/location (the `GetAirbnbLocation` operationId).
+func (c *Client) GetAirbnbLocation(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbLocationRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -8481,9 +8971,28 @@ func (c *Client) GetAirbnbListingSettings(ctx context.Context, id string, params
 	return c.Client.Do(req)
 }
 
+// GetAirbnbListingTaxes Get Airbnb taxes
+//
+// The listing's taxes — host-remitted pass-through taxes and the taxes Airbnb collects itself, each with `source` (`pass_through` | `airbnb_collected`) — the same section as `GET /v1/channels/vrbo/listings/{id}/taxes`, and the `taxes` of `GET …/pricing`. Read-only here: Airbnb's pass-through taxes are part of its pricing settings (`PUT …/pricing` `{ "type": "standard" }`). **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/taxes (the `GetAirbnbListingTaxes` operationId).
+func (c *Client) GetAirbnbListingTaxes(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAirbnbListingTaxesRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListAirbnbThreads List Airbnb message threads
 //
-// List Airbnb message threads (one per guest conversation). Cursor-paginated. Each thread includes a preview of the latest message.
+// List Airbnb message threads (one per guest conversation), newest activity first (up to 200). Only Airbnb threads: conversations from other channels are on their own channel routes (`GET /v1/channels/vrbo/messaging`) or `GET /v1/conversations`.
 //
 // Threads on inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
@@ -12023,6 +12532,29 @@ func (c *Client) UpdateVrboListingSafetyDisclosures(ctx context.Context, id stri
 	return c.Client.Do(req)
 }
 
+// GetVrboListingSettings Get Vrbo listing settings
+//
+// The counterpart of `GET /v1/channels/airbnb/listings/{id}/settings`: the languages the listing has a hand-written description in (`locales`), and with `?type=permits` its registration / licence (the `data` of `GET …/permits`). `type=all` (default) returns `{ locales }`, `type=locales` the array.
+//
+// Vrbo has no co-host roles, so `type=hosts` answers `422 not_available_on_vrbo`: a Vrbo listing belongs to the one Vrbo account it is in (`accountId` on `GET /v1/channels/vrbo/listings`).
+//
+// Answers from Repull's stored copy of the listing's Vrbo content, like the Airbnb endpoints (`dataFreshness.lastSyncedAt` says when it was read from Vrbo). The first read of a section reads Vrbo and stores it; a copy over 24 h old answers and is refreshed in the background (`reason: refreshing`); every write through Repull stores what Vrbo has after it. `?source=live` reads Vrbo now.
+//
+// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+//
+// Corresponds with GET /v1/channels/vrbo/listings/{id}/settings (the `GetVrboListingSettings` operationId).
+func (c *Client) GetVrboListingSettings(ctx context.Context, id string, params *GetVrboListingSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVrboListingSettingsRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetVrboListingStory Get the Vrbo host story
 //
 // "Your story" on the listing: about you, why this property, what makes it unique.
@@ -12251,6 +12783,195 @@ func (c *Client) AddVrboListingVideo(ctx context.Context, id string, params *Add
 	return c.Client.Do(req)
 }
 
+// ListVrboThreads List Vrbo message threads
+//
+// The workspace's Vrbo conversations, newest activity first (up to 200) — the counterpart of `GET /v1/channels/airbnb/messaging`, read from Repull's copy of the Vrbo inbox. Each thread carries the Vrbo account it belongs to (`accountId`, `accountName`). `externalThreadId` (`vrbo:<uuid>`) addresses the thread on these routes; `id` is the Repull conversation id of `/v1/conversations/{id}`.
+//
+// Only conversations Vrbo itself holds are listed: a Vrbo booking that reached Repull another way (a PMS, iCal) has no Vrbo conversation to message.
+//
+// Threads on inactive listings are left out. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
+//
+// Corresponds with GET /v1/channels/vrbo/messaging (the `ListVrboThreads` operationId).
+func (c *Client) ListVrboThreads(ctx context.Context, params *ListVrboThreadsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVrboThreadsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetVrboThread Get a Vrbo message thread
+//
+// One Vrbo conversation by its Vrbo id — the counterpart of `GET /v1/channels/airbnb/messaging/{threadId}`.
+//
+// Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Corresponds with GET /v1/channels/vrbo/messaging/{threadId} (the `GetVrboThread` operationId).
+func (c *Client) GetVrboThread(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVrboThreadRequest(c.Server, threadId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListVrboThreadMessages Get Vrbo messages
+//
+// The messages of a Vrbo conversation, as recorded rows — the counterpart of `GET /v1/channels/airbnb/messaging/{threadId}/messages`, same shape. 50 per page, newest first; walk older pages with `?cursor=` until `pagination.hasMore` is `false`. `?all=true` returns up to 1000 oldest first, without `pagination`.
+//
+// Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Corresponds with GET /v1/channels/vrbo/messaging/{threadId}/messages (the `ListVrboThreadMessages` operationId).
+func (c *Client) ListVrboThreadMessages(ctx context.Context, threadId string, params *ListVrboThreadMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVrboThreadMessagesRequest(c.Server, threadId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SendVrboMessageWithBody Send a Vrbo message
+//
+// Send a message in a Vrbo conversation through the host's connected Vrbo account — the counterpart of `POST /v1/channels/airbnb/messaging/{threadId}/messages`, with the same body. It is sent the way the dashboard sends it and recorded in the conversation, so it also appears on `GET /v1/conversations/{id}/messages`.
+//
+// `201` with `status: "sent"` when Vrbo took it; `202` with `status: "queued"` when Vrbo was slow and the send finishes in the background — do not send it again, watch `conversation.message.status_changed`. Vrbo messages are text: a `mediaUrl` is refused with `422 attachments_not_supported`. Send `Idempotency-Key` to make a retry safe.
+//
+// Vrbo has no edit, unsend or reaction on a sent message (Airbnb's `PATCH …/messages/{messageId}`).
+//
+// Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/vrbo/messaging/{threadId}/messages (the `SendVrboMessage` operationId).
+func (c *Client) SendVrboMessageWithBody(ctx context.Context, threadId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendVrboMessageRequestWithBody(c.Server, threadId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SendVrboMessage Send a Vrbo message
+//
+// Send a message in a Vrbo conversation through the host's connected Vrbo account — the counterpart of `POST /v1/channels/airbnb/messaging/{threadId}/messages`, with the same body. It is sent the way the dashboard sends it and recorded in the conversation, so it also appears on `GET /v1/conversations/{id}/messages`.
+//
+// `201` with `status: "sent"` when Vrbo took it; `202` with `status: "queued"` when Vrbo was slow and the send finishes in the background — do not send it again, watch `conversation.message.status_changed`. Vrbo messages are text: a `mediaUrl` is refused with `422 attachments_not_supported`. Send `Idempotency-Key` to make a retry safe.
+//
+// Vrbo has no edit, unsend or reaction on a sent message (Airbnb's `PATCH …/messages/{messageId}`).
+//
+// Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/vrbo/messaging/{threadId}/messages (the `SendVrboMessage` operationId).
+func (c *Client) SendVrboMessage(ctx context.Context, threadId string, body SendVrboMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendVrboMessageRequest(c.Server, threadId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// WithdrawVrboOffer Withdraw the Vrbo pre-approval or quote
+//
+// Withdraw the conversation's pre-approval or quote: the guest can no longer book on it. The counterpart of `DELETE /v1/channels/airbnb/offers`, by `thread_id`.
+//
+// Corresponds with DELETE /v1/channels/vrbo/offers (the `WithdrawVrboOffer` operationId).
+func (c *Client) WithdrawVrboOffer(ctx context.Context, params *WithdrawVrboOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewWithdrawVrboOfferRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetVrboOffer Get the Vrbo quote
+//
+// The conversation's live quote as Vrbo shows it — its parts and Vrbo's guest total. The counterpart of `GET /v1/channels/airbnb/offers`; Vrbo keeps one quote per conversation, so it is read by `thread_id` rather than an offer id.
+//
+// Corresponds with GET /v1/channels/vrbo/offers (the `GetVrboOffer` operationId).
+func (c *Client) GetVrboOffer(ctx context.Context, params *GetVrboOfferParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVrboOfferRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateVrboOfferWithBody Pre-approve or quote a Vrbo inquiry
+//
+// Answer a Vrbo inquiry — the counterpart of `POST /v1/channels/airbnb/offers`, the same body addressed by the Vrbo conversation. `type: "preapproval"` invites the guest to book their dates at the listed price; `type: "offer"` sends Vrbo's edited quote.
+//
+// **Priced by its parts, not a total.** Vrbo adds its taxes and service fee itself, so a quote takes `rental_amount`, `fees` (`[{ type, value }]`, Vrbo fee types such as `CLEANING`, `PET`) and `damage_deposit`; `total_price` is refused. The stay is `start_date` + `nights` and `guest_details`, as on Airbnb; leave them out to keep the guest's own. Both types may carry a `message` to the guest. Vrbo has no instant-book switch on a pre-approval (`block_instant_booking` is refused) and a quote is always for the conversation's property (`listing_id` is refused).
+//
+// The same as `POST /v1/conversations/{id}/pre-approval` and `/special-offers` on a Vrbo conversation, which take the Repull conversation id. Send `Idempotency-Key`: a retry without it can send the guest two quotes. Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/vrbo/offers (the `CreateVrboOffer` operationId).
+func (c *Client) CreateVrboOfferWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateVrboOfferRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateVrboOffer Pre-approve or quote a Vrbo inquiry
+//
+// Answer a Vrbo inquiry — the counterpart of `POST /v1/channels/airbnb/offers`, the same body addressed by the Vrbo conversation. `type: "preapproval"` invites the guest to book their dates at the listed price; `type: "offer"` sends Vrbo's edited quote.
+//
+// **Priced by its parts, not a total.** Vrbo adds its taxes and service fee itself, so a quote takes `rental_amount`, `fees` (`[{ type, value }]`, Vrbo fee types such as `CLEANING`, `PET`) and `damage_deposit`; `total_price` is refused. The stay is `start_date` + `nights` and `guest_details`, as on Airbnb; leave them out to keep the guest's own. Both types may carry a `message` to the guest. Vrbo has no instant-book switch on a pre-approval (`block_instant_booking` is refused) and a quote is always for the conversation's property (`listing_id` is refused).
+//
+// The same as `POST /v1/conversations/{id}/pre-approval` and `/special-offers` on a Vrbo conversation, which take the Repull conversation id. Send `Idempotency-Key`: a retry without it can send the guest two quotes. Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/vrbo/offers (the `CreateVrboOffer` operationId).
+func (c *Client) CreateVrboOffer(ctx context.Context, body CreateVrboOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateVrboOfferRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListVrboReservations List VRBO reservations
 //
 // Cursor-paginated list of Vrbo reservations imported from the host's connected Vrbo account (host sign-in, beta). The full normalised record — guest, price breakdown, policy — is on `GET /v1/reservations?platform=vrbo`. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
@@ -12337,6 +13058,67 @@ func (c *Client) VrboReservationActionWithBody(ctx context.Context, code string,
 // Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
 func (c *Client) VrboReservationAction(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewVrboReservationActionRequest(c.Server, code, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListVrboReviews List Vrbo reviews
+//
+// The workspace's Vrbo reviews — the counterpart of `GET /v1/channels/airbnb/reviews`. The same list, filters, paging and review shape as `GET /v1/reviews?platform=vrbo`, with the channel fixed: `reviewerRole=guest` (default) is what guests wrote, `reviewerRole=host` your ratings of guests. Reply to a review with `POST /v1/reviews/{id}/reply`; rate a guest with `PUT /v1/channels/vrbo/reviews/{id}`.
+//
+// Reviews of inactive listings are left out; `listingId` naming an inactive listing returns `403 listing_inactive`. `platform` other than `vrbo` is refused.
+//
+// Corresponds with GET /v1/channels/vrbo/reviews (the `ListVrboReviews` operationId).
+func (c *Client) ListVrboReviews(ctx context.Context, params *ListVrboReviewsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVrboReviewsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitVrboGuestReviewWithBody Rate a Vrbo guest
+//
+// Rate the guest of a Vrbo stay — Vrbo's "Rate guest", the counterpart of `PUT /v1/channels/airbnb/reviews/{id}`, and the same as `POST /v1/reviews/{id}/guest-review` on a Vrbo review. `rating` (overall, 1–5), `categoryRatings` (`cleanliness`, `communication`, `respect_house_rules`) and `isRevieweeRecommended` (would host again). Vrbo's rating has no text: `publicReview` / `privateFeedback` are refused when not empty. Publishing is final.
+//
+// `{id}` is the review `id` from `GET /v1/channels/vrbo/reviews?reviewerRole=host`; a review from another channel is `404`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/channels/vrbo/reviews/{id} (the `SubmitVrboGuestReview` operationId).
+func (c *Client) SubmitVrboGuestReviewWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitVrboGuestReviewRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SubmitVrboGuestReview Rate a Vrbo guest
+//
+// Rate the guest of a Vrbo stay — Vrbo's "Rate guest", the counterpart of `PUT /v1/channels/airbnb/reviews/{id}`, and the same as `POST /v1/reviews/{id}/guest-review` on a Vrbo review. `rating` (overall, 1–5), `categoryRatings` (`cleanliness`, `communication`, `respect_house_rules`) and `isRevieweeRecommended` (would host again). Vrbo's rating has no text: `publicReview` / `privateFeedback` are refused when not empty. Publishing is final.
+//
+// `{id}` is the review `id` from `GET /v1/channels/vrbo/reviews?reviewerRole=host`; a review from another channel is `404`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/channels/vrbo/reviews/{id} (the `SubmitVrboGuestReview` operationId).
+func (c *Client) SubmitVrboGuestReview(ctx context.Context, id string, body SubmitVrboGuestReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSubmitVrboGuestReviewRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -16305,6 +17087,60 @@ func (c *Client) PullListingFromAirbnb(ctx context.Context, id int, body PullLis
 	return c.Client.Do(req)
 }
 
+// PullListingFromVrboWithBody Refresh a listing from Vrbo
+//
+// Re-read every content section of the listing's Vrbo listing from Vrbo and keep it as Repull's copy, then report what was refreshed and when — the counterpart of `POST /v1/listings/{id}/pull/airbnb`. Use it after the host changed something on Vrbo, so the `/v1/channels/vrbo/listings/{id}/…` reads answer with what Vrbo holds now.
+//
+// **What it refreshes:** descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos. **Not** the calendar, rates per night, bookings, messages, reviews or payouts — those arrive through the channel's own sync.
+//
+// **Runs synchronously:** about 45 Vrbo calls spaced ~3 s apart per account, **around 2.5 minutes**. A section Vrbo fails to return is listed in `failedSections`; the others are refreshed.
+//
+// **One pull per listing per 15 minutes**, as on Airbnb: a second call inside the window returns `429 rate_limit_exceeded` with `Retry-After` and `nextPullAvailableAt`, and makes no Vrbo calls.
+//
+// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/listings/{id}/pull/vrbo (the `PullListingFromVrbo` operationId).
+func (c *Client) PullListingFromVrboWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPullListingFromVrboRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PullListingFromVrbo Refresh a listing from Vrbo
+//
+// Re-read every content section of the listing's Vrbo listing from Vrbo and keep it as Repull's copy, then report what was refreshed and when — the counterpart of `POST /v1/listings/{id}/pull/airbnb`. Use it after the host changed something on Vrbo, so the `/v1/channels/vrbo/listings/{id}/…` reads answer with what Vrbo holds now.
+//
+// **What it refreshes:** descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos. **Not** the calendar, rates per night, bookings, messages, reviews or payouts — those arrive through the channel's own sync.
+//
+// **Runs synchronously:** about 45 Vrbo calls spaced ~3 s apart per account, **around 2.5 minutes**. A section Vrbo fails to return is listed in `failedSections`; the others are refreshed.
+//
+// **One pull per listing per 15 minutes**, as on Airbnb: a second call inside the window returns `429 rate_limit_exceeded` with `Retry-After` and `nextPullAvailableAt`, and makes no Vrbo calls.
+//
+// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/{id}/pull/vrbo (the `PullListingFromVrbo` operationId).
+func (c *Client) PullListingFromVrbo(ctx context.Context, id string, body PullListingFromVrboJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPullListingFromVrboRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetListingSegments Atlas DNA segment intelligence for a listing
 //
 // Aggregates Atlas DNA segment signal (quality tier, design style, bedrooms) across the listing's geographic neighborhood (default: 5km radius) or the whole city, so consumers can answer:
@@ -19029,6 +19865,87 @@ func NewUpdateAirbnbBookingSettingsRequestWithBody(server string, id string, con
 	return req, nil
 }
 
+// NewGetAirbnbListingCancellationRequest constructs an http.Request for the GetAirbnbListingCancellation method
+func NewGetAirbnbListingCancellationRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/cancellation", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAirbnbListingCancellationRequest calls the generic UpdateAirbnbListingCancellation builder with application/json body
+func NewUpdateAirbnbListingCancellationRequest(server string, id string, body UpdateAirbnbListingCancellationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAirbnbListingCancellationRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateAirbnbListingCancellationRequestWithBody constructs an http.Request for the UpdateAirbnbListingCancellation method, with any body, and a specified content type
+func NewUpdateAirbnbListingCancellationRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/cancellation", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetAirbnbCheckinGuideRequest constructs an http.Request for the GetAirbnbCheckinGuide method
 func NewGetAirbnbCheckinGuideRequest(server string, id string, params *GetAirbnbCheckinGuideParams) (*http.Request, error) {
 	var err error
@@ -19397,6 +20314,202 @@ func NewUpdateAirbnbListingDetailsRequestWithBody(server string, id string, para
 			req.Header.Set("Idempotency-Key", headerParam0)
 		}
 
+	}
+
+	return req, nil
+}
+
+// NewGetAirbnbListingFeesRequest constructs an http.Request for the GetAirbnbListingFees method
+func NewGetAirbnbListingFeesRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/fees", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAirbnbListingFeesRequest calls the generic UpdateAirbnbListingFees builder with application/json body
+func NewUpdateAirbnbListingFeesRequest(server string, id string, body UpdateAirbnbListingFeesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAirbnbListingFeesRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateAirbnbListingFeesRequestWithBody constructs an http.Request for the UpdateAirbnbListingFees method, with any body, and a specified content type
+func NewUpdateAirbnbListingFeesRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/fees", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetAirbnbHouseRulesRequest constructs an http.Request for the GetAirbnbHouseRules method
+func NewGetAirbnbHouseRulesRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/house-rules", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAirbnbHouseRulesRequest calls the generic UpdateAirbnbHouseRules builder with application/json body
+func NewUpdateAirbnbHouseRulesRequest(server string, id string, body UpdateAirbnbHouseRulesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAirbnbHouseRulesRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateAirbnbHouseRulesRequestWithBody constructs an http.Request for the UpdateAirbnbHouseRules method, with any body, and a specified content type
+func NewUpdateAirbnbHouseRulesRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/house-rules", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetAirbnbLocationRequest constructs an http.Request for the GetAirbnbLocation method
+func NewGetAirbnbLocationRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/location", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
 	}
 
 	return req, nil
@@ -20301,6 +21414,40 @@ func NewGetAirbnbListingSettingsRequest(server string, id string, params *GetAir
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
 		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAirbnbListingTaxesRequest constructs an http.Request for the GetAirbnbListingTaxes method
+func NewGetAirbnbListingTaxesRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/airbnb/listings/%s/taxes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
@@ -26687,6 +27834,91 @@ func NewUpdateVrboListingSafetyDisclosuresRequestWithBody(server string, id stri
 	return req, nil
 }
 
+// NewGetVrboListingSettingsRequest constructs an http.Request for the GetVrboListingSettings method
+func NewGetVrboListingSettingsRequest(server string, id string, params *GetVrboListingSettingsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/listings/%s/settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "type", *params.Type, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Source != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "source", *params.Source, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.VrboListingNumber != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "vrboListingNumber", *params.VrboListingNumber, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetVrboListingStoryRequest constructs an http.Request for the GetVrboListingStory method
 func NewGetVrboListingStoryRequest(server string, id string, params *GetVrboListingStoryParams) (*http.Request, error) {
 	var err error
@@ -27197,6 +28429,378 @@ func NewAddVrboListingVideoRequestWithBody(server string, id string, params *Add
 	return req, nil
 }
 
+// NewListVrboThreadsRequest constructs an http.Request for the ListVrboThreads method
+func NewListVrboThreadsRequest(server string, params *ListVrboThreadsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/messaging")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.AccountId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account_id", *params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ReservationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "reservation_id", *params.ReservationId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetVrboThreadRequest constructs an http.Request for the GetVrboThread method
+func NewGetVrboThreadRequest(server string, threadId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "threadId", threadId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/messaging/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListVrboThreadMessagesRequest constructs an http.Request for the ListVrboThreadMessages method
+func NewListVrboThreadMessagesRequest(server string, threadId string, params *ListVrboThreadMessagesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "threadId", threadId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/messaging/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.All != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "all", *params.All, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "boolean", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSendVrboMessageRequest calls the generic SendVrboMessage builder with application/json body
+func NewSendVrboMessageRequest(server string, threadId string, body SendVrboMessageJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSendVrboMessageRequestWithBody(server, threadId, "application/json", bodyReader)
+}
+
+// NewSendVrboMessageRequestWithBody constructs an http.Request for the SendVrboMessage method, with any body, and a specified content type
+func NewSendVrboMessageRequestWithBody(server string, threadId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "threadId", threadId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/messaging/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewWithdrawVrboOfferRequest constructs an http.Request for the WithdrawVrboOffer method
+func NewWithdrawVrboOfferRequest(server string, params *WithdrawVrboOfferParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/offers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "thread_id", params.ThreadId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetVrboOfferRequest constructs an http.Request for the GetVrboOffer method
+func NewGetVrboOfferRequest(server string, params *GetVrboOfferParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/offers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "thread_id", params.ThreadId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateVrboOfferRequest calls the generic CreateVrboOffer builder with application/json body
+func NewCreateVrboOfferRequest(server string, body CreateVrboOfferJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateVrboOfferRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateVrboOfferRequestWithBody constructs an http.Request for the CreateVrboOffer method, with any body, and a specified content type
+func NewCreateVrboOfferRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/offers")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListVrboReservationsRequest constructs an http.Request for the ListVrboReservations method
 func NewListVrboReservationsRequest(server string, params *ListVrboReservationsParams) (*http.Request, error) {
 	var err error
@@ -27386,6 +28990,155 @@ func NewVrboReservationActionRequestWithBody(server string, code string, content
 	}
 
 	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListVrboReviewsRequest constructs an http.Request for the ListVrboReviews method
+func NewListVrboReviewsRequest(server string, params *ListVrboReviewsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/reviews")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listingId", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ReviewerRole != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "reviewerRole", *params.ReviewerRole, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSubmitVrboGuestReviewRequest calls the generic SubmitVrboGuestReview builder with application/json body
+func NewSubmitVrboGuestReviewRequest(server string, id string, body SubmitVrboGuestReviewJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSubmitVrboGuestReviewRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewSubmitVrboGuestReviewRequestWithBody constructs an http.Request for the SubmitVrboGuestReview method, with any body, and a specified content type
+func NewSubmitVrboGuestReviewRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/vrbo/reviews/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -33355,6 +35108,53 @@ func NewPullListingFromAirbnbRequestWithBody(server string, id int, contentType 
 	return req, nil
 }
 
+// NewPullListingFromVrboRequest calls the generic PullListingFromVrbo builder with application/json body
+func NewPullListingFromVrboRequest(server string, id string, body PullListingFromVrboJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPullListingFromVrboRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPullListingFromVrboRequestWithBody constructs an http.Request for the PullListingFromVrbo method, with any body, and a specified content type
+func NewPullListingFromVrboRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/pull/vrbo", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetListingSegmentsRequest constructs an http.Request for the GetListingSegments method
 func NewGetListingSegmentsRequest(server string, id int, params *GetListingSegmentsParams) (*http.Request, error) {
 	var err error
@@ -37479,6 +39279,39 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/booking-settings (the `UpdateAirbnbBookingSettings` operationId).
 	UpdateAirbnbBookingSettingsWithResponse(ctx context.Context, id string, body UpdateAirbnbBookingSettingsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbBookingSettingsClientResponse, error)
 
+	// GetAirbnbListingCancellationWithResponse Get the Airbnb cancellation policy
+	//
+	// The short-stay and long-stay cancellation policies and the non-refundable option — the same section as `GET /v1/channels/vrbo/listings/{id}/cancellation`, and the `cancellation` of `GET …/booking-settings`. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/cancellation (the `GetAirbnbListingCancellation` operationId).
+	GetAirbnbListingCancellationWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingCancellationClientResponse, error)
+
+	// UpdateAirbnbListingCancellationWithBodyWithResponse Update the Airbnb cancellation policy
+	//
+	// Set any of `shortStayPolicy`, `longStayPolicy`, `nonRefundable` (`{ enabled, discountPercent }`, 0–30%). The same write as `PUT …/booking-settings` `{ "cancellation": … }`; the answer is the policy Airbnb holds after it.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/cancellation (the `UpdateAirbnbListingCancellation` operationId).
+	UpdateAirbnbListingCancellationWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingCancellationClientResponse, error)
+
+	// UpdateAirbnbListingCancellationWithResponse Update the Airbnb cancellation policy
+	//
+	// Set any of `shortStayPolicy`, `longStayPolicy`, `nonRefundable` (`{ enabled, discountPercent }`, 0–30%). The same write as `PUT …/booking-settings` `{ "cancellation": … }`; the answer is the policy Airbnb holds after it.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/cancellation (the `UpdateAirbnbListingCancellation` operationId).
+	UpdateAirbnbListingCancellationWithResponse(ctx context.Context, id string, body UpdateAirbnbListingCancellationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingCancellationClientResponse, error)
+
 	// GetAirbnbCheckinGuideWithResponse Get Airbnb check-in guide
 	//
 	// Return every published locale variant of an Airbnb listing's check-in guide. **Pure DB read** from `listings_airbnb_check_in_guides`. Pass `?locale=en` to filter to one locale (prefix match). Returns `404` when the listing has no Airbnb connection in this workspace.
@@ -37636,6 +39469,83 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/details (the `UpdateAirbnbListingDetails` operationId).
 	UpdateAirbnbListingDetailsWithResponse(ctx context.Context, id string, params *UpdateAirbnbListingDetailsParams, body UpdateAirbnbListingDetailsJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingDetailsClientResponse, error)
+
+	// GetAirbnbListingFeesWithResponse Get Airbnb fees
+	//
+	// The listing's Airbnb fees (cleaning, pets, extra guests, management, linens, …) — the same section as `GET /v1/channels/vrbo/listings/{id}/fees`, and the `fees` of `GET …/pricing`. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/fees (the `GetAirbnbListingFees` operationId).
+	GetAirbnbListingFeesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingFeesClientResponse, error)
+
+	// UpdateAirbnbListingFeesWithBodyWithResponse Update Airbnb fees
+	//
+	// Set Airbnb fees by type: each fee you send replaces that type, the others are kept. The same write as `PUT …/pricing` `{ "type": "fees", "fees": […] }`; `amount: null` removes a fee. `fee_type` is Airbnb's (`PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, …).
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/fees (the `UpdateAirbnbListingFees` operationId).
+	UpdateAirbnbListingFeesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingFeesClientResponse, error)
+
+	// UpdateAirbnbListingFeesWithResponse Update Airbnb fees
+	//
+	// Set Airbnb fees by type: each fee you send replaces that type, the others are kept. The same write as `PUT …/pricing` `{ "type": "fees", "fees": […] }`; `amount: null` removes a fee. `fee_type` is Airbnb's (`PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, …).
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/fees (the `UpdateAirbnbListingFees` operationId).
+	UpdateAirbnbListingFeesWithResponse(ctx context.Context, id string, body UpdateAirbnbListingFeesJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingFeesClientResponse, error)
+
+	// GetAirbnbHouseRulesWithResponse Get Airbnb house rules
+	//
+	// The listing's house rules under the names Vrbo's `GET /v1/channels/vrbo/listings/{id}/house-rules` uses: check-in and check-out times, guest capacity, whether children, infants, pets, smoking and events are allowed, Airbnb's "things to know" (`expectations`), and the written rules per language. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/house-rules (the `GetAirbnbHouseRules` operationId).
+	GetAirbnbHouseRulesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbHouseRulesClientResponse, error)
+
+	// UpdateAirbnbHouseRulesWithBodyWithResponse Update Airbnb house rules
+	//
+	// Write the house rules text for one language — the same write as `PUT …/descriptions` `{ locale, description: { house_rules } }`, with the same answer (`written`, `blockedFields`). On Airbnb the check-in and check-out times are booking settings: set them with `PUT …/booking-settings`. Whether pets, smoking, events or children are allowed is set in the Airbnb app.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/house-rules (the `UpdateAirbnbHouseRules` operationId).
+	UpdateAirbnbHouseRulesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbHouseRulesClientResponse, error)
+
+	// UpdateAirbnbHouseRulesWithResponse Update Airbnb house rules
+	//
+	// Write the house rules text for one language — the same write as `PUT …/descriptions` `{ locale, description: { house_rules } }`, with the same answer (`written`, `blockedFields`). On Airbnb the check-in and check-out times are booking settings: set them with `PUT …/booking-settings`. Whether pets, smoking, events or children are allowed is set in the Airbnb app.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/airbnb/listings/{id}/house-rules (the `UpdateAirbnbHouseRules` operationId).
+	UpdateAirbnbHouseRulesWithResponse(ctx context.Context, id string, body UpdateAirbnbHouseRulesJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbHouseRulesClientResponse, error)
+
+	// GetAirbnbLocationWithResponse Get the Airbnb location
+	//
+	// The listing's address, map pin, directions and whether guests see the exact location — the same section as `GET /v1/channels/vrbo/listings/{id}/location`. Read-only: Airbnb changes a listed address only in its own flow in the host app (`addressEditable: false`). **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/location (the `GetAirbnbLocation` operationId).
+	GetAirbnbLocationWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbLocationClientResponse, error)
 
 	// ListAirbnbListingPermitsWithResponse List Airbnb permits and licences
 	//
@@ -38052,9 +39962,20 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/channels/airbnb/listings/{id}/settings (the `GetAirbnbListingSettings` operationId).
 	GetAirbnbListingSettingsWithResponse(ctx context.Context, id string, params *GetAirbnbListingSettingsParams, reqEditors ...RequestEditorFn) (*GetAirbnbListingSettingsClientResponse, error)
 
+	// GetAirbnbListingTaxesWithResponse Get Airbnb taxes
+	//
+	// The listing's taxes — host-remitted pass-through taxes and the taxes Airbnb collects itself, each with `source` (`pass_through` | `airbnb_collected`) — the same section as `GET /v1/channels/vrbo/listings/{id}/taxes`, and the `taxes` of `GET …/pricing`. Read-only here: Airbnb's pass-through taxes are part of its pricing settings (`PUT …/pricing` `{ "type": "standard" }`). **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+	//
+	// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/airbnb/listings/{id}/taxes (the `GetAirbnbListingTaxes` operationId).
+	GetAirbnbListingTaxesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingTaxesClientResponse, error)
+
 	// ListAirbnbThreadsWithResponse List Airbnb message threads
 	//
-	// List Airbnb message threads (one per guest conversation). Cursor-paginated. Each thread includes a preview of the latest message.
+	// List Airbnb message threads (one per guest conversation), newest activity first (up to 200). Only Airbnb threads: conversations from other channels are on their own channel routes (`GET /v1/channels/vrbo/messaging`) or `GET /v1/conversations`.
 	//
 	// Threads on inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
@@ -40281,6 +42202,21 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with PUT /v1/channels/vrbo/listings/{id}/safety-disclosures (the `UpdateVrboListingSafetyDisclosures` operationId).
 	UpdateVrboListingSafetyDisclosuresWithResponse(ctx context.Context, id string, params *UpdateVrboListingSafetyDisclosuresParams, body UpdateVrboListingSafetyDisclosuresJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateVrboListingSafetyDisclosuresClientResponse, error)
 
+	// GetVrboListingSettingsWithResponse Get Vrbo listing settings
+	//
+	// The counterpart of `GET /v1/channels/airbnb/listings/{id}/settings`: the languages the listing has a hand-written description in (`locales`), and with `?type=permits` its registration / licence (the `data` of `GET …/permits`). `type=all` (default) returns `{ locales }`, `type=locales` the array.
+	//
+	// Vrbo has no co-host roles, so `type=hosts` answers `422 not_available_on_vrbo`: a Vrbo listing belongs to the one Vrbo account it is in (`accountId` on `GET /v1/channels/vrbo/listings`).
+	//
+	// Answers from Repull's stored copy of the listing's Vrbo content, like the Airbnb endpoints (`dataFreshness.lastSyncedAt` says when it was read from Vrbo). The first read of a section reads Vrbo and stores it; a copy over 24 h old answers and is refreshed in the background (`reason: refreshing`); every write through Repull stores what Vrbo has after it. `?source=live` reads Vrbo now.
+	//
+	// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/vrbo/listings/{id}/settings (the `GetVrboListingSettings` operationId).
+	GetVrboListingSettingsWithResponse(ctx context.Context, id string, params *GetVrboListingSettingsParams, reqEditors ...RequestEditorFn) (*GetVrboListingSettingsClientResponse, error)
+
 	// GetVrboListingStoryWithResponse Get the Vrbo host story
 	//
 	// "Your story" on the listing: about you, why this property, what makes it unique.
@@ -40417,6 +42353,115 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/channels/vrbo/listings/{id}/videos (the `AddVrboListingVideo` operationId).
 	AddVrboListingVideoWithResponse(ctx context.Context, id string, params *AddVrboListingVideoParams, body AddVrboListingVideoJSONRequestBody, reqEditors ...RequestEditorFn) (*AddVrboListingVideoClientResponse, error)
 
+	// ListVrboThreadsWithResponse List Vrbo message threads
+	//
+	// The workspace's Vrbo conversations, newest activity first (up to 200) — the counterpart of `GET /v1/channels/airbnb/messaging`, read from Repull's copy of the Vrbo inbox. Each thread carries the Vrbo account it belongs to (`accountId`, `accountName`). `externalThreadId` (`vrbo:<uuid>`) addresses the thread on these routes; `id` is the Repull conversation id of `/v1/conversations/{id}`.
+	//
+	// Only conversations Vrbo itself holds are listed: a Vrbo booking that reached Repull another way (a PMS, iCal) has no Vrbo conversation to message.
+	//
+	// Threads on inactive listings are left out. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/vrbo/messaging (the `ListVrboThreads` operationId).
+	ListVrboThreadsWithResponse(ctx context.Context, params *ListVrboThreadsParams, reqEditors ...RequestEditorFn) (*ListVrboThreadsClientResponse, error)
+
+	// GetVrboThreadWithResponse Get a Vrbo message thread
+	//
+	// One Vrbo conversation by its Vrbo id — the counterpart of `GET /v1/channels/airbnb/messaging/{threadId}`.
+	//
+	// Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/vrbo/messaging/{threadId} (the `GetVrboThread` operationId).
+	GetVrboThreadWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*GetVrboThreadClientResponse, error)
+
+	// ListVrboThreadMessagesWithResponse Get Vrbo messages
+	//
+	// The messages of a Vrbo conversation, as recorded rows — the counterpart of `GET /v1/channels/airbnb/messaging/{threadId}/messages`, same shape. 50 per page, newest first; walk older pages with `?cursor=` until `pagination.hasMore` is `false`. `?all=true` returns up to 1000 oldest first, without `pagination`.
+	//
+	// Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/vrbo/messaging/{threadId}/messages (the `ListVrboThreadMessages` operationId).
+	ListVrboThreadMessagesWithResponse(ctx context.Context, threadId string, params *ListVrboThreadMessagesParams, reqEditors ...RequestEditorFn) (*ListVrboThreadMessagesClientResponse, error)
+
+	// SendVrboMessageWithBodyWithResponse Send a Vrbo message
+	//
+	// Send a message in a Vrbo conversation through the host's connected Vrbo account — the counterpart of `POST /v1/channels/airbnb/messaging/{threadId}/messages`, with the same body. It is sent the way the dashboard sends it and recorded in the conversation, so it also appears on `GET /v1/conversations/{id}/messages`.
+	//
+	// `201` with `status: "sent"` when Vrbo took it; `202` with `status: "queued"` when Vrbo was slow and the send finishes in the background — do not send it again, watch `conversation.message.status_changed`. Vrbo messages are text: a `mediaUrl` is refused with `422 attachments_not_supported`. Send `Idempotency-Key` to make a retry safe.
+	//
+	// Vrbo has no edit, unsend or reaction on a sent message (Airbnb's `PATCH …/messages/{messageId}`).
+	//
+	// Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/messaging/{threadId}/messages (the `SendVrboMessage` operationId).
+	SendVrboMessageWithBodyWithResponse(ctx context.Context, threadId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendVrboMessageClientResponse, error)
+
+	// SendVrboMessageWithResponse Send a Vrbo message
+	//
+	// Send a message in a Vrbo conversation through the host's connected Vrbo account — the counterpart of `POST /v1/channels/airbnb/messaging/{threadId}/messages`, with the same body. It is sent the way the dashboard sends it and recorded in the conversation, so it also appears on `GET /v1/conversations/{id}/messages`.
+	//
+	// `201` with `status: "sent"` when Vrbo took it; `202` with `status: "queued"` when Vrbo was slow and the send finishes in the background — do not send it again, watch `conversation.message.status_changed`. Vrbo messages are text: a `mediaUrl` is refused with `422 attachments_not_supported`. Send `Idempotency-Key` to make a retry safe.
+	//
+	// Vrbo has no edit, unsend or reaction on a sent message (Airbnb's `PATCH …/messages/{messageId}`).
+	//
+	// Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/messaging/{threadId}/messages (the `SendVrboMessage` operationId).
+	SendVrboMessageWithResponse(ctx context.Context, threadId string, body SendVrboMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*SendVrboMessageClientResponse, error)
+
+	// WithdrawVrboOfferWithResponse Withdraw the Vrbo pre-approval or quote
+	//
+	// Withdraw the conversation's pre-approval or quote: the guest can no longer book on it. The counterpart of `DELETE /v1/channels/airbnb/offers`, by `thread_id`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with DELETE /v1/channels/vrbo/offers (the `WithdrawVrboOffer` operationId).
+	WithdrawVrboOfferWithResponse(ctx context.Context, params *WithdrawVrboOfferParams, reqEditors ...RequestEditorFn) (*WithdrawVrboOfferClientResponse, error)
+
+	// GetVrboOfferWithResponse Get the Vrbo quote
+	//
+	// The conversation's live quote as Vrbo shows it — its parts and Vrbo's guest total. The counterpart of `GET /v1/channels/airbnb/offers`; Vrbo keeps one quote per conversation, so it is read by `thread_id` rather than an offer id.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/vrbo/offers (the `GetVrboOffer` operationId).
+	GetVrboOfferWithResponse(ctx context.Context, params *GetVrboOfferParams, reqEditors ...RequestEditorFn) (*GetVrboOfferClientResponse, error)
+
+	// CreateVrboOfferWithBodyWithResponse Pre-approve or quote a Vrbo inquiry
+	//
+	// Answer a Vrbo inquiry — the counterpart of `POST /v1/channels/airbnb/offers`, the same body addressed by the Vrbo conversation. `type: "preapproval"` invites the guest to book their dates at the listed price; `type: "offer"` sends Vrbo's edited quote.
+	//
+	// **Priced by its parts, not a total.** Vrbo adds its taxes and service fee itself, so a quote takes `rental_amount`, `fees` (`[{ type, value }]`, Vrbo fee types such as `CLEANING`, `PET`) and `damage_deposit`; `total_price` is refused. The stay is `start_date` + `nights` and `guest_details`, as on Airbnb; leave them out to keep the guest's own. Both types may carry a `message` to the guest. Vrbo has no instant-book switch on a pre-approval (`block_instant_booking` is refused) and a quote is always for the conversation's property (`listing_id` is refused).
+	//
+	// The same as `POST /v1/conversations/{id}/pre-approval` and `/special-offers` on a Vrbo conversation, which take the Repull conversation id. Send `Idempotency-Key`: a retry without it can send the guest two quotes. Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/offers (the `CreateVrboOffer` operationId).
+	CreateVrboOfferWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVrboOfferClientResponse, error)
+
+	// CreateVrboOfferWithResponse Pre-approve or quote a Vrbo inquiry
+	//
+	// Answer a Vrbo inquiry — the counterpart of `POST /v1/channels/airbnb/offers`, the same body addressed by the Vrbo conversation. `type: "preapproval"` invites the guest to book their dates at the listed price; `type: "offer"` sends Vrbo's edited quote.
+	//
+	// **Priced by its parts, not a total.** Vrbo adds its taxes and service fee itself, so a quote takes `rental_amount`, `fees` (`[{ type, value }]`, Vrbo fee types such as `CLEANING`, `PET`) and `damage_deposit`; `total_price` is refused. The stay is `start_date` + `nights` and `guest_details`, as on Airbnb; leave them out to keep the guest's own. Both types may carry a `message` to the guest. Vrbo has no instant-book switch on a pre-approval (`block_instant_booking` is refused) and a quote is always for the conversation's property (`listing_id` is refused).
+	//
+	// The same as `POST /v1/conversations/{id}/pre-approval` and `/special-offers` on a Vrbo conversation, which take the Repull conversation id. Send `Idempotency-Key`: a retry without it can send the guest two quotes. Returns `403 listing_inactive` when the conversation's listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/vrbo/offers (the `CreateVrboOffer` operationId).
+	CreateVrboOfferWithResponse(ctx context.Context, body CreateVrboOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVrboOfferClientResponse, error)
+
 	// ListVrboReservationsWithResponse List VRBO reservations
 	//
 	// Cursor-paginated list of Vrbo reservations imported from the host's connected Vrbo account (host sign-in, beta). The full normalised record — guest, price breakdown, policy — is on `GET /v1/reservations?platform=vrbo`. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
@@ -40476,6 +42521,39 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/channels/vrbo/reservations/{code} (the `VrboReservationAction` operationId).
 	VrboReservationActionWithResponse(ctx context.Context, code string, body VrboReservationActionJSONRequestBody, reqEditors ...RequestEditorFn) (*VrboReservationActionClientResponse, error)
+
+	// ListVrboReviewsWithResponse List Vrbo reviews
+	//
+	// The workspace's Vrbo reviews — the counterpart of `GET /v1/channels/airbnb/reviews`. The same list, filters, paging and review shape as `GET /v1/reviews?platform=vrbo`, with the channel fixed: `reviewerRole=guest` (default) is what guests wrote, `reviewerRole=host` your ratings of guests. Reply to a review with `POST /v1/reviews/{id}/reply`; rate a guest with `PUT /v1/channels/vrbo/reviews/{id}`.
+	//
+	// Reviews of inactive listings are left out; `listingId` naming an inactive listing returns `403 listing_inactive`. `platform` other than `vrbo` is refused.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/vrbo/reviews (the `ListVrboReviews` operationId).
+	ListVrboReviewsWithResponse(ctx context.Context, params *ListVrboReviewsParams, reqEditors ...RequestEditorFn) (*ListVrboReviewsClientResponse, error)
+
+	// SubmitVrboGuestReviewWithBodyWithResponse Rate a Vrbo guest
+	//
+	// Rate the guest of a Vrbo stay — Vrbo's "Rate guest", the counterpart of `PUT /v1/channels/airbnb/reviews/{id}`, and the same as `POST /v1/reviews/{id}/guest-review` on a Vrbo review. `rating` (overall, 1–5), `categoryRatings` (`cleanliness`, `communication`, `respect_house_rules`) and `isRevieweeRecommended` (would host again). Vrbo's rating has no text: `publicReview` / `privateFeedback` are refused when not empty. Publishing is final.
+	//
+	// `{id}` is the review `id` from `GET /v1/channels/vrbo/reviews?reviewerRole=host`; a review from another channel is `404`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/vrbo/reviews/{id} (the `SubmitVrboGuestReview` operationId).
+	SubmitVrboGuestReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitVrboGuestReviewClientResponse, error)
+
+	// SubmitVrboGuestReviewWithResponse Rate a Vrbo guest
+	//
+	// Rate the guest of a Vrbo stay — Vrbo's "Rate guest", the counterpart of `PUT /v1/channels/airbnb/reviews/{id}`, and the same as `POST /v1/reviews/{id}/guest-review` on a Vrbo review. `rating` (overall, 1–5), `categoryRatings` (`cleanliness`, `communication`, `respect_house_rules`) and `isRevieweeRecommended` (would host again). Vrbo's rating has no text: `publicReview` / `privateFeedback` are refused when not empty. Publishing is final.
+	//
+	// `{id}` is the review `id` from `GET /v1/channels/vrbo/reviews?reviewerRole=host`; a review from another channel is `404`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/vrbo/reviews/{id} (the `SubmitVrboGuestReview` operationId).
+	SubmitVrboGuestReviewWithResponse(ctx context.Context, id string, body SubmitVrboGuestReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitVrboGuestReviewClientResponse, error)
 
 	// ListVrboTransactionsWithResponse List Vrbo transactions (payout ledger)
 	//
@@ -42874,6 +44952,40 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/listings/{id}/pull/airbnb (the `PullListingFromAirbnb` operationId).
 	PullListingFromAirbnbWithResponse(ctx context.Context, id int, body PullListingFromAirbnbJSONRequestBody, reqEditors ...RequestEditorFn) (*PullListingFromAirbnbClientResponse, error)
+
+	// PullListingFromVrboWithBodyWithResponse Refresh a listing from Vrbo
+	//
+	// Re-read every content section of the listing's Vrbo listing from Vrbo and keep it as Repull's copy, then report what was refreshed and when — the counterpart of `POST /v1/listings/{id}/pull/airbnb`. Use it after the host changed something on Vrbo, so the `/v1/channels/vrbo/listings/{id}/…` reads answer with what Vrbo holds now.
+	//
+	// **What it refreshes:** descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos. **Not** the calendar, rates per night, bookings, messages, reviews or payouts — those arrive through the channel's own sync.
+	//
+	// **Runs synchronously:** about 45 Vrbo calls spaced ~3 s apart per account, **around 2.5 minutes**. A section Vrbo fails to return is listed in `failedSections`; the others are refreshed.
+	//
+	// **One pull per listing per 15 minutes**, as on Airbnb: a second call inside the window returns `429 rate_limit_exceeded` with `Retry-After` and `nextPullAvailableAt`, and makes no Vrbo calls.
+	//
+	// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/pull/vrbo (the `PullListingFromVrbo` operationId).
+	PullListingFromVrboWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PullListingFromVrboClientResponse, error)
+
+	// PullListingFromVrboWithResponse Refresh a listing from Vrbo
+	//
+	// Re-read every content section of the listing's Vrbo listing from Vrbo and keep it as Repull's copy, then report what was refreshed and when — the counterpart of `POST /v1/listings/{id}/pull/airbnb`. Use it after the host changed something on Vrbo, so the `/v1/channels/vrbo/listings/{id}/…` reads answer with what Vrbo holds now.
+	//
+	// **What it refreshes:** descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos. **Not** the calendar, rates per night, bookings, messages, reviews or payouts — those arrive through the channel's own sync.
+	//
+	// **Runs synchronously:** about 45 Vrbo calls spaced ~3 s apart per account, **around 2.5 minutes**. A section Vrbo fails to return is listed in `failedSections`; the others are refreshed.
+	//
+	// **One pull per listing per 15 minutes**, as on Airbnb: a second call inside the window returns `429 rate_limit_exceeded` with `Retry-After` and `nextPullAvailableAt`, and makes no Vrbo calls.
+	//
+	// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/pull/vrbo (the `PullListingFromVrbo` operationId).
+	PullListingFromVrboWithResponse(ctx context.Context, id string, body PullListingFromVrboJSONRequestBody, reqEditors ...RequestEditorFn) (*PullListingFromVrboClientResponse, error)
 
 	// GetListingSegmentsWithResponse Atlas DNA segment intelligence for a listing
 	//
@@ -45856,6 +47968,194 @@ func (r UpdateAirbnbBookingSettingsClientResponse) ContentType() string {
 	return ""
 }
 
+type GetAirbnbListingCancellationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data struct {
+			// LongStayPolicy Airbnb's long-term-stay policy id (28+ nights).
+			LongStayPolicy *string `json:"longStayPolicy,omitempty"`
+			NonRefundable  *struct {
+				DiscountPercent *int     `json:"discountPercent,omitempty"`
+				Enabled         *bool    `json:"enabled,omitempty"`
+				PriceFactor     *float32 `json:"priceFactor,omitempty"`
+			} `json:"nonRefundable,omitempty"`
+
+			// ShortStayPolicy Policy for stays under 28 nights.
+			ShortStayPolicy *GetAirbnbListingCancellation200JSONResponseBodyDataShortStayPolicy `json:"shortStayPolicy,omitempty"`
+		} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		//
+		// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetAirbnbListingCancellationClientResponse) GetJSON200() *struct {
+	Data struct {
+		// LongStayPolicy Airbnb's long-term-stay policy id (28+ nights).
+		LongStayPolicy *string `json:"longStayPolicy,omitempty"`
+		NonRefundable  *struct {
+			DiscountPercent *int     `json:"discountPercent,omitempty"`
+			Enabled         *bool    `json:"enabled,omitempty"`
+			PriceFactor     *float32 `json:"priceFactor,omitempty"`
+		} `json:"nonRefundable,omitempty"`
+
+		// ShortStayPolicy Policy for stays under 28 nights.
+		ShortStayPolicy *GetAirbnbListingCancellation200JSONResponseBodyDataShortStayPolicy `json:"shortStayPolicy,omitempty"`
+	} `json:"data"`
+
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetAirbnbListingCancellationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbListingCancellationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetAirbnbListingCancellationClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetAirbnbListingCancellationClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetAirbnbListingCancellationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbListingCancellationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbListingCancellationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetAirbnbListingCancellationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateAirbnbListingCancellationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *UpdateAirbnbListingCancellation200JSONResponseBody
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *AirbnbWriteForbidden
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateAirbnbListingCancellationClientResponse) GetJSON200() *UpdateAirbnbListingCancellation200JSONResponseBody {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateAirbnbListingCancellationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateAirbnbListingCancellationClientResponse) GetJSON403() *AirbnbWriteForbidden {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateAirbnbListingCancellationClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateAirbnbListingCancellationClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateAirbnbListingCancellationClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateAirbnbListingCancellationClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateAirbnbListingCancellationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAirbnbListingCancellationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAirbnbListingCancellationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateAirbnbListingCancellationClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetAirbnbCheckinGuideClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -46502,6 +48802,519 @@ func (r UpdateAirbnbListingDetailsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r UpdateAirbnbListingDetailsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetAirbnbListingFeesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data []GetAirbnbListingFees200JSONResponseBody_Data_Item `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		//
+		// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetAirbnbListingFeesClientResponse) GetJSON200() *struct {
+	Data []GetAirbnbListingFees200JSONResponseBody_Data_Item `json:"data"`
+
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetAirbnbListingFeesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbListingFeesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetAirbnbListingFeesClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetAirbnbListingFeesClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetAirbnbListingFeesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbListingFeesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbListingFeesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetAirbnbListingFeesClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateAirbnbListingFeesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *UpdateAirbnbListingFees200JSONResponseBody
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *AirbnbWriteForbidden
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateAirbnbListingFeesClientResponse) GetJSON200() *UpdateAirbnbListingFees200JSONResponseBody {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateAirbnbListingFeesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateAirbnbListingFeesClientResponse) GetJSON403() *AirbnbWriteForbidden {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateAirbnbListingFeesClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateAirbnbListingFeesClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateAirbnbListingFeesClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateAirbnbListingFeesClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateAirbnbListingFeesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAirbnbListingFeesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAirbnbListingFeesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateAirbnbListingFeesClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetAirbnbHouseRulesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data struct {
+			// CheckInTime Earliest check-in, `HH:00` or `FLEXIBLE`.
+			//
+			// Example: 16:00
+			CheckInTime *string `json:"checkInTime,omitempty"`
+
+			// CheckInTimeEnd Latest check-in (Airbnb only).
+			//
+			// Example: 22:00
+			CheckInTimeEnd *string `json:"checkInTimeEnd,omitempty"`
+
+			// CheckOutTime Example: 11:00
+			CheckOutTime *string `json:"checkOutTime,omitempty"`
+			Children     *struct {
+				Allowed *bool `json:"allowed,omitempty"`
+			} `json:"children,omitempty"`
+			Events *struct {
+				Allowed *bool `json:"allowed,omitempty"`
+			} `json:"events,omitempty"`
+			Expectations *[]map[string]interface{} `json:"expectations,omitempty"`
+			HouseRules   *[]struct {
+				AdditionalRules interface{} `json:"additionalRules,omitempty"`
+				Locale          *string     `json:"locale,omitempty"`
+				Text            *string     `json:"text,omitempty"`
+			} `json:"houseRules,omitempty"`
+			Infants *struct {
+				Allowed *bool `json:"allowed,omitempty"`
+			} `json:"infants,omitempty"`
+			MaxGuests *int `json:"maxGuests,omitempty"`
+			Pets      *struct {
+				Allowed *bool `json:"allowed,omitempty"`
+			} `json:"pets,omitempty"`
+			Smoking *struct {
+				Allowed *bool `json:"allowed,omitempty"`
+			} `json:"smoking,omitempty"`
+		} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		//
+		// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetAirbnbHouseRulesClientResponse) GetJSON200() *struct {
+	Data struct {
+		// CheckInTime Earliest check-in, `HH:00` or `FLEXIBLE`.
+		//
+		// Example: 16:00
+		CheckInTime *string `json:"checkInTime,omitempty"`
+
+		// CheckInTimeEnd Latest check-in (Airbnb only).
+		//
+		// Example: 22:00
+		CheckInTimeEnd *string `json:"checkInTimeEnd,omitempty"`
+
+		// CheckOutTime Example: 11:00
+		CheckOutTime *string `json:"checkOutTime,omitempty"`
+		Children     *struct {
+			Allowed *bool `json:"allowed,omitempty"`
+		} `json:"children,omitempty"`
+		Events *struct {
+			Allowed *bool `json:"allowed,omitempty"`
+		} `json:"events,omitempty"`
+		Expectations *[]map[string]interface{} `json:"expectations,omitempty"`
+		HouseRules   *[]struct {
+			AdditionalRules interface{} `json:"additionalRules,omitempty"`
+			Locale          *string     `json:"locale,omitempty"`
+			Text            *string     `json:"text,omitempty"`
+		} `json:"houseRules,omitempty"`
+		Infants *struct {
+			Allowed *bool `json:"allowed,omitempty"`
+		} `json:"infants,omitempty"`
+		MaxGuests *int `json:"maxGuests,omitempty"`
+		Pets      *struct {
+			Allowed *bool `json:"allowed,omitempty"`
+		} `json:"pets,omitempty"`
+		Smoking *struct {
+			Allowed *bool `json:"allowed,omitempty"`
+		} `json:"smoking,omitempty"`
+	} `json:"data"`
+
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetAirbnbHouseRulesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbHouseRulesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetAirbnbHouseRulesClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetAirbnbHouseRulesClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetAirbnbHouseRulesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbHouseRulesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbHouseRulesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetAirbnbHouseRulesClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateAirbnbHouseRulesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *UpdateAirbnbHouseRules200JSONResponseBody
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *AirbnbWriteForbidden
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *AirbnbWriteRejected
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *AirbnbRateLimited
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *AirbnbUpstreamError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateAirbnbHouseRulesClientResponse) GetJSON200() *UpdateAirbnbHouseRules200JSONResponseBody {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateAirbnbHouseRulesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateAirbnbHouseRulesClientResponse) GetJSON403() *AirbnbWriteForbidden {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateAirbnbHouseRulesClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateAirbnbHouseRulesClientResponse) GetJSON422() *AirbnbWriteRejected {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r UpdateAirbnbHouseRulesClientResponse) GetJSON429() *AirbnbRateLimited {
+	return r.JSON429
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateAirbnbHouseRulesClientResponse) GetJSON502() *AirbnbUpstreamError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateAirbnbHouseRulesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAirbnbHouseRulesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAirbnbHouseRulesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateAirbnbHouseRulesClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetAirbnbLocationClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data struct {
+			Address *struct {
+				Apt         *string `json:"apt,omitempty"`
+				City        *string `json:"city,omitempty"`
+				CountryCode *string `json:"countryCode,omitempty"`
+				PostalCode  *string `json:"postalCode,omitempty"`
+				State       *string `json:"state,omitempty"`
+				Street      *string `json:"street,omitempty"`
+			} `json:"address,omitempty"`
+			AddressEditable   *bool    `json:"addressEditable,omitempty"`
+			Directions        *string  `json:"directions,omitempty"`
+			Lat               *float32 `json:"lat,omitempty"`
+			Lng               *float32 `json:"lng,omitempty"`
+			ShowExactLocation *bool    `json:"showExactLocation,omitempty"`
+		} `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		//
+		// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetAirbnbLocationClientResponse) GetJSON200() *struct {
+	Data struct {
+		Address *struct {
+			Apt         *string `json:"apt,omitempty"`
+			City        *string `json:"city,omitempty"`
+			CountryCode *string `json:"countryCode,omitempty"`
+			PostalCode  *string `json:"postalCode,omitempty"`
+			State       *string `json:"state,omitempty"`
+			Street      *string `json:"street,omitempty"`
+		} `json:"address,omitempty"`
+		AddressEditable   *bool    `json:"addressEditable,omitempty"`
+		Directions        *string  `json:"directions,omitempty"`
+		Lat               *float32 `json:"lat,omitempty"`
+		Lng               *float32 `json:"lng,omitempty"`
+		ShowExactLocation *bool    `json:"showExactLocation,omitempty"`
+	} `json:"data"`
+
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetAirbnbLocationClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbLocationClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetAirbnbLocationClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetAirbnbLocationClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetAirbnbLocationClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbLocationClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbLocationClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetAirbnbLocationClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -48025,6 +50838,89 @@ func (r GetAirbnbListingSettingsClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetAirbnbListingSettingsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetAirbnbListingTaxesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data []GetAirbnbListingTaxes200JSONResponseBody_Data_Item `json:"data"`
+
+		// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+		//
+		// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+		DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetAirbnbListingTaxesClientResponse) GetJSON200() *struct {
+	Data []GetAirbnbListingTaxes200JSONResponseBody_Data_Item `json:"data"`
+
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetAirbnbListingTaxesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetAirbnbListingTaxesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetAirbnbListingTaxesClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetAirbnbListingTaxesClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetAirbnbListingTaxesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAirbnbListingTaxesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAirbnbListingTaxesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetAirbnbListingTaxesClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -51914,9 +54810,9 @@ type GetVrboListingClientResponse struct {
 			UnitId       *string `json:"unitId,omitempty"`
 			Url          *string `json:"url,omitempty"`
 
-			// VrboListingNumber The number in the Vrbo URL (vrbo.com/5506023).
+			// VrboListingNumber The number in the Vrbo URL (vrbo.com/4512345).
 			//
-			// Example: 5506023
+			// Example: 4512345
 			VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
 		} `json:"data"`
 
@@ -52030,9 +54926,9 @@ func (r GetVrboListingClientResponse) GetJSON200() *struct {
 		UnitId       *string `json:"unitId,omitempty"`
 		Url          *string `json:"url,omitempty"`
 
-		// VrboListingNumber The number in the Vrbo URL (vrbo.com/5506023).
+		// VrboListingNumber The number in the Vrbo URL (vrbo.com/4512345).
 		//
-		// Example: 5506023
+		// Example: 4512345
 		VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
 	} `json:"data"`
 
@@ -62195,6 +65091,164 @@ func (r UpdateVrboListingSafetyDisclosuresClientResponse) ContentType() string {
 	return ""
 }
 
+type GetVrboListingSettingsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// Data The section as Vrbo has it.
+		Data          GetVrboListingSettings200JSONResponseBody_Data `json:"data"`
+		DataFreshness struct {
+			Accounts []struct {
+				AccountId    *string `json:"accountId,omitempty"`
+				AccountName  *string `json:"accountName,omitempty"`
+				FixUrl       *string `json:"fixUrl,omitempty"`
+				LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+				Reason       *string `json:"reason,omitempty"`
+				Stale        *bool   `json:"stale,omitempty"`
+			} `json:"accounts"`
+			FixUrl *string `json:"fixUrl,omitempty"`
+
+			// LastSyncedAt When this data was read from Vrbo.
+			LastSyncedAt time.Time `json:"lastSyncedAt"`
+
+			// Reason `refreshing`: the copy is over 24 h old and is being refreshed now — the next read has the new one. `reconnect_required`: Vrbo signed the account out; reconnect it (`fixUrl`).
+			Reason GetVrboListingSettings200JSONResponseBodyDataFreshnessReason `json:"reason"`
+
+			// Source `stored`: Repull's copy. `live`: read from Vrbo for this request.
+			Source GetVrboListingSettings200JSONResponseBodyDataFreshnessSource `json:"source"`
+			Stale  bool                                                         `json:"stale"`
+		} `json:"dataFreshness"`
+
+		// VrboListingNumber The Vrbo listing number this is about.
+		VrboListingNumber string `json:"vrboListingNumber"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+	// JSON504 the response for an HTTP 504 `application/json` response
+	JSON504 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON200() *struct {
+	// Data The section as Vrbo has it.
+	Data          GetVrboListingSettings200JSONResponseBody_Data `json:"data"`
+	DataFreshness struct {
+		Accounts []struct {
+			AccountId    *string `json:"accountId,omitempty"`
+			AccountName  *string `json:"accountName,omitempty"`
+			FixUrl       *string `json:"fixUrl,omitempty"`
+			LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+			Reason       *string `json:"reason,omitempty"`
+			Stale        *bool   `json:"stale,omitempty"`
+		} `json:"accounts"`
+		FixUrl *string `json:"fixUrl,omitempty"`
+
+		// LastSyncedAt When this data was read from Vrbo.
+		LastSyncedAt time.Time `json:"lastSyncedAt"`
+
+		// Reason `refreshing`: the copy is over 24 h old and is being refreshed now — the next read has the new one. `reconnect_required`: Vrbo signed the account out; reconnect it (`fixUrl`).
+		Reason GetVrboListingSettings200JSONResponseBodyDataFreshnessReason `json:"reason"`
+
+		// Source `stored`: Repull's copy. `live`: read from Vrbo for this request.
+		Source GetVrboListingSettings200JSONResponseBodyDataFreshnessSource `json:"source"`
+		Stale  bool                                                         `json:"stale"`
+	} `json:"dataFreshness"`
+
+	// VrboListingNumber The Vrbo listing number this is about.
+	VrboListingNumber string `json:"vrboListingNumber"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetJSON504 returns the response for an HTTP 504 `application/json` response
+func (r GetVrboListingSettingsClientResponse) GetJSON504() *Error {
+	return r.JSON504
+}
+
+// GetBody returns the raw response body bytes
+func (r GetVrboListingSettingsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVrboListingSettingsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVrboListingSettingsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVrboListingSettingsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetVrboListingStoryClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -63461,6 +66515,608 @@ func (r AddVrboListingVideoClientResponse) ContentType() string {
 	return ""
 }
 
+type ListVrboThreadsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]ListVrboThreads200JSONResponseBody_Data_Item `json:"data,omitempty"`
+
+		// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+		DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+		Pagination    *map[string]interface{} `json:"pagination,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListVrboThreadsClientResponse) GetJSON200() *struct {
+	Data *[]ListVrboThreads200JSONResponseBody_Data_Item `json:"data,omitempty"`
+
+	// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+	DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+	Pagination    *map[string]interface{} `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListVrboThreadsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListVrboThreadsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListVrboThreadsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListVrboThreadsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListVrboThreadsClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListVrboThreadsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListVrboThreadsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListVrboThreadsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListVrboThreadsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetVrboThreadClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *GetVrboThread200JSONResponseBody_Data `json:"data,omitempty"`
+
+		// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+		DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetVrboThreadClientResponse) GetJSON200() *struct {
+	Data *GetVrboThread200JSONResponseBody_Data `json:"data,omitempty"`
+
+	// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+	DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetVrboThreadClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetVrboThreadClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetVrboThreadClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r GetVrboThreadClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r GetVrboThreadClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVrboThreadClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVrboThreadClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVrboThreadClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListVrboThreadMessagesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Data *[]ListVrboThreadMessages200JSONResponseBody_Data_Item `json:"data,omitempty"`
+
+		// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+		DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+
+		// Pagination Absent when `?all=true`.
+		Pagination *struct {
+			HasMore    *bool   `json:"hasMore,omitempty"`
+			NextCursor *string `json:"nextCursor,omitempty"`
+		} `json:"pagination,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListVrboThreadMessagesClientResponse) GetJSON200() *struct {
+	Data *[]ListVrboThreadMessages200JSONResponseBody_Data_Item `json:"data,omitempty"`
+
+	// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+	DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+
+	// Pagination Absent when `?all=true`.
+	Pagination *struct {
+		HasMore    *bool   `json:"hasMore,omitempty"`
+		NextCursor *string `json:"nextCursor,omitempty"`
+	} `json:"pagination,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListVrboThreadMessagesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListVrboThreadMessagesClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListVrboThreadMessagesClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListVrboThreadMessagesClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListVrboThreadMessagesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListVrboThreadMessagesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListVrboThreadMessagesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListVrboThreadMessagesClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SendVrboMessageClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *SendMessageResponse
+	// JSON202 the response for an HTTP 202 `application/json` response
+	JSON202 *SendMessageResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r SendVrboMessageClientResponse) GetJSON201() *SendMessageResponse {
+	return r.JSON201
+}
+
+// GetJSON202 returns the response for an HTTP 202 `application/json` response
+func (r SendVrboMessageClientResponse) GetJSON202() *SendMessageResponse {
+	return r.JSON202
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SendVrboMessageClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SendVrboMessageClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SendVrboMessageClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SendVrboMessageClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SendVrboMessageClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r SendVrboMessageClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r SendVrboMessageClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SendVrboMessageClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SendVrboMessageClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SendVrboMessageClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type WithdrawVrboOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Channel        *string `json:"channel,omitempty"`
+		ConversationId *string `json:"conversationId,omitempty"`
+
+		// Status Example: withdrawn
+		Status *string `json:"status,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r WithdrawVrboOfferClientResponse) GetJSON200() *struct {
+	Channel        *string `json:"channel,omitempty"`
+	ConversationId *string `json:"conversationId,omitempty"`
+
+	// Status Example: withdrawn
+	Status *string `json:"status,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r WithdrawVrboOfferClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r WithdrawVrboOfferClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r WithdrawVrboOfferClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r WithdrawVrboOfferClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r WithdrawVrboOfferClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r WithdrawVrboOfferClientResponse) GetJSON502() *InternalError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r WithdrawVrboOfferClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r WithdrawVrboOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r WithdrawVrboOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r WithdrawVrboOfferClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetVrboOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *GetVrboOffer200JSONResponseBody
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetVrboOfferClientResponse) GetJSON200() *GetVrboOffer200JSONResponseBody {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetVrboOfferClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetVrboOfferClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetVrboOfferClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r GetVrboOfferClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetVrboOfferClientResponse) GetJSON502() *InternalError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r GetVrboOfferClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVrboOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVrboOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetVrboOfferClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateVrboOfferClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *CreateVrboOffer201JSONResponseBody
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *Error
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *InternalError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreateVrboOfferClientResponse) GetJSON201() *CreateVrboOffer201JSONResponseBody {
+	return r.JSON201
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateVrboOfferClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateVrboOfferClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateVrboOfferClientResponse) GetJSON404() *Error {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateVrboOfferClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreateVrboOfferClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r CreateVrboOfferClientResponse) GetJSON502() *InternalError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateVrboOfferClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateVrboOfferClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateVrboOfferClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateVrboOfferClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListVrboReservationsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -63706,6 +67362,172 @@ func (r VrboReservationActionClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r VrboReservationActionClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListVrboReviewsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ReviewListResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListVrboReviewsClientResponse) GetJSON200() *ReviewListResponse {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListVrboReviewsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListVrboReviewsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r ListVrboReviewsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListVrboReviewsClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListVrboReviewsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListVrboReviewsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListVrboReviewsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListVrboReviewsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SubmitVrboGuestReviewClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Id *string `json:"id,omitempty"`
+
+		// Platform Example: vrbo
+		Platform  *string                 `json:"platform,omitempty"`
+		Rating    *map[string]interface{} `json:"rating,omitempty"`
+		Submitted *bool                   `json:"submitted,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SubmitVrboGuestReviewClientResponse) GetJSON200() *struct {
+	Id *string `json:"id,omitempty"`
+
+	// Platform Example: vrbo
+	Platform  *string                 `json:"platform,omitempty"`
+	Rating    *map[string]interface{} `json:"rating,omitempty"`
+	Submitted *bool                   `json:"submitted,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SubmitVrboGuestReviewClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SubmitVrboGuestReviewClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SubmitVrboGuestReviewClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r SubmitVrboGuestReviewClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r SubmitVrboGuestReviewClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r SubmitVrboGuestReviewClientResponse) GetJSON502() *InternalError {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r SubmitVrboGuestReviewClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SubmitVrboGuestReviewClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SubmitVrboGuestReviewClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SubmitVrboGuestReviewClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -73172,6 +76994,181 @@ func (r PullListingFromAirbnbClientResponse) ContentType() string {
 	return ""
 }
 
+// PullListingFromVrboClientResponse429Headers the declared response headers of an HTTP 429 response for PullListingFromVrbo
+type PullListingFromVrboClientResponse429Headers struct {
+	RetryAfter          *int
+	XRateLimitLimit     *int
+	XRateLimitRemaining *int
+	XRateLimitReset     *time.Time
+}
+
+type PullListingFromVrboClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		Channel *PullListingFromVrbo200JSONResponseBodyChannel `json:"channel,omitempty"`
+
+		// ConnectionId The Vrbo account the values came from.
+		ConnectionId *string `json:"connectionId,omitempty"`
+
+		// ExternalId The Vrbo listing number.
+		ExternalId *string `json:"externalId,omitempty"`
+
+		// FailedSections Sections Vrbo did not return this time; their stored copy is unchanged.
+		FailedSections *[]string `json:"failedSections,omitempty"`
+		ListingId      *string   `json:"listingId,omitempty"`
+
+		// MinIntervalSeconds Example: 900
+		MinIntervalSeconds *int `json:"minIntervalSeconds,omitempty"`
+
+		// NextPullAvailableAt Earliest time another pull of this listing is accepted.
+		NextPullAvailableAt *time.Time `json:"nextPullAvailableAt,omitempty"`
+		PulledAt            *time.Time `json:"pulledAt,omitempty"`
+
+		// RefreshedFromChannel True when Vrbo answered and at least one section was refreshed.
+		RefreshedFromChannel *bool `json:"refreshedFromChannel,omitempty"`
+
+		// Sections Sections refreshed from Vrbo.
+		//
+		// Example: ["descriptions","house-rules","fees"]
+		Sections *[]string `json:"sections,omitempty"`
+	}
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *TooManyRequests
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+	// JSON504 the response for an HTTP 504 `application/json` response
+	JSON504 *Error
+	// Headers429 the parsed response headers for an HTTP 429 response
+	Headers429 *PullListingFromVrboClientResponse429Headers
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON200() *struct {
+	Channel *PullListingFromVrbo200JSONResponseBodyChannel `json:"channel,omitempty"`
+
+	// ConnectionId The Vrbo account the values came from.
+	ConnectionId *string `json:"connectionId,omitempty"`
+
+	// ExternalId The Vrbo listing number.
+	ExternalId *string `json:"externalId,omitempty"`
+
+	// FailedSections Sections Vrbo did not return this time; their stored copy is unchanged.
+	FailedSections *[]string `json:"failedSections,omitempty"`
+	ListingId      *string   `json:"listingId,omitempty"`
+
+	// MinIntervalSeconds Example: 900
+	MinIntervalSeconds *int `json:"minIntervalSeconds,omitempty"`
+
+	// NextPullAvailableAt Earliest time another pull of this listing is accepted.
+	NextPullAvailableAt *time.Time `json:"nextPullAvailableAt,omitempty"`
+	PulledAt            *time.Time `json:"pulledAt,omitempty"`
+
+	// RefreshedFromChannel True when Vrbo answered and at least one section was refreshed.
+	RefreshedFromChannel *bool `json:"refreshedFromChannel,omitempty"`
+
+	// Sections Sections refreshed from Vrbo.
+	//
+	// Example: ["descriptions","house-rules","fees"]
+	Sections *[]string `json:"sections,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON429() *TooManyRequests {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetJSON504 returns the response for an HTTP 504 `application/json` response
+func (r PullListingFromVrboClientResponse) GetJSON504() *Error {
+	return r.JSON504
+}
+
+// GetBody returns the raw response body bytes
+func (r PullListingFromVrboClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r PullListingFromVrboClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PullListingFromVrboClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PullListingFromVrboClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type GetListingSegmentsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -78854,6 +82851,57 @@ func (c *ClientWithResponses) UpdateAirbnbBookingSettingsWithResponse(ctx contex
 	return ParseUpdateAirbnbBookingSettingsClientResponse(rsp)
 }
 
+// GetAirbnbListingCancellationWithResponse Get the Airbnb cancellation policy
+//
+// The short-stay and long-stay cancellation policies and the non-refundable option — the same section as `GET /v1/channels/vrbo/listings/{id}/cancellation`, and the `cancellation` of `GET …/booking-settings`. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/cancellation (the `GetAirbnbListingCancellation` operationId).
+func (c *ClientWithResponses) GetAirbnbListingCancellationWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingCancellationClientResponse, error) {
+	rsp, err := c.GetAirbnbListingCancellation(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbListingCancellationClientResponse(rsp)
+}
+
+// UpdateAirbnbListingCancellationWithBodyWithResponse Update the Airbnb cancellation policy
+//
+// Set any of `shortStayPolicy`, `longStayPolicy`, `nonRefundable` (`{ enabled, discountPercent }`, 0–30%). The same write as `PUT …/booking-settings` `{ "cancellation": … }`; the answer is the policy Airbnb holds after it.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/cancellation (the `UpdateAirbnbListingCancellation` operationId).
+func (c *ClientWithResponses) UpdateAirbnbListingCancellationWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingCancellationClientResponse, error) {
+	rsp, err := c.UpdateAirbnbListingCancellationWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbListingCancellationClientResponse(rsp)
+}
+
+// UpdateAirbnbListingCancellationWithResponse Update the Airbnb cancellation policy
+//
+// Set any of `shortStayPolicy`, `longStayPolicy`, `nonRefundable` (`{ enabled, discountPercent }`, 0–30%). The same write as `PUT …/booking-settings` `{ "cancellation": … }`; the answer is the policy Airbnb holds after it.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/cancellation (the `UpdateAirbnbListingCancellation` operationId).
+func (c *ClientWithResponses) UpdateAirbnbListingCancellationWithResponse(ctx context.Context, id string, body UpdateAirbnbListingCancellationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingCancellationClientResponse, error) {
+	rsp, err := c.UpdateAirbnbListingCancellation(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbListingCancellationClientResponse(rsp)
+}
+
 // GetAirbnbCheckinGuideWithResponse Get Airbnb check-in guide
 //
 // Return every published locale variant of an Airbnb listing's check-in guide. **Pure DB read** from `listings_airbnb_check_in_guides`. Pass `?locale=en` to filter to one locale (prefix match). Returns `404` when the listing has no Airbnb connection in this workspace.
@@ -79070,6 +83118,125 @@ func (c *ClientWithResponses) UpdateAirbnbListingDetailsWithResponse(ctx context
 		return nil, err
 	}
 	return ParseUpdateAirbnbListingDetailsClientResponse(rsp)
+}
+
+// GetAirbnbListingFeesWithResponse Get Airbnb fees
+//
+// The listing's Airbnb fees (cleaning, pets, extra guests, management, linens, …) — the same section as `GET /v1/channels/vrbo/listings/{id}/fees`, and the `fees` of `GET …/pricing`. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/fees (the `GetAirbnbListingFees` operationId).
+func (c *ClientWithResponses) GetAirbnbListingFeesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingFeesClientResponse, error) {
+	rsp, err := c.GetAirbnbListingFees(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbListingFeesClientResponse(rsp)
+}
+
+// UpdateAirbnbListingFeesWithBodyWithResponse Update Airbnb fees
+//
+// Set Airbnb fees by type: each fee you send replaces that type, the others are kept. The same write as `PUT …/pricing` `{ "type": "fees", "fees": […] }`; `amount: null` removes a fee. `fee_type` is Airbnb's (`PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, …).
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/fees (the `UpdateAirbnbListingFees` operationId).
+func (c *ClientWithResponses) UpdateAirbnbListingFeesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingFeesClientResponse, error) {
+	rsp, err := c.UpdateAirbnbListingFeesWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbListingFeesClientResponse(rsp)
+}
+
+// UpdateAirbnbListingFeesWithResponse Update Airbnb fees
+//
+// Set Airbnb fees by type: each fee you send replaces that type, the others are kept. The same write as `PUT …/pricing` `{ "type": "fees", "fees": […] }`; `amount: null` removes a fee. `fee_type` is Airbnb's (`PASS_THROUGH_CLEANING_FEE`, `PASS_THROUGH_PET_FEE`, `PASS_THROUGH_SHORT_TERM_CLEANING_FEE`, …).
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/fees (the `UpdateAirbnbListingFees` operationId).
+func (c *ClientWithResponses) UpdateAirbnbListingFeesWithResponse(ctx context.Context, id string, body UpdateAirbnbListingFeesJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbListingFeesClientResponse, error) {
+	rsp, err := c.UpdateAirbnbListingFees(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbListingFeesClientResponse(rsp)
+}
+
+// GetAirbnbHouseRulesWithResponse Get Airbnb house rules
+//
+// The listing's house rules under the names Vrbo's `GET /v1/channels/vrbo/listings/{id}/house-rules` uses: check-in and check-out times, guest capacity, whether children, infants, pets, smoking and events are allowed, Airbnb's "things to know" (`expectations`), and the written rules per language. **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/house-rules (the `GetAirbnbHouseRules` operationId).
+func (c *ClientWithResponses) GetAirbnbHouseRulesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbHouseRulesClientResponse, error) {
+	rsp, err := c.GetAirbnbHouseRules(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbHouseRulesClientResponse(rsp)
+}
+
+// UpdateAirbnbHouseRulesWithBodyWithResponse Update Airbnb house rules
+//
+// Write the house rules text for one language — the same write as `PUT …/descriptions` `{ locale, description: { house_rules } }`, with the same answer (`written`, `blockedFields`). On Airbnb the check-in and check-out times are booking settings: set them with `PUT …/booking-settings`. Whether pets, smoking, events or children are allowed is set in the Airbnb app.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/house-rules (the `UpdateAirbnbHouseRules` operationId).
+func (c *ClientWithResponses) UpdateAirbnbHouseRulesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAirbnbHouseRulesClientResponse, error) {
+	rsp, err := c.UpdateAirbnbHouseRulesWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbHouseRulesClientResponse(rsp)
+}
+
+// UpdateAirbnbHouseRulesWithResponse Update Airbnb house rules
+//
+// Write the house rules text for one language — the same write as `PUT …/descriptions` `{ locale, description: { house_rules } }`, with the same answer (`written`, `blockedFields`). On Airbnb the check-in and check-out times are booking settings: set them with `PUT …/booking-settings`. Whether pets, smoking, events or children are allowed is set in the Airbnb app.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/airbnb/listings/{id}/house-rules (the `UpdateAirbnbHouseRules` operationId).
+func (c *ClientWithResponses) UpdateAirbnbHouseRulesWithResponse(ctx context.Context, id string, body UpdateAirbnbHouseRulesJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAirbnbHouseRulesClientResponse, error) {
+	rsp, err := c.UpdateAirbnbHouseRules(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAirbnbHouseRulesClientResponse(rsp)
+}
+
+// GetAirbnbLocationWithResponse Get the Airbnb location
+//
+// The listing's address, map pin, directions and whether guests see the exact location — the same section as `GET /v1/channels/vrbo/listings/{id}/location`. Read-only: Airbnb changes a listed address only in its own flow in the host app (`addressEditable: false`). **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/location (the `GetAirbnbLocation` operationId).
+func (c *ClientWithResponses) GetAirbnbLocationWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbLocationClientResponse, error) {
+	rsp, err := c.GetAirbnbLocation(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbLocationClientResponse(rsp)
 }
 
 // ListAirbnbListingPermitsWithResponse List Airbnb permits and licences
@@ -79649,9 +83816,26 @@ func (c *ClientWithResponses) GetAirbnbListingSettingsWithResponse(ctx context.C
 	return ParseGetAirbnbListingSettingsClientResponse(rsp)
 }
 
+// GetAirbnbListingTaxesWithResponse Get Airbnb taxes
+//
+// The listing's taxes — host-remitted pass-through taxes and the taxes Airbnb collects itself, each with `source` (`pass_through` | `airbnb_collected`) — the same section as `GET /v1/channels/vrbo/listings/{id}/taxes`, and the `taxes` of `GET …/pricing`. Read-only here: Airbnb's pass-through taxes are part of its pricing settings (`PUT …/pricing` `{ "type": "standard" }`). **Repull's stored copy**, like every Airbnb read: check `dataFreshness` before treating a value as current. `POST /v1/listings/{id}/pull/airbnb` refreshes it from Airbnb.
+//
+// Returns `404` when the listing has no Airbnb connection in this workspace, and `403 listing_inactive` when the listing is inactive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/airbnb/listings/{id}/taxes (the `GetAirbnbListingTaxes` operationId).
+func (c *ClientWithResponses) GetAirbnbListingTaxesWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAirbnbListingTaxesClientResponse, error) {
+	rsp, err := c.GetAirbnbListingTaxes(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAirbnbListingTaxesClientResponse(rsp)
+}
+
 // ListAirbnbThreadsWithResponse List Airbnb message threads
 //
-// List Airbnb message threads (one per guest conversation). Cursor-paginated. Each thread includes a preview of the latest message.
+// List Airbnb message threads (one per guest conversation), newest activity first (up to 200). Only Airbnb threads: conversations from other channels are on their own channel routes (`GET /v1/channels/vrbo/messaging`) or `GET /v1/conversations`.
 //
 // Threads on inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
@@ -82732,6 +86916,27 @@ func (c *ClientWithResponses) UpdateVrboListingSafetyDisclosuresWithResponse(ctx
 	return ParseUpdateVrboListingSafetyDisclosuresClientResponse(rsp)
 }
 
+// GetVrboListingSettingsWithResponse Get Vrbo listing settings
+//
+// The counterpart of `GET /v1/channels/airbnb/listings/{id}/settings`: the languages the listing has a hand-written description in (`locales`), and with `?type=permits` its registration / licence (the `data` of `GET …/permits`). `type=all` (default) returns `{ locales }`, `type=locales` the array.
+//
+// Vrbo has no co-host roles, so `type=hosts` answers `422 not_available_on_vrbo`: a Vrbo listing belongs to the one Vrbo account it is in (`accountId` on `GET /v1/channels/vrbo/listings`).
+//
+// Answers from Repull's stored copy of the listing's Vrbo content, like the Airbnb endpoints (`dataFreshness.lastSyncedAt` says when it was read from Vrbo). The first read of a section reads Vrbo and stores it; a copy over 24 h old answers and is refreshed in the background (`reason: refreshing`); every write through Repull stores what Vrbo has after it. `?source=live` reads Vrbo now.
+//
+// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/vrbo/listings/{id}/settings (the `GetVrboListingSettings` operationId).
+func (c *ClientWithResponses) GetVrboListingSettingsWithResponse(ctx context.Context, id string, params *GetVrboListingSettingsParams, reqEditors ...RequestEditorFn) (*GetVrboListingSettingsClientResponse, error) {
+	rsp, err := c.GetVrboListingSettings(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVrboListingSettingsClientResponse(rsp)
+}
+
 // GetVrboListingStoryWithResponse Get the Vrbo host story
 //
 // "Your story" on the listing: about you, why this property, what makes it unique.
@@ -82928,6 +87133,169 @@ func (c *ClientWithResponses) AddVrboListingVideoWithResponse(ctx context.Contex
 	return ParseAddVrboListingVideoClientResponse(rsp)
 }
 
+// ListVrboThreadsWithResponse List Vrbo message threads
+//
+// The workspace's Vrbo conversations, newest activity first (up to 200) — the counterpart of `GET /v1/channels/airbnb/messaging`, read from Repull's copy of the Vrbo inbox. Each thread carries the Vrbo account it belongs to (`accountId`, `accountName`). `externalThreadId` (`vrbo:<uuid>`) addresses the thread on these routes; `id` is the Repull conversation id of `/v1/conversations/{id}`.
+//
+// Only conversations Vrbo itself holds are listed: a Vrbo booking that reached Repull another way (a PMS, iCal) has no Vrbo conversation to message.
+//
+// Threads on inactive listings are left out. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/vrbo/messaging (the `ListVrboThreads` operationId).
+func (c *ClientWithResponses) ListVrboThreadsWithResponse(ctx context.Context, params *ListVrboThreadsParams, reqEditors ...RequestEditorFn) (*ListVrboThreadsClientResponse, error) {
+	rsp, err := c.ListVrboThreads(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListVrboThreadsClientResponse(rsp)
+}
+
+// GetVrboThreadWithResponse Get a Vrbo message thread
+//
+// One Vrbo conversation by its Vrbo id — the counterpart of `GET /v1/channels/airbnb/messaging/{threadId}`.
+//
+// Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/vrbo/messaging/{threadId} (the `GetVrboThread` operationId).
+func (c *ClientWithResponses) GetVrboThreadWithResponse(ctx context.Context, threadId string, reqEditors ...RequestEditorFn) (*GetVrboThreadClientResponse, error) {
+	rsp, err := c.GetVrboThread(ctx, threadId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVrboThreadClientResponse(rsp)
+}
+
+// ListVrboThreadMessagesWithResponse Get Vrbo messages
+//
+// The messages of a Vrbo conversation, as recorded rows — the counterpart of `GET /v1/channels/airbnb/messaging/{threadId}/messages`, same shape. 50 per page, newest first; walk older pages with `?cursor=` until `pagination.hasMore` is `false`. `?all=true` returns up to 1000 oldest first, without `pagination`.
+//
+// Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/vrbo/messaging/{threadId}/messages (the `ListVrboThreadMessages` operationId).
+func (c *ClientWithResponses) ListVrboThreadMessagesWithResponse(ctx context.Context, threadId string, params *ListVrboThreadMessagesParams, reqEditors ...RequestEditorFn) (*ListVrboThreadMessagesClientResponse, error) {
+	rsp, err := c.ListVrboThreadMessages(ctx, threadId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListVrboThreadMessagesClientResponse(rsp)
+}
+
+// SendVrboMessageWithBodyWithResponse Send a Vrbo message
+//
+// Send a message in a Vrbo conversation through the host's connected Vrbo account — the counterpart of `POST /v1/channels/airbnb/messaging/{threadId}/messages`, with the same body. It is sent the way the dashboard sends it and recorded in the conversation, so it also appears on `GET /v1/conversations/{id}/messages`.
+//
+// `201` with `status: "sent"` when Vrbo took it; `202` with `status: "queued"` when Vrbo was slow and the send finishes in the background — do not send it again, watch `conversation.message.status_changed`. Vrbo messages are text: a `mediaUrl` is refused with `422 attachments_not_supported`. Send `Idempotency-Key` to make a retry safe.
+//
+// Vrbo has no edit, unsend or reaction on a sent message (Airbnb's `PATCH …/messages/{messageId}`).
+//
+// Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/messaging/{threadId}/messages (the `SendVrboMessage` operationId).
+func (c *ClientWithResponses) SendVrboMessageWithBodyWithResponse(ctx context.Context, threadId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendVrboMessageClientResponse, error) {
+	rsp, err := c.SendVrboMessageWithBody(ctx, threadId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendVrboMessageClientResponse(rsp)
+}
+
+// SendVrboMessageWithResponse Send a Vrbo message
+//
+// Send a message in a Vrbo conversation through the host's connected Vrbo account — the counterpart of `POST /v1/channels/airbnb/messaging/{threadId}/messages`, with the same body. It is sent the way the dashboard sends it and recorded in the conversation, so it also appears on `GET /v1/conversations/{id}/messages`.
+//
+// `201` with `status: "sent"` when Vrbo took it; `202` with `status: "queued"` when Vrbo was slow and the send finishes in the background — do not send it again, watch `conversation.message.status_changed`. Vrbo messages are text: a `mediaUrl` is refused with `422 attachments_not_supported`. Send `Idempotency-Key` to make a retry safe.
+//
+// Vrbo has no edit, unsend or reaction on a sent message (Airbnb's `PATCH …/messages/{messageId}`).
+//
+// Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/messaging/{threadId}/messages (the `SendVrboMessage` operationId).
+func (c *ClientWithResponses) SendVrboMessageWithResponse(ctx context.Context, threadId string, body SendVrboMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*SendVrboMessageClientResponse, error) {
+	rsp, err := c.SendVrboMessage(ctx, threadId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendVrboMessageClientResponse(rsp)
+}
+
+// WithdrawVrboOfferWithResponse Withdraw the Vrbo pre-approval or quote
+//
+// Withdraw the conversation's pre-approval or quote: the guest can no longer book on it. The counterpart of `DELETE /v1/channels/airbnb/offers`, by `thread_id`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with DELETE /v1/channels/vrbo/offers (the `WithdrawVrboOffer` operationId).
+func (c *ClientWithResponses) WithdrawVrboOfferWithResponse(ctx context.Context, params *WithdrawVrboOfferParams, reqEditors ...RequestEditorFn) (*WithdrawVrboOfferClientResponse, error) {
+	rsp, err := c.WithdrawVrboOffer(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseWithdrawVrboOfferClientResponse(rsp)
+}
+
+// GetVrboOfferWithResponse Get the Vrbo quote
+//
+// The conversation's live quote as Vrbo shows it — its parts and Vrbo's guest total. The counterpart of `GET /v1/channels/airbnb/offers`; Vrbo keeps one quote per conversation, so it is read by `thread_id` rather than an offer id.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/vrbo/offers (the `GetVrboOffer` operationId).
+func (c *ClientWithResponses) GetVrboOfferWithResponse(ctx context.Context, params *GetVrboOfferParams, reqEditors ...RequestEditorFn) (*GetVrboOfferClientResponse, error) {
+	rsp, err := c.GetVrboOffer(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVrboOfferClientResponse(rsp)
+}
+
+// CreateVrboOfferWithBodyWithResponse Pre-approve or quote a Vrbo inquiry
+//
+// Answer a Vrbo inquiry — the counterpart of `POST /v1/channels/airbnb/offers`, the same body addressed by the Vrbo conversation. `type: "preapproval"` invites the guest to book their dates at the listed price; `type: "offer"` sends Vrbo's edited quote.
+//
+// **Priced by its parts, not a total.** Vrbo adds its taxes and service fee itself, so a quote takes `rental_amount`, `fees` (`[{ type, value }]`, Vrbo fee types such as `CLEANING`, `PET`) and `damage_deposit`; `total_price` is refused. The stay is `start_date` + `nights` and `guest_details`, as on Airbnb; leave them out to keep the guest's own. Both types may carry a `message` to the guest. Vrbo has no instant-book switch on a pre-approval (`block_instant_booking` is refused) and a quote is always for the conversation's property (`listing_id` is refused).
+//
+// The same as `POST /v1/conversations/{id}/pre-approval` and `/special-offers` on a Vrbo conversation, which take the Repull conversation id. Send `Idempotency-Key`: a retry without it can send the guest two quotes. Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/offers (the `CreateVrboOffer` operationId).
+func (c *ClientWithResponses) CreateVrboOfferWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVrboOfferClientResponse, error) {
+	rsp, err := c.CreateVrboOfferWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateVrboOfferClientResponse(rsp)
+}
+
+// CreateVrboOfferWithResponse Pre-approve or quote a Vrbo inquiry
+//
+// Answer a Vrbo inquiry — the counterpart of `POST /v1/channels/airbnb/offers`, the same body addressed by the Vrbo conversation. `type: "preapproval"` invites the guest to book their dates at the listed price; `type: "offer"` sends Vrbo's edited quote.
+//
+// **Priced by its parts, not a total.** Vrbo adds its taxes and service fee itself, so a quote takes `rental_amount`, `fees` (`[{ type, value }]`, Vrbo fee types such as `CLEANING`, `PET`) and `damage_deposit`; `total_price` is refused. The stay is `start_date` + `nights` and `guest_details`, as on Airbnb; leave them out to keep the guest's own. Both types may carry a `message` to the guest. Vrbo has no instant-book switch on a pre-approval (`block_instant_booking` is refused) and a quote is always for the conversation's property (`listing_id` is refused).
+//
+// The same as `POST /v1/conversations/{id}/pre-approval` and `/special-offers` on a Vrbo conversation, which take the Repull conversation id. Send `Idempotency-Key`: a retry without it can send the guest two quotes. Returns `403 listing_inactive` when the conversation's listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/vrbo/offers (the `CreateVrboOffer` operationId).
+func (c *ClientWithResponses) CreateVrboOfferWithResponse(ctx context.Context, body CreateVrboOfferJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVrboOfferClientResponse, error) {
+	rsp, err := c.CreateVrboOffer(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateVrboOfferClientResponse(rsp)
+}
+
 // ListVrboReservationsWithResponse List VRBO reservations
 //
 // Cursor-paginated list of Vrbo reservations imported from the host's connected Vrbo account (host sign-in, beta). The full normalised record — guest, price breakdown, policy — is on `GET /v1/reservations?platform=vrbo`. `?offset=` is accepted as a first-class alias for `?cursor=` (mutually exclusive; offset capped at 10000).
@@ -83010,6 +87378,57 @@ func (c *ClientWithResponses) VrboReservationActionWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseVrboReservationActionClientResponse(rsp)
+}
+
+// ListVrboReviewsWithResponse List Vrbo reviews
+//
+// The workspace's Vrbo reviews — the counterpart of `GET /v1/channels/airbnb/reviews`. The same list, filters, paging and review shape as `GET /v1/reviews?platform=vrbo`, with the channel fixed: `reviewerRole=guest` (default) is what guests wrote, `reviewerRole=host` your ratings of guests. Reply to a review with `POST /v1/reviews/{id}/reply`; rate a guest with `PUT /v1/channels/vrbo/reviews/{id}`.
+//
+// Reviews of inactive listings are left out; `listingId` naming an inactive listing returns `403 listing_inactive`. `platform` other than `vrbo` is refused.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/vrbo/reviews (the `ListVrboReviews` operationId).
+func (c *ClientWithResponses) ListVrboReviewsWithResponse(ctx context.Context, params *ListVrboReviewsParams, reqEditors ...RequestEditorFn) (*ListVrboReviewsClientResponse, error) {
+	rsp, err := c.ListVrboReviews(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListVrboReviewsClientResponse(rsp)
+}
+
+// SubmitVrboGuestReviewWithBodyWithResponse Rate a Vrbo guest
+//
+// Rate the guest of a Vrbo stay — Vrbo's "Rate guest", the counterpart of `PUT /v1/channels/airbnb/reviews/{id}`, and the same as `POST /v1/reviews/{id}/guest-review` on a Vrbo review. `rating` (overall, 1–5), `categoryRatings` (`cleanliness`, `communication`, `respect_house_rules`) and `isRevieweeRecommended` (would host again). Vrbo's rating has no text: `publicReview` / `privateFeedback` are refused when not empty. Publishing is final.
+//
+// `{id}` is the review `id` from `GET /v1/channels/vrbo/reviews?reviewerRole=host`; a review from another channel is `404`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/vrbo/reviews/{id} (the `SubmitVrboGuestReview` operationId).
+func (c *ClientWithResponses) SubmitVrboGuestReviewWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SubmitVrboGuestReviewClientResponse, error) {
+	rsp, err := c.SubmitVrboGuestReviewWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitVrboGuestReviewClientResponse(rsp)
+}
+
+// SubmitVrboGuestReviewWithResponse Rate a Vrbo guest
+//
+// Rate the guest of a Vrbo stay — Vrbo's "Rate guest", the counterpart of `PUT /v1/channels/airbnb/reviews/{id}`, and the same as `POST /v1/reviews/{id}/guest-review` on a Vrbo review. `rating` (overall, 1–5), `categoryRatings` (`cleanliness`, `communication`, `respect_house_rules`) and `isRevieweeRecommended` (would host again). Vrbo's rating has no text: `publicReview` / `privateFeedback` are refused when not empty. Publishing is final.
+//
+// `{id}` is the review `id` from `GET /v1/channels/vrbo/reviews?reviewerRole=host`; a review from another channel is `404`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/vrbo/reviews/{id} (the `SubmitVrboGuestReview` operationId).
+func (c *ClientWithResponses) SubmitVrboGuestReviewWithResponse(ctx context.Context, id string, body SubmitVrboGuestReviewJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitVrboGuestReviewClientResponse, error) {
+	rsp, err := c.SubmitVrboGuestReview(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSubmitVrboGuestReviewClientResponse(rsp)
 }
 
 // ListVrboTransactionsWithResponse List Vrbo transactions (payout ledger)
@@ -86412,6 +90831,52 @@ func (c *ClientWithResponses) PullListingFromAirbnbWithResponse(ctx context.Cont
 	return ParsePullListingFromAirbnbClientResponse(rsp)
 }
 
+// PullListingFromVrboWithBodyWithResponse Refresh a listing from Vrbo
+//
+// Re-read every content section of the listing's Vrbo listing from Vrbo and keep it as Repull's copy, then report what was refreshed and when — the counterpart of `POST /v1/listings/{id}/pull/airbnb`. Use it after the host changed something on Vrbo, so the `/v1/channels/vrbo/listings/{id}/…` reads answer with what Vrbo holds now.
+//
+// **What it refreshes:** descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos. **Not** the calendar, rates per night, bookings, messages, reviews or payouts — those arrive through the channel's own sync.
+//
+// **Runs synchronously:** about 45 Vrbo calls spaced ~3 s apart per account, **around 2.5 minutes**. A section Vrbo fails to return is listed in `failedSections`; the others are refreshed.
+//
+// **One pull per listing per 15 minutes**, as on Airbnb: a second call inside the window returns `429 rate_limit_exceeded` with `Retry-After` and `nextPullAvailableAt`, and makes no Vrbo calls.
+//
+// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/pull/vrbo (the `PullListingFromVrbo` operationId).
+func (c *ClientWithResponses) PullListingFromVrboWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PullListingFromVrboClientResponse, error) {
+	rsp, err := c.PullListingFromVrboWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePullListingFromVrboClientResponse(rsp)
+}
+
+// PullListingFromVrboWithResponse Refresh a listing from Vrbo
+//
+// Re-read every content section of the listing's Vrbo listing from Vrbo and keep it as Repull's copy, then report what was refreshed and when — the counterpart of `POST /v1/listings/{id}/pull/airbnb`. Use it after the host changed something on Vrbo, so the `/v1/channels/vrbo/listings/{id}/…` reads answer with what Vrbo holds now.
+//
+// **What it refreshes:** descriptions, details, story, additional-info, photos, amenities, rooms, location, house-rules, booking-settings, cancellation, fees, pricing, payment-terms, protection, taxes, permits, checkin-guide, videos. **Not** the calendar, rates per night, bookings, messages, reviews or payouts — those arrive through the channel's own sync.
+//
+// **Runs synchronously:** about 45 Vrbo calls spaced ~3 s apart per account, **around 2.5 minutes**. A section Vrbo fails to return is listed in `failedSections`; the others are refreshed.
+//
+// **One pull per listing per 15 minutes**, as on Airbnb: a second call inside the window returns `429 rate_limit_exceeded` with `Retry-After` and `nextPullAvailableAt`, and makes no Vrbo calls.
+//
+// Works with messaging or full access. Returns `404` when the listing is not linked to Vrbo, and `403 listing_inactive` when the listing is inactive.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/pull/vrbo (the `PullListingFromVrbo` operationId).
+func (c *ClientWithResponses) PullListingFromVrboWithResponse(ctx context.Context, id string, body PullListingFromVrboJSONRequestBody, reqEditors ...RequestEditorFn) (*PullListingFromVrboClientResponse, error) {
+	rsp, err := c.PullListingFromVrbo(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePullListingFromVrboClientResponse(rsp)
+}
+
 // GetListingSegmentsWithResponse Atlas DNA segment intelligence for a listing
 //
 // Aggregates Atlas DNA segment signal (quality tier, design style, bedrooms) across the listing's geographic neighborhood (default: 5km radius) or the whole city, so consumers can answer:
@@ -89312,6 +93777,146 @@ func ParseUpdateAirbnbBookingSettingsClientResponse(rsp *http.Response) (*Update
 	return response, nil
 }
 
+// ParseGetAirbnbListingCancellationClientResponse parses an HTTP response from a GetAirbnbListingCancellationWithResponse call
+func ParseGetAirbnbListingCancellationClientResponse(rsp *http.Response) (*GetAirbnbListingCancellationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbListingCancellationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data struct {
+				// LongStayPolicy Airbnb's long-term-stay policy id (28+ nights).
+				LongStayPolicy *string `json:"longStayPolicy,omitempty"`
+				NonRefundable  *struct {
+					DiscountPercent *int     `json:"discountPercent,omitempty"`
+					Enabled         *bool    `json:"enabled,omitempty"`
+					PriceFactor     *float32 `json:"priceFactor,omitempty"`
+				} `json:"nonRefundable,omitempty"`
+
+				// ShortStayPolicy Policy for stays under 28 nights.
+				ShortStayPolicy *GetAirbnbListingCancellation200JSONResponseBodyDataShortStayPolicy `json:"shortStayPolicy,omitempty"`
+			} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			//
+			// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAirbnbListingCancellationClientResponse parses an HTTP response from a UpdateAirbnbListingCancellationWithResponse call
+func ParseUpdateAirbnbListingCancellationClientResponse(rsp *http.Response) (*UpdateAirbnbListingCancellationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAirbnbListingCancellationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UpdateAirbnbListingCancellation200JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest AirbnbWriteForbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetAirbnbCheckinGuideClientResponse parses an HTTP response from a GetAirbnbCheckinGuideWithResponse call
 func ParseGetAirbnbCheckinGuideClientResponse(rsp *http.Response) (*GetAirbnbCheckinGuideClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -89814,6 +94419,374 @@ func ParseUpdateAirbnbListingDetailsClientResponse(rsp *http.Response) (*UpdateA
 			return nil, err
 		}
 		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbListingFeesClientResponse parses an HTTP response from a GetAirbnbListingFeesWithResponse call
+func ParseGetAirbnbListingFeesClientResponse(rsp *http.Response) (*GetAirbnbListingFeesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbListingFeesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []GetAirbnbListingFees200JSONResponseBody_Data_Item `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			//
+			// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAirbnbListingFeesClientResponse parses an HTTP response from a UpdateAirbnbListingFeesWithResponse call
+func ParseUpdateAirbnbListingFeesClientResponse(rsp *http.Response) (*UpdateAirbnbListingFeesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAirbnbListingFeesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UpdateAirbnbListingFees200JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest AirbnbWriteForbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbHouseRulesClientResponse parses an HTTP response from a GetAirbnbHouseRulesWithResponse call
+func ParseGetAirbnbHouseRulesClientResponse(rsp *http.Response) (*GetAirbnbHouseRulesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbHouseRulesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data struct {
+				// CheckInTime Earliest check-in, `HH:00` or `FLEXIBLE`.
+				//
+				// Example: 16:00
+				CheckInTime *string `json:"checkInTime,omitempty"`
+
+				// CheckInTimeEnd Latest check-in (Airbnb only).
+				//
+				// Example: 22:00
+				CheckInTimeEnd *string `json:"checkInTimeEnd,omitempty"`
+
+				// CheckOutTime Example: 11:00
+				CheckOutTime *string `json:"checkOutTime,omitempty"`
+				Children     *struct {
+					Allowed *bool `json:"allowed,omitempty"`
+				} `json:"children,omitempty"`
+				Events *struct {
+					Allowed *bool `json:"allowed,omitempty"`
+				} `json:"events,omitempty"`
+				Expectations *[]map[string]interface{} `json:"expectations,omitempty"`
+				HouseRules   *[]struct {
+					AdditionalRules interface{} `json:"additionalRules,omitempty"`
+					Locale          *string     `json:"locale,omitempty"`
+					Text            *string     `json:"text,omitempty"`
+				} `json:"houseRules,omitempty"`
+				Infants *struct {
+					Allowed *bool `json:"allowed,omitempty"`
+				} `json:"infants,omitempty"`
+				MaxGuests *int `json:"maxGuests,omitempty"`
+				Pets      *struct {
+					Allowed *bool `json:"allowed,omitempty"`
+				} `json:"pets,omitempty"`
+				Smoking *struct {
+					Allowed *bool `json:"allowed,omitempty"`
+				} `json:"smoking,omitempty"`
+			} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			//
+			// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAirbnbHouseRulesClientResponse parses an HTTP response from a UpdateAirbnbHouseRulesWithResponse call
+func ParseUpdateAirbnbHouseRulesClientResponse(rsp *http.Response) (*UpdateAirbnbHouseRulesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAirbnbHouseRulesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UpdateAirbnbHouseRules200JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest AirbnbWriteForbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest AirbnbWriteRejected
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest AirbnbRateLimited
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest AirbnbUpstreamError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbLocationClientResponse parses an HTTP response from a GetAirbnbLocationWithResponse call
+func ParseGetAirbnbLocationClientResponse(rsp *http.Response) (*GetAirbnbLocationClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbLocationClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data struct {
+				Address *struct {
+					Apt         *string `json:"apt,omitempty"`
+					City        *string `json:"city,omitempty"`
+					CountryCode *string `json:"countryCode,omitempty"`
+					PostalCode  *string `json:"postalCode,omitempty"`
+					State       *string `json:"state,omitempty"`
+					Street      *string `json:"street,omitempty"`
+				} `json:"address,omitempty"`
+				AddressEditable   *bool    `json:"addressEditable,omitempty"`
+				Directions        *string  `json:"directions,omitempty"`
+				Lat               *float32 `json:"lat,omitempty"`
+				Lng               *float32 `json:"lng,omitempty"`
+				ShowExactLocation *bool    `json:"showExactLocation,omitempty"`
+			} `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			//
+			// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
@@ -90973,6 +95946,67 @@ func ParseGetAirbnbListingSettingsClientResponse(rsp *http.Response) (*GetAirbnb
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAirbnbListingTaxesClientResponse parses an HTTP response from a GetAirbnbListingTaxesWithResponse call
+func ParseGetAirbnbListingTaxesClientResponse(rsp *http.Response) (*GetAirbnbListingTaxesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAirbnbListingTaxesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data []GetAirbnbListingTaxes200JSONResponseBody_Data_Item `json:"data"`
+
+			// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+			//
+			// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+			DataFreshness AirbnbDataFreshness `json:"dataFreshness"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest InternalError
@@ -93998,9 +99032,9 @@ func ParseGetVrboListingClientResponse(rsp *http.Response) (*GetVrboListingClien
 				UnitId       *string `json:"unitId,omitempty"`
 				Url          *string `json:"url,omitempty"`
 
-				// VrboListingNumber The number in the Vrbo URL (vrbo.com/5506023).
+				// VrboListingNumber The number in the Vrbo URL (vrbo.com/4512345).
 				//
-				// Example: 5506023
+				// Example: 4512345
 				VrboListingNumber *string `json:"vrboListingNumber,omitempty"`
 			} `json:"data"`
 
@@ -100859,6 +105893,122 @@ func ParseUpdateVrboListingSafetyDisclosuresClientResponse(rsp *http.Response) (
 	return response, nil
 }
 
+// ParseGetVrboListingSettingsClientResponse parses an HTTP response from a GetVrboListingSettingsWithResponse call
+func ParseGetVrboListingSettingsClientResponse(rsp *http.Response) (*GetVrboListingSettingsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVrboListingSettingsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// Data The section as Vrbo has it.
+			Data          GetVrboListingSettings200JSONResponseBody_Data `json:"data"`
+			DataFreshness struct {
+				Accounts []struct {
+					AccountId    *string `json:"accountId,omitempty"`
+					AccountName  *string `json:"accountName,omitempty"`
+					FixUrl       *string `json:"fixUrl,omitempty"`
+					LastSyncedAt *string `json:"lastSyncedAt,omitempty"`
+					Reason       *string `json:"reason,omitempty"`
+					Stale        *bool   `json:"stale,omitempty"`
+				} `json:"accounts"`
+				FixUrl *string `json:"fixUrl,omitempty"`
+
+				// LastSyncedAt When this data was read from Vrbo.
+				LastSyncedAt time.Time `json:"lastSyncedAt"`
+
+				// Reason `refreshing`: the copy is over 24 h old and is being refreshed now — the next read has the new one. `reconnect_required`: Vrbo signed the account out; reconnect it (`fixUrl`).
+				Reason GetVrboListingSettings200JSONResponseBodyDataFreshnessReason `json:"reason"`
+
+				// Source `stored`: Repull's copy. `live`: read from Vrbo for this request.
+				Source GetVrboListingSettings200JSONResponseBodyDataFreshnessSource `json:"source"`
+				Stale  bool                                                         `json:"stale"`
+			} `json:"dataFreshness"`
+
+			// VrboListingNumber The Vrbo listing number this is about.
+			VrboListingNumber string `json:"vrboListingNumber"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 504:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON504 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetVrboListingStoryClientResponse parses an HTTP response from a GetVrboListingStoryWithResponse call
 func ParseGetVrboListingStoryClientResponse(rsp *http.Response) (*GetVrboListingStoryClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -101751,6 +106901,475 @@ func ParseAddVrboListingVideoClientResponse(rsp *http.Response) (*AddVrboListing
 	return response, nil
 }
 
+// ParseListVrboThreadsClientResponse parses an HTTP response from a ListVrboThreadsWithResponse call
+func ParseListVrboThreadsClientResponse(rsp *http.Response) (*ListVrboThreadsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListVrboThreadsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]ListVrboThreads200JSONResponseBody_Data_Item `json:"data,omitempty"`
+
+			// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+			DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+			Pagination    *map[string]interface{} `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVrboThreadClientResponse parses an HTTP response from a GetVrboThreadWithResponse call
+func ParseGetVrboThreadClientResponse(rsp *http.Response) (*GetVrboThreadClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVrboThreadClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *GetVrboThread200JSONResponseBody_Data `json:"data,omitempty"`
+
+			// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+			DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListVrboThreadMessagesClientResponse parses an HTTP response from a ListVrboThreadMessagesWithResponse call
+func ParseListVrboThreadMessagesClientResponse(rsp *http.Response) (*ListVrboThreadMessagesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListVrboThreadMessagesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Data *[]ListVrboThreadMessages200JSONResponseBody_Data_Item `json:"data,omitempty"`
+
+			// DataFreshness When this workspace's Vrbo data was last synced (`lastSyncedAt`, `stale`, `accounts[]`).
+			DataFreshness *map[string]interface{} `json:"dataFreshness,omitempty"`
+
+			// Pagination Absent when `?all=true`.
+			Pagination *struct {
+				HasMore    *bool   `json:"hasMore,omitempty"`
+				NextCursor *string `json:"nextCursor,omitempty"`
+			} `json:"pagination,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSendVrboMessageClientResponse parses an HTTP response from a SendVrboMessageWithResponse call
+func ParseSendVrboMessageClientResponse(rsp *http.Response) (*SendVrboMessageClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SendVrboMessageClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest SendMessageResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest SendMessageResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseWithdrawVrboOfferClientResponse parses an HTTP response from a WithdrawVrboOfferWithResponse call
+func ParseWithdrawVrboOfferClientResponse(rsp *http.Response) (*WithdrawVrboOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &WithdrawVrboOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Channel        *string `json:"channel,omitempty"`
+			ConversationId *string `json:"conversationId,omitempty"`
+
+			// Status Example: withdrawn
+			Status *string `json:"status,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVrboOfferClientResponse parses an HTTP response from a GetVrboOfferWithResponse call
+func ParseGetVrboOfferClientResponse(rsp *http.Response) (*GetVrboOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVrboOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetVrboOffer200JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateVrboOfferClientResponse parses an HTTP response from a CreateVrboOfferWithResponse call
+func ParseCreateVrboOfferClientResponse(rsp *http.Response) (*CreateVrboOfferClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateVrboOfferClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreateVrboOffer201JSONResponseBody
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListVrboReservationsClientResponse parses an HTTP response from a ListVrboReservationsWithResponse call
 func ParseListVrboReservationsClientResponse(rsp *http.Response) (*ListVrboReservationsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -101929,6 +107548,135 @@ func ParseVrboReservationActionClientResponse(rsp *http.Response) (*VrboReservat
 			return nil, err
 		}
 		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListVrboReviewsClientResponse parses an HTTP response from a ListVrboReviewsWithResponse call
+func ParseListVrboReviewsClientResponse(rsp *http.Response) (*ListVrboReviewsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListVrboReviewsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ReviewListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSubmitVrboGuestReviewClientResponse parses an HTTP response from a SubmitVrboGuestReviewWithResponse call
+func ParseSubmitVrboGuestReviewClientResponse(rsp *http.Response) (*SubmitVrboGuestReviewClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SubmitVrboGuestReviewClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Id *string `json:"id,omitempty"`
+
+			// Platform Example: vrbo
+			Platform  *string                 `json:"platform,omitempty"`
+			Rating    *map[string]interface{} `json:"rating,omitempty"`
+			Submitted *bool                   `json:"submitted,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 
@@ -108620,6 +114368,163 @@ func ParsePullListingFromAirbnbClientResponse(rsp *http.Response) (*PullListingF
 	switch {
 	case rsp.StatusCode == 429:
 		var headers PullListingFromAirbnbClientResponse429Headers
+		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.RetryAfter = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Limit"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Limit", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitLimit = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Remaining"); len(values) > 0 {
+			var value int
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Remaining", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitRemaining = &value
+		}
+		if values := rsp.Header.Values("X-RateLimit-Reset"); len(values) > 0 {
+			var value time.Time
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-RateLimit-Reset", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: "date-time"}); err != nil {
+				return nil, err
+			}
+			headers.XRateLimitReset = &value
+		}
+		response.Headers429 = &headers
+	}
+
+	return response, nil
+}
+
+// ParsePullListingFromVrboClientResponse parses an HTTP response from a PullListingFromVrboWithResponse call
+func ParsePullListingFromVrboClientResponse(rsp *http.Response) (*PullListingFromVrboClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PullListingFromVrboClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Channel *PullListingFromVrbo200JSONResponseBodyChannel `json:"channel,omitempty"`
+
+			// ConnectionId The Vrbo account the values came from.
+			ConnectionId *string `json:"connectionId,omitempty"`
+
+			// ExternalId The Vrbo listing number.
+			ExternalId *string `json:"externalId,omitempty"`
+
+			// FailedSections Sections Vrbo did not return this time; their stored copy is unchanged.
+			FailedSections *[]string `json:"failedSections,omitempty"`
+			ListingId      *string   `json:"listingId,omitempty"`
+
+			// MinIntervalSeconds Example: 900
+			MinIntervalSeconds *int `json:"minIntervalSeconds,omitempty"`
+
+			// NextPullAvailableAt Earliest time another pull of this listing is accepted.
+			NextPullAvailableAt *time.Time `json:"nextPullAvailableAt,omitempty"`
+			PulledAt            *time.Time `json:"pulledAt,omitempty"`
+
+			// RefreshedFromChannel True when Vrbo answered and at least one section was refreshed.
+			RefreshedFromChannel *bool `json:"refreshedFromChannel,omitempty"`
+
+			// Sections Sections refreshed from Vrbo.
+			//
+			// Example: ["descriptions","house-rules","fees"]
+			Sections *[]string `json:"sections,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest TooManyRequests
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 504:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON504 = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 429:
+		var headers PullListingFromVrboClientResponse429Headers
 		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
 			var value int
 			if err := runtime.BindStyledParameterWithOptions("simple", "Retry-After", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "integer", Format: ""}); err != nil {
