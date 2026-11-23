@@ -991,6 +991,30 @@ func (e AlterationWebhookObjectStatus) Valid() bool {
 	}
 }
 
+// Defines values for AppConnectionHealthStatus.
+const (
+	AppConnectionHealthStatusActive         AppConnectionHealthStatus = "active"
+	AppConnectionHealthStatusFailing        AppConnectionHealthStatus = "failing"
+	AppConnectionHealthStatusIdle           AppConnectionHealthStatus = "idle"
+	AppConnectionHealthStatusNeverConnected AppConnectionHealthStatus = "never_connected"
+)
+
+// Valid indicates whether the value is a known member of the AppConnectionHealthStatus enum.
+func (e AppConnectionHealthStatus) Valid() bool {
+	switch e {
+	case AppConnectionHealthStatusActive:
+		return true
+	case AppConnectionHealthStatusFailing:
+		return true
+	case AppConnectionHealthStatusIdle:
+		return true
+	case AppConnectionHealthStatusNeverConnected:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AvailabilityWriteResultSyncedChannelsStatus.
 const (
 	AvailabilityWriteResultSyncedChannelsStatusAccepted AvailabilityWriteResultSyncedChannelsStatus = "accepted"
@@ -1866,6 +1890,7 @@ func (e ChargePer) Valid() bool {
 
 // Defines values for ConnectProviderCategory.
 const (
+	ConnectProviderCategoryApp ConnectProviderCategory = "app"
 	ConnectProviderCategoryOta ConnectProviderCategory = "ota"
 	ConnectProviderCategoryPms ConnectProviderCategory = "pms"
 )
@@ -1873,6 +1898,8 @@ const (
 // Valid indicates whether the value is a known member of the ConnectProviderCategory enum.
 func (e ConnectProviderCategory) Valid() bool {
 	switch e {
+	case ConnectProviderCategoryApp:
+		return true
 	case ConnectProviderCategoryOta:
 		return true
 	case ConnectProviderCategoryPms:
@@ -1888,6 +1915,7 @@ const (
 	ConnectProviderConnectPatternClaim       ConnectProviderConnectPattern = "claim"
 	ConnectProviderConnectPatternCredentials ConnectProviderConnectPattern = "credentials"
 	ConnectProviderConnectPatternExtranet    ConnectProviderConnectPattern = "extranet"
+	ConnectProviderConnectPatternKey         ConnectProviderConnectPattern = "key"
 	ConnectProviderConnectPatternOauth       ConnectProviderConnectPattern = "oauth"
 )
 
@@ -1901,6 +1929,8 @@ func (e ConnectProviderConnectPattern) Valid() bool {
 	case ConnectProviderConnectPatternCredentials:
 		return true
 	case ConnectProviderConnectPatternExtranet:
+		return true
+	case ConnectProviderConnectPatternKey:
 		return true
 	case ConnectProviderConnectPatternOauth:
 		return true
@@ -2056,6 +2086,24 @@ func (e ConnectStatusStatus) Valid() bool {
 	case ConnectStatusStatusError:
 		return true
 	case ConnectStatusStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ConnectionScope.
+const (
+	ConnectionScopeListings  ConnectionScope = "listings"
+	ConnectionScopeWorkspace ConnectionScope = "workspace"
+)
+
+// Valid indicates whether the value is a known member of the ConnectionScope enum.
+func (e ConnectionScope) Valid() bool {
+	switch e {
+	case ConnectionScopeListings:
+		return true
+	case ConnectionScopeWorkspace:
 		return true
 	default:
 		return false
@@ -9874,6 +9922,78 @@ func (e SubmitMewsCredentialsJSONBodyCredentialsEnvironment) Valid() bool {
 	}
 }
 
+// Defines values for CreatePriceLabsKey201JSONResponseBodyScope.
+const (
+	CreatePriceLabsKey201JSONResponseBodyScopeListings  CreatePriceLabsKey201JSONResponseBodyScope = "listings"
+	CreatePriceLabsKey201JSONResponseBodyScopeWorkspace CreatePriceLabsKey201JSONResponseBodyScope = "workspace"
+)
+
+// Valid indicates whether the value is a known member of the CreatePriceLabsKey201JSONResponseBodyScope enum.
+func (e CreatePriceLabsKey201JSONResponseBodyScope) Valid() bool {
+	switch e {
+	case CreatePriceLabsKey201JSONResponseBodyScopeListings:
+		return true
+	case CreatePriceLabsKey201JSONResponseBodyScopeWorkspace:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreatePriceLabsKey201JSONResponseBodyStatus.
+const (
+	CreatePriceLabsKey201JSONResponseBodyStatusActive           CreatePriceLabsKey201JSONResponseBodyStatus = "active"
+	CreatePriceLabsKey201JSONResponseBodyStatusDisconnected     CreatePriceLabsKey201JSONResponseBodyStatus = "disconnected"
+	CreatePriceLabsKey201JSONResponseBodyStatusError            CreatePriceLabsKey201JSONResponseBodyStatus = "error"
+	CreatePriceLabsKey201JSONResponseBodyStatusInactive         CreatePriceLabsKey201JSONResponseBodyStatus = "inactive"
+	CreatePriceLabsKey201JSONResponseBodyStatusNeedsPermissions CreatePriceLabsKey201JSONResponseBodyStatus = "needs_permissions"
+	CreatePriceLabsKey201JSONResponseBodyStatusPending          CreatePriceLabsKey201JSONResponseBodyStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the CreatePriceLabsKey201JSONResponseBodyStatus enum.
+func (e CreatePriceLabsKey201JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case CreatePriceLabsKey201JSONResponseBodyStatusActive:
+		return true
+	case CreatePriceLabsKey201JSONResponseBodyStatusDisconnected:
+		return true
+	case CreatePriceLabsKey201JSONResponseBodyStatusError:
+		return true
+	case CreatePriceLabsKey201JSONResponseBodyStatusInactive:
+		return true
+	case CreatePriceLabsKey201JSONResponseBodyStatusNeedsPermissions:
+		return true
+	case CreatePriceLabsKey201JSONResponseBodyStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetPriceLabsSessionStatus200JSONResponseBodyStatus.
+const (
+	GetPriceLabsSessionStatus200JSONResponseBodyStatusConnected GetPriceLabsSessionStatus200JSONResponseBodyStatus = "connected"
+	GetPriceLabsSessionStatus200JSONResponseBodyStatusExpired   GetPriceLabsSessionStatus200JSONResponseBodyStatus = "expired"
+	GetPriceLabsSessionStatus200JSONResponseBodyStatusPending   GetPriceLabsSessionStatus200JSONResponseBodyStatus = "pending"
+	GetPriceLabsSessionStatus200JSONResponseBodyStatusWaiting   GetPriceLabsSessionStatus200JSONResponseBodyStatus = "waiting"
+)
+
+// Valid indicates whether the value is a known member of the GetPriceLabsSessionStatus200JSONResponseBodyStatus enum.
+func (e GetPriceLabsSessionStatus200JSONResponseBodyStatus) Valid() bool {
+	switch e {
+	case GetPriceLabsSessionStatus200JSONResponseBodyStatusConnected:
+		return true
+	case GetPriceLabsSessionStatus200JSONResponseBodyStatusExpired:
+		return true
+	case GetPriceLabsSessionStatus200JSONResponseBodyStatusPending:
+		return true
+	case GetPriceLabsSessionStatus200JSONResponseBodyStatusWaiting:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ResumeConnect400JSONResponseBodyError.
 const (
 	BadAccount         ResumeConnect400JSONResponseBodyError = "bad_account"
@@ -13567,6 +13687,54 @@ type AlterationWebhookObjectInitiator string
 // Example: pending
 type AlterationWebhookObjectStatus string
 
+// AppConnectionHealth How an app (PriceLabs) is doing on one connection, from its calls with the key.
+type AppConnectionHealth struct {
+	// ErrorRate24h `errors24h / requests24h`; 0 when there were no requests.
+	//
+	// Example: 0.02
+	ErrorRate24h *float32 `json:"errorRate24h,omitempty"`
+
+	// ErrorRate7d Example: 0.01
+	ErrorRate7d *float32 `json:"errorRate7d,omitempty"`
+	Errors24h   *int     `json:"errors24h,omitempty"`
+	Errors7d    *int     `json:"errors7d,omitempty"`
+
+	// LastRequestAt The app's last request with the key, of any kind.
+	LastRequestAt *time.Time `json:"lastRequestAt,omitempty"`
+
+	// LastSuccessfulWriteAt The app's last successful price or minimum-stay push.
+	LastSuccessfulWriteAt *time.Time `json:"lastSuccessfulWriteAt,omitempty"`
+
+	// RecentErrors The 10 most recent failed requests, newest first.
+	RecentErrors []struct {
+		At *time.Time `json:"at,omitempty"`
+
+		// Endpoint Example: /calendar/batch/4118
+		Endpoint *string `json:"endpoint,omitempty"`
+		Message  *string `json:"message,omitempty"`
+
+		// Method Example: PUT
+		Method *string `json:"method,omitempty"`
+
+		// StatusCode Example: 404
+		StatusCode *int `json:"statusCode,omitempty"`
+	} `json:"recentErrors"`
+	Requests24h *int `json:"requests24h,omitempty"`
+	Requests7d  *int `json:"requests7d,omitempty"`
+
+	// Status `active`: a successful price or minimum-stay push in the last 24 hours. `idle`: the app connected before but has not pushed in the last 24 hours. `failing`: more than 25% of the last 24 hours' requests failed (at least 5 requests); read `recentErrors`. `never_connected`: the app has not used the key yet.
+	Status AppConnectionHealthStatus `json:"status"`
+
+	// WritesPerDay Successful price and minimum-stay pushes per UTC day, the last 7 days, oldest first.
+	WritesPerDay []struct {
+		Date   *openapi_types.Date `json:"date,omitempty"`
+		Writes *int                `json:"writes,omitempty"`
+	} `json:"writesPerDay"`
+}
+
+// AppConnectionHealthStatus `active`: a successful price or minimum-stay push in the last 24 hours. `idle`: the app connected before but has not pushed in the last 24 hours. `failing`: more than 25% of the last 24 hours' requests failed (at least 5 requests); read `recentErrors`. `never_connected`: the app has not used the key yet.
+type AppConnectionHealthStatus string
+
 // AvailabilityBatchWriteRequest defines model for AvailabilityBatchWriteRequest.
 type AvailabilityBatchWriteRequest struct {
 	// Available Block or unblock the dates.
@@ -14949,10 +15117,10 @@ type ConnectProvider struct {
 	// Example: ["airbnb","abnb"]
 	Aliases *[]string `json:"aliases,omitempty"`
 
-	// Category Channel category — OTAs are listing marketplaces; PMSes are property management systems.
+	// Category Category — OTAs are listing marketplaces; PMSes are property management systems; apps are tools that work on the workspace's data (PriceLabs).
 	Category ConnectProviderCategory `json:"category"`
 
-	// ConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake. `claim`: connectivity-provider designation in the channel's Extranet (Booking.com). `extranet`: the host signs in with their Booking.com Extranet user.
+	// ConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake. `claim`: connectivity-provider designation in the channel's Extranet (Booking.com). `extranet`: the host signs in with their Booking.com Extranet user. `key`: an app — the hosted page shows a key the host pastes into the app, and the session completes on the app's first call.
 	ConnectPattern ConnectProviderConnectPattern `json:"connectPattern"`
 
 	// Description Example: OAuth consent — host approves access in one click.
@@ -14979,10 +15147,10 @@ type ConnectProvider struct {
 	Status ConnectProviderStatus `json:"status"`
 }
 
-// ConnectProviderCategory Channel category — OTAs are listing marketplaces; PMSes are property management systems.
+// ConnectProviderCategory Category — OTAs are listing marketplaces; PMSes are property management systems; apps are tools that work on the workspace's data (PriceLabs).
 type ConnectProviderCategory string
 
-// ConnectProviderConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake. `claim`: connectivity-provider designation in the channel's Extranet (Booking.com). `extranet`: the host signs in with their Booking.com Extranet user.
+// ConnectProviderConnectPattern How the host is connected. `oauth`: provider-side consent screen. `credentials`: hosted form collects API keys. `activation`: push-only handshake. `claim`: connectivity-provider designation in the channel's Extranet (Booking.com). `extranet`: the host signs in with their Booking.com Extranet user. `key`: an app — the hosted page shows a key the host pastes into the app, and the session completes on the app's first call.
 type ConnectProviderConnectPattern string
 
 // ConnectProviderStatus Pickers should hide / disable `coming-soon` cards. `beta` cards are clickable but show a Beta pill. `request-only` is a PMS Repull doesn't connect yet, listed only with `includeRequestOnly`: picking it collects the host's access details for the Repull team, and the session ends as `requested` instead of connecting.
@@ -15157,7 +15325,7 @@ type ConnectStatus struct {
 	// AccessType What the connection may do: `read_only`, `messaging` or `full_access` (see `ConnectionAccessType` for the meaning per provider). Airbnb: the tier of the host in `externalAccountId`; each host's own is on `accounts[].accessType`. Absent when `connected` is false and on `GET /v1/connect/vrbo-login` (per account there); `null` when unknown.
 	AccessType *ConnectionAccessType `json:"accessType,omitempty"`
 
-	// Accounts One entry per connected account, for every provider: Airbnb, every host account connected (including ones since disconnected), each with its own `accessType`; Booking.com, every hotel (`externalAccountId` is the hotel id); Vrbo, every sign-in; Booking.com Extranet, every hotel login; a PMS, its one account. Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/{provider}` to disconnect one. The top-level fields describe one record and stay for existing integrations; show `accounts[]` to list what is connected. Vrbo sign-ins also carry `accessType` and `import` (a `VrboImportStatus`), with a top-level `dataFreshness` on `GET /v1/connect/vrbo-login`.
+	// Accounts One entry per connected account, for every provider: Airbnb, every host account connected (including ones since disconnected), each with its own `accessType`; Booking.com, every hotel (`externalAccountId` is the hotel id); Vrbo, every sign-in; Booking.com Extranet, every hotel login; a PMS, its one account; PriceLabs (an app), every key, each a connection with its `health` (see `Connection`). Pass `externalAccountId` as `accountId` to `DELETE /v1/connect/{provider}` to disconnect one. The top-level fields describe one record and stay for existing integrations; show `accounts[]` to list what is connected. Vrbo sign-ins also carry `accessType` and `import` (a `VrboImportStatus`), with a top-level `dataFreshness` on `GET /v1/connect/vrbo-login`.
 	Accounts *[]struct {
 		// AccessType What this account may do. Airbnb: the tier the host's token was granted with (`read_only`, `messaging`, `full_access`). Vrbo: `messaging` (bookings and messages, no calendar push) or `full_access` (also pushes prices and availability). `null` when unknown.
 		AccessType *ConnectionAccessType `json:"accessType,omitempty"`
@@ -15272,6 +15440,9 @@ type Connection struct {
 	Action    *ConnectionAction `json:"action,omitempty"`
 	CreatedAt *time.Time        `json:"createdAt,omitempty"`
 
+	// DisconnectedAt Apps only: when the connection was revoked.
+	DisconnectedAt *time.Time `json:"disconnectedAt,omitempty"`
+
 	// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id. Use `id` for our record.
 	//
 	// Example: 20123456
@@ -15280,6 +15451,9 @@ type Connection struct {
 	// FixUrl Durable link that reopens the hosted Connect flow bound to this account on the fix screen — send the host here to resolve `action`. For `needs_mapping` it opens the unit mapping directly (no new sign-in). Present whenever `action` is set; `null` otherwise.
 	FixUrl *string `json:"fixUrl,omitempty"`
 
+	// Health Apps only: how the app is doing on this connection. `null` once disconnected.
+	Health *AppConnectionHealth `json:"health,omitempty"`
+
 	// Host Host metadata for the linked account. Currently populated for Airbnb only; null for other providers.
 	Host *ConnectHost `json:"host,omitempty"`
 	Id   *string      `json:"id,omitempty"`
@@ -15287,14 +15461,36 @@ type Connection struct {
 	// Import The account's latest import — `status: running` while the first sync (or a later one) is going, then `completed` or `failed`. `null` when no import has been recorded. The same run is announced by the `account.import.*` webhooks; the history is on `GET /v1/connections/{id}/imports`.
 	Import *AccountImport `json:"import,omitempty"`
 
+	// KeyMasked Apps only: the key the app uses, masked. The key itself is shown once, when created.
+	//
+	// Example: sk_live_4eB3...XYZw
+	KeyMasked *string `json:"keyMasked,omitempty"`
+
+	// Label Apps only: the name given to the key.
+	Label *string `json:"label,omitempty"`
+
+	// ListingCount Apps only: listings the connection covers now.
+	//
+	// Example: 12
+	ListingCount *int `json:"listingCount,omitempty"`
+
+	// ListingIds Apps only: the listings a `listings`-scoped connection covers; `null` for `workspace`.
+	ListingIds *[]string `json:"listingIds,omitempty"`
+
 	// Provider Example: hostaway
 	Provider *string `json:"provider,omitempty"`
+
+	// Scope Apps (`pricelabs`) only. `workspace`: every listing of the workspace, including listings added later. `listings`: only `listingIds`.
+	Scope *ConnectionScope `json:"scope,omitempty"`
 
 	// Status `active` — connected and working. `pending` — still settling. `needs_permissions` — connected but the host must grant more access before it works (see `action`/`fixUrl`). An `active` connection can also carry an `action` (e.g. a Smoobu legacy API key that must be replaced with a key + secret before October 31, 2026). `error` — the last operation failed. `disconnected` — revoked or superseded.
 	//
 	// Example: active
 	Status *ConnectionStatus `json:"status,omitempty"`
 }
+
+// ConnectionScope Apps (`pricelabs`) only. `workspace`: every listing of the workspace, including listings added later. `listings`: only `listingIds`.
+type ConnectionScope string
 
 // ConnectionStatus `active` — connected and working. `pending` — still settling. `needs_permissions` — connected but the host must grant more access before it works (see `action`/`fixUrl`). An `active` connection can also carry an `action` (e.g. a Smoobu legacy API key that must be replaced with a key + secret before October 31, 2026). `error` — the last operation failed. `disconnected` — revoked or superseded.
 //
@@ -26185,6 +26381,33 @@ type SubmitOwnerrezCredentialsJSONBody struct {
 	SessionId *string `json:"sessionId,omitempty"`
 }
 
+// CreatePriceLabsKeyJSONBody defines parameters for CreatePriceLabsKey.
+type CreatePriceLabsKeyJSONBody struct {
+	// Label A name for the connection.
+	//
+	// Example: PriceLabs — beach houses
+	Label *string `json:"label,omitempty"`
+
+	// ListingIds Only these listings of the workspace (`GET /v1/properties`). Omit for every listing, new ones included.
+	//
+	// Example: ["4118","4119"]
+	ListingIds *[]string `json:"listingIds,omitempty"`
+}
+
+// CreatePriceLabsKey201JSONResponseBodyScope defines parameters for CreatePriceLabsKey.
+type CreatePriceLabsKey201JSONResponseBodyScope string
+
+// CreatePriceLabsKey201JSONResponseBodyStatus defines parameters for CreatePriceLabsKey.
+type CreatePriceLabsKey201JSONResponseBodyStatus string
+
+// GetPriceLabsSessionStatusParams defines parameters for GetPriceLabsSessionStatus.
+type GetPriceLabsSessionStatusParams struct {
+	SessionId string `form:"sessionId" json:"sessionId"`
+}
+
+// GetPriceLabsSessionStatus200JSONResponseBodyStatus defines parameters for GetPriceLabsSessionStatus.
+type GetPriceLabsSessionStatus200JSONResponseBodyStatus string
+
 // ListConnectProvidersParams defines parameters for ListConnectProviders.
 type ListConnectProvidersParams struct {
 	// IncludeRequestOnly Also return the PMSes Repull doesn't connect yet (`status: request-only`), for a picker you render yourself for a session created with `includeRequestOnly`.
@@ -26362,6 +26585,9 @@ type ZeevouConnectCallbackParams struct {
 type DeleteConnectionParams struct {
 	// AccountId The account to disconnect: the Airbnb host id (`accounts[].externalAccountId` on `GET /v1/connect/airbnb`) or the Booking.com hotel id. Required when the workspace has more than one connected account for the provider. Not the same as the `X-Account-Id` header.
 	AccountId *string `form:"accountId,omitempty" json:"accountId,omitempty"`
+
+	// Id PriceLabs only: the connection to revoke (`accounts[].id` on `GET /v1/connect/pricelabs`). Required when the workspace has more than one.
+	Id *string `form:"id,omitempty" json:"id,omitempty"`
 }
 
 // CreateConnectionJSONBody defines parameters for CreateConnection.
@@ -26384,6 +26610,13 @@ type CreateConnectionJSONBody struct {
 
 	// State Airbnb + Booking.com — your own correlation token, e.g. your user id (at most 500 characters). Echoed on the redirect back (`&state=`) and in the `connect.session.completed` webhook.
 	State *string `json:"state,omitempty"`
+
+	// Workspace PriceLabs only: open a new sub-workspace for this host and connect PriceLabs there (its id is returned as `workspaceId`). Don't send it together with `X-Workspace-Id`.
+	Workspace *struct {
+		// ExternalRef Your own id for this host.
+		ExternalRef *string `json:"externalRef,omitempty"`
+		Name        string  `json:"name"`
+	} `json:"workspace,omitempty"`
 }
 
 // CreateConnectionJSONBodyAccessType defines parameters for CreateConnection.
@@ -28020,6 +28253,9 @@ type SubmitMewsCredentialsJSONRequestBody SubmitMewsCredentialsJSONBody
 
 // SubmitOwnerrezCredentialsJSONRequestBody defines body for SubmitOwnerrezCredentials for application/json ContentType.
 type SubmitOwnerrezCredentialsJSONRequestBody SubmitOwnerrezCredentialsJSONBody
+
+// CreatePriceLabsKeyJSONRequestBody defines body for CreatePriceLabsKey for application/json ContentType.
+type CreatePriceLabsKeyJSONRequestBody CreatePriceLabsKeyJSONBody
 
 // SelectConnectProviderJSONRequestBody defines body for SelectConnectProvider for application/json ContentType.
 type SelectConnectProviderJSONRequestBody SelectConnectProviderJSONBody

@@ -4272,6 +4272,41 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connect/ownerrez/credentials (the `SubmitOwnerrezCredentials` operationId).
 	SubmitOwnerrezCredentials(ctx context.Context, body SubmitOwnerrezCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreatePriceLabsKeyWithBody Create a PriceLabs key (headless)
+	//
+	// Issue a PriceLabs key without the hosted page, for platforms that show it in their own app. The key is for this workspace, or the one `X-Workspace-Id` names; it is returned once, in `key`, and the host pastes it into PriceLabs (add an integration, choose Repull).
+	//
+	// - No `listingIds`: every listing of the workspace, including listings added later. Recommended, with the listings PriceLabs should price in their own sub-workspace.
+	// - `listingIds`: only those listings (they must belong to the workspace). Listings added later are not included.
+	//
+	// The key works only inside PriceLabs; it is refused on every Repull API endpoint. The connection appears on `GET /v1/connect/pricelabs` with its `health`; `account.created` is sent when PriceLabs first uses the key. Revoke it with `DELETE /v1/connect/pricelabs?id=`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/pricelabs/key (the `CreatePriceLabsKey` operationId).
+	CreatePriceLabsKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreatePriceLabsKey Create a PriceLabs key (headless)
+	//
+	// Issue a PriceLabs key without the hosted page, for platforms that show it in their own app. The key is for this workspace, or the one `X-Workspace-Id` names; it is returned once, in `key`, and the host pastes it into PriceLabs (add an integration, choose Repull).
+	//
+	// - No `listingIds`: every listing of the workspace, including listings added later. Recommended, with the listings PriceLabs should price in their own sub-workspace.
+	// - `listingIds`: only those listings (they must belong to the workspace). Listings added later are not included.
+	//
+	// The key works only inside PriceLabs; it is refused on every Repull API endpoint. The connection appears on `GET /v1/connect/pricelabs` with its `health`; `account.created` is sent when PriceLabs first uses the key. Revoke it with `DELETE /v1/connect/pricelabs?id=`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/pricelabs/key (the `CreatePriceLabsKey` operationId).
+	CreatePriceLabsKey(ctx context.Context, body CreatePriceLabsKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetPriceLabsSessionStatus PriceLabs session status
+	//
+	// Where a hosted PriceLabs session stands: `pending` (no key issued yet), `waiting` (the key is shown, PriceLabs has not called yet), `connected` (PriceLabs has called with the key; the session is complete) or `expired`. Called by the hosted Connect page while it waits. No API key — the session ID is the capability token.
+	//
+	// Corresponds with GET /v1/connect/pricelabs/session (the `GetPriceLabsSessionStatus` operationId).
+	GetPriceLabsSessionStatus(ctx context.Context, params *GetPriceLabsSessionStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListConnectProviders List Connect channels
 	//
 	// Returns the public registry of every channel the picker supports. No customer-specific data — display metadata only. Cached for 5 minutes at the edge.
@@ -4486,6 +4521,8 @@ type ClientInterface interface {
 	//
 	// Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side. That answer depends only on the provider, not on your workspace: an unsupported provider returns `501` whether or not you have a connection to it. `404 not_found` on a supported provider means this workspace has no connection to it (or, with `accountId`, that the account is not connected here).
 	//
+	// **PriceLabs (an app).** Revokes one PriceLabs connection (its key): PriceLabs loses access at once; nothing it already pushed changes and no listing is deactivated. Pass `id` (an `accounts[].id` from `GET /v1/connect/pricelabs`); it is optional only when the workspace has one connected. Sends `account.disconnected` with reason `manual_disconnect`.
+	//
 	// Corresponds with DELETE /v1/connect/{provider} (the `DeleteConnection` operationId).
 	DeleteConnection(ctx context.Context, provider Provider, params *DeleteConnectionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4494,6 +4531,8 @@ type ClientInterface interface {
 	// Returns the current connection status for a provider, including host metadata (display name + avatar) for Airbnb so clients can render an account-level confirmation UI.
 	//
 	// **Access level.** `accessType` says what the connection may do: `read_only`, `messaging` or `full_access` (`null` when unknown). Airbnb reports it per host on `accounts[]` (the tier each host's token was granted with) and at the top level for the host in `externalAccountId`; Vrbo (`vrbo-login`) per account; Booking.com is always `full_access`, the Booking.com Extranet always `messaging`; a PMS is `read_only` when every `writePolicy` switch is off, else `full_access`. See the `ConnectionAccessType` schema for the meaning per provider.
+	//
+	// **PriceLabs (an app).** `accounts[]` lists every PriceLabs connection of the workspace (each one key), with `scope`, `listingCount`, `keyMasked` and `health`: `status` (`active`, `idle`, `failing`, `never_connected`), last request, last successful price push, pushes per day for 7 days, error rates and the latest errors. Revoked ones stay listed as `disconnected` with `health: null`. `externalAccountId` is `null` (PriceLabs has no account id to give us); `id` is the connection.
 	//
 	// Corresponds with GET /v1/connect/{provider} (the `GetConnectStatus` operationId).
 	GetConnectStatus(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4507,6 +4546,8 @@ type ClientInterface interface {
 	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
 	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+	//
+	// **PriceLabs (an app).** Pass `redirectUrl` (and optionally `state`, `locale`, `workspace`). The response returns a hosted `url` for the session's workspace: yours, the one `X-Workspace-Id` names, or a new sub-workspace when you send `workspace.name` (its id comes back as `workspaceId`). The page shows the host a key for **every listing of that workspace, including listings added later**, with the steps to paste it into PriceLabs, then waits for PriceLabs' first call and completes like every provider: redirect to `redirectUrl` (`status=connected&connectionId=…`) or the `repull:connect:completed` popup message, and `connect.session.completed`. When PriceLabs first uses the key, `account.created` is sent. To keep PriceLabs away from the rest of an account, put the listings it should price in a sub-workspace and connect PriceLabs there. To issue the key yourself (no hosted page, or only some listings) use `POST /v1/connect/pricelabs/key`.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4522,6 +4563,8 @@ type ClientInterface interface {
 	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
 	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+	//
+	// **PriceLabs (an app).** Pass `redirectUrl` (and optionally `state`, `locale`, `workspace`). The response returns a hosted `url` for the session's workspace: yours, the one `X-Workspace-Id` names, or a new sub-workspace when you send `workspace.name` (its id comes back as `workspaceId`). The page shows the host a key for **every listing of that workspace, including listings added later**, with the steps to paste it into PriceLabs, then waits for PriceLabs' first call and completes like every provider: redirect to `redirectUrl` (`status=connected&connectionId=…`) or the `repull:connect:completed` popup message, and `connect.session.completed`. When PriceLabs first uses the key, `account.created` is sent. To keep PriceLabs away from the rest of an account, put the listings it should price in a sub-workspace and connect PriceLabs there. To issue the key yourself (no hosted page, or only some listings) use `POST /v1/connect/pricelabs/key`.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -14119,6 +14162,71 @@ func (c *Client) SubmitOwnerrezCredentials(ctx context.Context, body SubmitOwner
 	return c.Client.Do(req)
 }
 
+// CreatePriceLabsKeyWithBody Create a PriceLabs key (headless)
+//
+// Issue a PriceLabs key without the hosted page, for platforms that show it in their own app. The key is for this workspace, or the one `X-Workspace-Id` names; it is returned once, in `key`, and the host pastes it into PriceLabs (add an integration, choose Repull).
+//
+// - No `listingIds`: every listing of the workspace, including listings added later. Recommended, with the listings PriceLabs should price in their own sub-workspace.
+// - `listingIds`: only those listings (they must belong to the workspace). Listings added later are not included.
+//
+// The key works only inside PriceLabs; it is refused on every Repull API endpoint. The connection appears on `GET /v1/connect/pricelabs` with its `health`; `account.created` is sent when PriceLabs first uses the key. Revoke it with `DELETE /v1/connect/pricelabs?id=`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/pricelabs/key (the `CreatePriceLabsKey` operationId).
+func (c *Client) CreatePriceLabsKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreatePriceLabsKeyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreatePriceLabsKey Create a PriceLabs key (headless)
+//
+// Issue a PriceLabs key without the hosted page, for platforms that show it in their own app. The key is for this workspace, or the one `X-Workspace-Id` names; it is returned once, in `key`, and the host pastes it into PriceLabs (add an integration, choose Repull).
+//
+// - No `listingIds`: every listing of the workspace, including listings added later. Recommended, with the listings PriceLabs should price in their own sub-workspace.
+// - `listingIds`: only those listings (they must belong to the workspace). Listings added later are not included.
+//
+// The key works only inside PriceLabs; it is refused on every Repull API endpoint. The connection appears on `GET /v1/connect/pricelabs` with its `health`; `account.created` is sent when PriceLabs first uses the key. Revoke it with `DELETE /v1/connect/pricelabs?id=`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/pricelabs/key (the `CreatePriceLabsKey` operationId).
+func (c *Client) CreatePriceLabsKey(ctx context.Context, body CreatePriceLabsKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreatePriceLabsKeyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetPriceLabsSessionStatus PriceLabs session status
+//
+// Where a hosted PriceLabs session stands: `pending` (no key issued yet), `waiting` (the key is shown, PriceLabs has not called yet), `connected` (PriceLabs has called with the key; the session is complete) or `expired`. Called by the hosted Connect page while it waits. No API key — the session ID is the capability token.
+//
+// Corresponds with GET /v1/connect/pricelabs/session (the `GetPriceLabsSessionStatus` operationId).
+func (c *Client) GetPriceLabsSessionStatus(ctx context.Context, params *GetPriceLabsSessionStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPriceLabsSessionStatusRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListConnectProviders List Connect channels
 //
 // Returns the public registry of every channel the picker supports. No customer-specific data — display metadata only. Cached for 5 minutes at the edge.
@@ -14493,6 +14601,8 @@ func (c *Client) ZeevouConnectCallback(ctx context.Context, params *ZeevouConnec
 //
 // Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side. That answer depends only on the provider, not on your workspace: an unsupported provider returns `501` whether or not you have a connection to it. `404 not_found` on a supported provider means this workspace has no connection to it (or, with `accountId`, that the account is not connected here).
 //
+// **PriceLabs (an app).** Revokes one PriceLabs connection (its key): PriceLabs loses access at once; nothing it already pushed changes and no listing is deactivated. Pass `id` (an `accounts[].id` from `GET /v1/connect/pricelabs`); it is optional only when the workspace has one connected. Sends `account.disconnected` with reason `manual_disconnect`.
+//
 // Corresponds with DELETE /v1/connect/{provider} (the `DeleteConnection` operationId).
 func (c *Client) DeleteConnection(ctx context.Context, provider Provider, params *DeleteConnectionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteConnectionRequest(c.Server, provider, params)
@@ -14511,6 +14621,8 @@ func (c *Client) DeleteConnection(ctx context.Context, provider Provider, params
 // Returns the current connection status for a provider, including host metadata (display name + avatar) for Airbnb so clients can render an account-level confirmation UI.
 //
 // **Access level.** `accessType` says what the connection may do: `read_only`, `messaging` or `full_access` (`null` when unknown). Airbnb reports it per host on `accounts[]` (the tier each host's token was granted with) and at the top level for the host in `externalAccountId`; Vrbo (`vrbo-login`) per account; Booking.com is always `full_access`, the Booking.com Extranet always `messaging`; a PMS is `read_only` when every `writePolicy` switch is off, else `full_access`. See the `ConnectionAccessType` schema for the meaning per provider.
+//
+// **PriceLabs (an app).** `accounts[]` lists every PriceLabs connection of the workspace (each one key), with `scope`, `listingCount`, `keyMasked` and `health`: `status` (`active`, `idle`, `failing`, `never_connected`), last request, last successful price push, pushes per day for 7 days, error rates and the latest errors. Revoked ones stay listed as `disconnected` with `health: null`. `externalAccountId` is `null` (PriceLabs has no account id to give us); `id` is the connection.
 //
 // Corresponds with GET /v1/connect/{provider} (the `GetConnectStatus` operationId).
 func (c *Client) GetConnectStatus(ctx context.Context, provider Provider, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -14534,6 +14646,8 @@ func (c *Client) GetConnectStatus(ctx context.Context, provider Provider, reqEdi
 // Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
 // PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+//
+// **PriceLabs (an app).** Pass `redirectUrl` (and optionally `state`, `locale`, `workspace`). The response returns a hosted `url` for the session's workspace: yours, the one `X-Workspace-Id` names, or a new sub-workspace when you send `workspace.name` (its id comes back as `workspaceId`). The page shows the host a key for **every listing of that workspace, including listings added later**, with the steps to paste it into PriceLabs, then waits for PriceLabs' first call and completes like every provider: redirect to `redirectUrl` (`status=connected&connectionId=…`) or the `repull:connect:completed` popup message, and `connect.session.completed`. When PriceLabs first uses the key, `account.created` is sent. To keep PriceLabs away from the rest of an account, put the listings it should price in a sub-workspace and connect PriceLabs there. To issue the key yourself (no hosted page, or only some listings) use `POST /v1/connect/pricelabs/key`.
 //
 // Takes any type of body and a specified content type.
 //
@@ -14559,6 +14673,8 @@ func (c *Client) CreateConnectionWithBody(ctx context.Context, provider Provider
 // Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
 // PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+//
+// **PriceLabs (an app).** Pass `redirectUrl` (and optionally `state`, `locale`, `workspace`). The response returns a hosted `url` for the session's workspace: yours, the one `X-Workspace-Id` names, or a new sub-workspace when you send `workspace.name` (its id comes back as `workspaceId`). The page shows the host a key for **every listing of that workspace, including listings added later**, with the steps to paste it into PriceLabs, then waits for PriceLabs' first call and completes like every provider: redirect to `redirectUrl` (`status=connected&connectionId=…`) or the `repull:connect:completed` popup message, and `connect.session.completed`. When PriceLabs first uses the key, `account.created` is sent. To keep PriceLabs away from the rest of an account, put the listings it should price in a sub-workspace and connect PriceLabs there. To issue the key yourself (no hosted page, or only some listings) use `POST /v1/connect/pricelabs/key`.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -30270,6 +30386,96 @@ func NewSubmitOwnerrezCredentialsRequestWithBody(server string, contentType stri
 	return req, nil
 }
 
+// NewCreatePriceLabsKeyRequest calls the generic CreatePriceLabsKey builder with application/json body
+func NewCreatePriceLabsKeyRequest(server string, body CreatePriceLabsKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreatePriceLabsKeyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreatePriceLabsKeyRequestWithBody constructs an http.Request for the CreatePriceLabsKey method, with any body, and a specified content type
+func NewCreatePriceLabsKeyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/pricelabs/key")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetPriceLabsSessionStatusRequest constructs an http.Request for the GetPriceLabsSessionStatus method
+func NewGetPriceLabsSessionStatusRequest(server string, params *GetPriceLabsSessionStatusParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/pricelabs/session")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListConnectProvidersRequest constructs an http.Request for the ListConnectProviders method
 func NewListConnectProvidersRequest(server string, params *ListConnectProvidersParams) (*http.Request, error) {
 	var err error
@@ -30890,6 +31096,18 @@ func NewDeleteConnectionRequest(server string, provider Provider, params *Delete
 		if params.AccountId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "accountId", *params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Id != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "id", *params.Id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -43125,6 +43343,43 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connect/ownerrez/credentials (the `SubmitOwnerrezCredentials` operationId).
 	SubmitOwnerrezCredentialsWithResponse(ctx context.Context, body SubmitOwnerrezCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitOwnerrezCredentialsClientResponse, error)
 
+	// CreatePriceLabsKeyWithBodyWithResponse Create a PriceLabs key (headless)
+	//
+	// Issue a PriceLabs key without the hosted page, for platforms that show it in their own app. The key is for this workspace, or the one `X-Workspace-Id` names; it is returned once, in `key`, and the host pastes it into PriceLabs (add an integration, choose Repull).
+	//
+	// - No `listingIds`: every listing of the workspace, including listings added later. Recommended, with the listings PriceLabs should price in their own sub-workspace.
+	// - `listingIds`: only those listings (they must belong to the workspace). Listings added later are not included.
+	//
+	// The key works only inside PriceLabs; it is refused on every Repull API endpoint. The connection appears on `GET /v1/connect/pricelabs` with its `health`; `account.created` is sent when PriceLabs first uses the key. Revoke it with `DELETE /v1/connect/pricelabs?id=`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/pricelabs/key (the `CreatePriceLabsKey` operationId).
+	CreatePriceLabsKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreatePriceLabsKeyClientResponse, error)
+
+	// CreatePriceLabsKeyWithResponse Create a PriceLabs key (headless)
+	//
+	// Issue a PriceLabs key without the hosted page, for platforms that show it in their own app. The key is for this workspace, or the one `X-Workspace-Id` names; it is returned once, in `key`, and the host pastes it into PriceLabs (add an integration, choose Repull).
+	//
+	// - No `listingIds`: every listing of the workspace, including listings added later. Recommended, with the listings PriceLabs should price in their own sub-workspace.
+	// - `listingIds`: only those listings (they must belong to the workspace). Listings added later are not included.
+	//
+	// The key works only inside PriceLabs; it is refused on every Repull API endpoint. The connection appears on `GET /v1/connect/pricelabs` with its `health`; `account.created` is sent when PriceLabs first uses the key. Revoke it with `DELETE /v1/connect/pricelabs?id=`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/pricelabs/key (the `CreatePriceLabsKey` operationId).
+	CreatePriceLabsKeyWithResponse(ctx context.Context, body CreatePriceLabsKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreatePriceLabsKeyClientResponse, error)
+
+	// GetPriceLabsSessionStatusWithResponse PriceLabs session status
+	//
+	// Where a hosted PriceLabs session stands: `pending` (no key issued yet), `waiting` (the key is shown, PriceLabs has not called yet), `connected` (PriceLabs has called with the key; the session is complete) or `expired`. Called by the hosted Connect page while it waits. No API key — the session ID is the capability token.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/pricelabs/session (the `GetPriceLabsSessionStatus` operationId).
+	GetPriceLabsSessionStatusWithResponse(ctx context.Context, params *GetPriceLabsSessionStatusParams, reqEditors ...RequestEditorFn) (*GetPriceLabsSessionStatusClientResponse, error)
+
 	// ListConnectProvidersWithResponse List Connect channels
 	//
 	// Returns the public registry of every channel the picker supports. No customer-specific data — display metadata only. Cached for 5 minutes at the edge.
@@ -43351,6 +43606,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side. That answer depends only on the provider, not on your workspace: an unsupported provider returns `501` whether or not you have a connection to it. `404 not_found` on a supported provider means this workspace has no connection to it (or, with `accountId`, that the account is not connected here).
 	//
+	// **PriceLabs (an app).** Revokes one PriceLabs connection (its key): PriceLabs loses access at once; nothing it already pushed changes and no listing is deactivated. Pass `id` (an `accounts[].id` from `GET /v1/connect/pricelabs`); it is optional only when the workspace has one connected. Sends `account.disconnected` with reason `manual_disconnect`.
+	//
 	// Returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with DELETE /v1/connect/{provider} (the `DeleteConnection` operationId).
@@ -43361,6 +43618,8 @@ type ClientWithResponsesInterface interface {
 	// Returns the current connection status for a provider, including host metadata (display name + avatar) for Airbnb so clients can render an account-level confirmation UI.
 	//
 	// **Access level.** `accessType` says what the connection may do: `read_only`, `messaging` or `full_access` (`null` when unknown). Airbnb reports it per host on `accounts[]` (the tier each host's token was granted with) and at the top level for the host in `externalAccountId`; Vrbo (`vrbo-login`) per account; Booking.com is always `full_access`, the Booking.com Extranet always `messaging`; a PMS is `read_only` when every `writePolicy` switch is off, else `full_access`. See the `ConnectionAccessType` schema for the meaning per provider.
+	//
+	// **PriceLabs (an app).** `accounts[]` lists every PriceLabs connection of the workspace (each one key), with `scope`, `listingCount`, `keyMasked` and `health`: `status` (`active`, `idle`, `failing`, `never_connected`), last request, last successful price push, pushes per day for 7 days, error rates and the latest errors. Revoked ones stay listed as `disconnected` with `health: null`. `externalAccountId` is `null` (PriceLabs has no account id to give us); `id` is the connection.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -43377,6 +43636,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
+	// **PriceLabs (an app).** Pass `redirectUrl` (and optionally `state`, `locale`, `workspace`). The response returns a hosted `url` for the session's workspace: yours, the one `X-Workspace-Id` names, or a new sub-workspace when you send `workspace.name` (its id comes back as `workspaceId`). The page shows the host a key for **every listing of that workspace, including listings added later**, with the steps to paste it into PriceLabs, then waits for PriceLabs' first call and completes like every provider: redirect to `redirectUrl` (`status=connected&connectionId=…`) or the `repull:connect:completed` popup message, and `connect.session.completed`. When PriceLabs first uses the key, `account.created` is sent. To keep PriceLabs away from the rest of an account, put the listings it should price in a sub-workspace and connect PriceLabs there. To issue the key yourself (no hosted page, or only some listings) use `POST /v1/connect/pricelabs/key`.
+	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/connect/{provider} (the `CreateConnection` operationId).
@@ -43391,6 +43652,8 @@ type ClientWithResponsesInterface interface {
 	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 	//
 	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+	//
+	// **PriceLabs (an app).** Pass `redirectUrl` (and optionally `state`, `locale`, `workspace`). The response returns a hosted `url` for the session's workspace: yours, the one `X-Workspace-Id` names, or a new sub-workspace when you send `workspace.name` (its id comes back as `workspaceId`). The page shows the host a key for **every listing of that workspace, including listings added later**, with the steps to paste it into PriceLabs, then waits for PriceLabs' first call and completes like every provider: redirect to `redirectUrl` (`status=connected&connectionId=…`) or the `repull:connect:completed` popup message, and `connect.session.completed`. When PriceLabs first uses the key, `account.created` is sent. To keep PriceLabs away from the rest of an account, put the listings it should price in a sub-workspace and connect PriceLabs there. To issue the key yourself (no hosted page, or only some listings) use `POST /v1/connect/pricelabs/key`.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -69453,6 +69716,291 @@ func (r SubmitOwnerrezCredentialsClientResponse) ContentType() string {
 	return ""
 }
 
+type CreatePriceLabsKeyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON201 the response for an HTTP 201 `application/json` response
+	JSON201 *struct {
+		// AccessType What this connection may do: `read_only`, `messaging` or `full_access` (see `ConnectionAccessType` for the meaning per provider). Airbnb: the tier of the host in `externalAccountId`. `null` when unknown.
+		AccessType *ConnectionAccessType `json:"accessType,omitempty"`
+
+		// Action Set when the host must do something before the connection works (e.g. grant the invited Booking.com Extranet user full access), or has units still to map (`reason: needs_mapping` — Booking.com Extranet rooms, Vrbo units; `required` is false when only some Vrbo units are left). `null` when no action is pending.
+		Action    *ConnectionAction `json:"action,omitempty"`
+		CreatedAt *time.Time        `json:"createdAt,omitempty"`
+
+		// DisconnectedAt Apps only: when the connection was revoked.
+		DisconnectedAt *time.Time `json:"disconnectedAt,omitempty"`
+
+		// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id. Use `id` for our record.
+		//
+		// Example: 20123456
+		ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+		// FixUrl Durable link that reopens the hosted Connect flow bound to this account on the fix screen — send the host here to resolve `action`. For `needs_mapping` it opens the unit mapping directly (no new sign-in). Present whenever `action` is set; `null` otherwise.
+		FixUrl *string `json:"fixUrl,omitempty"`
+
+		// Health Apps only: how the app is doing on this connection. `null` once disconnected.
+		Health *AppConnectionHealth `json:"health,omitempty"`
+
+		// Host Host metadata for the linked account. Currently populated for Airbnb only; null for other providers.
+		Host *ConnectHost `json:"host,omitempty"`
+		Id   *string      `json:"id,omitempty"`
+
+		// Import The account's latest import — `status: running` while the first sync (or a later one) is going, then `completed` or `failed`. `null` when no import has been recorded. The same run is announced by the `account.import.*` webhooks; the history is on `GET /v1/connections/{id}/imports`.
+		Import *AccountImport `json:"import,omitempty"`
+
+		// Instructions What to tell the host, ready to show.
+		Instructions struct {
+			Scope *string   `json:"scope,omitempty"`
+			Steps *[]string `json:"steps,omitempty"`
+		} `json:"instructions"`
+
+		// Key The key to paste into PriceLabs. Returned only here.
+		//
+		// Example: sk_live_YOUR_PRICELABS_KEY
+		Key string `json:"key"`
+
+		// KeyMasked Apps only: the key the app uses, masked. The key itself is shown once, when created.
+		//
+		// Example: sk_live_4eB3...XYZw
+		KeyMasked *string `json:"keyMasked,omitempty"`
+
+		// Label Apps only: the name given to the key.
+		Label *string `json:"label,omitempty"`
+
+		// ListingCount Apps only: listings the connection covers now.
+		//
+		// Example: 12
+		ListingCount *int `json:"listingCount,omitempty"`
+
+		// ListingIds Apps only: the listings a `listings`-scoped connection covers; `null` for `workspace`.
+		ListingIds *[]string `json:"listingIds,omitempty"`
+
+		// Provider Example: hostaway
+		Provider *string `json:"provider,omitempty"`
+
+		// Scope Apps (`pricelabs`) only. `workspace`: every listing of the workspace, including listings added later. `listings`: only `listingIds`.
+		Scope *CreatePriceLabsKey201JSONResponseBodyScope `json:"scope,omitempty"`
+
+		// Status `active` — connected and working. `pending` — still settling. `needs_permissions` — connected but the host must grant more access before it works (see `action`/`fixUrl`). An `active` connection can also carry an `action` (e.g. a Smoobu legacy API key that must be replaced with a key + secret before October 31, 2026). `error` — the last operation failed. `disconnected` — revoked or superseded.
+		//
+		// Example: active
+		Status *CreatePriceLabsKey201JSONResponseBodyStatus `json:"status,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON201 returns the response for an HTTP 201 `application/json` response
+func (r CreatePriceLabsKeyClientResponse) GetJSON201() *struct {
+	// AccessType What this connection may do: `read_only`, `messaging` or `full_access` (see `ConnectionAccessType` for the meaning per provider). Airbnb: the tier of the host in `externalAccountId`. `null` when unknown.
+	AccessType *ConnectionAccessType `json:"accessType,omitempty"`
+
+	// Action Set when the host must do something before the connection works (e.g. grant the invited Booking.com Extranet user full access), or has units still to map (`reason: needs_mapping` — Booking.com Extranet rooms, Vrbo units; `required` is false when only some Vrbo units are left). `null` when no action is pending.
+	Action    *ConnectionAction `json:"action,omitempty"`
+	CreatedAt *time.Time        `json:"createdAt,omitempty"`
+
+	// DisconnectedAt Apps only: when the connection was revoked.
+	DisconnectedAt *time.Time `json:"disconnectedAt,omitempty"`
+
+	// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id. Use `id` for our record.
+	//
+	// Example: 20123456
+	ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+	// FixUrl Durable link that reopens the hosted Connect flow bound to this account on the fix screen — send the host here to resolve `action`. For `needs_mapping` it opens the unit mapping directly (no new sign-in). Present whenever `action` is set; `null` otherwise.
+	FixUrl *string `json:"fixUrl,omitempty"`
+
+	// Health Apps only: how the app is doing on this connection. `null` once disconnected.
+	Health *AppConnectionHealth `json:"health,omitempty"`
+
+	// Host Host metadata for the linked account. Currently populated for Airbnb only; null for other providers.
+	Host *ConnectHost `json:"host,omitempty"`
+	Id   *string      `json:"id,omitempty"`
+
+	// Import The account's latest import — `status: running` while the first sync (or a later one) is going, then `completed` or `failed`. `null` when no import has been recorded. The same run is announced by the `account.import.*` webhooks; the history is on `GET /v1/connections/{id}/imports`.
+	Import *AccountImport `json:"import,omitempty"`
+
+	// Instructions What to tell the host, ready to show.
+	Instructions struct {
+		Scope *string   `json:"scope,omitempty"`
+		Steps *[]string `json:"steps,omitempty"`
+	} `json:"instructions"`
+
+	// Key The key to paste into PriceLabs. Returned only here.
+	//
+	// Example: sk_live_YOUR_PRICELABS_KEY
+	Key string `json:"key"`
+
+	// KeyMasked Apps only: the key the app uses, masked. The key itself is shown once, when created.
+	//
+	// Example: sk_live_4eB3...XYZw
+	KeyMasked *string `json:"keyMasked,omitempty"`
+
+	// Label Apps only: the name given to the key.
+	Label *string `json:"label,omitempty"`
+
+	// ListingCount Apps only: listings the connection covers now.
+	//
+	// Example: 12
+	ListingCount *int `json:"listingCount,omitempty"`
+
+	// ListingIds Apps only: the listings a `listings`-scoped connection covers; `null` for `workspace`.
+	ListingIds *[]string `json:"listingIds,omitempty"`
+
+	// Provider Example: hostaway
+	Provider *string `json:"provider,omitempty"`
+
+	// Scope Apps (`pricelabs`) only. `workspace`: every listing of the workspace, including listings added later. `listings`: only `listingIds`.
+	Scope *CreatePriceLabsKey201JSONResponseBodyScope `json:"scope,omitempty"`
+
+	// Status `active` — connected and working. `pending` — still settling. `needs_permissions` — connected but the host must grant more access before it works (see `action`/`fixUrl`). An `active` connection can also carry an `action` (e.g. a Smoobu legacy API key that must be replaced with a key + secret before October 31, 2026). `error` — the last operation failed. `disconnected` — revoked or superseded.
+	//
+	// Example: active
+	Status *CreatePriceLabsKey201JSONResponseBodyStatus `json:"status,omitempty"`
+} {
+	return r.JSON201
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreatePriceLabsKeyClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreatePriceLabsKeyClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreatePriceLabsKeyClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r CreatePriceLabsKeyClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreatePriceLabsKeyClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreatePriceLabsKeyClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreatePriceLabsKeyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreatePriceLabsKeyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreatePriceLabsKeyClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetPriceLabsSessionStatusClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *struct {
+		// ConnectionId The PriceLabs connection once the session holds a key.
+		ConnectionId *string                                             `json:"connectionId,omitempty"`
+		Status       *GetPriceLabsSessionStatus200JSONResponseBodyStatus `json:"status,omitempty"`
+	}
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetPriceLabsSessionStatusClientResponse) GetJSON200() *struct {
+	// ConnectionId The PriceLabs connection once the session holds a key.
+	ConnectionId *string                                             `json:"connectionId,omitempty"`
+	Status       *GetPriceLabsSessionStatus200JSONResponseBodyStatus `json:"status,omitempty"`
+} {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetPriceLabsSessionStatusClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetPriceLabsSessionStatusClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r GetPriceLabsSessionStatusClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r GetPriceLabsSessionStatusClientResponse) GetJSON410() *Error {
+	return r.JSON410
+}
+
+// GetBody returns the raw response body bytes
+func (r GetPriceLabsSessionStatusClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPriceLabsSessionStatusClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPriceLabsSessionStatusClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetPriceLabsSessionStatusClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListConnectProvidersClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -88259,6 +88807,61 @@ func (c *ClientWithResponses) SubmitOwnerrezCredentialsWithResponse(ctx context.
 	return ParseSubmitOwnerrezCredentialsClientResponse(rsp)
 }
 
+// CreatePriceLabsKeyWithBodyWithResponse Create a PriceLabs key (headless)
+//
+// Issue a PriceLabs key without the hosted page, for platforms that show it in their own app. The key is for this workspace, or the one `X-Workspace-Id` names; it is returned once, in `key`, and the host pastes it into PriceLabs (add an integration, choose Repull).
+//
+// - No `listingIds`: every listing of the workspace, including listings added later. Recommended, with the listings PriceLabs should price in their own sub-workspace.
+// - `listingIds`: only those listings (they must belong to the workspace). Listings added later are not included.
+//
+// The key works only inside PriceLabs; it is refused on every Repull API endpoint. The connection appears on `GET /v1/connect/pricelabs` with its `health`; `account.created` is sent when PriceLabs first uses the key. Revoke it with `DELETE /v1/connect/pricelabs?id=`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/pricelabs/key (the `CreatePriceLabsKey` operationId).
+func (c *ClientWithResponses) CreatePriceLabsKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreatePriceLabsKeyClientResponse, error) {
+	rsp, err := c.CreatePriceLabsKeyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreatePriceLabsKeyClientResponse(rsp)
+}
+
+// CreatePriceLabsKeyWithResponse Create a PriceLabs key (headless)
+//
+// Issue a PriceLabs key without the hosted page, for platforms that show it in their own app. The key is for this workspace, or the one `X-Workspace-Id` names; it is returned once, in `key`, and the host pastes it into PriceLabs (add an integration, choose Repull).
+//
+// - No `listingIds`: every listing of the workspace, including listings added later. Recommended, with the listings PriceLabs should price in their own sub-workspace.
+// - `listingIds`: only those listings (they must belong to the workspace). Listings added later are not included.
+//
+// The key works only inside PriceLabs; it is refused on every Repull API endpoint. The connection appears on `GET /v1/connect/pricelabs` with its `health`; `account.created` is sent when PriceLabs first uses the key. Revoke it with `DELETE /v1/connect/pricelabs?id=`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/pricelabs/key (the `CreatePriceLabsKey` operationId).
+func (c *ClientWithResponses) CreatePriceLabsKeyWithResponse(ctx context.Context, body CreatePriceLabsKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreatePriceLabsKeyClientResponse, error) {
+	rsp, err := c.CreatePriceLabsKey(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreatePriceLabsKeyClientResponse(rsp)
+}
+
+// GetPriceLabsSessionStatusWithResponse PriceLabs session status
+//
+// Where a hosted PriceLabs session stands: `pending` (no key issued yet), `waiting` (the key is shown, PriceLabs has not called yet), `connected` (PriceLabs has called with the key; the session is complete) or `expired`. Called by the hosted Connect page while it waits. No API key — the session ID is the capability token.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/pricelabs/session (the `GetPriceLabsSessionStatus` operationId).
+func (c *ClientWithResponses) GetPriceLabsSessionStatusWithResponse(ctx context.Context, params *GetPriceLabsSessionStatusParams, reqEditors ...RequestEditorFn) (*GetPriceLabsSessionStatusClientResponse, error) {
+	rsp, err := c.GetPriceLabsSessionStatus(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPriceLabsSessionStatusClientResponse(rsp)
+}
+
 // ListConnectProvidersWithResponse List Connect channels
 //
 // Returns the public registry of every channel the picker supports. No customer-specific data — display metadata only. Cached for 5 minutes at the edge.
@@ -88581,6 +89184,8 @@ func (c *ClientWithResponses) ZeevouConnectCallbackWithResponse(ctx context.Cont
 //
 // Other providers return `501 not_implemented` with instructions for disconnecting on the provider's side. That answer depends only on the provider, not on your workspace: an unsupported provider returns `501` whether or not you have a connection to it. `404 not_found` on a supported provider means this workspace has no connection to it (or, with `accountId`, that the account is not connected here).
 //
+// **PriceLabs (an app).** Revokes one PriceLabs connection (its key): PriceLabs loses access at once; nothing it already pushed changes and no listing is deactivated. Pass `id` (an `accounts[].id` from `GET /v1/connect/pricelabs`); it is optional only when the workspace has one connected. Sends `account.disconnected` with reason `manual_disconnect`.
+//
 // Returns a wrapper object for the known response body format(s).
 //
 // Corresponds with DELETE /v1/connect/{provider} (the `DeleteConnection` operationId).
@@ -88597,6 +89202,8 @@ func (c *ClientWithResponses) DeleteConnectionWithResponse(ctx context.Context, 
 // Returns the current connection status for a provider, including host metadata (display name + avatar) for Airbnb so clients can render an account-level confirmation UI.
 //
 // **Access level.** `accessType` says what the connection may do: `read_only`, `messaging` or `full_access` (`null` when unknown). Airbnb reports it per host on `accounts[]` (the tier each host's token was granted with) and at the top level for the host in `externalAccountId`; Vrbo (`vrbo-login`) per account; Booking.com is always `full_access`, the Booking.com Extranet always `messaging`; a PMS is `read_only` when every `writePolicy` switch is off, else `full_access`. See the `ConnectionAccessType` schema for the meaning per provider.
+//
+// **PriceLabs (an app).** `accounts[]` lists every PriceLabs connection of the workspace (each one key), with `scope`, `listingCount`, `keyMasked` and `health`: `status` (`active`, `idle`, `failing`, `never_connected`), last request, last successful price push, pushes per day for 7 days, error rates and the latest errors. Revoked ones stay listed as `disconnected` with `health: null`. `externalAccountId` is `null` (PriceLabs has no account id to give us); `id` is the connection.
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -88619,6 +89226,8 @@ func (c *ClientWithResponses) GetConnectStatusWithResponse(ctx context.Context, 
 //
 // PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
+// **PriceLabs (an app).** Pass `redirectUrl` (and optionally `state`, `locale`, `workspace`). The response returns a hosted `url` for the session's workspace: yours, the one `X-Workspace-Id` names, or a new sub-workspace when you send `workspace.name` (its id comes back as `workspaceId`). The page shows the host a key for **every listing of that workspace, including listings added later**, with the steps to paste it into PriceLabs, then waits for PriceLabs' first call and completes like every provider: redirect to `redirectUrl` (`status=connected&connectionId=…`) or the `repull:connect:completed` popup message, and `connect.session.completed`. When PriceLabs first uses the key, `account.created` is sent. To keep PriceLabs away from the rest of an account, put the listings it should price in a sub-workspace and connect PriceLabs there. To issue the key yourself (no hosted page, or only some listings) use `POST /v1/connect/pricelabs/key`.
+//
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
 // Corresponds with POST /v1/connect/{provider} (the `CreateConnection` operationId).
@@ -88639,6 +89248,8 @@ func (c *ClientWithResponses) CreateConnectionWithBodyWithResponse(ctx context.C
 // Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
 //
 // PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
+//
+// **PriceLabs (an app).** Pass `redirectUrl` (and optionally `state`, `locale`, `workspace`). The response returns a hosted `url` for the session's workspace: yours, the one `X-Workspace-Id` names, or a new sub-workspace when you send `workspace.name` (its id comes back as `workspaceId`). The page shows the host a key for **every listing of that workspace, including listings added later**, with the steps to paste it into PriceLabs, then waits for PriceLabs' first call and completes like every provider: redirect to `redirectUrl` (`status=connected&connectionId=…`) or the `repull:connect:completed` popup message, and `connect.session.completed`. When PriceLabs first uses the key, `account.created` is sent. To keep PriceLabs away from the rest of an account, put the listings it should price in a sub-workspace and connect PriceLabs there. To issue the key yourself (no hosted page, or only some listings) use `POST /v1/connect/pricelabs/key`.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -109020,6 +109631,191 @@ func ParseSubmitOwnerrezCredentialsClientResponse(rsp *http.Response) (*SubmitOw
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreatePriceLabsKeyClientResponse parses an HTTP response from a CreatePriceLabsKeyWithResponse call
+func ParseCreatePriceLabsKeyClientResponse(rsp *http.Response) (*CreatePriceLabsKeyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreatePriceLabsKeyClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest struct {
+			// AccessType What this connection may do: `read_only`, `messaging` or `full_access` (see `ConnectionAccessType` for the meaning per provider). Airbnb: the tier of the host in `externalAccountId`. `null` when unknown.
+			AccessType *ConnectionAccessType `json:"accessType,omitempty"`
+
+			// Action Set when the host must do something before the connection works (e.g. grant the invited Booking.com Extranet user full access), or has units still to map (`reason: needs_mapping` — Booking.com Extranet rooms, Vrbo units; `required` is false when only some Vrbo units are left). `null` when no action is pending.
+			Action    *ConnectionAction `json:"action,omitempty"`
+			CreatedAt *time.Time        `json:"createdAt,omitempty"`
+
+			// DisconnectedAt Apps only: when the connection was revoked.
+			DisconnectedAt *time.Time `json:"disconnectedAt,omitempty"`
+
+			// ExternalAccountId The platform's own account id: Airbnb host id; Booking.com hotel id (`booking`); the Booking.com account id behind the Extranet login (`booking_extranet`); Vrbo's account id (`vrbo`); the PMS's own account or company id. `null` when the platform id is not known yet (a Vrbo sign-in before its account id is captured, a PMS that does not expose one); never a Repull id. Use `id` for our record.
+			//
+			// Example: 20123456
+			ExternalAccountId *string `json:"externalAccountId,omitempty"`
+
+			// FixUrl Durable link that reopens the hosted Connect flow bound to this account on the fix screen — send the host here to resolve `action`. For `needs_mapping` it opens the unit mapping directly (no new sign-in). Present whenever `action` is set; `null` otherwise.
+			FixUrl *string `json:"fixUrl,omitempty"`
+
+			// Health Apps only: how the app is doing on this connection. `null` once disconnected.
+			Health *AppConnectionHealth `json:"health,omitempty"`
+
+			// Host Host metadata for the linked account. Currently populated for Airbnb only; null for other providers.
+			Host *ConnectHost `json:"host,omitempty"`
+			Id   *string      `json:"id,omitempty"`
+
+			// Import The account's latest import — `status: running` while the first sync (or a later one) is going, then `completed` or `failed`. `null` when no import has been recorded. The same run is announced by the `account.import.*` webhooks; the history is on `GET /v1/connections/{id}/imports`.
+			Import *AccountImport `json:"import,omitempty"`
+
+			// Instructions What to tell the host, ready to show.
+			Instructions struct {
+				Scope *string   `json:"scope,omitempty"`
+				Steps *[]string `json:"steps,omitempty"`
+			} `json:"instructions"`
+
+			// Key The key to paste into PriceLabs. Returned only here.
+			//
+			// Example: sk_live_YOUR_PRICELABS_KEY
+			Key string `json:"key"`
+
+			// KeyMasked Apps only: the key the app uses, masked. The key itself is shown once, when created.
+			//
+			// Example: sk_live_4eB3...XYZw
+			KeyMasked *string `json:"keyMasked,omitempty"`
+
+			// Label Apps only: the name given to the key.
+			Label *string `json:"label,omitempty"`
+
+			// ListingCount Apps only: listings the connection covers now.
+			//
+			// Example: 12
+			ListingCount *int `json:"listingCount,omitempty"`
+
+			// ListingIds Apps only: the listings a `listings`-scoped connection covers; `null` for `workspace`.
+			ListingIds *[]string `json:"listingIds,omitempty"`
+
+			// Provider Example: hostaway
+			Provider *string `json:"provider,omitempty"`
+
+			// Scope Apps (`pricelabs`) only. `workspace`: every listing of the workspace, including listings added later. `listings`: only `listingIds`.
+			Scope *CreatePriceLabsKey201JSONResponseBodyScope `json:"scope,omitempty"`
+
+			// Status `active` — connected and working. `pending` — still settling. `needs_permissions` — connected but the host must grant more access before it works (see `action`/`fixUrl`). An `active` connection can also carry an `action` (e.g. a Smoobu legacy API key that must be replaced with a key + secret before October 31, 2026). `error` — the last operation failed. `disconnected` — revoked or superseded.
+			//
+			// Example: active
+			Status *CreatePriceLabsKey201JSONResponseBodyStatus `json:"status,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPriceLabsSessionStatusClientResponse parses an HTTP response from a GetPriceLabsSessionStatusWithResponse call
+func ParseGetPriceLabsSessionStatusClientResponse(rsp *http.Response) (*GetPriceLabsSessionStatusClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPriceLabsSessionStatusClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// ConnectionId The PriceLabs connection once the session holds a key.
+			ConnectionId *string                                             `json:"connectionId,omitempty"`
+			Status       *GetPriceLabsSessionStatus200JSONResponseBodyStatus `json:"status,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
 
 	}
 
