@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.56 — 2026-11-23
+
+- New: `GET /v1/connect/pricelabs/session`
+- New: `POST /v1/connect/pricelabs/key`
+- Regenerated from the live spec (automated spec refresh).
+
 ## 0.2.55 — 2026-11-22
 
 - New: `DELETE /v1/channels/vrbo/offers`
