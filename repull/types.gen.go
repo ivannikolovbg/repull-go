@@ -10236,9 +10236,8 @@ func (e CreateConnectionJSONBodyAccessType) Valid() bool {
 
 // Defines values for StartConnectionImportJSONBodyScope.
 const (
-	StartConnectionImportJSONBodyScopeFull         StartConnectionImportJSONBodyScope = "full"
-	StartConnectionImportJSONBodyScopeListings     StartConnectionImportJSONBodyScope = "listings"
-	StartConnectionImportJSONBodyScopeReservations StartConnectionImportJSONBodyScope = "reservations"
+	StartConnectionImportJSONBodyScopeFull     StartConnectionImportJSONBodyScope = "full"
+	StartConnectionImportJSONBodyScopeListings StartConnectionImportJSONBodyScope = "listings"
 )
 
 // Valid indicates whether the value is a known member of the StartConnectionImportJSONBodyScope enum.
@@ -10248,8 +10247,6 @@ func (e StartConnectionImportJSONBodyScope) Valid() bool {
 		return true
 	case StartConnectionImportJSONBodyScopeListings:
 		return true
-	case StartConnectionImportJSONBodyScopeReservations:
-		return true
 	default:
 		return false
 	}
@@ -10257,9 +10254,8 @@ func (e StartConnectionImportJSONBodyScope) Valid() bool {
 
 // Defines values for StartConnectionImport202JSONResponseBodyDataScope.
 const (
-	StartConnectionImport202JSONResponseBodyDataScopeFull         StartConnectionImport202JSONResponseBodyDataScope = "full"
-	StartConnectionImport202JSONResponseBodyDataScopeListings     StartConnectionImport202JSONResponseBodyDataScope = "listings"
-	StartConnectionImport202JSONResponseBodyDataScopeReservations StartConnectionImport202JSONResponseBodyDataScope = "reservations"
+	StartConnectionImport202JSONResponseBodyDataScopeFull     StartConnectionImport202JSONResponseBodyDataScope = "full"
+	StartConnectionImport202JSONResponseBodyDataScopeListings StartConnectionImport202JSONResponseBodyDataScope = "listings"
 )
 
 // Valid indicates whether the value is a known member of the StartConnectionImport202JSONResponseBodyDataScope enum.
@@ -10268,8 +10264,6 @@ func (e StartConnectionImport202JSONResponseBodyDataScope) Valid() bool {
 	case StartConnectionImport202JSONResponseBodyDataScopeFull:
 		return true
 	case StartConnectionImport202JSONResponseBodyDataScopeListings:
-		return true
-	case StartConnectionImport202JSONResponseBodyDataScopeReservations:
 		return true
 	default:
 		return false
@@ -27189,7 +27183,7 @@ type ListConnectionImportsParams struct {
 
 // StartConnectionImportJSONBody defines parameters for StartConnectionImport.
 type StartConnectionImportJSONBody struct {
-	// Scope What to import. `full` = the first-connect import again (listings, calendars, reservations, payouts, reviews, conversations), for an account that has never fully imported. `listings` = the account's listings with their calendars. `reservations` = the account's reservations, stays from the last month and every future one. Omit to let Repull choose: `full` for an account that has never fully imported, else `listings`.
+	// Scope What to import. `full` = the first-connect import again (listings, calendars, reservations, payouts, reviews, conversations), for an account that has never fully imported. `listings` = the account's listings with their calendars. Omit to let Repull choose: `full` for an account that has never fully imported, else `listings`.
 	Scope *StartConnectionImportJSONBodyScope `json:"scope,omitempty"`
 }
 

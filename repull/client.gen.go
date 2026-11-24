@@ -1429,7 +1429,7 @@ type ClientInterface interface {
 	//
 	// Each row has the Airbnb `confirmationCode`, the `reservationId` of the same stay on `GET /v1/reservations/{id}`, the Repull `listingId` and Airbnb `airbnbListingId`, a normalised `status`, `checkIn`/`checkOut` dates, `totalPrice` + `currency` (what the guest paid) and `payout` + `payoutCurrency` (what the host receives). Airbnb's own record follows (`airbnbStatus`, `totalPaidAmount`, `expectedPayoutAmount`, …) for integrations already reading it.
 	//
-	// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows. To re-read an account now, `POST /v1/connections/{id}/imports` with `{"scope": "reservations"}`.
+	// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows.
 	//
 	// Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
 	//
@@ -4623,13 +4623,11 @@ type ClientInterface interface {
 
 	// StartConnectionImportWithBody Start an import of a connection
 	//
-	// Start an import of a connected Airbnb account now. Three scopes:
+	// Start an import of a connected Airbnb account now. Two scopes:
 	//
 	// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
 	//
 	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
-	//
-	// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 	//
 	// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
 	//
@@ -4637,7 +4635,7 @@ type ClientInterface interface {
 	//
 	// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 	//
-	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -4646,13 +4644,11 @@ type ClientInterface interface {
 
 	// StartConnectionImport Start an import of a connection
 	//
-	// Start an import of a connected Airbnb account now. Three scopes:
+	// Start an import of a connected Airbnb account now. Two scopes:
 	//
 	// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
 	//
 	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
-	//
-	// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 	//
 	// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
 	//
@@ -4660,7 +4656,7 @@ type ClientInterface interface {
 	//
 	// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 	//
-	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -9334,7 +9330,7 @@ func (c *Client) CreateAirbnbOffer(ctx context.Context, params *CreateAirbnbOffe
 //
 // Each row has the Airbnb `confirmationCode`, the `reservationId` of the same stay on `GET /v1/reservations/{id}`, the Repull `listingId` and Airbnb `airbnbListingId`, a normalised `status`, `checkIn`/`checkOut` dates, `totalPrice` + `currency` (what the guest paid) and `payout` + `payoutCurrency` (what the host receives). Airbnb's own record follows (`airbnbStatus`, `totalPaidAmount`, `expectedPayoutAmount`, …) for integrations already reading it.
 //
-// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows. To re-read an account now, `POST /v1/connections/{id}/imports` with `{"scope": "reservations"}`.
+// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows.
 //
 // Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
 //
@@ -14805,13 +14801,11 @@ func (c *Client) ListConnectionImports(ctx context.Context, id string, params *L
 
 // StartConnectionImportWithBody Start an import of a connection
 //
-// Start an import of a connected Airbnb account now. Three scopes:
+// Start an import of a connected Airbnb account now. Two scopes:
 //
 // **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
 //
 // **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
-//
-// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 //
 // With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
 //
@@ -14819,7 +14813,7 @@ func (c *Client) ListConnectionImports(ctx context.Context, id string, params *L
 //
 // Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 //
-// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
 //
 // Takes any type of body and a specified content type.
 //
@@ -14838,13 +14832,11 @@ func (c *Client) StartConnectionImportWithBody(ctx context.Context, id string, c
 
 // StartConnectionImport Start an import of a connection
 //
-// Start an import of a connected Airbnb account now. Three scopes:
+// Start an import of a connected Airbnb account now. Two scopes:
 //
 // **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
 //
 // **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
-//
-// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 //
 // With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
 //
@@ -14852,7 +14844,7 @@ func (c *Client) StartConnectionImportWithBody(ctx context.Context, id string, c
 //
 // Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 //
-// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -40414,7 +40406,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Each row has the Airbnb `confirmationCode`, the `reservationId` of the same stay on `GET /v1/reservations/{id}`, the Repull `listingId` and Airbnb `airbnbListingId`, a normalised `status`, `checkIn`/`checkOut` dates, `totalPrice` + `currency` (what the guest paid) and `payout` + `payoutCurrency` (what the host receives). Airbnb's own record follows (`airbnbStatus`, `totalPaidAmount`, `expectedPayoutAmount`, …) for integrations already reading it.
 	//
-	// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows. To re-read an account now, `POST /v1/connections/{id}/imports` with `{"scope": "reservations"}`.
+	// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows.
 	//
 	// Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
 	//
@@ -43760,13 +43752,11 @@ type ClientWithResponsesInterface interface {
 
 	// StartConnectionImportWithBodyWithResponse Start an import of a connection
 	//
-	// Start an import of a connected Airbnb account now. Three scopes:
+	// Start an import of a connected Airbnb account now. Two scopes:
 	//
 	// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
 	//
 	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
-	//
-	// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 	//
 	// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
 	//
@@ -43774,7 +43764,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 	//
-	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -43783,13 +43773,11 @@ type ClientWithResponsesInterface interface {
 
 	// StartConnectionImportWithResponse Start an import of a connection
 	//
-	// Start an import of a connected Airbnb account now. Three scopes:
+	// Start an import of a connected Airbnb account now. Two scopes:
 	//
 	// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
 	//
 	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
-	//
-	// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 	//
 	// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
 	//
@@ -43797,7 +43785,7 @@ type ClientWithResponsesInterface interface {
 	//
 	// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 	//
-	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -84723,7 +84711,7 @@ func (c *ClientWithResponses) CreateAirbnbOfferWithResponse(ctx context.Context,
 //
 // Each row has the Airbnb `confirmationCode`, the `reservationId` of the same stay on `GET /v1/reservations/{id}`, the Repull `listingId` and Airbnb `airbnbListingId`, a normalised `status`, `checkIn`/`checkOut` dates, `totalPrice` + `currency` (what the guest paid) and `payout` + `payoutCurrency` (what the host receives). Airbnb's own record follows (`airbnbStatus`, `totalPaidAmount`, `expectedPayoutAmount`, …) for integrations already reading it.
 //
-// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows. To re-read an account now, `POST /v1/connections/{id}/imports` with `{"scope": "reservations"}`.
+// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows.
 //
 // Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
 //
@@ -89439,13 +89427,11 @@ func (c *ClientWithResponses) ListConnectionImportsWithResponse(ctx context.Cont
 
 // StartConnectionImportWithBodyWithResponse Start an import of a connection
 //
-// Start an import of a connected Airbnb account now. Three scopes:
+// Start an import of a connected Airbnb account now. Two scopes:
 //
 // **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
 //
 // **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
-//
-// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 //
 // With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
 //
@@ -89453,7 +89439,7 @@ func (c *ClientWithResponses) ListConnectionImportsWithResponse(ctx context.Cont
 //
 // Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 //
-// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -89468,13 +89454,11 @@ func (c *ClientWithResponses) StartConnectionImportWithBodyWithResponse(ctx cont
 
 // StartConnectionImportWithResponse Start an import of a connection
 //
-// Start an import of a connected Airbnb account now. Three scopes:
+// Start an import of a connected Airbnb account now. Two scopes:
 //
 // **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
 //
 // **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
-//
-// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 //
 // With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
 //
@@ -89482,7 +89466,7 @@ func (c *ClientWithResponses) StartConnectionImportWithBodyWithResponse(ctx cont
 //
 // Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 //
-// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
