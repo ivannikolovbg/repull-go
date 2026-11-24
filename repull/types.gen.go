@@ -2404,6 +2404,27 @@ func (e GuestUpdateResponseContactsType) Valid() bool {
 	}
 }
 
+// Defines values for HospitableWebhookStatus.
+const (
+	NotConfigured HospitableWebhookStatus = "not_configured"
+	Receiving     HospitableWebhookStatus = "receiving"
+	Stale         HospitableWebhookStatus = "stale"
+)
+
+// Valid indicates whether the value is a known member of the HospitableWebhookStatus enum.
+func (e HospitableWebhookStatus) Valid() bool {
+	switch e {
+	case NotConfigured:
+		return true
+	case Receiving:
+		return true
+	case Stale:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for InquiryCreatedEventEvent.
 const (
 	InquiryCreatedEventEventInquiryCreated InquiryCreatedEventEvent = "inquiry.created"
@@ -15511,6 +15532,9 @@ type ConnectStatus struct {
 	// Status Example: active
 	Status *ConnectStatusStatus `json:"status,omitempty"`
 
+	// Webhook Hospitable only (`GET /v1/connect/hospitable`): the webhook URL the host pastes into Hospitable (Apps → Webhooks → + Add new) and whether deliveries are arriving.
+	Webhook *HospitableWebhook `json:"webhook,omitempty"`
+
 	// WritePolicy PMS connections only: what the app may change in the PMS. Change it with `PATCH /v1/connect/{provider}/write-policy`.
 	WritePolicy *PmsWritePolicy `json:"writePolicy,omitempty"`
 }
@@ -15574,6 +15598,9 @@ type Connection struct {
 	//
 	// Example: active
 	Status *ConnectionStatus `json:"status,omitempty"`
+
+	// Webhook Hospitable only: the webhook URL the host pastes into Hospitable (Apps → Webhooks → + Add new) and whether deliveries are arriving. Show it in your own UI so the host can set it up. Absent for other providers.
+	Webhook *HospitableWebhook `json:"webhook,omitempty"`
 }
 
 // ConnectionScope Apps (`pricelabs`) only. `workspace`: every listing of the workspace, including listings added later. `listings`: only `listingIds`.
@@ -16366,6 +16393,34 @@ type GuestUpdateResponse struct {
 
 // GuestUpdateResponseContactsType defines model for GuestUpdateResponse.Contacts.Type.
 type GuestUpdateResponseContactsType string
+
+// HospitableWebhook Hospitable only. Hospitable has no API to subscribe webhooks, so the host adds one in Hospitable: **Apps → Webhooks → + Add new**, pastes `url`, ticks Reservations, Messages, Properties and Reviews, and saves (Hospitable's **Test** button sends a sample right away). Each connection has its own `url`; a reconnect keeps it. Every delivery is checked against Hospitable's signature before it is used.
+//
+// **Polling.** While `status` is `receiving` the connection is updated from the webhooks alone and is not polled. When it is `not_configured` or `stale` it is polled every minute, and the first poll after going stale re-reads the whole silent window, so nothing is lost. A quiet account (no bookings or messages for a day) can read `stale` while its webhook still works; the next delivery flips it back to `receiving`.
+type HospitableWebhook struct {
+	// Events The webhook types to tick in Hospitable.
+	//
+	// Example: ["Reservations","Messages","Properties","Reviews"]
+	Events *[]string `json:"events,omitempty"`
+
+	// LastReceivedAt When the last verified delivery arrived; `null` before the first.
+	LastReceivedAt *time.Time `json:"lastReceivedAt"`
+
+	// Status `not_configured`: no delivery yet (the host has not added the URL). `receiving`: a delivery arrived in the last 24 hours. `stale`: deliveries arrived before, none in the last 24 hours.
+	//
+	// Example: receiving
+	Status HospitableWebhookStatus `json:"status"`
+
+	// Url The webhook URL to paste into Hospitable. Unique to this connection.
+	//
+	// Example: https://api.repull.dev/webhooks/pms/hospitable?token=4f9c2a7e1b3d5f60a8c9e2b4d6f8a0c1
+	Url string `json:"url"`
+}
+
+// HospitableWebhookStatus `not_configured`: no delivery yet (the host has not added the URL). `receiving`: a delivery arrived in the last 24 hours. `stale`: deliveries arrived before, none in the last 24 hours.
+//
+// Example: receiving
+type HospitableWebhookStatus string
 
 // InquiryCreatedEvent defines model for InquiryCreatedEvent.
 type InquiryCreatedEvent struct {

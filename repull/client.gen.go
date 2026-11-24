@@ -4112,9 +4112,9 @@ type ClientInterface interface {
 
 	// SubmitHospitableCredentialsWithBody Submit Hospitable credentials for a Connect session
 	//
-	// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Settings → API.
+	// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Apps → API access → Access tokens.
 	//
-	// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
+	// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state. The response carries the connection's `webhook` URL: Hospitable has no API to subscribe webhooks, so show it to the host, who adds it in Hospitable (Apps → Webhooks → + Add new) for instant updates.
 	//
 	// No API key required when called with a `sessionId` — the session is the capability token.
 	//
@@ -4125,9 +4125,9 @@ type ClientInterface interface {
 
 	// SubmitHospitableCredentials Submit Hospitable credentials for a Connect session
 	//
-	// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Settings → API.
+	// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Apps → API access → Access tokens.
 	//
-	// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
+	// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state. The response carries the connection's `webhook` URL: Hospitable has no API to subscribe webhooks, so show it to the host, who adds it in Hospitable (Apps → Webhooks → + Add new) for instant updates.
 	//
 	// No API key required when called with a `sessionId` — the session is the capability token.
 	//
@@ -13890,9 +13890,9 @@ func (c *Client) SubmitGuestyCredentials(ctx context.Context, body SubmitGuestyC
 
 // SubmitHospitableCredentialsWithBody Submit Hospitable credentials for a Connect session
 //
-// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Settings → API.
+// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Apps → API access → Access tokens.
 //
-// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
+// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state. The response carries the connection's `webhook` URL: Hospitable has no API to subscribe webhooks, so show it to the host, who adds it in Hospitable (Apps → Webhooks → + Add new) for instant updates.
 //
 // No API key required when called with a `sessionId` — the session is the capability token.
 //
@@ -13913,9 +13913,9 @@ func (c *Client) SubmitHospitableCredentialsWithBody(ctx context.Context, conten
 
 // SubmitHospitableCredentials Submit Hospitable credentials for a Connect session
 //
-// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Settings → API.
+// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Apps → API access → Access tokens.
 //
-// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
+// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state. The response carries the connection's `webhook` URL: Hospitable has no API to subscribe webhooks, so show it to the host, who adds it in Hospitable (Apps → Webhooks → + Add new) for instant updates.
 //
 // No API key required when called with a `sessionId` — the session is the capability token.
 //
@@ -43199,9 +43199,9 @@ type ClientWithResponsesInterface interface {
 
 	// SubmitHospitableCredentialsWithBodyWithResponse Submit Hospitable credentials for a Connect session
 	//
-	// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Settings → API.
+	// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Apps → API access → Access tokens.
 	//
-	// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
+	// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state. The response carries the connection's `webhook` URL: Hospitable has no API to subscribe webhooks, so show it to the host, who adds it in Hospitable (Apps → Webhooks → + Add new) for instant updates.
 	//
 	// No API key required when called with a `sessionId` — the session is the capability token.
 	//
@@ -43212,9 +43212,9 @@ type ClientWithResponsesInterface interface {
 
 	// SubmitHospitableCredentialsWithResponse Submit Hospitable credentials for a Connect session
 	//
-	// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Settings → API.
+	// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Apps → API access → Access tokens.
 	//
-	// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
+	// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state. The response carries the connection's `webhook` URL: Hospitable has no API to subscribe webhooks, so show it to the host, who adds it in Hospitable (Apps → Webhooks → + Add new) for instant updates.
 	//
 	// No API key required when called with a `sessionId` — the session is the capability token.
 	//
@@ -69237,6 +69237,9 @@ type SubmitHospitableCredentialsClientResponse struct {
 	JSON200 *struct {
 		AccountInfo *map[string]interface{} `json:"accountInfo,omitempty"`
 		Ok          *bool                   `json:"ok,omitempty"`
+
+		// Webhook The webhook URL to show the host: in Hospitable, Apps → Webhooks → + Add new, paste it, tick Reservations, Messages, Properties and Reviews. Optional — without it the connection is polled every minute. `null` if it could not be set up.
+		Webhook *HospitableWebhook `json:"webhook,omitempty"`
 	}
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
@@ -69252,6 +69255,9 @@ type SubmitHospitableCredentialsClientResponse struct {
 func (r SubmitHospitableCredentialsClientResponse) GetJSON200() *struct {
 	AccountInfo *map[string]interface{} `json:"accountInfo,omitempty"`
 	Ok          *bool                   `json:"ok,omitempty"`
+
+	// Webhook The webhook URL to show the host: in Hospitable, Apps → Webhooks → + Add new, paste it, tick Reservations, Messages, Properties and Reviews. Optional — without it the connection is polled every minute. `null` if it could not be set up.
+	Webhook *HospitableWebhook `json:"webhook,omitempty"`
 } {
 	return r.JSON200
 }
@@ -69810,6 +69816,9 @@ type CreatePriceLabsKeyClientResponse struct {
 		//
 		// Example: active
 		Status *CreatePriceLabsKey201JSONResponseBodyStatus `json:"status,omitempty"`
+
+		// Webhook Hospitable only: the webhook URL the host pastes into Hospitable (Apps → Webhooks → + Add new) and whether deliveries are arriving. Show it in your own UI so the host can set it up. Absent for other providers.
+		Webhook *HospitableWebhook `json:"webhook,omitempty"`
 	}
 	// JSON400 the response for an HTTP 400 `application/json` response
 	JSON400 *BadRequest
@@ -69890,6 +69899,9 @@ func (r CreatePriceLabsKeyClientResponse) GetJSON201() *struct {
 	//
 	// Example: active
 	Status *CreatePriceLabsKey201JSONResponseBodyStatus `json:"status,omitempty"`
+
+	// Webhook Hospitable only: the webhook URL the host pastes into Hospitable (Apps → Webhooks → + Add new) and whether deliveries are arriving. Show it in your own UI so the host can set it up. Absent for other providers.
+	Webhook *HospitableWebhook `json:"webhook,omitempty"`
 } {
 	return r.JSON201
 }
@@ -88599,9 +88611,9 @@ func (c *ClientWithResponses) SubmitGuestyCredentialsWithResponse(ctx context.Co
 
 // SubmitHospitableCredentialsWithBodyWithResponse Submit Hospitable credentials for a Connect session
 //
-// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Settings → API.
+// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Apps → API access → Access tokens.
 //
-// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
+// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state. The response carries the connection's `webhook` URL: Hospitable has no API to subscribe webhooks, so show it to the host, who adds it in Hospitable (Apps → Webhooks → + Add new) for instant updates.
 //
 // No API key required when called with a `sessionId` — the session is the capability token.
 //
@@ -88618,9 +88630,9 @@ func (c *ClientWithResponses) SubmitHospitableCredentialsWithBodyWithResponse(ct
 
 // SubmitHospitableCredentialsWithResponse Submit Hospitable credentials for a Connect session
 //
-// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Settings → API.
+// Completes a credentials-pattern connection for Hospitable. Personal access token from Hospitable → Apps → API access → Access tokens.
 //
-// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state.
+// The credentials are validated against Hospitable before anything is persisted, so an invalid pair returns `invalid_credentials` rather than creating a dead connection. On success the `pms_connections` row is written and the Connect session moves to its terminal state. The response carries the connection's `webhook` URL: Hospitable has no API to subscribe webhooks, so show it to the host, who adds it in Hospitable (Apps → Webhooks → + Add new) for instant updates.
 //
 // No API key required when called with a `sessionId` — the session is the capability token.
 //
@@ -109315,6 +109327,9 @@ func ParseSubmitHospitableCredentialsClientResponse(rsp *http.Response) (*Submit
 		var dest struct {
 			AccountInfo *map[string]interface{} `json:"accountInfo,omitempty"`
 			Ok          *bool                   `json:"ok,omitempty"`
+
+			// Webhook The webhook URL to show the host: in Hospitable, Apps → Webhooks → + Add new, paste it, tick Reservations, Messages, Properties and Reviews. Optional — without it the connection is polled every minute. `null` if it could not be set up.
+			Webhook *HospitableWebhook `json:"webhook,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -109750,6 +109765,9 @@ func ParseCreatePriceLabsKeyClientResponse(rsp *http.Response) (*CreatePriceLabs
 			//
 			// Example: active
 			Status *CreatePriceLabsKey201JSONResponseBodyStatus `json:"status,omitempty"`
+
+			// Webhook Hospitable only: the webhook URL the host pastes into Hospitable (Apps → Webhooks → + Add new) and whether deliveries are arriving. Show it in your own UI so the host can set it up. Absent for other providers.
+			Webhook *HospitableWebhook `json:"webhook,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
