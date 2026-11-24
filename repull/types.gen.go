@@ -12090,6 +12090,11 @@ type AccountCalendarAccessChangedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AccountCalendarAccessChangedEventEvent The event name. This field is `event`, not `type`.
@@ -12132,6 +12137,11 @@ type AccountCreatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AccountCreatedEventEvent The event name. This field is `event`, not `type`.
@@ -12176,6 +12186,11 @@ type AccountDisconnectedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AccountDisconnectedEventEvent The event name. This field is `event`, not `type`.
@@ -12272,6 +12287,11 @@ type AccountImportCompletedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AccountImportCompletedEventEvent The event name. This field is `event`, not `type`.
@@ -12304,6 +12324,11 @@ type AccountImportFailedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AccountImportFailedEventEvent The event name. This field is `event`, not `type`.
@@ -12364,6 +12389,11 @@ type AccountImportStartedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AccountImportStartedEventEvent The event name. This field is `event`, not `type`.
@@ -12401,6 +12431,11 @@ type AccountNotificationsMissingEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AccountNotificationsMissingEventEvent The event name. This field is `event`, not `type`.
@@ -12446,6 +12481,11 @@ type AccountUnitsAddedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AccountUnitsAddedEventEvent The event name. This field is `event`, not `type`.
@@ -12541,6 +12581,11 @@ type AiOperationCompletedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AiOperationCompletedEventEvent The event name. This field is `event`, not `type`.
@@ -12590,6 +12635,11 @@ type AiOperationFailedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // AiOperationFailedEventEvent The event name. This field is `event`, not `type`.
@@ -14773,6 +14823,11 @@ type BookingUnacknowledgedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // BookingUnacknowledgedEventEvent The event name. This field is `event`, not `type`.
@@ -14932,6 +14987,11 @@ type ChannelDegradedEvent struct {
 	Event     ChannelDegradedEventEvent `json:"event"`
 	EventId   openapi_types.UUID        `json:"eventId"`
 	Timestamp time.Time                 `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ChannelDegradedEventEvent The event name. This field is `event`, not `type`.
@@ -15036,6 +15096,11 @@ type ChannelSyncFailedEvent struct {
 	// EventId Stable across every delivery and replay of this logical event — dedupe on it.
 	EventId   openapi_types.UUID `json:"eventId"`
 	Timestamp time.Time          `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ChannelSyncFailedEventEvent The event name. This field is `event`, not `type`.
@@ -15208,6 +15273,11 @@ type ConnectSessionAbandonedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ConnectSessionAbandonedEventEvent The event name. This field is `event`, not `type`.
@@ -15283,6 +15353,11 @@ type ConnectSessionCompletedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ConnectSessionCompletedEventEvent The event name. This field is `event`, not `type`.
@@ -15717,6 +15792,11 @@ type ConversationMessageStatusChangedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ConversationMessageStatusChangedEventEvent The event name. This field is `event`, not `type`.
@@ -16294,6 +16374,11 @@ type InquiryCreatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // InquiryCreatedEventEvent The event name. This field is `event`, not `type`.
@@ -16328,6 +16413,11 @@ type InquiryUpdatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // InquiryUpdatedEventEvent The event name. This field is `event`, not `type`.
@@ -17147,6 +17237,11 @@ type ListingCreatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ListingCreatedEventEvent The event name. This field is `event`, not `type`.
@@ -17203,6 +17298,11 @@ type ListingDeletedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ListingDeletedEventEvent The event name. This field is `event`, not `type`.
@@ -17345,6 +17445,11 @@ type ListingIcalFeedChangedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ListingIcalFeedChangedEventEvent The event name. This field is `event`, not `type`.
@@ -17946,6 +18051,11 @@ type ListingReactivatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ListingReactivatedEventEvent The event name. This field is `event`, not `type`.
@@ -18099,6 +18209,11 @@ type ListingSuspendedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ListingSuspendedEventEvent The event name. This field is `event`, not `type`.
@@ -18165,6 +18280,11 @@ type ListingUpdatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ListingUpdatedEventEvent The event name. This field is `event`, not `type`.
@@ -18810,7 +18930,7 @@ type MigrationCompletedEvent struct {
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
 
-	// WorkspaceId The migration's workspace — pass it as `X-Workspace-Id`, or to `GET /v1/migrations/{workspaceId}`.
+	// WorkspaceId The migration's workspace — pass it as `X-Workspace-Id`, or to `GET /v1/migrations/{workspaceId}`. Always present on migration events. A JSON number here; `POST /v1/connect` and `GET /v1/workspaces` return the same id as a string, so compare as strings.
 	WorkspaceId int `json:"workspaceId"`
 }
 
@@ -18854,7 +18974,7 @@ type MigrationFailedEvent struct {
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
 
-	// WorkspaceId The migration's workspace — pass it as `X-Workspace-Id`, or to `GET /v1/migrations/{workspaceId}`.
+	// WorkspaceId The migration's workspace — pass it as `X-Workspace-Id`, or to `GET /v1/migrations/{workspaceId}`. Always present on migration events. A JSON number here; `POST /v1/connect` and `GET /v1/workspaces` return the same id as a string, so compare as strings.
 	WorkspaceId int `json:"workspaceId"`
 }
 
@@ -18966,6 +19086,11 @@ type PaymentCompletedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // PaymentCompletedEventEvent The event name. This field is `event`, not `type`.
@@ -19000,6 +19125,11 @@ type PaymentRefundedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // PaymentRefundedEventEvent The event name. This field is `event`, not `type`.
@@ -19091,6 +19221,11 @@ type PayoutCompletedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // PayoutCompletedEventEvent The event name. This field is `event`, not `type`.
@@ -19851,6 +19986,11 @@ type RepullPingEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // RepullPingEventEvent The event name. This field is `event`, not `type`.
@@ -20121,6 +20261,11 @@ type ReservationAlterationCreatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationAlterationCreatedEventEvent The event name. This field is `event`, not `type`.
@@ -20156,6 +20301,11 @@ type ReservationAlterationRespondedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationAlterationRespondedEventEvent The event name. This field is `event`, not `type`.
@@ -20191,6 +20341,11 @@ type ReservationCancelledEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationCancelledEventEvent The event name. This field is `event`, not `type`.
@@ -20404,6 +20559,11 @@ type ReservationCreatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationCreatedEventEvent The event name. This field is `event`, not `type`.
@@ -20537,6 +20697,11 @@ type ReservationMessageReactionEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationMessageReactionEventEvent The event name. This field is `event`, not `type`.
@@ -20605,6 +20770,11 @@ type ReservationMessageReadEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationMessageReadEventEvent The event name. This field is `event`, not `type`.
@@ -20663,6 +20833,11 @@ type ReservationMessageReceivedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationMessageReceivedEventEvent The event name. This field is `event`, not `type`.
@@ -20786,6 +20961,11 @@ type ReservationMessageSentEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationMessageSentEventEvent The event name. This field is `event`, not `type`.
@@ -20888,6 +21068,11 @@ type ReservationMessageUpdatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationMessageUpdatedEventEvent The event name. This field is `event`, not `type`.
@@ -21162,6 +21347,11 @@ type ReservationRequestCreatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationRequestCreatedEventEvent The event name. This field is `event`, not `type`.
@@ -21215,6 +21405,11 @@ type ReservationRequestUpdatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationRequestUpdatedEventEvent The event name. This field is `event`, not `type`.
@@ -21269,6 +21464,11 @@ type ReservationThreadAssignedEvent struct {
 	Event     ReservationThreadAssignedEventEvent `json:"event"`
 	EventId   openapi_types.UUID                  `json:"eventId"`
 	Timestamp time.Time                           `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationThreadAssignedEventEvent The event name. This field is `event`, not `type`.
@@ -21359,6 +21559,11 @@ type ReservationUpdatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReservationUpdatedEventEvent The event name. This field is `event`, not `type`.
@@ -21607,6 +21812,11 @@ type ReviewCreatedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReviewCreatedEventEvent The event name. This field is `event`, not `type`.
@@ -21645,6 +21855,11 @@ type ReviewRespondedEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // ReviewRespondedEventEvent The event name. This field is `event`, not `type`.
@@ -21959,6 +22174,11 @@ type UsageQuotaWarningEvent struct {
 
 	// Timestamp When this delivery was built.
 	Timestamp time.Time `json:"timestamp"`
+
+	// WorkspaceId The sub-workspace this event happened in. Present only on events from a sub-workspace your workspace opened (`POST /v1/connect` with `workspace`, or Repull Migrate); omitted on your own workspace's events. It is the same workspace as `workspaceId` on `POST /v1/connect` and `GET /v1/workspaces` and the `X-Workspace-Id` header, but those return it as a string (`"2042"`) while the event carries a JSON number (`2042`): compare as strings, e.g. `String(event.workspaceId) === workspace.workspaceId`. The UUID `data.workspaceId` on `account.created` / `account.disconnected` is a different identifier.
+	//
+	// Example: 2042
+	WorkspaceId *int `json:"workspaceId,omitempty"`
 }
 
 // UsageQuotaWarningEventEvent The event name. This field is `event`, not `type`.
