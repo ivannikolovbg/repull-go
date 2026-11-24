@@ -849,11 +849,14 @@ func (e AirbnbPricingWriteRequestType) Valid() bool {
 
 // Defines values for AirbnbReservationStatus.
 const (
-	AirbnbReservationStatusAccepted  AirbnbReservationStatus = "accepted"
-	AirbnbReservationStatusCancelled AirbnbReservationStatus = "cancelled"
-	AirbnbReservationStatusDenied    AirbnbReservationStatus = "denied"
-	AirbnbReservationStatusInquiry   AirbnbReservationStatus = "inquiry"
-	AirbnbReservationStatusPending   AirbnbReservationStatus = "pending"
+	AirbnbReservationStatusAccepted           AirbnbReservationStatus = "accepted"
+	AirbnbReservationStatusCancelled          AirbnbReservationStatus = "cancelled"
+	AirbnbReservationStatusDenied             AirbnbReservationStatus = "denied"
+	AirbnbReservationStatusError              AirbnbReservationStatus = "error"
+	AirbnbReservationStatusExpired            AirbnbReservationStatus = "expired"
+	AirbnbReservationStatusFailedVerification AirbnbReservationStatus = "failed_verification"
+	AirbnbReservationStatusPending            AirbnbReservationStatus = "pending"
+	AirbnbReservationStatusRequestVoided      AirbnbReservationStatus = "request_voided"
 )
 
 // Valid indicates whether the value is a known member of the AirbnbReservationStatus enum.
@@ -865,9 +868,15 @@ func (e AirbnbReservationStatus) Valid() bool {
 		return true
 	case AirbnbReservationStatusDenied:
 		return true
-	case AirbnbReservationStatusInquiry:
+	case AirbnbReservationStatusError:
+		return true
+	case AirbnbReservationStatusExpired:
+		return true
+	case AirbnbReservationStatusFailedVerification:
 		return true
 	case AirbnbReservationStatusPending:
+		return true
+	case AirbnbReservationStatusRequestVoided:
 		return true
 	default:
 		return false
@@ -6196,6 +6205,8 @@ const (
 	ListAirbnbReservationsParamsStatusCancelled          ListAirbnbReservationsParamsStatus = "cancelled"
 	ListAirbnbReservationsParamsStatusCompleted          ListAirbnbReservationsParamsStatus = "completed"
 	ListAirbnbReservationsParamsStatusDenied             ListAirbnbReservationsParamsStatus = "denied"
+	ListAirbnbReservationsParamsStatusError              ListAirbnbReservationsParamsStatus = "error"
+	ListAirbnbReservationsParamsStatusExpired            ListAirbnbReservationsParamsStatus = "expired"
 	ListAirbnbReservationsParamsStatusFailedVerification ListAirbnbReservationsParamsStatus = "failed_verification"
 	ListAirbnbReservationsParamsStatusPending            ListAirbnbReservationsParamsStatus = "pending"
 	ListAirbnbReservationsParamsStatusRequestVoided      ListAirbnbReservationsParamsStatus = "request_voided"
@@ -6211,6 +6222,10 @@ func (e ListAirbnbReservationsParamsStatus) Valid() bool {
 	case ListAirbnbReservationsParamsStatusCompleted:
 		return true
 	case ListAirbnbReservationsParamsStatusDenied:
+		return true
+	case ListAirbnbReservationsParamsStatusError:
+		return true
+	case ListAirbnbReservationsParamsStatusExpired:
 		return true
 	case ListAirbnbReservationsParamsStatusFailedVerification:
 		return true
@@ -10221,6 +10236,7 @@ func (e CreateConnectionJSONBodyAccessType) Valid() bool {
 
 // Defines values for StartConnectionImportJSONBodyScope.
 const (
+	StartConnectionImportJSONBodyScopeFull         StartConnectionImportJSONBodyScope = "full"
 	StartConnectionImportJSONBodyScopeListings     StartConnectionImportJSONBodyScope = "listings"
 	StartConnectionImportJSONBodyScopeReservations StartConnectionImportJSONBodyScope = "reservations"
 )
@@ -10228,6 +10244,8 @@ const (
 // Valid indicates whether the value is a known member of the StartConnectionImportJSONBodyScope enum.
 func (e StartConnectionImportJSONBodyScope) Valid() bool {
 	switch e {
+	case StartConnectionImportJSONBodyScopeFull:
+		return true
 	case StartConnectionImportJSONBodyScopeListings:
 		return true
 	case StartConnectionImportJSONBodyScopeReservations:
@@ -10239,6 +10257,7 @@ func (e StartConnectionImportJSONBodyScope) Valid() bool {
 
 // Defines values for StartConnectionImport202JSONResponseBodyDataScope.
 const (
+	StartConnectionImport202JSONResponseBodyDataScopeFull         StartConnectionImport202JSONResponseBodyDataScope = "full"
 	StartConnectionImport202JSONResponseBodyDataScopeListings     StartConnectionImport202JSONResponseBodyDataScope = "listings"
 	StartConnectionImport202JSONResponseBodyDataScopeReservations StartConnectionImport202JSONResponseBodyDataScope = "reservations"
 )
@@ -10246,6 +10265,8 @@ const (
 // Valid indicates whether the value is a known member of the StartConnectionImport202JSONResponseBodyDataScope enum.
 func (e StartConnectionImport202JSONResponseBodyDataScope) Valid() bool {
 	switch e {
+	case StartConnectionImport202JSONResponseBodyDataScopeFull:
+		return true
 	case StartConnectionImport202JSONResponseBodyDataScopeListings:
 		return true
 	case StartConnectionImport202JSONResponseBodyDataScopeReservations:
@@ -12286,7 +12307,7 @@ type AccountImport struct {
 	// Outcome `completed` imports only: `partial` when some units failed (see `stages`).
 	Outcome *AccountImportOutcome `json:"outcome,omitempty"`
 
-	// Reason `failed` imports only: why it stopped — e.g. `needs_permissions`, `duplicate_account`, `stalled`.
+	// Reason `failed` imports only: why it stopped — e.g. `needs_permissions`, `duplicate_account`, `stalled` (stopped reporting progress), `did_not_start` (queued, but no worker picked it up within 10 minutes: start it again with `POST /v1/connections/{id}/imports`), `queue_failed` (could not be queued).
 	Reason    *string               `json:"reason,omitempty"`
 	Stages    *[]AccountImportStage `json:"stages,omitempty"`
 	StartedAt *time.Time            `json:"startedAt,omitempty"`
@@ -13478,34 +13499,234 @@ type AirbnbPublishResult struct {
 	Warnings []string `json:"warnings"`
 }
 
-// AirbnbReservation An Airbnb reservation as returned by the channel API. Use `confirmationCode` to address it in Airbnb operations.
+// AirbnbReservation An Airbnb reservation as returned by the channel API. Use `confirmationCode` to address it in Airbnb operations, and `reservationId` to open the same stay on `GET /v1/reservations/{id}`. The fields after `payoutCurrency` are the Airbnb record as stored (Airbnb's raw status, amounts as decimal strings, stay datetimes); they are kept for existing integrations.
 type AirbnbReservation struct {
 	// AccountId Which connected Airbnb account this row belongs to — the Airbnb host id, as a string (they exceed 2^53). The same value `?account_id=` accepts and `GET /v1/connect/airbnb` returns as `accounts[].externalAccountId`.
 	//
 	// Example: 1772489413932732258
-	AccountId *string `json:"accountId,omitempty"`
+	AccountId *string `json:"accountId"`
 
 	// AccountName Display name of that connected Airbnb account.
 	//
 	// Example: Seaside Stays
-	AccountName *string             `json:"accountName,omitempty"`
-	CheckIn     *openapi_types.Date `json:"checkIn,omitempty"`
-	CheckOut    *openapi_types.Date `json:"checkOut,omitempty"`
+	AccountName *string `json:"accountName"`
 
-	// ConfirmationCode Example: HMABC12345
-	ConfirmationCode *string `json:"confirmationCode,omitempty"`
-	Currency         *string `json:"currency,omitempty"`
-	GuestCount       *int    `json:"guestCount,omitempty"`
-	GuestName        *string `json:"guestName,omitempty"`
-	ListingId        *string `json:"listingId,omitempty"`
+	// AirbnbListingId Airbnb's own listing id — the value `?listing_id=` takes.
+	//
+	// Example: 53866721
+	AirbnbListingId *string `json:"airbnbListingId"`
 
-	// Status Example: accepted
-	Status     *AirbnbReservationStatus `json:"status,omitempty"`
-	TotalPrice *float32                 `json:"totalPrice,omitempty"`
+	// AirbnbReservationId Same as `confirmationCode`.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	AirbnbReservationId *string `json:"airbnbReservationId,omitempty"`
+
+	// AirbnbStatus Airbnb's raw status: `accept`, `pending`, `cancelled_by_guest`, `cancelled_by_host`, `cancelled_by_admin`, `deny`, `failed_verification`, `pending_voided`, `checkpoint_voided`, `timeout`, …
+	//
+	// Example: accept
+	AirbnbStatus *string    `json:"airbnbStatus,omitempty"`
+	CanceledAt   *time.Time `json:"canceledAt,omitempty"`
+
+	// CancellationPolicy Example: moderate
+	CancellationPolicy *string `json:"cancellationPolicy,omitempty"`
+	CancellationReason *string `json:"cancellationReason,omitempty"`
+
+	// CheckIn Example: 2026-12-05
+	CheckIn *openapi_types.Date `json:"checkIn"`
+
+	// CheckInDatetime Check-in date at 00:00 UTC. Prefer `checkIn`.
+	CheckInDatetime *time.Time `json:"checkInDatetime,omitempty"`
+
+	// CheckOut Example: 2026-12-08
+	CheckOut *openapi_types.Date `json:"checkOut"`
+
+	// CheckOutDatetime Check-out date at 00:00 UTC. Prefer `checkOut`.
+	CheckOutDatetime *time.Time `json:"checkOutDatetime,omitempty"`
+
+	// ConfirmationCode Airbnb confirmation code.
+	//
+	// Example: HMABC12345
+	ConfirmationCode *string    `json:"confirmationCode"`
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+
+	// Currency Example: USD
+	Currency *string `json:"currency"`
+
+	// CustomerId Your workspace id.
+	CustomerId *string `json:"customerId,omitempty"`
+
+	// ExpectedPayoutAmount `payout` as a decimal string.
+	//
+	// Example: 190.32
+	ExpectedPayoutAmount *string `json:"expectedPayoutAmount,omitempty"`
+
+	// ExpectedPayoutCurrency Example: USD
+	ExpectedPayoutCurrency *string `json:"expectedPayoutCurrency,omitempty"`
+
+	// GuestAirbnbId The guest's Airbnb user id.
+	GuestAirbnbId  *string `json:"guestAirbnbId,omitempty"`
+	GuestCount     *int    `json:"guestCount"`
+	GuestFirstName *string `json:"guestFirstName,omitempty"`
+
+	// GuestId The guest on `GET /v1/guests/{id}`.
+	GuestId             *string `json:"guestId,omitempty"`
+	GuestLastName       *string `json:"guestLastName,omitempty"`
+	GuestName           *string `json:"guestName"`
+	GuestProfilePicture *string `json:"guestProfilePicture,omitempty"`
+
+	// HostId Same as `accountId`.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	HostId *string `json:"hostId,omitempty"`
+
+	// Id This Airbnb record's id in Repull.
+	//
+	// Example: 307200
+	Id string `json:"id"`
+
+	// ListingAirbnbId Internal link id of the Airbnb listing. Use `airbnbListingId` or `listingId` instead.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	ListingAirbnbId *string `json:"listingAirbnbId,omitempty"`
+
+	// ListingId The Repull listing id (`GET /v1/listings/{id}`).
+	//
+	// Example: 42343
+	ListingId *string `json:"listingId"`
+
+	// Payout What the host is expected to receive, in `payoutCurrency`.
+	//
+	// Example: 190.32
+	Payout *float32 `json:"payout"`
+
+	// PayoutCurrency Example: USD
+	PayoutCurrency *string `json:"payoutCurrency"`
+
+	// ReservationId The same stay on the unified reservations API: `GET /v1/reservations/{id}`. Null only while that record is still being created.
+	//
+	// Example: 667929
+	ReservationId *string `json:"reservationId"`
+
+	// Status Normalised status. Airbnb's own value is in `airbnbStatus`.
+	//
+	// Example: accepted
+	Status *AirbnbReservationStatus `json:"status"`
+
+	// TimeZone Example: America/Costa_Rica
+	TimeZone *string `json:"timeZone,omitempty"`
+
+	// TotalPaidAmount `totalPrice` as a decimal string.
+	//
+	// Example: 233.51
+	TotalPaidAmount *string `json:"totalPaidAmount,omitempty"`
+
+	// TotalPaidCurrency Example: USD
+	TotalPaidCurrency *string `json:"totalPaidCurrency,omitempty"`
+
+	// TotalPrice What the guest paid, in `currency`.
+	//
+	// Example: 233.51
+	TotalPrice *float32   `json:"totalPrice"`
+	UpdatedAt  *time.Time `json:"updatedAt,omitempty"`
 }
 
-// AirbnbReservationStatus Example: accepted
+// AirbnbReservationStatus Normalised status. Airbnb's own value is in `airbnbStatus`.
+//
+// Example: accepted
 type AirbnbReservationStatus string
+
+// AirbnbReservationDetail One Airbnb reservation: the unified reservation (the same record as `GET /v1/reservations/{reservationId}`, as stored), the connected account and payout, and `airbnb` — the row `GET /v1/channels/airbnb/reservations` returns for it.
+type AirbnbReservationDetail struct {
+	// AccountId The connected Airbnb account (host id, as a string).
+	AccountId   *string `json:"accountId"`
+	AccountName *string `json:"accountName"`
+
+	// Airbnb The Airbnb record, in the list endpoint's shape. Null only while it is still being imported.
+	Airbnb *AirbnbReservation `json:"airbnb"`
+
+	// AirbnbHostId Use `accountId`.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
+	AirbnbHostId *string `json:"airbnbHostId,omitempty"`
+
+	// AirbnbListingId Airbnb's own listing id.
+	AirbnbListingId          *string            `json:"airbnbListingId"`
+	BookedAt                 *time.Time         `json:"bookedAt,omitempty"`
+	BookingReservationNumber *string            `json:"bookingReservationNumber,omitempty"`
+	CancellationDate         *time.Time         `json:"cancellationDate,omitempty"`
+	CancellationPolicy       *string            `json:"cancellationPolicy,omitempty"`
+	CancellationReason       *string            `json:"cancellationReason,omitempty"`
+	CheckIn                  openapi_types.Date `json:"checkIn"`
+	CheckInTime              *string            `json:"checkInTime,omitempty"`
+	CheckOut                 openapi_types.Date `json:"checkOut"`
+	CheckOutTime             *string            `json:"checkOutTime,omitempty"`
+
+	// ConfirmationCode Example: HMAS8FEPJM
+	ConfirmationCode string `json:"confirmationCode"`
+
+	// Currency Example: EUR
+	Currency     *string                 `json:"currency"`
+	CustomFields *map[string]interface{} `json:"customFields,omitempty"`
+	CustomerId   *string                 `json:"customerId,omitempty"`
+	GuestCount   *int                    `json:"guestCount"`
+
+	// GuestDetails Guest counts: `numberOfGuests`, `numberOfAdults`, `numberOfChildren`, `numberOfInfants`, `numberOfPets`.
+	GuestDetails *map[string]interface{} `json:"guestDetails,omitempty"`
+	GuestId      *string                 `json:"guestId,omitempty"`
+	GuestName    *string                 `json:"guestName"`
+	GuestNotes   *string                 `json:"guestNotes,omitempty"`
+	HostNotes    *string                 `json:"hostNotes,omitempty"`
+
+	// Id The unified reservation id (same as `reservationId`).
+	//
+	// Example: 667929
+	Id            string  `json:"id"`
+	InternalNotes *string `json:"internalNotes,omitempty"`
+
+	// ListingId The Repull listing id.
+	//
+	// Example: 42343
+	ListingId string `json:"listingId"`
+
+	// PaymentStatus Example: paid
+	PaymentStatus *string `json:"paymentStatus,omitempty"`
+
+	// Payout What the host is expected to receive, in `payoutCurrency`.
+	Payout         *float32 `json:"payout"`
+	PayoutCurrency *string  `json:"payoutCurrency"`
+
+	// Platform Example: airbnb
+	Platform  *string `json:"platform,omitempty"`
+	PmsSource *string `json:"pmsSource,omitempty"`
+
+	// PriceBreakdown Nightly rates, fees, taxes, discounts, `hostPayout`.
+	PriceBreakdown *map[string]interface{} `json:"priceBreakdown,omitempty"`
+
+	// ReservationId The unified reservation id: `GET /v1/reservations/{id}`.
+	//
+	// Example: 667929
+	ReservationId string `json:"reservationId"`
+
+	// Status Airbnb's status as stored on the reservation (`accept`, `cancelled`, `decline`, `pending_voided`, …). The normalised value is `airbnb.status`.
+	//
+	// Example: accept
+	Status   string  `json:"status"`
+	TimeZone *string `json:"timeZone,omitempty"`
+
+	// TotalPrice Total as a decimal string, in `currency`.
+	//
+	// Example: 245.03
+	TotalPrice     *string `json:"totalPrice"`
+	UnitExternalId *string `json:"unitExternalId,omitempty"`
+	UnitName       *string `json:"unitName,omitempty"`
+}
+
+// AirbnbReservationDetailResponse defines model for AirbnbReservationDetailResponse.
+type AirbnbReservationDetailResponse struct {
+	// Data One Airbnb reservation: the unified reservation (the same record as `GET /v1/reservations/{reservationId}`, as stored), the connected account and payout, and `airbnb` — the row `GET /v1/channels/airbnb/reservations` returns for it.
+	Data AirbnbReservationDetail `json:"data"`
+
+	// DataFreshness Top-level freshness indicator for any DB-backed Airbnb read. Tells consumers WHY a column may be `null` or stale without sprinkling per-row error envelopes through the response. The endpoint always returns 200 + DB data; this field is the single signal for "should I prompt the user to reconnect / wait for sync?".
+	//
+	// A workspace can connect several Airbnb accounts, so the answer has two levels. `accounts[]` carries the verdict per account; the top-level fields aggregate it. Scope a request with `?account_id=` and `accounts[]` holds exactly that account, with the top-level fields mirroring it.
+	DataFreshness *AirbnbDataFreshness `json:"dataFreshness,omitempty"`
+}
 
 // AirbnbReservationListResponse Cursor-paginated Airbnb reservation list. Pass `pagination.nextCursor` back as `?cursor=` to fetch the next page; stop when `pagination.hasMore` is `false`.
 type AirbnbReservationListResponse struct {
@@ -15259,6 +15480,32 @@ type ConnectProviderListResponse struct {
 	Data *[]ConnectProvider `json:"data,omitempty"`
 }
 
+// ConnectProviderSession A hosted Connect session for one provider (`POST /v1/connect/{provider}`). Send the user to `url`; every return to your `redirectUrl` carries `status`, `sessionId` and your `state`.
+type ConnectProviderSession struct {
+	ExpiresAt time.Time `json:"expiresAt"`
+
+	// Provider Example: airbnb
+	Provider string `json:"provider"`
+
+	// SessionId Also sent back on the redirect (`sessionId=`), in the popup message and in `connect.session.completed`.
+	//
+	// Example: cs_8gQrT2v9k3M4nLp7wJxYzAbCdEfGhIjKlMnOp
+	SessionId string `json:"sessionId"`
+
+	// State Your `state` from the request, echoed; `null` when you sent none.
+	State *string `json:"state,omitempty"`
+
+	// Url The hosted page to send the user to.
+	//
+	// Example: https://connect.repull.dev/cs_8gQrT2v9k3M4nLp7wJxYzAbCdEfGhIjKlMnOp
+	Url string `json:"url"`
+
+	// WorkspaceId PriceLabs only, when the request opened a sub-workspace (`workspace.name`).
+	//
+	// Example: 1204
+	WorkspaceId *string `json:"workspaceId,omitempty"`
+}
+
 // ConnectSession A multi-channel Connect picker session. The `url` is the hosted picker page on connect.repull.dev — redirect the host to it, they pick a channel, and the picker takes them through the per-provider flow before redirecting back to the original `redirectUrl`.
 type ConnectSession struct {
 	ExpiresAt time.Time `json:"expiresAt"`
@@ -16176,13 +16423,21 @@ type Guest struct {
 	DisplayNameLong *string `json:"displayNameLong,omitempty"`
 
 	// Email Primary email contact.
-	Email         *openapi_types.Email `json:"email,omitempty"`
-	FirstStayedAt *time.Time           `json:"firstStayedAt,omitempty"`
-	Id            *string              `json:"id,omitempty"`
+	Email *openapi_types.Email `json:"email,omitempty"`
+
+	// FirstStayedAt Check-in date of the guest's first stay (YYYY-MM-DD).
+	//
+	// Example: 2024-01-22
+	FirstStayedAt *openapi_types.Date `json:"firstStayedAt,omitempty"`
+	Id            *string             `json:"id,omitempty"`
 
 	// Language Guest's preferred language (ISO 639-1).
-	Language     *string    `json:"language,omitempty"`
-	LastStayedAt *time.Time `json:"lastStayedAt,omitempty"`
+	Language *string `json:"language,omitempty"`
+
+	// LastStayedAt Check-out date of the guest's most recent stay (YYYY-MM-DD).
+	//
+	// Example: 2026-12-06
+	LastStayedAt *openapi_types.Date `json:"lastStayedAt,omitempty"`
 
 	// Phone Primary phone contact (or first non-primary if no primary set). May be an Airbnb relay number — check `phoneType`.
 	Phone *string `json:"phone,omitempty"`
@@ -23502,7 +23757,7 @@ type ListAirbnbReservationsParams struct {
 	// ListingId Filter to one Airbnb listing id (numeric string).
 	ListingId *string `form:"listing_id,omitempty" json:"listing_id,omitempty"`
 
-	// Status Filter by reservation status. Omit to receive all statuses.
+	// Status Filter by the normalised `status`. `completed` = accepted and already checked out. Airbnb's raw values (`accept`, `cancelled_by_guest`, …) are accepted too. Omit to receive all statuses; an unknown value returns `400 invalid_params`.
 	Status *ListAirbnbReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// StartDate ISO 8601 (YYYY-MM-DD) lower bound on Airbnb's date range filter.
@@ -26445,7 +26700,7 @@ type CreateConnectSessionJSONBody struct {
 	// Purpose `migrate` starts a Repull Migrate session: the property manager connects their current PMS (or channel) and their data is copied into a new workspace of theirs, which you read with `X-Workspace-Id`. The hosted pages use migration wording, and after connecting they show the import's progress.
 	Purpose *CreateConnectSessionJSONBodyPurpose `json:"purpose,omitempty"`
 
-	// RedirectUrl Where to send the user after they finish (or cancel). Status query params are appended.
+	// RedirectUrl Where to send the user after they finish (or cancel). Every return to it carries `status` (`connected`, `cancelled`, `error` with a `code`, `expired`, `pending` when the host chose to finish later, or `requested` for a request-only PMS), `sessionId` (the id this call returns) and `state` when you sent one; a connected return adds `connectionId` and `externalAccountId` (and `hostId` for Airbnb). Your existing query string is kept.
 	RedirectUrl string `json:"redirectUrl"`
 
 	// ReservationHistoryMonths Airbnb — how many months of past reservations the first import pulls (1–60). Omit it for the default window. Upcoming stays are always imported. A wider window takes longer to import, because every extra month is more stays to fetch.
@@ -26456,7 +26711,7 @@ type CreateConnectSessionJSONBody struct {
 	// Scope Migrate only — what you want brought across, listed to the property manager before they connect.
 	Scope *[]CreateConnectSessionJSONBodyScope `json:"scope,omitempty"`
 
-	// State Your own correlation token, e.g. your user id (at most 500 characters). Echoed in this response, on the redirect back (`&state=`), in the popup message, and in the `connect.session.completed` webhook.
+	// State Your own correlation token, e.g. your user id (at most 500 characters). Echoed in this response, on every redirect back (`&state=`, whatever the outcome), in the popup message, and in the `connect.session.completed` webhook. Without it, match the return by `sessionId`.
 	State *string `json:"state,omitempty"`
 
 	// Workspace Opens a new sub-workspace for this customer of yours and lands the connection there; the response returns its `workspaceId`, which you then send as `X-Workspace-Id`. Works with both purposes: a plain `connect` keeps the normal onboarding pages. Required for `migrate` unless you send `X-Workspace-Id` to reconnect an existing one. Don't send it together with `X-Workspace-Id`.
@@ -26887,7 +27142,7 @@ type CreateConnectionJSONBody struct {
 	// Example: fr
 	Locale *string `json:"locale,omitempty"`
 
-	// RedirectUrl Airbnb + Booking.com — where to redirect the user after they finish the hosted connect flow.
+	// RedirectUrl Airbnb, Booking.com and PriceLabs — where to send the user after they finish (or cancel) the hosted connect flow. Every return to it carries `status` (`connected`, `cancelled`, `error` with a `code`, `expired`, `pending` when the host chose to finish later, or `requested` for a request-only PMS), `sessionId` (the id this call returns) and `state` when you sent one; a connected return adds `connectionId` and `externalAccountId` (and `hostId` for Airbnb). Your existing query string is kept.
 	RedirectUrl *string `json:"redirectUrl,omitempty"`
 
 	// ReservationHistoryMonths Airbnb — how many months of past reservations the first import pulls (1–60). Omit it for the default window. Upcoming stays are always imported. A wider window takes longer to import, because every extra month is more stays to fetch.
@@ -26895,7 +27150,7 @@ type CreateConnectionJSONBody struct {
 	// Example: 24
 	ReservationHistoryMonths *int `json:"reservationHistoryMonths,omitempty"`
 
-	// State Airbnb + Booking.com — your own correlation token, e.g. your user id (at most 500 characters). Echoed on the redirect back (`&state=`) and in the `connect.session.completed` webhook.
+	// State Your own correlation token, e.g. your user id (at most 500 characters), for every hosted flow (Airbnb, Booking.com, PriceLabs). Echoed in this response, on every redirect back (`&state=`, whatever the outcome), in the popup message, and in the `connect.session.completed` webhook. Without it, match the return by `sessionId`.
 	State *string `json:"state,omitempty"`
 
 	// Workspace PriceLabs only: open a new sub-workspace for this host and connect PriceLabs there (its id is returned as `workspaceId`). Don't send it together with `X-Workspace-Id`.
@@ -26934,7 +27189,7 @@ type ListConnectionImportsParams struct {
 
 // StartConnectionImportJSONBody defines parameters for StartConnectionImport.
 type StartConnectionImportJSONBody struct {
-	// Scope What to import. `listings` = the account's listings; new listings come in with their calendar (pricing and availability); on a full-access connection, calendars of listings already in Repull are not re-read. `reservations` = the account's reservations, stays from the last month and every future one. The full import runs when an account is connected.
+	// Scope What to import. `full` = the first-connect import again (listings, calendars, reservations, payouts, reviews, conversations), for an account that has never fully imported. `listings` = the account's listings with their calendars. `reservations` = the account's reservations, stays from the last month and every future one. Omit to let Repull choose: `full` for an account that has never fully imported, else `listings`.
 	Scope *StartConnectionImportJSONBodyScope `json:"scope,omitempty"`
 }
 

@@ -1427,6 +1427,8 @@ type ClientInterface interface {
 	//
 	// Cursor-paginated list of reservations sourced directly from Airbnb. Use this when you need Airbnb-specific fields (guest payout split, cancellation policy snapshot) that the unified `/v1/reservations` endpoint flattens away.
 	//
+	// Each row has the Airbnb `confirmationCode`, the `reservationId` of the same stay on `GET /v1/reservations/{id}`, the Repull `listingId` and Airbnb `airbnbListingId`, a normalised `status`, `checkIn`/`checkOut` dates, `totalPrice` + `currency` (what the guest paid) and `payout` + `payoutCurrency` (what the host receives). Airbnb's own record follows (`airbnbStatus`, `totalPaidAmount`, `expectedPayoutAmount`, …) for integrations already reading it.
+	//
 	// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows. To re-read an account now, `POST /v1/connections/{id}/imports` with `{"scope": "reservations"}`.
 	//
 	// Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
@@ -4545,7 +4547,9 @@ type ClientInterface interface {
 	//
 	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 	//
-	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`, `state`).
+	//
+	// **Returning to your app.** Every return to `redirectUrl` carries `status`, `sessionId` and your `state`, whether the host connected, cancelled, hit an error or let the session expire, so you can always tie it back to the call that started it.
 	//
 	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
@@ -4562,7 +4566,9 @@ type ClientInterface interface {
 	//
 	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 	//
-	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`, `state`).
+	//
+	// **Returning to your app.** Every return to `redirectUrl` carries `status`, `sessionId` and your `state`, whether the host connected, cancelled, hit an error or let the session expire, so you can always tie it back to the call that started it.
 	//
 	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
@@ -4615,38 +4621,46 @@ type ClientInterface interface {
 	// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
 	ListConnectionImports(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// StartConnectionImportWithBody Refresh a connection's listings or reservations
+	// StartConnectionImportWithBody Start an import of a connection
 	//
-	// Two scopes: `listings` (the default) and `reservations`.
+	// Start an import of a connected Airbnb account now. Three scopes:
 	//
-	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+	// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
+	//
+	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
 	//
 	// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 	//
+	// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
+	//
 	// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
 	//
-	// Both run in the background (`202`) and are recorded like any other import (trigger `resync`, one `listings` or `reservations` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the result with `GET /v1/listings` or `GET /v1/reservations`.
+	// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 	//
-	// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
 	//
 	// Takes any type of body and a specified content type.
 	//
 	// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
 	StartConnectionImportWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// StartConnectionImport Refresh a connection's listings or reservations
+	// StartConnectionImport Start an import of a connection
 	//
-	// Two scopes: `listings` (the default) and `reservations`.
+	// Start an import of a connected Airbnb account now. Three scopes:
 	//
-	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+	// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
+	//
+	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
 	//
 	// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 	//
+	// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
+	//
 	// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
 	//
-	// Both run in the background (`202`) and are recorded like any other import (trigger `resync`, one `listings` or `reservations` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the result with `GET /v1/listings` or `GET /v1/reservations`.
+	// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 	//
-	// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -9317,6 +9331,8 @@ func (c *Client) CreateAirbnbOffer(ctx context.Context, params *CreateAirbnbOffe
 // ListAirbnbReservations List Airbnb reservations
 //
 // Cursor-paginated list of reservations sourced directly from Airbnb. Use this when you need Airbnb-specific fields (guest payout split, cancellation policy snapshot) that the unified `/v1/reservations` endpoint flattens away.
+//
+// Each row has the Airbnb `confirmationCode`, the `reservationId` of the same stay on `GET /v1/reservations/{id}`, the Repull `listingId` and Airbnb `airbnbListingId`, a normalised `status`, `checkIn`/`checkOut` dates, `totalPrice` + `currency` (what the guest paid) and `payout` + `payoutCurrency` (what the host receives). Airbnb's own record follows (`airbnbStatus`, `totalPaidAmount`, `expectedPayoutAmount`, …) for integrations already reading it.
 //
 // **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows. To re-read an account now, `POST /v1/connections/{id}/imports` with `{"scope": "reservations"}`.
 //
@@ -14653,7 +14669,9 @@ func (c *Client) GetConnectStatus(ctx context.Context, provider Provider, reqEdi
 //
 // Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 //
-// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`, `state`).
+//
+// **Returning to your app.** Every return to `redirectUrl` carries `status`, `sessionId` and your `state`, whether the host connected, cancelled, hit an error or let the session expire, so you can always tie it back to the call that started it.
 //
 // PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
@@ -14680,7 +14698,9 @@ func (c *Client) CreateConnectionWithBody(ctx context.Context, provider Provider
 //
 // Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 //
-// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`, `state`).
+//
+// **Returning to your app.** Every return to `redirectUrl` carries `status`, `sessionId` and your `state`, whether the host connected, cancelled, hit an error or let the session expire, so you can always tie it back to the call that started it.
 //
 // PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
@@ -14783,19 +14803,23 @@ func (c *Client) ListConnectionImports(ctx context.Context, id string, params *L
 	return c.Client.Do(req)
 }
 
-// StartConnectionImportWithBody Refresh a connection's listings or reservations
+// StartConnectionImportWithBody Start an import of a connection
 //
-// Two scopes: `listings` (the default) and `reservations`.
+// Start an import of a connected Airbnb account now. Three scopes:
 //
-// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
+//
+// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
 //
 // **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 //
+// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
+//
 // New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
 //
-// Both run in the background (`202`) and are recorded like any other import (trigger `resync`, one `listings` or `reservations` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the result with `GET /v1/listings` or `GET /v1/reservations`.
+// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 //
-// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
 //
 // Takes any type of body and a specified content type.
 //
@@ -14812,19 +14836,23 @@ func (c *Client) StartConnectionImportWithBody(ctx context.Context, id string, c
 	return c.Client.Do(req)
 }
 
-// StartConnectionImport Refresh a connection's listings or reservations
+// StartConnectionImport Start an import of a connection
 //
-// Two scopes: `listings` (the default) and `reservations`.
+// Start an import of a connected Airbnb account now. Three scopes:
 //
-// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
+//
+// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
 //
 // **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 //
+// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
+//
 // New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
 //
-// Both run in the background (`202`) and are recorded like any other import (trigger `resync`, one `listings` or `reservations` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the result with `GET /v1/listings` or `GET /v1/reservations`.
+// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 //
-// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -40384,6 +40412,8 @@ type ClientWithResponsesInterface interface {
 	//
 	// Cursor-paginated list of reservations sourced directly from Airbnb. Use this when you need Airbnb-specific fields (guest payout split, cancellation policy snapshot) that the unified `/v1/reservations` endpoint flattens away.
 	//
+	// Each row has the Airbnb `confirmationCode`, the `reservationId` of the same stay on `GET /v1/reservations/{id}`, the Repull `listingId` and Airbnb `airbnbListingId`, a normalised `status`, `checkIn`/`checkOut` dates, `totalPrice` + `currency` (what the guest paid) and `payout` + `payoutCurrency` (what the host receives). Airbnb's own record follows (`airbnbStatus`, `totalPaidAmount`, `expectedPayoutAmount`, …) for integrations already reading it.
+	//
 	// **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows. To re-read an account now, `POST /v1/connections/{id}/imports` with `{"scope": "reservations"}`.
 	//
 	// Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
@@ -43650,7 +43680,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 	//
-	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`, `state`).
+	//
+	// **Returning to your app.** Every return to `redirectUrl` carries `status`, `sessionId` and your `state`, whether the host connected, cancelled, hit an error or let the session expire, so you can always tie it back to the call that started it.
 	//
 	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
@@ -43667,7 +43699,9 @@ type ClientWithResponsesInterface interface {
 	//
 	// Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 	//
-	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+	// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`, `state`).
+	//
+	// **Returning to your app.** Every return to `redirectUrl` carries `status`, `sessionId` and your `state`, whether the host connected, cancelled, hit an error or let the session expire, so you can always tie it back to the call that started it.
 	//
 	// PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 	//
@@ -43724,38 +43758,46 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /v1/connections/{id}/imports (the `ListConnectionImports` operationId).
 	ListConnectionImportsWithResponse(ctx context.Context, id string, params *ListConnectionImportsParams, reqEditors ...RequestEditorFn) (*ListConnectionImportsClientResponse, error)
 
-	// StartConnectionImportWithBodyWithResponse Refresh a connection's listings or reservations
+	// StartConnectionImportWithBodyWithResponse Start an import of a connection
 	//
-	// Two scopes: `listings` (the default) and `reservations`.
+	// Start an import of a connected Airbnb account now. Three scopes:
 	//
-	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+	// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
+	//
+	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
 	//
 	// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 	//
+	// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
+	//
 	// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
 	//
-	// Both run in the background (`202`) and are recorded like any other import (trigger `resync`, one `listings` or `reservations` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the result with `GET /v1/listings` or `GET /v1/reservations`.
+	// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 	//
-	// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
 	// Corresponds with POST /v1/connections/{id}/imports (the `StartConnectionImport` operationId).
 	StartConnectionImportWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*StartConnectionImportClientResponse, error)
 
-	// StartConnectionImportWithResponse Refresh a connection's listings or reservations
+	// StartConnectionImportWithResponse Start an import of a connection
 	//
-	// Two scopes: `listings` (the default) and `reservations`.
+	// Start an import of a connected Airbnb account now. Three scopes:
 	//
-	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+	// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
+	//
+	// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
 	//
 	// **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 	//
+	// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
+	//
 	// New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
 	//
-	// Both run in the background (`202`) and are recorded like any other import (trigger `resync`, one `listings` or `reservations` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the result with `GET /v1/listings` or `GET /v1/reservations`.
+	// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 	//
-	// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+	// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -52040,6 +52082,8 @@ type ListAirbnbReservationsClientResponse struct {
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
 	JSON200 *AirbnbReservationListResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
 	// JSON404 the response for an HTTP 404 `application/json` response
@@ -52049,6 +52093,11 @@ type ListAirbnbReservationsClientResponse struct {
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
 func (r ListAirbnbReservationsClientResponse) GetJSON200() *AirbnbReservationListResponse {
 	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListAirbnbReservationsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
 }
 
 // GetJSON403 returns the response for an HTTP 403 `application/json` response
@@ -52094,13 +52143,13 @@ type GetAirbnbReservationClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *AirbnbReservation
+	JSON200 *AirbnbReservationDetailResponse
 	// JSON403 the response for an HTTP 403 `application/json` response
 	JSON403 *ListingInactive
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r GetAirbnbReservationClientResponse) GetJSON200() *AirbnbReservation {
+func (r GetAirbnbReservationClientResponse) GetJSON200() *AirbnbReservationDetailResponse {
 	return r.JSON200
 }
 
@@ -70843,11 +70892,11 @@ type CreateConnectionClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	// JSON200 the response for an HTTP 200 `application/json` response
-	JSON200 *Connection
+	JSON200 *ConnectProviderSession
 }
 
 // GetJSON200 returns the response for an HTTP 200 `application/json` response
-func (r CreateConnectionClientResponse) GetJSON200() *Connection {
+func (r CreateConnectionClientResponse) GetJSON200() *ConnectProviderSession {
 	return r.JSON200
 }
 
@@ -71106,10 +71155,16 @@ type StartConnectionImportClientResponse struct {
 	JSON202 *struct {
 		Data *struct {
 			// Connection The connection handle, e.g. `airbnb:1234567`.
-			Connection string                                             `json:"connection"`
-			QueuedAt   time.Time                                          `json:"queuedAt"`
-			Scope      StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
-			Status     StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
+			Connection string `json:"connection"`
+
+			// ImportId The import's id on `GET /v1/connections/{id}/imports` and in the `account.import.*` webhooks.
+			ImportId *string   `json:"importId"`
+			QueuedAt time.Time `json:"queuedAt"`
+
+			// ReplacedImportId `full` only: an earlier import of this account that no worker had picked up, closed as `failed` (`did_not_start`) and replaced by this one.
+			ReplacedImportId *string                                            `json:"replacedImportId"`
+			Scope            StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
+			Status           StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
 		} `json:"data,omitempty"`
 	}
 	// JSON400 the response for an HTTP 400 `application/json` response
@@ -71126,10 +71181,16 @@ type StartConnectionImportClientResponse struct {
 func (r StartConnectionImportClientResponse) GetJSON202() *struct {
 	Data *struct {
 		// Connection The connection handle, e.g. `airbnb:1234567`.
-		Connection string                                             `json:"connection"`
-		QueuedAt   time.Time                                          `json:"queuedAt"`
-		Scope      StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
-		Status     StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
+		Connection string `json:"connection"`
+
+		// ImportId The import's id on `GET /v1/connections/{id}/imports` and in the `account.import.*` webhooks.
+		ImportId *string   `json:"importId"`
+		QueuedAt time.Time `json:"queuedAt"`
+
+		// ReplacedImportId `full` only: an earlier import of this account that no worker had picked up, closed as `failed` (`did_not_start`) and replaced by this one.
+		ReplacedImportId *string                                            `json:"replacedImportId"`
+		Scope            StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
+		Status           StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
 	} `json:"data,omitempty"`
 } {
 	return r.JSON202
@@ -84660,6 +84721,8 @@ func (c *ClientWithResponses) CreateAirbnbOfferWithResponse(ctx context.Context,
 //
 // Cursor-paginated list of reservations sourced directly from Airbnb. Use this when you need Airbnb-specific fields (guest payout split, cancellation policy snapshot) that the unified `/v1/reservations` endpoint flattens away.
 //
+// Each row has the Airbnb `confirmationCode`, the `reservationId` of the same stay on `GET /v1/reservations/{id}`, the Repull `listingId` and Airbnb `airbnbListingId`, a normalised `status`, `checkIn`/`checkOut` dates, `totalPrice` + `currency` (what the guest paid) and `payout` + `payoutCurrency` (what the host receives). Airbnb's own record follows (`airbnbStatus`, `totalPaidAmount`, `expectedPayoutAmount`, …) for integrations already reading it.
+//
 // **Real time.** Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included): it is here within seconds and fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. `dataFreshness.lastSyncedAt` is the last full re-read of the account, not the age of these rows. To re-read an account now, `POST /v1/connections/{id}/imports` with `{"scope": "reservations"}`.
 //
 // Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`. The cursor is opaque — never construct or parse it client-side.
@@ -89260,7 +89323,9 @@ func (c *ClientWithResponses) GetConnectStatusWithResponse(ctx context.Context, 
 //
 // Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 //
-// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`, `state`).
+//
+// **Returning to your app.** Every return to `redirectUrl` carries `status`, `sessionId` and your `state`, whether the host connected, cancelled, hit an error or let the session expire, so you can always tie it back to the call that started it.
 //
 // PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
@@ -89283,7 +89348,9 @@ func (c *ClientWithResponses) CreateConnectionWithBodyWithResponse(ctx context.C
 //
 // Airbnb-specific: pass `redirectUrl` (where to send the user after consent) and optionally `accessType`. Three tiers: `read_only` grants read-only scopes; `messaging` (shown to hosts as "Messaging & reviews") grants read scopes plus message read/send and review writes (reply to guest reviews, submit host reviews — Airbnb's `reviews_write`) but NOT property management, so it can coexist with another app (e.g. an existing PMS) that already holds property management on the same Airbnb account; `full_access` — the default — grants full host scopes including the exclusive property management (only one app per Airbnb account can hold it). The response returns a hosted `url` to redirect the user to.
 //
-// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`).
+// Booking.com: pass `redirectUrl` (no `accessType`). The response returns a hosted `url` — send the user there to select our connectivity provider in their Booking.com Extranet and paste their Hotel ID. Same response shape as Airbnb (`url`, `sessionId`, `expiresAt`, `state`).
+//
+// **Returning to your app.** Every return to `redirectUrl` carries `status`, `sessionId` and your `state`, whether the host connected, cancelled, hit an error or let the session expire, so you can always tie it back to the call that started it.
 //
 // PMS providers are not connected by this call: send their credentials to `POST /v1/connect/{provider}/credentials`, or start a hosted session with `POST /v1/connect`.
 //
@@ -89370,19 +89437,23 @@ func (c *ClientWithResponses) ListConnectionImportsWithResponse(ctx context.Cont
 	return ParseListConnectionImportsClientResponse(rsp)
 }
 
-// StartConnectionImportWithBodyWithResponse Refresh a connection's listings or reservations
+// StartConnectionImportWithBodyWithResponse Start an import of a connection
 //
-// Two scopes: `listings` (the default) and `reservations`.
+// Start an import of a connected Airbnb account now. Three scopes:
 //
-// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
+//
+// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
 //
 // **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 //
+// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
+//
 // New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
 //
-// Both run in the background (`202`) and are recorded like any other import (trigger `resync`, one `listings` or `reservations` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the result with `GET /v1/listings` or `GET /v1/reservations`.
+// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 //
-// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -89395,19 +89466,23 @@ func (c *ClientWithResponses) StartConnectionImportWithBodyWithResponse(ctx cont
 	return ParseStartConnectionImportClientResponse(rsp)
 }
 
-// StartConnectionImportWithResponse Refresh a connection's listings or reservations
+// StartConnectionImportWithResponse Start an import of a connection
 //
-// Two scopes: `listings` (the default) and `reservations`.
+// Start an import of a connected Airbnb account now. Three scopes:
 //
-// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported: no reservations, conversations, reviews or payouts. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects. Call this when you know a property was just added and do not want to wait.
+// **`full`** — the import that runs when an account is first connected, again: listings with their calendars (pricing and availability), reservations, then payouts, reviews and conversations. For an account that has never fully imported, e.g. a first import that never started or stalled. Returns `409 conflict` once the account has been fully imported (everything keeps syncing on its own after that).
+//
+// **`listings`** — picks up listings you've added on Airbnb since you connected. Re-reads the connected account's listings now: a new property comes in as a new listing, together with its calendar (pricing and availability), and existing listings are refreshed. On a full-access connection Repull is the source of your calendars, so the calendars of listings already in Repull are not re-read from Airbnb; on read-only and messaging connections they are. Nothing else is re-imported. The same import runs on its own once a day for every connected Airbnb account, and when the host reconnects.
 //
 // **`reservations`** — re-reads the account's reservations from Airbnb (stays from the last month and every future one) and applies anything that differs, firing the usual `reservation.*` webhooks for it. You do not need it to stay current: Airbnb notifies Repull of every new booking, change and cancellation as it happens, on every access level (read-only included), and Repull fires `reservation.created` / `reservation.updated` / `reservation.cancelled` within about a minute. Use it as a catch-up — for example after your own webhook endpoint was down — or to confirm a stay right now.
 //
+// With no body, Repull chooses: `full` for an account that has never fully imported, `listings` otherwise.
+//
 // New listings obey your plan's active-listing limit: past it, and when the property is unlisted on Airbnb, they arrive inactive. Existing listings keep their status.
 //
-// Both run in the background (`202`) and are recorded like any other import (trigger `resync`, one `listings` or `reservations` stage): follow it on `GET /v1/connections/{id}/imports` or wait for `account.import.completed`, then read the result with `GET /v1/listings` or `GET /v1/reservations`.
+// Every scope runs in the background (`202`) and is recorded like any other import: follow it on `GET /v1/connections/{id}/imports` (`importId`, when returned, is its id there) or wait for `account.import.completed`. An import no worker picks up within 10 minutes ends `failed` with reason `did_not_start` (and `account.import.failed`); call this again. A `full` request also replaces such an import itself (`replacedImportId`).
 //
-// Airbnb connections only for now. Returns `409 conflict` while a listings import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
+// Airbnb connections only for now. Returns `409 conflict` while an import of the account is already running, and `409 connection_reauth_required` when the account is disconnected. Two reservations refreshes of one account in the same minute are one refresh.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -97297,6 +97372,13 @@ func ParseListAirbnbReservationsClientResponse(rsp *http.Response) (*ListAirbnbR
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		var dest ListingInactive
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -97331,7 +97413,7 @@ func ParseGetAirbnbReservationClientResponse(rsp *http.Response) (*GetAirbnbRese
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AirbnbReservation
+		var dest AirbnbReservationDetailResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -110422,7 +110504,7 @@ func ParseCreateConnectionClientResponse(rsp *http.Response) (*CreateConnectionC
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Connection
+		var dest ConnectProviderSession
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -110598,10 +110680,16 @@ func ParseStartConnectionImportClientResponse(rsp *http.Response) (*StartConnect
 		var dest struct {
 			Data *struct {
 				// Connection The connection handle, e.g. `airbnb:1234567`.
-				Connection string                                             `json:"connection"`
-				QueuedAt   time.Time                                          `json:"queuedAt"`
-				Scope      StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
-				Status     StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
+				Connection string `json:"connection"`
+
+				// ImportId The import's id on `GET /v1/connections/{id}/imports` and in the `account.import.*` webhooks.
+				ImportId *string   `json:"importId"`
+				QueuedAt time.Time `json:"queuedAt"`
+
+				// ReplacedImportId `full` only: an earlier import of this account that no worker had picked up, closed as `failed` (`did_not_start`) and replaced by this one.
+				ReplacedImportId *string                                            `json:"replacedImportId"`
+				Scope            StartConnectionImport202JSONResponseBodyDataScope  `json:"scope"`
+				Status           StartConnectionImport202JSONResponseBodyDataStatus `json:"status"`
 			} `json:"data,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
