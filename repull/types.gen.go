@@ -931,6 +931,7 @@ func (e AirbnbSafetyDisclosureType) Valid() bool {
 // Defines values for AirbnbTransactionStatus.
 const (
 	AirbnbTransactionStatusCOMPLETED AirbnbTransactionStatus = "COMPLETED"
+	AirbnbTransactionStatusRELEASED  AirbnbTransactionStatus = "RELEASED"
 	AirbnbTransactionStatusUPCOMING  AirbnbTransactionStatus = "UPCOMING"
 )
 
@@ -938,6 +939,8 @@ const (
 func (e AirbnbTransactionStatus) Valid() bool {
 	switch e {
 	case AirbnbTransactionStatusCOMPLETED:
+		return true
+	case AirbnbTransactionStatusRELEASED:
 		return true
 	case AirbnbTransactionStatusUPCOMING:
 		return true
@@ -6298,6 +6301,7 @@ func (e RefreshAirbnbResolutionsJSONBodyStatus) Valid() bool {
 // Defines values for ListAirbnbTransactionsParamsStatus.
 const (
 	ListAirbnbTransactionsParamsStatusCOMPLETED ListAirbnbTransactionsParamsStatus = "COMPLETED"
+	ListAirbnbTransactionsParamsStatusRELEASED  ListAirbnbTransactionsParamsStatus = "RELEASED"
 	ListAirbnbTransactionsParamsStatusUPCOMING  ListAirbnbTransactionsParamsStatus = "UPCOMING"
 )
 
@@ -6305,6 +6309,8 @@ const (
 func (e ListAirbnbTransactionsParamsStatus) Valid() bool {
 	switch e {
 	case ListAirbnbTransactionsParamsStatusCOMPLETED:
+		return true
+	case ListAirbnbTransactionsParamsStatusRELEASED:
 		return true
 	case ListAirbnbTransactionsParamsStatusUPCOMING:
 		return true
@@ -10194,13 +10200,16 @@ func (e CreateConnectionJSONBodyAccessType) Valid() bool {
 
 // Defines values for StartConnectionImportJSONBodyScope.
 const (
-	StartConnectionImportJSONBodyScopeListings StartConnectionImportJSONBodyScope = "listings"
+	StartConnectionImportJSONBodyScopeListings     StartConnectionImportJSONBodyScope = "listings"
+	StartConnectionImportJSONBodyScopeReservations StartConnectionImportJSONBodyScope = "reservations"
 )
 
 // Valid indicates whether the value is a known member of the StartConnectionImportJSONBodyScope enum.
 func (e StartConnectionImportJSONBodyScope) Valid() bool {
 	switch e {
 	case StartConnectionImportJSONBodyScopeListings:
+		return true
+	case StartConnectionImportJSONBodyScopeReservations:
 		return true
 	default:
 		return false
@@ -10209,13 +10218,16 @@ func (e StartConnectionImportJSONBodyScope) Valid() bool {
 
 // Defines values for StartConnectionImport202JSONResponseBodyDataScope.
 const (
-	StartConnectionImport202JSONResponseBodyDataScopeListings StartConnectionImport202JSONResponseBodyDataScope = "listings"
+	StartConnectionImport202JSONResponseBodyDataScopeListings     StartConnectionImport202JSONResponseBodyDataScope = "listings"
+	StartConnectionImport202JSONResponseBodyDataScopeReservations StartConnectionImport202JSONResponseBodyDataScope = "reservations"
 )
 
 // Valid indicates whether the value is a known member of the StartConnectionImport202JSONResponseBodyDataScope enum.
 func (e StartConnectionImport202JSONResponseBodyDataScope) Valid() bool {
 	switch e {
 	case StartConnectionImport202JSONResponseBodyDataScopeListings:
+		return true
+	case StartConnectionImport202JSONResponseBodyDataScopeReservations:
 		return true
 	default:
 		return false
@@ -13074,7 +13086,7 @@ type AirbnbDataFreshness struct {
 	// FixUrl Dashboard URL the consumer can open to resolve the staleness (the Airbnb connections screen). Present whenever `reason` is, including on `partial_account_staleness`.
 	FixUrl *string `json:"fixUrl,omitempty"`
 
-	// LastSyncedAt The most recent Airbnb import COMPLETED by any account in scope. `null` when none of them ever has. A run that failed or was rate-limited does not move it.
+	// LastSyncedAt The most recent Airbnb import COMPLETED by any account in scope — a full re-read of the account, which runs on connect, about once a day, and on `POST /v1/connections/{id}/imports`. `null` when none of them ever has. A run that failed or was rate-limited does not move it. It is not how current reservations and messages are: Airbnb notifies Repull of every new booking, change, cancellation and message as it happens, and those land within seconds between imports, on every access level.
 	LastSyncedAt *time.Time `json:"lastSyncedAt"`
 
 	// Reason Why the data is stale. One of `host_disconnected_since_<iso>`, `host_not_activated`, `sync_lag_>_24h`, `never_synced`, `host_disconnected`, or `partial_account_staleness`. The last one appears WITH `stale: false`: the response is usable, but at least one connected account needs attention — deliberately surfaced so a consumer reading only the aggregate is never told everything is fine while an account is down.
@@ -13634,14 +13646,14 @@ type AirbnbTransaction struct {
 	// OnInactiveListing `true` when the line is on a listing that is inactive in Repull. Still returned, so the payout reconciles.
 	OnInactiveListing bool `json:"onInactiveListing"`
 	Payout            struct {
-		// LineIndex Position within the payout, from 1. `null` on the Payout row and on UPCOMING lines.
+		// LineIndex Position within the payout, from 1. `null` on the Payout row and on unpaid lines.
 		LineIndex *int `json:"lineIndex"`
 
 		// PaidOutAmount On the Payout row only: the amount paid out. Its lines sum to it.
 		PaidOutAmount *float32            `json:"paidOutAmount"`
 		PayoutDate    *openapi_types.Date `json:"payoutDate"`
 
-		// PayoutId The payout this line was settled in (its own id on a Payout row). `null` on an UPCOMING line.
+		// PayoutId The payout this line was settled in (its own id on a Payout row). `null` on an unpaid (`RELEASED` / `UPCOMING`) line.
 		//
 		// Example: M-HQLLNSWKUWK7R
 		PayoutId *string `json:"payoutId"`
@@ -13659,7 +13671,7 @@ type AirbnbTransaction struct {
 	ReservationId        *string             `json:"reservationId,omitempty"`
 	ReservationStartDate *openapi_types.Date `json:"reservationStartDate,omitempty"`
 
-	// Status `COMPLETED`: settled in a payout. `UPCOMING`: expected, not paid out yet.
+	// Status `COMPLETED`: settled in a payout. `RELEASED`: Airbnb released it (its date has passed) but has not paid it out yet — the payout is held, or accumulating toward the host's next one; it becomes `COMPLETED` under its payout when paid. `UPCOMING`: expected, not released yet.
 	Status   AirbnbTransactionStatus `json:"status"`
 	SyncedAt *time.Time              `json:"syncedAt,omitempty"`
 
@@ -13677,7 +13689,7 @@ type AirbnbTransaction struct {
 	UnavailableFields []string `json:"unavailableFields"`
 }
 
-// AirbnbTransactionStatus `COMPLETED`: settled in a payout. `UPCOMING`: expected, not paid out yet.
+// AirbnbTransactionStatus `COMPLETED`: settled in a payout. `RELEASED`: Airbnb released it (its date has passed) but has not paid it out yet — the payout is held, or accumulating toward the host's next one; it becomes `COMPLETED` under its payout when paid. `UPCOMING`: expected, not released yet.
 type AirbnbTransactionStatus string
 
 // AlterationChange A single requested field delta on an alteration: prior value (`from`) vs proposed value (`to`).
@@ -21749,7 +21761,7 @@ type Review struct {
 	ListingId *string         `json:"listingId,omitempty"`
 	Platform  *ReviewPlatform `json:"platform,omitempty"`
 
-	// Pms The PMS this review was read from (`guesty`, `hostaway`, …) when it came through one — `platform` is still the channel the guest wrote it on. A reply (`POST /v1/reviews/{id}/reply`) goes through this PMS; `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says whether it can. `null` for a review from a directly connected channel.
+	// Pms The PMS this review was read from (`guesty`, `hostaway`, `hospitable`, …) when it came through one — `platform` is still the channel the guest wrote it on, and `reservationId` / `reservationConfirmationCode` point at the stay. A review that also arrives from a directly connected channel is returned once, as the channel's copy (`pms: null`). A reply (`POST /v1/reviews/{id}/reply`) goes through this PMS; `GET /v1/connect/{provider}` → `capabilities.pms.reviews.reply` says whether it can. `null` for a review from a directly connected channel.
 	//
 	// Example: guesty
 	Pms *string `json:"pms,omitempty"`
@@ -23549,13 +23561,13 @@ type ListAirbnbTransactionsParams struct {
 	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
 	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
 
-	// StartDate Inclusive lower bound on the payout's date (the line's own date for UPCOMING lines). YYYY-MM-DD.
+	// StartDate Inclusive lower bound on the payout's date (the line's own date for unpaid `RELEASED` / `UPCOMING` lines). YYYY-MM-DD.
 	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
 
 	// EndDate Inclusive upper bound, as `start_date`.
 	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
 
-	// Status `COMPLETED` (settled) or `UPCOMING` (expected).
+	// Status `COMPLETED` (paid out), `RELEASED` (released by Airbnb, not paid out yet) or `UPCOMING` (not released yet).
 	Status *ListAirbnbTransactionsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Type Airbnb's line type, exact match ignoring case — e.g. `Payout`, `Reservation`, `Adjustment`, `Resolution Payout`.
@@ -23585,7 +23597,7 @@ type SyncAirbnbTransactionsJSONBody struct {
 	// StartDate Inclusive lower bound (YYYY-MM-DD).
 	StartDate *openapi_types.Date `json:"start_date,omitempty"`
 
-	// TransactionType Refresh only settled or only upcoming lines. Both when omitted.
+	// TransactionType Airbnb's two buckets: `COMPLETED` refreshes paid-out lines only, `UPCOMING` every unpaid line (`RELEASED` and `UPCOMING`). Both when omitted.
 	TransactionType *SyncAirbnbTransactionsJSONBodyTransactionType `json:"transaction_type,omitempty"`
 }
 
@@ -26867,7 +26879,7 @@ type ListConnectionImportsParams struct {
 
 // StartConnectionImportJSONBody defines parameters for StartConnectionImport.
 type StartConnectionImportJSONBody struct {
-	// Scope What to import. `listings` = the account's listings. New listings come in with their calendar (pricing and availability); on a full-access connection, calendars of listings already in Repull are not re-read. The only scope; the full import runs when an account is connected.
+	// Scope What to import. `listings` = the account's listings; new listings come in with their calendar (pricing and availability); on a full-access connection, calendars of listings already in Repull are not re-read. `reservations` = the account's reservations, stays from the last month and every future one. The full import runs when an account is connected.
 	Scope *StartConnectionImportJSONBodyScope `json:"scope,omitempty"`
 }
 
