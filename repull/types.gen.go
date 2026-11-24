@@ -1257,16 +1257,16 @@ func (e BookingPropertyListingsStatus) Valid() bool {
 
 // Defines values for BookingPropertyMappingStatus.
 const (
-	Mapped   BookingPropertyMappingStatus = "mapped"
-	Unmapped BookingPropertyMappingStatus = "unmapped"
+	BookingPropertyMappingStatusMapped   BookingPropertyMappingStatus = "mapped"
+	BookingPropertyMappingStatusUnmapped BookingPropertyMappingStatus = "unmapped"
 )
 
 // Valid indicates whether the value is a known member of the BookingPropertyMappingStatus enum.
 func (e BookingPropertyMappingStatus) Valid() bool {
 	switch e {
-	case Mapped:
+	case BookingPropertyMappingStatusMapped:
 		return true
-	case Unmapped:
+	case BookingPropertyMappingStatusUnmapped:
 		return true
 	default:
 		return false
@@ -3133,6 +3133,21 @@ func (e ListingPublishStatusConnectionChannelStatus) Valid() bool {
 	}
 }
 
+// Defines values for ListingPublishTiketResponseChannel.
+const (
+	ListingPublishTiketResponseChannelTiket ListingPublishTiketResponseChannel = "tiket"
+)
+
+// Valid indicates whether the value is a known member of the ListingPublishTiketResponseChannel enum.
+func (e ListingPublishTiketResponseChannel) Valid() bool {
+	switch e {
+	case ListingPublishTiketResponseChannelTiket:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListingPullResponseChannel.
 const (
 	ListingPullResponseChannelAirbnb ListingPullResponseChannel = "airbnb"
@@ -4098,6 +4113,7 @@ const (
 	ReservationPlatformLessThannil ReservationPlatform = "<nil>"
 	ReservationPlatformOther       ReservationPlatform = "other"
 	ReservationPlatformOwner       ReservationPlatform = "owner"
+	ReservationPlatformTiket       ReservationPlatform = "tiket"
 	ReservationPlatformVrbo        ReservationPlatform = "vrbo"
 	ReservationPlatformWebsite     ReservationPlatform = "website"
 )
@@ -4117,6 +4133,8 @@ func (e ReservationPlatform) Valid() bool {
 		return true
 	case ReservationPlatformOwner:
 		return true
+	case ReservationPlatformTiket:
+		return true
 	case ReservationPlatformVrbo:
 		return true
 	case ReservationPlatformWebsite:
@@ -4134,6 +4152,7 @@ const (
 	ReservationSourceLessThannil ReservationSource = "<nil>"
 	ReservationSourceOther       ReservationSource = "other"
 	ReservationSourceOwner       ReservationSource = "owner"
+	ReservationSourceTiket       ReservationSource = "tiket"
 	ReservationSourceVrbo        ReservationSource = "vrbo"
 	ReservationSourceWebsite     ReservationSource = "website"
 )
@@ -4152,6 +4171,8 @@ func (e ReservationSource) Valid() bool {
 	case ReservationSourceOther:
 		return true
 	case ReservationSourceOwner:
+		return true
+	case ReservationSourceTiket:
 		return true
 	case ReservationSourceVrbo:
 		return true
@@ -4822,6 +4843,240 @@ func (e SentAttachmentType) Valid() bool {
 	case SentAttachmentTypeImage:
 		return true
 	case SentAttachmentTypeVideo:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketAriWriteResponseApplied.
+const (
+	TiketAriWriteResponseAppliedMismatch   TiketAriWriteResponseApplied = "mismatch"
+	TiketAriWriteResponseAppliedUnverified TiketAriWriteResponseApplied = "unverified"
+	TiketAriWriteResponseAppliedVerified   TiketAriWriteResponseApplied = "verified"
+)
+
+// Valid indicates whether the value is a known member of the TiketAriWriteResponseApplied enum.
+func (e TiketAriWriteResponseApplied) Valid() bool {
+	switch e {
+	case TiketAriWriteResponseAppliedMismatch:
+		return true
+	case TiketAriWriteResponseAppliedUnverified:
+		return true
+	case TiketAriWriteResponseAppliedVerified:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketAriWriteResponseType.
+const (
+	TiketAriWriteResponseTypeAvailability TiketAriWriteResponseType = "availability"
+	TiketAriWriteResponseTypeRates        TiketAriWriteResponseType = "rates"
+	TiketAriWriteResponseTypeRestrictions TiketAriWriteResponseType = "restrictions"
+)
+
+// Valid indicates whether the value is a known member of the TiketAriWriteResponseType enum.
+func (e TiketAriWriteResponseType) Valid() bool {
+	switch e {
+	case TiketAriWriteResponseTypeAvailability:
+		return true
+	case TiketAriWriteResponseTypeRates:
+		return true
+	case TiketAriWriteResponseTypeRestrictions:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketAvailabilityUpdateRequestType.
+const (
+	TiketAvailabilityUpdateRequestTypeAvailability TiketAvailabilityUpdateRequestType = "availability"
+	TiketAvailabilityUpdateRequestTypeRates        TiketAvailabilityUpdateRequestType = "rates"
+	TiketAvailabilityUpdateRequestTypeRestrictions TiketAvailabilityUpdateRequestType = "restrictions"
+)
+
+// Valid indicates whether the value is a known member of the TiketAvailabilityUpdateRequestType enum.
+func (e TiketAvailabilityUpdateRequestType) Valid() bool {
+	switch e {
+	case TiketAvailabilityUpdateRequestTypeAvailability:
+		return true
+	case TiketAvailabilityUpdateRequestTypeRates:
+		return true
+	case TiketAvailabilityUpdateRequestTypeRestrictions:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketConnectRoomsResponseStatus.
+const (
+	TiketConnectRoomsResponseStatusCompleted TiketConnectRoomsResponseStatus = "completed"
+	TiketConnectRoomsResponseStatusImporting TiketConnectRoomsResponseStatus = "importing"
+	TiketConnectRoomsResponseStatusReady     TiketConnectRoomsResponseStatus = "ready"
+)
+
+// Valid indicates whether the value is a known member of the TiketConnectRoomsResponseStatus enum.
+func (e TiketConnectRoomsResponseStatus) Valid() bool {
+	switch e {
+	case TiketConnectRoomsResponseStatusCompleted:
+		return true
+	case TiketConnectRoomsResponseStatusImporting:
+		return true
+	case TiketConnectRoomsResponseStatusReady:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketContentResponseObjectsKind.
+const (
+	TiketContentResponseObjectsKindProperty TiketContentResponseObjectsKind = "property"
+	TiketContentResponseObjectsKindRateplan TiketContentResponseObjectsKind = "rateplan"
+	TiketContentResponseObjectsKindRoom     TiketContentResponseObjectsKind = "room"
+)
+
+// Valid indicates whether the value is a known member of the TiketContentResponseObjectsKind enum.
+func (e TiketContentResponseObjectsKind) Valid() bool {
+	switch e {
+	case TiketContentResponseObjectsKindProperty:
+		return true
+	case TiketContentResponseObjectsKindRateplan:
+		return true
+	case TiketContentResponseObjectsKindRoom:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketListingPricingUpdateRequestType.
+const (
+	TiketListingPricingUpdateRequestTypeAvailability TiketListingPricingUpdateRequestType = "availability"
+	TiketListingPricingUpdateRequestTypeRates        TiketListingPricingUpdateRequestType = "rates"
+	TiketListingPricingUpdateRequestTypeRestrictions TiketListingPricingUpdateRequestType = "restrictions"
+)
+
+// Valid indicates whether the value is a known member of the TiketListingPricingUpdateRequestType enum.
+func (e TiketListingPricingUpdateRequestType) Valid() bool {
+	switch e {
+	case TiketListingPricingUpdateRequestTypeAvailability:
+		return true
+	case TiketListingPricingUpdateRequestTypeRates:
+		return true
+	case TiketListingPricingUpdateRequestTypeRestrictions:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketPropertyMappingStatus.
+const (
+	TiketPropertyMappingStatusMapped   TiketPropertyMappingStatus = "mapped"
+	TiketPropertyMappingStatusPartial  TiketPropertyMappingStatus = "partial"
+	TiketPropertyMappingStatusUnmapped TiketPropertyMappingStatus = "unmapped"
+)
+
+// Valid indicates whether the value is a known member of the TiketPropertyMappingStatus enum.
+func (e TiketPropertyMappingStatus) Valid() bool {
+	switch e {
+	case TiketPropertyMappingStatusMapped:
+		return true
+	case TiketPropertyMappingStatusPartial:
+		return true
+	case TiketPropertyMappingStatusUnmapped:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketReservationStatus.
+const (
+	TiketReservationStatusCancelled TiketReservationStatus = "cancelled"
+	TiketReservationStatusConfirmed TiketReservationStatus = "confirmed"
+)
+
+// Valid indicates whether the value is a known member of the TiketReservationStatus enum.
+func (e TiketReservationStatus) Valid() bool {
+	switch e {
+	case TiketReservationStatusCancelled:
+		return true
+	case TiketReservationStatusConfirmed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketSetupRequestAction.
+const (
+	TiketSetupRequestActionAddRatePlan           TiketSetupRequestAction = "add-rate-plan"
+	TiketSetupRequestActionAddRoom               TiketSetupRequestAction = "add-room"
+	TiketSetupRequestActionCheckActivation       TiketSetupRequestAction = "check-activation"
+	TiketSetupRequestActionConfirmContentMapping TiketSetupRequestAction = "confirm-content-mapping"
+	TiketSetupRequestActionCreateProperty        TiketSetupRequestAction = "create-property"
+	TiketSetupRequestActionDisconnect            TiketSetupRequestAction = "disconnect"
+	TiketSetupRequestActionRefresh               TiketSetupRequestAction = "refresh"
+	TiketSetupRequestActionRequestActivation     TiketSetupRequestAction = "request-activation"
+	TiketSetupRequestActionRequestContentMapping TiketSetupRequestAction = "request-content-mapping"
+	TiketSetupRequestActionRequestRegistration   TiketSetupRequestAction = "request-registration"
+	TiketSetupRequestActionSetPushRatePlans      TiketSetupRequestAction = "set-push-rate-plans"
+	TiketSetupRequestActionSetSync               TiketSetupRequestAction = "set-sync"
+	TiketSetupRequestActionSetTiketHotelId       TiketSetupRequestAction = "set-tiket-hotel-id"
+)
+
+// Valid indicates whether the value is a known member of the TiketSetupRequestAction enum.
+func (e TiketSetupRequestAction) Valid() bool {
+	switch e {
+	case TiketSetupRequestActionAddRatePlan:
+		return true
+	case TiketSetupRequestActionAddRoom:
+		return true
+	case TiketSetupRequestActionCheckActivation:
+		return true
+	case TiketSetupRequestActionConfirmContentMapping:
+		return true
+	case TiketSetupRequestActionCreateProperty:
+		return true
+	case TiketSetupRequestActionDisconnect:
+		return true
+	case TiketSetupRequestActionRefresh:
+		return true
+	case TiketSetupRequestActionRequestActivation:
+		return true
+	case TiketSetupRequestActionRequestContentMapping:
+		return true
+	case TiketSetupRequestActionRequestRegistration:
+		return true
+	case TiketSetupRequestActionSetPushRatePlans:
+		return true
+	case TiketSetupRequestActionSetSync:
+		return true
+	case TiketSetupRequestActionSetTiketHotelId:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TiketSyncResponseResultsStep.
+const (
+	TiketSyncResponseResultsStepCalendar        TiketSyncResponseResultsStep = "calendar"
+	TiketSyncResponseResultsStepRefreshProducts TiketSyncResponseResultsStep = "refresh_products"
+)
+
+// Valid indicates whether the value is a known member of the TiketSyncResponseResultsStep enum.
+func (e TiketSyncResponseResultsStep) Valid() bool {
+	switch e {
+	case TiketSyncResponseResultsStepCalendar:
+		return true
+	case TiketSyncResponseResultsStepRefreshProducts:
 		return true
 	default:
 		return false
@@ -6489,40 +6744,100 @@ func (e ListBookingReservationsParamsType) Valid() bool {
 
 // Defines values for BookingSetupJSONBodyAction.
 const (
-	AddRoom           BookingSetupJSONBodyAction = "add-room"
-	AddUnit           BookingSetupJSONBodyAction = "add-unit"
-	Advance           BookingSetupJSONBodyAction = "advance"
-	CheckLegalStatus  BookingSetupJSONBodyAction = "check-legal-status"
-	CheckReadiness    BookingSetupJSONBodyAction = "check-readiness"
-	CreateLegalEntity BookingSetupJSONBodyAction = "create-legal-entity"
-	CreateProperty    BookingSetupJSONBodyAction = "create-property"
-	OpenProperty      BookingSetupJSONBodyAction = "open-property"
-	SetContacts       BookingSetupJSONBodyAction = "set-contacts"
-	SetPolicies       BookingSetupJSONBodyAction = "set-policies"
+	BookingSetupJSONBodyActionAddRoom           BookingSetupJSONBodyAction = "add-room"
+	BookingSetupJSONBodyActionAddUnit           BookingSetupJSONBodyAction = "add-unit"
+	BookingSetupJSONBodyActionAdvance           BookingSetupJSONBodyAction = "advance"
+	BookingSetupJSONBodyActionCheckLegalStatus  BookingSetupJSONBodyAction = "check-legal-status"
+	BookingSetupJSONBodyActionCheckReadiness    BookingSetupJSONBodyAction = "check-readiness"
+	BookingSetupJSONBodyActionCreateLegalEntity BookingSetupJSONBodyAction = "create-legal-entity"
+	BookingSetupJSONBodyActionCreateProperty    BookingSetupJSONBodyAction = "create-property"
+	BookingSetupJSONBodyActionOpenProperty      BookingSetupJSONBodyAction = "open-property"
+	BookingSetupJSONBodyActionSetContacts       BookingSetupJSONBodyAction = "set-contacts"
+	BookingSetupJSONBodyActionSetPolicies       BookingSetupJSONBodyAction = "set-policies"
 )
 
 // Valid indicates whether the value is a known member of the BookingSetupJSONBodyAction enum.
 func (e BookingSetupJSONBodyAction) Valid() bool {
 	switch e {
-	case AddRoom:
+	case BookingSetupJSONBodyActionAddRoom:
 		return true
-	case AddUnit:
+	case BookingSetupJSONBodyActionAddUnit:
 		return true
-	case Advance:
+	case BookingSetupJSONBodyActionAdvance:
 		return true
-	case CheckLegalStatus:
+	case BookingSetupJSONBodyActionCheckLegalStatus:
 		return true
-	case CheckReadiness:
+	case BookingSetupJSONBodyActionCheckReadiness:
 		return true
-	case CreateLegalEntity:
+	case BookingSetupJSONBodyActionCreateLegalEntity:
 		return true
-	case CreateProperty:
+	case BookingSetupJSONBodyActionCreateProperty:
 		return true
-	case OpenProperty:
+	case BookingSetupJSONBodyActionOpenProperty:
 		return true
-	case SetContacts:
+	case BookingSetupJSONBodyActionSetContacts:
 		return true
-	case SetPolicies:
+	case BookingSetupJSONBodyActionSetPolicies:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListTiketPropertiesParamsStatus.
+const (
+	ListTiketPropertiesParamsStatusActive   ListTiketPropertiesParamsStatus = "active"
+	ListTiketPropertiesParamsStatusAll      ListTiketPropertiesParamsStatus = "all"
+	ListTiketPropertiesParamsStatusInactive ListTiketPropertiesParamsStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the ListTiketPropertiesParamsStatus enum.
+func (e ListTiketPropertiesParamsStatus) Valid() bool {
+	switch e {
+	case ListTiketPropertiesParamsStatusActive:
+		return true
+	case ListTiketPropertiesParamsStatusAll:
+		return true
+	case ListTiketPropertiesParamsStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetTiketPropertyParamsStatus.
+const (
+	GetTiketPropertyParamsStatusActive   GetTiketPropertyParamsStatus = "active"
+	GetTiketPropertyParamsStatusAll      GetTiketPropertyParamsStatus = "all"
+	GetTiketPropertyParamsStatusInactive GetTiketPropertyParamsStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the GetTiketPropertyParamsStatus enum.
+func (e GetTiketPropertyParamsStatus) Valid() bool {
+	switch e {
+	case GetTiketPropertyParamsStatusActive:
+		return true
+	case GetTiketPropertyParamsStatusAll:
+		return true
+	case GetTiketPropertyParamsStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListTiketReservationsParamsStatus.
+const (
+	ListTiketReservationsParamsStatusCancelled ListTiketReservationsParamsStatus = "cancelled"
+	ListTiketReservationsParamsStatusConfirmed ListTiketReservationsParamsStatus = "confirmed"
+)
+
+// Valid indicates whether the value is a known member of the ListTiketReservationsParamsStatus enum.
+func (e ListTiketReservationsParamsStatus) Valid() bool {
+	switch e {
+	case ListTiketReservationsParamsStatusCancelled:
+		return true
+	case ListTiketReservationsParamsStatusConfirmed:
 		return true
 	default:
 		return false
@@ -11522,6 +11837,7 @@ func (e ListPropertiesParamsStatus) Valid() bool {
 const (
 	ListPropertiesParamsChannelAirbnb  ListPropertiesParamsChannel = "airbnb"
 	ListPropertiesParamsChannelBooking ListPropertiesParamsChannel = "booking"
+	ListPropertiesParamsChannelTiket   ListPropertiesParamsChannel = "tiket"
 	ListPropertiesParamsChannelVrbo    ListPropertiesParamsChannel = "vrbo"
 )
 
@@ -11531,6 +11847,8 @@ func (e ListPropertiesParamsChannel) Valid() bool {
 	case ListPropertiesParamsChannelAirbnb:
 		return true
 	case ListPropertiesParamsChannelBooking:
+		return true
+	case ListPropertiesParamsChannelTiket:
 		return true
 	case ListPropertiesParamsChannelVrbo:
 		return true
@@ -18297,6 +18615,28 @@ type ListingPublishStatusResponse struct {
 	ListingId   *string                           `json:"listingId,omitempty"`
 }
 
+// ListingPublishTiketResponse defines model for ListingPublishTiketResponse.
+type ListingPublishTiketResponse struct {
+	Channel   *ListingPublishTiketResponseChannel `json:"channel,omitempty"`
+	ListingId *string                             `json:"listingId,omitempty"`
+	Result    *struct {
+		// Errors Sections that did not land, with tiket.com's reason.
+		Errors *map[string]string `json:"errors,omitempty"`
+
+		// Pushed `true` when every section landed.
+		Pushed *bool `json:"pushed,omitempty"`
+
+		// Reason Why nothing was sent, when `pushed` is `false` and no section was tried.
+		Reason *string `json:"reason,omitempty"`
+
+		// Sections Sections tiket.com accepted (for example the property, each room type, each rate plan).
+		Sections *[]string `json:"sections,omitempty"`
+	} `json:"result,omitempty"`
+}
+
+// ListingPublishTiketResponseChannel defines model for ListingPublishTiketResponse.Channel.
+type ListingPublishTiketResponseChannel string
+
 // ListingPullAirbnbRequest Optional. Omit the body entirely to pull through the listing's primary Airbnb connection.
 type ListingPullAirbnbRequest struct {
 	// AirbnbConnectionId Pull through this specific Airbnb connection instead of the listing's primary one. Use when a listing carries several connections (merged properties, host migrations) — the ids come from `GET /v1/listings/{id}/publish-status`.
@@ -22384,6 +22724,670 @@ type SentAttachment struct {
 // SentAttachmentType defines model for SentAttachment.Type.
 type SentAttachmentType string
 
+// TiketAriDay What tiket.com holds for one night of one room type and rate plan. Rooms to sell (`available`, `booked`) belong to the room type and repeat on each of its rate plans; prices and restrictions belong to the rate plan. A field tiket.com returned nothing for is `null`.
+type TiketAriDay struct {
+	// Available Rooms to sell.
+	Available *int `json:"available,omitempty"`
+
+	// Booked Rooms tiket.com has sold for the night.
+	Booked *int `json:"booked,omitempty"`
+
+	// ChildPrices Children prices as tiket.com holds them (set in the extranet; see the note on children rates under `PUT /v1/channels/tiket/availability`).
+	ChildPrices       *[]TiketChildPrice `json:"childPrices,omitempty"`
+	ClosedToArrival   *bool              `json:"closedToArrival,omitempty"`
+	ClosedToDeparture *bool              `json:"closedToDeparture,omitempty"`
+
+	// Currency Example: IDR
+	Currency *string `json:"currency,omitempty"`
+
+	// Date Example: 2026-12-24
+	Date openapi_types.Date `json:"date"`
+
+	// MaxAdvanceDays Maximum days between booking and arrival.
+	MaxAdvanceDays *int `json:"maxAdvanceDays,omitempty"`
+
+	// MaxStay Maximum nights.
+	MaxStay *int `json:"maxStay,omitempty"`
+
+	// MinAdvanceDays Minimum days between booking and arrival.
+	MinAdvanceDays *int `json:"minAdvanceDays,omitempty"`
+
+	// MinStay Minimum nights.
+	MinStay *int `json:"minStay,omitempty"`
+
+	// OccupancyPrices Occupancy Based prices. Empty on a Room Based property.
+	OccupancyPrices *[]TiketOccupancyPrice `json:"occupancyPrices,omitempty"`
+
+	// Price Room Based price per night, tax included.
+	Price *float64 `json:"price,omitempty"`
+
+	// RatePlanCode tiket.com rate plan id. `null` on a room type with no rate plan selected.
+	RatePlanCode *string `json:"ratePlanCode"`
+
+	// RoomTypeCode tiket.com room type id.
+	RoomTypeCode string `json:"roomTypeCode"`
+
+	// StopSell `true` when the rate plan is closed for the night.
+	StopSell *bool `json:"stopSell,omitempty"`
+}
+
+// TiketAriMismatch A night where what tiket.com holds after the write differs from what was sent.
+type TiketAriMismatch struct {
+	Date *openapi_types.Date `json:"date,omitempty"`
+
+	// Field Example: price
+	Field        *string `json:"field,omitempty"`
+	RatePlanCode *string `json:"ratePlanCode,omitempty"`
+
+	// Read The value tiket.com returned.
+	Read         interface{} `json:"read,omitempty"`
+	RoomTypeCode *string     `json:"roomTypeCode,omitempty"`
+
+	// Sent The value sent.
+	Sent interface{} `json:"sent,omitempty"`
+}
+
+// TiketAriUpdate One date range for one room type (and, for `rates` and `restrictions`, one rate plan). Which fields apply depends on the request's `type`.
+type TiketAriUpdate struct {
+	// AvailableRooms `availability`: rooms to sell.
+	AvailableRooms *int `json:"availableRooms,omitempty"`
+
+	// ChildPrices Children prices. **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	ChildPrices *[]TiketChildPrice `json:"childPrices,omitempty"`
+
+	// ClosedToArrival `restrictions`.
+	ClosedToArrival *bool `json:"closedToArrival,omitempty"`
+
+	// ClosedToDeparture `restrictions`.
+	ClosedToDeparture *bool `json:"closedToDeparture,omitempty"`
+
+	// Currency ISO 4217. Defaults to the property currency.
+	//
+	// Example: IDR
+	Currency *string `json:"currency,omitempty"`
+
+	// End Last night, inclusive.
+	End openapi_types.Date `json:"end"`
+
+	// MaxAdvanceDays `restrictions`: maximum days between booking and arrival.
+	MaxAdvanceDays *int `json:"maxAdvanceDays,omitempty"`
+
+	// MaxStay `restrictions`: maximum nights.
+	MaxStay *int `json:"maxStay,omitempty"`
+
+	// MinAdvanceDays `restrictions`: minimum days between booking and arrival.
+	MinAdvanceDays *int `json:"minAdvanceDays,omitempty"`
+
+	// MinStay `restrictions`: minimum nights.
+	MinStay *int `json:"minStay,omitempty"`
+
+	// OccupancyPrices `rates` on an Occupancy Based property. Send `price` or `occupancyPrices`, not both.
+	OccupancyPrices *[]TiketOccupancyPrice `json:"occupancyPrices,omitempty"`
+
+	// Price `rates` on a Room Based property: price per night, tax included. Greater than 0.
+	Price *float64 `json:"price,omitempty"`
+
+	// RatePlanCode tiket.com rate plan id. Required for `rates` and `restrictions` on `PUT /v1/channels/tiket/availability`; on the listing route it defaults to every rate plan of the room selected for pushes.
+	RatePlanCode *string `json:"ratePlanCode,omitempty"`
+
+	// RoomTypeCode tiket.com room type id. Required on `PUT /v1/channels/tiket/availability`; on the listing route it is always the listing's room.
+	RoomTypeCode *string `json:"roomTypeCode,omitempty"`
+
+	// Start First night. tiket.com accepts today up to 500 days ahead.
+	Start openapi_types.Date `json:"start"`
+
+	// StopSell `restrictions`: close (`true`) or open (`false`) the rate plan. With `availability` and a `ratePlanCode`, also closes that rate plan.
+	StopSell *bool `json:"stopSell,omitempty"`
+}
+
+// TiketAriWriteResponse Result of a tiket.com rates / availability / restrictions write.
+type TiketAriWriteResponse struct {
+	// Applied `verified` — the read-back matches what was sent. `mismatch` — tiket.com holds something else for at least one night (see `mismatches`). `unverified` — `verify: false` was sent.
+	Applied TiketAriWriteResponseApplied `json:"applied"`
+
+	// EchoTokens tiket.com's reference for each request. Quote them to tiket.com support.
+	EchoTokens *[]string `json:"echoTokens,omitempty"`
+
+	// ListingId Present on `PUT /v1/channels/tiket/listings/{id}/pricing`.
+	ListingId     *string `json:"listingId,omitempty"`
+	MismatchCount *int    `json:"mismatchCount,omitempty"`
+
+	// Mismatches Present when `applied` is `mismatch`. At most 100; `mismatchCount` is the total.
+	Mismatches *[]TiketAriMismatch `json:"mismatches,omitempty"`
+
+	// PropertyId tiket.com Hotel ID.
+	PropertyId string `json:"propertyId"`
+
+	// Requests Requests made to tiket.com.
+	Requests int `json:"requests"`
+
+	// RoomTypeCode Present on `PUT /v1/channels/tiket/listings/{id}/pricing`.
+	RoomTypeCode *string                   `json:"roomTypeCode,omitempty"`
+	Type         TiketAriWriteResponseType `json:"type"`
+
+	// Updates Update rows sent (on the listing route, one per targeted rate plan).
+	Updates int `json:"updates"`
+
+	// Warnings tiket.com's own warnings, verbatim (for example `ARI_PARTIALLY_ERROR` when part of a request was not applied).
+	Warnings *[]map[string]interface{} `json:"warnings,omitempty"`
+}
+
+// TiketAriWriteResponseApplied `verified` — the read-back matches what was sent. `mismatch` — tiket.com holds something else for at least one night (see `mismatches`). `unverified` — `verify: false` was sent.
+type TiketAriWriteResponseApplied string
+
+// TiketAriWriteResponseType defines model for TiketAriWriteResponse.Type.
+type TiketAriWriteResponseType string
+
+// TiketAvailabilityResponse Returned by `GET /v1/channels/tiket/availability`.
+type TiketAvailabilityResponse struct {
+	// Currency The property currency.
+	//
+	// Example: IDR
+	Currency *string       `json:"currency,omitempty"`
+	Days     []TiketAriDay `json:"days"`
+
+	// End Inclusive.
+	End openapi_types.Date `json:"end"`
+
+	// PriceModel `Room Based` (one `price` per night) or `Occupancy Based` (`occupancyPrices` per number of guests). Set per property in the tiket.com extranet.
+	//
+	// Example: Room Based
+	PriceModel *string `json:"priceModel,omitempty"`
+
+	// PropertyId tiket.com Hotel ID.
+	PropertyId string             `json:"propertyId"`
+	Start      openapi_types.Date `json:"start"`
+}
+
+// TiketAvailabilityUpdateRequest defines model for TiketAvailabilityUpdateRequest.
+type TiketAvailabilityUpdateRequest struct {
+	// PropertyId tiket.com Hotel ID.
+	PropertyId string `json:"property_id"`
+
+	// Type `availability` — rooms to sell per room type. `rates` — prices per room type and rate plan. `restrictions` — stay and arrival rules per room type and rate plan.
+	Type    TiketAvailabilityUpdateRequestType `json:"type"`
+	Updates []TiketAriUpdate                   `json:"updates"`
+
+	// Verify Read the nights back from tiket.com after the write and report `applied`. `false` skips the read-back (`applied: unverified`).
+	Verify *bool `json:"verify,omitempty"`
+}
+
+// TiketAvailabilityUpdateRequestType `availability` — rooms to sell per room type. `rates` — prices per room type and rate plan. `restrictions` — stay and arrival rules per room type and rate plan.
+type TiketAvailabilityUpdateRequestType string
+
+// TiketChildPrice Price for a child in an age band. The age bands must match the ones set in the tiket.com extranet.
+type TiketChildPrice struct {
+	// Amount Example: 100000
+	Amount float64 `json:"amount"`
+
+	// MaxAge Example: 11
+	MaxAge int `json:"maxAge"`
+
+	// MinAge Example: 0
+	MinAge int `json:"minAge"`
+}
+
+// TiketConnectClaimResponse defines model for TiketConnectClaimResponse.
+type TiketConnectClaimResponse struct {
+	// AutoMapped Room types mapped automatically to a listing with the same name.
+	AutoMapped   *int    `json:"autoMapped,omitempty"`
+	Connected    *bool   `json:"connected,omitempty"`
+	ConnectionId *string `json:"connectionId,omitempty"`
+	Currency     *string `json:"currency,omitempty"`
+	HotelId      *string `json:"hotelId,omitempty"`
+
+	// PriceModel `Room Based` (one `price` per night) or `Occupancy Based` (`occupancyPrices` per number of guests). Set per property in the tiket.com extranet.
+	//
+	// Example: Room Based
+	PriceModel *string `json:"priceModel,omitempty"`
+
+	// RatePlans Rate plans imported.
+	RatePlans *int `json:"ratePlans,omitempty"`
+
+	// Rooms Room types imported.
+	Rooms *int `json:"rooms,omitempty"`
+}
+
+// TiketConnectMapRoomsResponse defines model for TiketConnectMapRoomsResponse.
+type TiketConnectMapRoomsResponse struct {
+	ConnectionId *string `json:"connectionId,omitempty"`
+
+	// Created Listings created from rooms (`create: true`).
+	Created *int `json:"created,omitempty"`
+	Mapped  *int `json:"mapped,omitempty"`
+
+	// ReplayedReservations Bookings tiket.com delivered before the rooms were mapped, now recorded.
+	ReplayedReservations *int    `json:"replayedReservations,omitempty"`
+	SessionId            *string `json:"sessionId,omitempty"`
+	Success              *bool   `json:"success,omitempty"`
+	Unmapped             *int    `json:"unmapped,omitempty"`
+}
+
+// TiketConnectRoomsResponse Returned by `GET /v1/connect/tiket/rooms`. Same shape as `GET /v1/connect/booking/rooms`.
+type TiketConnectRoomsResponse struct {
+	HotelId             string                        `json:"hotelId"`
+	ListingOptions      []BookingConnectListingOption `json:"listingOptions"`
+	ListingOptionsTotal *int                          `json:"listingOptionsTotal,omitempty"`
+
+	// MissingCapabilities Always empty for tiket.com.
+	MissingCapabilities *[]string `json:"missingCapabilities,omitempty"`
+	Rooms               []struct {
+		CurrentListingId *string `json:"currentListingId,omitempty"`
+		MaxGuests        *int    `json:"maxGuests,omitempty"`
+		NumberOfRooms    *int    `json:"numberOfRooms,omitempty"`
+
+		// RoomBookingId tiket.com room type id.
+		RoomBookingId *string `json:"roomBookingId,omitempty"`
+
+		// RoomId Pass this back in `POST /v1/connect/tiket/map-rooms`.
+		RoomId   *string `json:"roomId,omitempty"`
+		RoomName *string `json:"roomName,omitempty"`
+	} `json:"rooms"`
+	SessionId string `json:"sessionId"`
+
+	// Status `importing` — room types are still being read; `ready` — awaiting mapping; `completed` — the session is finished.
+	Status TiketConnectRoomsResponseStatus `json:"status"`
+}
+
+// TiketConnectRoomsResponseStatus `importing` — room types are still being read; `ready` — awaiting mapping; `completed` — the session is finished.
+type TiketConnectRoomsResponseStatus string
+
+// TiketContentResponse Returned by `GET /v1/channels/tiket/content`.
+type TiketContentResponse struct {
+	// ActivationStatus Same as on `GET /v1/channels/tiket/properties`.
+	ActivationStatus *string `json:"activationStatus,omitempty"`
+	ChainCode        *string `json:"chainCode,omitempty"`
+	ContentMapped    *bool   `json:"contentMapped,omitempty"`
+
+	// Objects One entry per content object Repull sent: the property, each room type, each rate plan.
+	Objects *[]struct {
+		// Content The content that was sent.
+		Content *map[string]interface{} `json:"content,omitempty"`
+
+		// EchoToken tiket.com's reference for the push. Quote it to tiket.com support.
+		EchoToken *string `json:"echoToken,omitempty"`
+
+		// Kind What the object is.
+		Kind      *TiketContentResponseObjectsKind `json:"kind,omitempty"`
+		ListingId *string                          `json:"listingId,omitempty"`
+
+		// PartnerCode Repull's code for the object on tiket.com.
+		PartnerCode *string    `json:"partnerCode,omitempty"`
+		PushedAt    *time.Time `json:"pushedAt,omitempty"`
+	} `json:"objects,omitempty"`
+	PartnerHotelCode *string `json:"partnerHotelCode,omitempty"`
+	PropertyId       *string `json:"propertyId,omitempty"`
+}
+
+// TiketContentResponseObjectsKind What the object is.
+type TiketContentResponseObjectsKind string
+
+// TiketListingPricingResponse Returned by `GET /v1/channels/tiket/listings/{id}/pricing`: the listing's tiket.com room, every active rate plan of that room.
+type TiketListingPricingResponse struct {
+	// Currency Example: IDR
+	Currency *string       `json:"currency,omitempty"`
+	Days     []TiketAriDay `json:"days"`
+
+	// End Inclusive.
+	End       openapi_types.Date `json:"end"`
+	ListingId string             `json:"listingId"`
+
+	// PriceModel `Room Based` (one `price` per night) or `Occupancy Based` (`occupancyPrices` per number of guests). Set per property in the tiket.com extranet.
+	//
+	// Example: Room Based
+	PriceModel *string `json:"priceModel,omitempty"`
+
+	// PropertyId tiket.com Hotel ID.
+	PropertyId string `json:"propertyId"`
+
+	// RoomTypeCode The tiket.com room type the listing is mapped to.
+	RoomTypeCode string             `json:"roomTypeCode"`
+	Start        openapi_types.Date `json:"start"`
+}
+
+// TiketListingPricingUpdateRequest defines model for TiketListingPricingUpdateRequest.
+type TiketListingPricingUpdateRequest struct {
+	// HotelId tiket.com Hotel ID — only needed when the listing is mapped on more than one tiket.com property.
+	HotelId *string `json:"hotel_id,omitempty"`
+
+	// Type `availability` — rooms to sell per room type. `rates` — prices per room type and rate plan. `restrictions` — stay and arrival rules per room type and rate plan.
+	Type    *TiketListingPricingUpdateRequestType `json:"type,omitempty"`
+	Updates []TiketAriUpdate                      `json:"updates"`
+
+	// Verify Read the nights back from tiket.com after the write and report `applied`. `false` skips the read-back (`applied: unverified`).
+	Verify *bool `json:"verify,omitempty"`
+}
+
+// TiketListingPricingUpdateRequestType `availability` — rooms to sell per room type. `rates` — prices per room type and rate plan. `restrictions` — stay and arrival rules per room type and rate plan.
+type TiketListingPricingUpdateRequestType string
+
+// TiketMapListingsRequest defines model for TiketMapListingsRequest.
+type TiketMapListingsRequest struct {
+	Mappings []struct {
+		// Create `true` creates a new listing from the room, with tiket.com's calendar. Do not send `listingId` with it.
+		Create *bool `json:"create,omitempty"`
+
+		// ListingId Listing to map the room to. `null` unmaps it.
+		ListingId *int `json:"listingId,omitempty"`
+
+		// RoomTypeCode tiket.com room type id (`rooms[].roomTypeCode` on `GET /v1/channels/tiket/properties/{id}/rooms`).
+		RoomTypeCode string `json:"roomTypeCode"`
+	} `json:"mappings"`
+
+	// PropertyId tiket.com Hotel ID.
+	PropertyId string `json:"property_id"`
+}
+
+// TiketMapListingsResponse defines model for TiketMapListingsResponse.
+type TiketMapListingsResponse struct {
+	PropertyId *string `json:"propertyId,omitempty"`
+
+	// ReplayedReservations Bookings tiket.com delivered while the room was unmapped, now recorded on the listing.
+	ReplayedReservations *int `json:"replayedReservations,omitempty"`
+
+	// Results One entry per mapping.
+	Results *[]TiketMapListingsResponse_Results_Item `json:"results,omitempty"`
+}
+
+// TiketMapListingsResponse_Results_Item defines model for TiketMapListingsResponse.results.Item.
+type TiketMapListingsResponse_Results_Item struct {
+	Created              *bool                  `json:"created,omitempty"`
+	Error                *string                `json:"error,omitempty"`
+	ListingId            *string                `json:"listingId,omitempty"`
+	RoomId               *string                `json:"roomId,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// TiketOccupancyPrice Price for a number of guests (Occupancy Based properties).
+type TiketOccupancyPrice struct {
+	// Amount Price per night for this many guests, tax included, in `currency`.
+	//
+	// Example: 850000
+	Amount float64 `json:"amount"`
+
+	// Guests Example: 2
+	Guests int `json:"guests"`
+}
+
+// TiketProperty A tiket.com property connected to this workspace. A property is a hotel or building; its room types are what guests book, and each room type maps to one Repull listing.
+type TiketProperty struct {
+	// ActivationStatus Whether tiket.com has activated Repull as the property's channel manager, `awaiting_activation` until tiket.com activates Repull, then `active`; `disconnected` after `disconnect`.
+	ActivationStatus *string `json:"activationStatus,omitempty"`
+
+	// ContentMapped `true` when tiket.com has linked Repull's codes to the property, so `POST /v1/listings/{id}/publish/tiket` can send content.
+	ContentMapped *bool `json:"contentMapped,omitempty"`
+
+	// Currency Example: IDR
+	Currency  *string `json:"currency,omitempty"`
+	LastError *string `json:"lastError,omitempty"`
+
+	// LastProductsAt When room types and rate plans were last read from tiket.com.
+	LastProductsAt *time.Time `json:"lastProductsAt,omitempty"`
+	Listings       *[]struct {
+		ListingId    *string `json:"listingId,omitempty"`
+		RoomId       *string `json:"roomId,omitempty"`
+		RoomName     *string `json:"roomName,omitempty"`
+		RoomTypeCode *string `json:"roomTypeCode,omitempty"`
+	} `json:"listings,omitempty"`
+
+	// MappingStatus `mapped` — every room type has a listing; `partial` — some do; `unmapped` — none (a real onboarding state, not an error).
+	MappingStatus *TiketPropertyMappingStatus `json:"mappingStatus,omitempty"`
+	Name          *string                     `json:"name,omitempty"`
+
+	// PartnerHotelCode Repull's code for a property Repull created on tiket.com.
+	PartnerHotelCode *string `json:"partnerHotelCode,omitempty"`
+
+	// PriceModel `Room Based` (one `price` per night) or `Occupancy Based` (`occupancyPrices` per number of guests). Set per property in the tiket.com extranet.
+	//
+	// Example: Room Based
+	PriceModel *string `json:"priceModel,omitempty"`
+
+	// PropertyId tiket.com Hotel ID. `null` for a property Repull created that tiket.com has not assigned an id to yet.
+	PropertyId *string      `json:"propertyId,omitempty"`
+	Rooms      *[]TiketRoom `json:"rooms,omitempty"`
+
+	// SyncEnabled Whether calendar changes are sent to tiket.com automatically (`set-sync`).
+	SyncEnabled *bool `json:"syncEnabled,omitempty"`
+}
+
+// TiketPropertyMappingStatus `mapped` — every room type has a listing; `partial` — some do; `unmapped` — none (a real onboarding state, not an error).
+type TiketPropertyMappingStatus string
+
+// TiketPropertyListResponse defines model for TiketPropertyListResponse.
+type TiketPropertyListResponse struct {
+	Properties []TiketProperty `json:"properties"`
+}
+
+// TiketPropertyRoomsResponse defines model for TiketPropertyRoomsResponse.
+type TiketPropertyRoomsResponse struct {
+	PropertyId string      `json:"propertyId"`
+	Rooms      []TiketRoom `json:"rooms"`
+}
+
+// TiketRatePlan defines model for TiketRatePlan.
+type TiketRatePlan struct {
+	Name *string `json:"name,omitempty"`
+
+	// PushTarget Prices and restrictions from the mapped listing's calendar are sent to this rate plan.
+	PushTarget *bool `json:"pushTarget,omitempty"`
+
+	// RatePlanCode tiket.com rate plan id.
+	RatePlanCode *string `json:"ratePlanCode,omitempty"`
+
+	// RatePlanId Repull id of the rate plan (used by `set-push-rate-plans`).
+	RatePlanId *string `json:"ratePlanId,omitempty"`
+}
+
+// TiketReservation One booked room of a tiket.com reservation, as tiket.com delivered it.
+type TiketReservation struct {
+	Adults *int `json:"adults,omitempty"`
+
+	// CancellationPolicy Cancellation policy text as tiket.com sent it.
+	CancellationPolicy *string             `json:"cancellationPolicy,omitempty"`
+	CheckIn            *openapi_types.Date `json:"checkIn,omitempty"`
+	CheckOut           *openapi_types.Date `json:"checkOut,omitempty"`
+	Children           *int                `json:"children,omitempty"`
+
+	// ConfirmationCode `<tiketReservationId>` for the first room, `<tiketReservationId>-2`, `-3`, … for the others.
+	ConfirmationCode *string    `json:"confirmationCode,omitempty"`
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+
+	// Currency Example: IDR
+	Currency     *string `json:"currency,omitempty"`
+	GuestCountry *string `json:"guestCountry,omitempty"`
+	GuestName    *string `json:"guestName,omitempty"`
+	Infants      *int    `json:"infants,omitempty"`
+	MealPlanCode *string `json:"mealPlanCode,omitempty"`
+
+	// NetAmount What tiket.com pays the property for this room.
+	NetAmount     *float64 `json:"netAmount,omitempty"`
+	NonRefundable *bool    `json:"nonRefundable,omitempty"`
+
+	// PaymentMethod How tiket.com pays the property: `Virtual Credit Card` or `Bank Transfer`. Card details are never returned by the API.
+	//
+	// Example: Bank Transfer
+	PaymentMethod *string `json:"paymentMethod,omitempty"`
+
+	// PaymentType Payment type as tiket.com sent it.
+	PaymentType *string `json:"paymentType,omitempty"`
+
+	// PreviousTiketReservationId Set when this booking replaced an earlier one. tiket.com sends a date change as a cancellation plus a new booking; Repull applies it as a change to the original reservation.
+	PreviousTiketReservationId *string `json:"previousTiketReservationId,omitempty"`
+
+	// PropertyId tiket.com Hotel ID.
+	PropertyId   *string `json:"propertyId,omitempty"`
+	RatePlanCode *string `json:"ratePlanCode,omitempty"`
+	RatePlanName *string `json:"ratePlanName,omitempty"`
+
+	// ReservationId The Repull reservation this room became (`GET /v1/reservations/{id}`). `null` while the room type is not mapped to a listing; mapping it records the booking.
+	ReservationId *string `json:"reservationId,omitempty"`
+
+	// RoomIndex 1 for the first room of the booking.
+	RoomIndex       *int                    `json:"roomIndex,omitempty"`
+	RoomTypeCode    *string                 `json:"roomTypeCode,omitempty"`
+	SpecialRequests *string                 `json:"specialRequests,omitempty"`
+	Status          *TiketReservationStatus `json:"status,omitempty"`
+
+	// TiketReservationId tiket.com's id of the whole booking.
+	TiketReservationId *string `json:"tiketReservationId,omitempty"`
+
+	// TotalAmount What the guest paid for this room.
+	TotalAmount *float64   `json:"totalAmount,omitempty"`
+	UpdatedAt   *time.Time `json:"updatedAt,omitempty"`
+}
+
+// TiketReservationStatus defines model for TiketReservation.Status.
+type TiketReservationStatus string
+
+// TiketReservationListResponse defines model for TiketReservationListResponse.
+type TiketReservationListResponse struct {
+	Data       []TiketReservation `json:"data"`
+	Pagination struct {
+		HasMore *bool `json:"hasMore,omitempty"`
+		Limit   *int  `json:"limit,omitempty"`
+		Offset  *int  `json:"offset,omitempty"`
+	} `json:"pagination"`
+}
+
+// TiketRoom A tiket.com room type and the listing it is mapped to.
+type TiketRoom struct {
+	// ListingHidden `true` when the room is mapped to a listing that `?status=` hides.
+	ListingHidden *bool `json:"listingHidden,omitempty"`
+
+	// ListingId The mapped Repull listing, or `null` when the room is not mapped (or its listing is hidden by `?status=`).
+	ListingId   *string          `json:"listingId,omitempty"`
+	MaxAdults   *int             `json:"maxAdults,omitempty"`
+	MaxChildren *int             `json:"maxChildren,omitempty"`
+	Name        *string          `json:"name,omitempty"`
+	RatePlans   *[]TiketRatePlan `json:"ratePlans,omitempty"`
+
+	// RoomId Repull id of the room (used by the Connect mapping).
+	RoomId *string `json:"roomId,omitempty"`
+
+	// RoomTypeCode tiket.com room type id.
+	RoomTypeCode *string `json:"roomTypeCode,omitempty"`
+
+	// Units Rooms of this type at the property.
+	Units *int `json:"units,omitempty"`
+}
+
+// TiketSetupRequest Fields depend on `action`. Every action except `create-property`, `request-activation` and `check-activation` names a property with `property_id` or, for a property Repull created that tiket.com has not assigned an id to yet, `partner_hotel_code`.
+type TiketSetupRequest struct {
+	Action  TiketSetupRequestAction `json:"action"`
+	Address *string                 `json:"address,omitempty"`
+
+	// Breakfast `add-rate-plan`: breakfast included.
+	Breakfast *bool `json:"breakfast,omitempty"`
+
+	// CancellationPolicy `add-rate-plan`.
+	CancellationPolicy *string `json:"cancellation_policy,omitempty"`
+	CompanyAddress     *string `json:"company_address,omitempty"`
+
+	// CompanyName `create-property`: the legal entity that operates the property.
+	CompanyName *string `json:"company_name,omitempty"`
+
+	// Contacts `create-property`: property contacts.
+	Contacts *[]struct {
+		CountryAccessCode *string              `json:"country_access_code,omitempty"`
+		Email             *openapi_types.Email `json:"email,omitempty"`
+		Name              *string              `json:"name,omitempty"`
+		Phone             *string              `json:"phone,omitempty"`
+		PositionId        *int                 `json:"position_id,omitempty"`
+		ProfileType       *string              `json:"profile_type,omitempty"`
+	} `json:"contacts,omitempty"`
+
+	// CountryCode Example: ID
+	CountryCode *string `json:"country_code,omitempty"`
+
+	// Currency `create-property`: ISO 4217.
+	//
+	// Example: IDR
+	Currency    *string `json:"currency,omitempty"`
+	Description *string `json:"description,omitempty"`
+
+	// Enabled `set-sync`: send calendar changes to tiket.com automatically.
+	Enabled *bool `json:"enabled,omitempty"`
+	Floors  *int  `json:"floors,omitempty"`
+
+	// HotelId `set-tiket-hotel-id`: the Hotel ID tiket.com assigned. `check-activation`: the Hotel ID to check.
+	HotelId  *string  `json:"hotel_id,omitempty"`
+	Latitude *float64 `json:"latitude,omitempty"`
+
+	// ListingId `create-property`, `add-room`, `add-rate-plan`: the listing whose content is used.
+	ListingId   *int     `json:"listing_id,omitempty"`
+	Longitude   *float64 `json:"longitude,omitempty"`
+	MaxAdults   *int     `json:"max_adults,omitempty"`
+	MaxChildren *int     `json:"max_children,omitempty"`
+
+	// Name `create-property`, `add-room`, `add-rate-plan`: name on tiket.com.
+	Name *string `json:"name,omitempty"`
+
+	// PartnerHotelCode Repull's code for a property Repull created.
+	PartnerHotelCode *string `json:"partner_hotel_code,omitempty"`
+	PostalCode       *string `json:"postal_code,omitempty"`
+
+	// PricingModel `create-property`: `Room Based` or `Occupancy Based`.
+	PricingModel *string `json:"pricing_model,omitempty"`
+
+	// Properties `request-activation`: the properties to activate.
+	Properties *[]struct {
+		Address *string              `json:"address,omitempty"`
+		Email   *openapi_types.Email `json:"email,omitempty"`
+		HotelId *string              `json:"hotel_id,omitempty"`
+		Name    *string              `json:"name,omitempty"`
+	} `json:"properties,omitempty"`
+
+	// PropertyId tiket.com Hotel ID.
+	PropertyId *string `json:"property_id,omitempty"`
+
+	// PropertyTypeId `create-property`: tiket.com property type.
+	PropertyTypeId *int `json:"property_type_id,omitempty"`
+
+	// Quantity `add-room`: rooms of this type.
+	Quantity *int `json:"quantity,omitempty"`
+
+	// RatePlanIds `set-push-rate-plans`: the `ratePlanId`s that receive prices and restrictions.
+	RatePlanIds *[]string `json:"rate_plan_ids,omitempty"`
+
+	// RoomIds `add-rate-plan`: rooms the rate plan applies to.
+	RoomIds    *[]string `json:"room_ids,omitempty"`
+	StarRating *float64  `json:"star_rating,omitempty"`
+	StateCode  *string   `json:"state_code,omitempty"`
+	TotalRooms *int      `json:"total_rooms,omitempty"`
+	WhenBuilt  *int      `json:"when_built,omitempty"`
+}
+
+// TiketSetupRequestAction defines model for TiketSetupRequest.Action.
+type TiketSetupRequestAction string
+
+// TiketSetupResponse defines model for TiketSetupResponse.
+type TiketSetupResponse struct {
+	Action *string `json:"action,omitempty"`
+
+	// Result What the action did. Depends on `action`.
+	Result *map[string]interface{} `json:"result,omitempty"`
+}
+
+// TiketSyncResponse defines model for TiketSyncResponse.
+type TiketSyncResponse struct {
+	Failed  *int `json:"failed,omitempty"`
+	Results *[]struct {
+		Error      *string                 `json:"error,omitempty"`
+		ListingId  *string                 `json:"listingId,omitempty"`
+		Ok         *bool                   `json:"ok,omitempty"`
+		PropertyId *string                 `json:"propertyId,omitempty"`
+		Result     *map[string]interface{} `json:"result,omitempty"`
+
+		// Skipped `listing_inactive` — an inactive listing is not sold, so its calendar is not sent.
+		Skipped *string                       `json:"skipped,omitempty"`
+		Step    *TiketSyncResponseResultsStep `json:"step,omitempty"`
+	} `json:"results,omitempty"`
+	Synced *int `json:"synced,omitempty"`
+}
+
+// TiketSyncResponseResultsStep defines model for TiketSyncResponse.Results.Step.
+type TiketSyncResponseResultsStep string
+
 // Transaction One row of the unified transactions & payments ledger: a payout (`isPayout: true`) or a reservation charge / refund, on any channel. `platform` is normalized — `booking` is Booking.com however the account was connected (never `booking_extranet`). For a payout, `amount` is the net the host received, `grossAmount` the guest-paid gross, and `fees` the deductions (commission, payments service fee, processing fee).
 type Transaction struct {
 	// Amount Net amount; for a payout, what the host received.
@@ -24188,6 +25192,102 @@ type CreateBookingWebhookJSONBody struct {
 
 	// NotificationType Booking.com CNS notification type.
 	NotificationType string `json:"notification_type"`
+}
+
+// GetTiketAvailabilityParams defines parameters for GetTiketAvailability.
+type GetTiketAvailabilityParams struct {
+	// PropertyId tiket.com Hotel ID (shown next to the property name in the tiket.com extranet; `propertyId` on `GET /v1/channels/tiket/properties`).
+	PropertyId string `form:"property_id" json:"property_id"`
+
+	// StartDate First night, YYYY-MM-DD. Default today.
+	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+
+	// EndDate Last night, YYYY-MM-DD, inclusive. Default `start_date` + `number_of_days` - 1.
+	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+
+	// NumberOfDays Window length when `end_date` is omitted.
+	NumberOfDays *int `form:"number_of_days,omitempty" json:"number_of_days,omitempty"`
+
+	// RoomTypeCode Only this tiket.com room type.
+	RoomTypeCode *string `form:"room_type_code,omitempty" json:"room_type_code,omitempty"`
+
+	// RatePlanCode Only this tiket.com rate plan.
+	RatePlanCode *string `form:"rate_plan_code,omitempty" json:"rate_plan_code,omitempty"`
+}
+
+// GetTiketContentParams defines parameters for GetTiketContent.
+type GetTiketContentParams struct {
+	// PropertyId tiket.com Hotel ID (shown next to the property name in the tiket.com extranet; `propertyId` on `GET /v1/channels/tiket/properties`). Required unless `partner_hotel_code` is sent.
+	PropertyId *string `form:"property_id,omitempty" json:"property_id,omitempty"`
+
+	// PartnerHotelCode Repull's code for a property Repull created (`partnerHotelCode`).
+	PartnerHotelCode *string `form:"partner_hotel_code,omitempty" json:"partner_hotel_code,omitempty"`
+}
+
+// GetTiketListingPricingParams defines parameters for GetTiketListingPricing.
+type GetTiketListingPricingParams struct {
+	// HotelId tiket.com Hotel ID — only needed when the listing is mapped on more than one tiket.com property.
+	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
+
+	// StartDate First night, YYYY-MM-DD. Default today.
+	StartDate *openapi_types.Date `form:"start_date,omitempty" json:"start_date,omitempty"`
+
+	// EndDate Last night, YYYY-MM-DD, inclusive.
+	EndDate *openapi_types.Date `form:"end_date,omitempty" json:"end_date,omitempty"`
+
+	// NumberOfDays Window length when `end_date` is omitted.
+	NumberOfDays *int `form:"number_of_days,omitempty" json:"number_of_days,omitempty"`
+}
+
+// ListTiketPropertiesParams defines parameters for ListTiketProperties.
+type ListTiketPropertiesParams struct {
+	// Status `active` (default) hides inactive listings: they are left out of `listings`, and a room mapped to one comes back with `listingId: null` and `listingHidden: true`. `inactive` shows only inactive listings and `all` shows both. `mappingStatus` always counts every mapped room.
+	Status *ListTiketPropertiesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// ListTiketPropertiesParamsStatus defines parameters for ListTiketProperties.
+type ListTiketPropertiesParamsStatus string
+
+// GetTiketPropertyParams defines parameters for GetTiketProperty.
+type GetTiketPropertyParams struct {
+	// Status `active` (default) hides inactive listings: they are left out of `listings`, and a room mapped to one comes back with `listingId: null` and `listingHidden: true`. `inactive` shows only inactive listings and `all` shows both. `mappingStatus` always counts every mapped room.
+	Status *GetTiketPropertyParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// GetTiketPropertyParamsStatus defines parameters for GetTiketProperty.
+type GetTiketPropertyParamsStatus string
+
+// ListTiketReservationsParams defines parameters for ListTiketReservations.
+type ListTiketReservationsParams struct {
+	// PropertyId tiket.com Hotel ID (shown next to the property name in the tiket.com extranet; `propertyId` on `GET /v1/channels/tiket/properties`).
+	PropertyId *string `form:"property_id,omitempty" json:"property_id,omitempty"`
+
+	// Status Only `confirmed` or only `cancelled` bookings.
+	Status *ListTiketReservationsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// CheckInFrom Check-in on or after, YYYY-MM-DD.
+	CheckInFrom *openapi_types.Date `form:"check_in_from,omitempty" json:"check_in_from,omitempty"`
+
+	// CheckInTo Check-in on or before, YYYY-MM-DD.
+	CheckInTo *openapi_types.Date `form:"check_in_to,omitempty" json:"check_in_to,omitempty"`
+
+	// Limit Page size.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Rows to skip.
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// ListTiketReservationsParamsStatus defines parameters for ListTiketReservations.
+type ListTiketReservationsParamsStatus string
+
+// SyncTiketJSONBody defines parameters for SyncTiket.
+type SyncTiketJSONBody struct {
+	// PropertyId tiket.com Hotel ID. Omit for every active property.
+	PropertyId *string `json:"property_id,omitempty"`
+
+	// RefreshProducts Re-read room types and rate plans first.
+	RefreshProducts *bool `json:"refresh_products,omitempty"`
 }
 
 // CreateVrboAlterationJSONBody defines parameters for CreateVrboAlteration.
@@ -27007,6 +28107,34 @@ type SubmitSmoobuCredentialsJSONBody_Credentials struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// MapTiketConnectRoomsJSONBody defines parameters for MapTiketConnectRooms.
+type MapTiketConnectRoomsJSONBody struct {
+	Mappings []struct {
+		Create    *bool `json:"create,omitempty"`
+		ListingId *int  `json:"listingId,omitempty"`
+
+		// RoomId `rooms[].roomId` from `GET /v1/connect/tiket/rooms`.
+		RoomId int `json:"roomId"`
+	} `json:"mappings"`
+	SessionId string `json:"sessionId"`
+}
+
+// ListTiketConnectRoomsParams defines parameters for ListTiketConnectRooms.
+type ListTiketConnectRoomsParams struct {
+	// SessionId Connect session id.
+	SessionId string `form:"sessionId" json:"sessionId"`
+}
+
+// VerifyTiketClaimJSONBody defines parameters for VerifyTiketClaim.
+type VerifyTiketClaimJSONBody struct {
+	// HotelId tiket.com Hotel ID.
+	HotelId string `json:"hotelId"`
+
+	// Name Optional property name to show until tiket.com's is read.
+	Name      *string `json:"name,omitempty"`
+	SessionId string  `json:"sessionId"`
+}
+
 // SubmitTrackCredentialsJSONBody defines parameters for SubmitTrackCredentials.
 type SubmitTrackCredentialsJSONBody struct {
 	// Credentials The Track domain and an API key + secret.
@@ -27766,6 +28894,12 @@ type PublishListingToBookingParams struct {
 	HotelId *string `form:"hotel_id,omitempty" json:"hotel_id,omitempty"`
 }
 
+// PublishListingTiketJSONBody defines parameters for PublishListingTiket.
+type PublishListingTiketJSONBody struct {
+	// HotelId tiket.com Hotel ID — only needed when the listing is mapped on more than one tiket.com property. Also accepted as `?hotel_id=`.
+	HotelId *string `json:"hotelId,omitempty"`
+}
+
 // GetVrboPublishJobParams defines parameters for GetVrboPublishJob.
 type GetVrboPublishJobParams struct {
 	// JobId `job.jobId` from the POST.
@@ -27997,7 +29131,7 @@ type ListPropertiesParams struct {
 	// LifecycleStatus Filter by lifecycle status (e.g. `live`, `draft`, `archived`). Pass `all` to disable the filter.
 	LifecycleStatus *string `form:"lifecycle_status,omitempty" json:"lifecycle_status,omitempty"`
 
-	// Channel Filter to properties with an active link on the given OTA/channel (airbnb, booking, vrbo). Omit to include every channel. Each property also returns a `channels` array listing the OTAs it is published on.
+	// Channel Filter to properties with an active link on the given OTA/channel (airbnb, booking, vrbo, tiket). Omit to include every channel. Each property also returns a `channels` array listing the OTAs it is published on.
 	Channel *ListPropertiesParamsChannel `form:"channel,omitempty" json:"channel,omitempty"`
 
 	// UpdatedSince Incremental sync: return only records whose `updatedAt` is at or after this instant. This is the only filter on record **mutation** time — every `check_*` filter targets guest **stay** dates.
@@ -28634,6 +29768,21 @@ type BookingSetupJSONRequestBody BookingSetupJSONBody
 // Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type CreateBookingWebhookJSONRequestBody CreateBookingWebhookJSONBody
 
+// UpdateTiketAvailabilityJSONRequestBody defines body for UpdateTiketAvailability for application/json ContentType.
+type UpdateTiketAvailabilityJSONRequestBody = TiketAvailabilityUpdateRequest
+
+// MapTiketListingsJSONRequestBody defines body for MapTiketListings for application/json ContentType.
+type MapTiketListingsJSONRequestBody = TiketMapListingsRequest
+
+// UpdateTiketListingPricingJSONRequestBody defines body for UpdateTiketListingPricing for application/json ContentType.
+type UpdateTiketListingPricingJSONRequestBody = TiketListingPricingUpdateRequest
+
+// TiketSetupJSONRequestBody defines body for TiketSetup for application/json ContentType.
+type TiketSetupJSONRequestBody = TiketSetupRequest
+
+// SyncTiketJSONRequestBody defines body for SyncTiket for application/json ContentType.
+type SyncTiketJSONRequestBody SyncTiketJSONBody
+
 // CreateVrboAlterationJSONRequestBody defines body for CreateVrboAlteration for application/json ContentType.
 type CreateVrboAlterationJSONRequestBody CreateVrboAlterationJSONBody
 
@@ -28799,6 +29948,12 @@ type SelectConnectProviderJSONRequestBody SelectConnectProviderJSONBody
 // SubmitSmoobuCredentialsJSONRequestBody defines body for SubmitSmoobuCredentials for application/json ContentType.
 type SubmitSmoobuCredentialsJSONRequestBody SubmitSmoobuCredentialsJSONBody
 
+// MapTiketConnectRoomsJSONRequestBody defines body for MapTiketConnectRooms for application/json ContentType.
+type MapTiketConnectRoomsJSONRequestBody MapTiketConnectRoomsJSONBody
+
+// VerifyTiketClaimJSONRequestBody defines body for VerifyTiketClaim for application/json ContentType.
+type VerifyTiketClaimJSONRequestBody VerifyTiketClaimJSONBody
+
 // SubmitTrackCredentialsJSONRequestBody defines body for SubmitTrackCredentials for application/json ContentType.
 type SubmitTrackCredentialsJSONRequestBody SubmitTrackCredentialsJSONBody
 
@@ -28897,6 +30052,9 @@ type PublishListingToAirbnbJSONRequestBody = ListingPublishAirbnbRequest
 
 // PublishListingToBookingJSONRequestBody defines body for PublishListingToBooking for application/json ContentType.
 type PublishListingToBookingJSONRequestBody = ListingPublishBookingRequest
+
+// PublishListingTiketJSONRequestBody defines body for PublishListingTiket for application/json ContentType.
+type PublishListingTiketJSONRequestBody PublishListingTiketJSONBody
 
 // PublishListingToVrboJSONRequestBody defines body for PublishListingToVrbo for application/json ContentType.
 type PublishListingToVrboJSONRequestBody PublishListingToVrboJSONBody
@@ -30082,6 +31240,119 @@ func (a BookingReservationRoom) MarshalJSON() ([]byte, error) {
 		object["totalprice"], err = json.Marshal(a.Totalprice)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'totalprice': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for TiketMapListingsResponse_Results_Item. Returns the specified
+// element and whether it was found
+func (a TiketMapListingsResponse_Results_Item) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for TiketMapListingsResponse_Results_Item
+func (a *TiketMapListingsResponse_Results_Item) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for TiketMapListingsResponse_Results_Item to handle AdditionalProperties
+func (a *TiketMapListingsResponse_Results_Item) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["created"]; found {
+		err = json.Unmarshal(raw, &a.Created)
+		if err != nil {
+			return fmt.Errorf("error reading 'created': %w", err)
+		}
+		delete(object, "created")
+	}
+
+	if raw, found := object["error"]; found {
+		err = json.Unmarshal(raw, &a.Error)
+		if err != nil {
+			return fmt.Errorf("error reading 'error': %w", err)
+		}
+		delete(object, "error")
+	}
+
+	if raw, found := object["listingId"]; found {
+		err = json.Unmarshal(raw, &a.ListingId)
+		if err != nil {
+			return fmt.Errorf("error reading 'listingId': %w", err)
+		}
+		delete(object, "listingId")
+	}
+
+	if raw, found := object["roomId"]; found {
+		err = json.Unmarshal(raw, &a.RoomId)
+		if err != nil {
+			return fmt.Errorf("error reading 'roomId': %w", err)
+		}
+		delete(object, "roomId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for TiketMapListingsResponse_Results_Item to handle AdditionalProperties
+func (a TiketMapListingsResponse_Results_Item) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Created != nil {
+		object["created"], err = json.Marshal(a.Created)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'created': %w", err)
+		}
+	}
+
+	if a.Error != nil {
+		object["error"], err = json.Marshal(a.Error)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'error': %w", err)
+		}
+	}
+
+	if a.ListingId != nil {
+		object["listingId"], err = json.Marshal(a.ListingId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'listingId': %w", err)
+		}
+	}
+
+	if a.RoomId != nil {
+		object["roomId"], err = json.Marshal(a.RoomId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'roomId': %w", err)
 		}
 	}
 
