@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.57 — 2026-11-24
+
+- Regenerated from the live spec (automated spec refresh).
+
 ## 0.2.56 — 2026-11-23
 
 - New: `GET /v1/connect/pricelabs/session`
