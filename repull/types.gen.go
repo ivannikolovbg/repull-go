@@ -4108,7 +4108,7 @@ func (e ReservationPendingReason) Valid() bool {
 // Defines values for ReservationPlatform.
 const (
 	ReservationPlatformAirbnb      ReservationPlatform = "airbnb"
-	ReservationPlatformBookingCom  ReservationPlatform = "booking.com"
+	ReservationPlatformBooking     ReservationPlatform = "booking"
 	ReservationPlatformDirect      ReservationPlatform = "direct"
 	ReservationPlatformLessThannil ReservationPlatform = "<nil>"
 	ReservationPlatformOther       ReservationPlatform = "other"
@@ -4123,7 +4123,7 @@ func (e ReservationPlatform) Valid() bool {
 	switch e {
 	case ReservationPlatformAirbnb:
 		return true
-	case ReservationPlatformBookingCom:
+	case ReservationPlatformBooking:
 		return true
 	case ReservationPlatformDirect:
 		return true
@@ -4147,7 +4147,7 @@ func (e ReservationPlatform) Valid() bool {
 // Defines values for ReservationSource.
 const (
 	ReservationSourceAirbnb      ReservationSource = "airbnb"
-	ReservationSourceBookingCom  ReservationSource = "booking.com"
+	ReservationSourceBooking     ReservationSource = "booking"
 	ReservationSourceDirect      ReservationSource = "direct"
 	ReservationSourceLessThannil ReservationSource = "<nil>"
 	ReservationSourceOther       ReservationSource = "other"
@@ -4162,7 +4162,7 @@ func (e ReservationSource) Valid() bool {
 	switch e {
 	case ReservationSourceAirbnb:
 		return true
-	case ReservationSourceBookingCom:
+	case ReservationSourceBooking:
 		return true
 	case ReservationSourceDirect:
 		return true
@@ -20773,7 +20773,7 @@ type Reservation struct {
 	// Example: 2026-09-23T09:00:00.000Z
 	RespondBy *time.Time `json:"respondBy,omitempty"`
 
-	// Source Booking source / channel. Lowercase. May be null on legacy rows. Canonical name as of 2026-05; `platform` is kept as an alias.
+	// Source Booking source / channel. Lowercase. May be null on legacy rows. Booking.com reservations are `booking`. Canonical name as of 2026-05; `platform` is kept as an alias.
 	//
 	// Example: airbnb
 	Source *ReservationSource `json:"source,omitempty"`
@@ -20824,7 +20824,7 @@ type ReservationPendingReason string
 // Deprecated: this type has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 type ReservationPlatform string
 
-// ReservationSource Booking source / channel. Lowercase. May be null on legacy rows. Canonical name as of 2026-05; `platform` is kept as an alias.
+// ReservationSource Booking source / channel. Lowercase. May be null on legacy rows. Booking.com reservations are `booking`. Canonical name as of 2026-05; `platform` is kept as an alias.
 //
 // Example: airbnb
 type ReservationSource string
@@ -22976,7 +22976,7 @@ type TiketConnectRoomsResponse struct {
 		MaxGuests        *int    `json:"maxGuests,omitempty"`
 		NumberOfRooms    *int    `json:"numberOfRooms,omitempty"`
 
-		// RoomBookingId tiket.com room type id.
+		// RoomBookingId tiket.com room type code (`roomTypeCode` on `GET /v1/channels/tiket/properties/{id}/rooms`), exactly as tiket.com sends it. Free-form text such as `DLX-KING`, so always a string — never parse it as a number.
 		RoomBookingId *string `json:"roomBookingId,omitempty"`
 
 		// RoomId Pass this back in `POST /v1/connect/tiket/map-rooms`.
