@@ -28826,7 +28826,7 @@ type SetListingMarkupJSONBody struct {
 	// HotelId Booking.com property — required when the listing is on more than one.
 	HotelId *string `json:"hotelId,omitempty"`
 
-	// MarkupPercent 15 = +15%. `null` removes the markup.
+	// MarkupPercent 15 = +15%; -2 = 2% below the listing's price. Above -100 and below 100. `null` removes the markup.
 	MarkupPercent *float32 `json:"markupPercent"`
 }
 
