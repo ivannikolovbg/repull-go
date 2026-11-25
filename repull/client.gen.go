@@ -2358,6 +2358,227 @@ type ClientInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhook(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetTiketAvailability Read tiket.com rates, availability and restrictions
+	//
+	// What tiket.com holds for a property over a date window, read live from tiket.com: rooms to sell and booked per room type, prices (Room Based, or per number of guests on an Occupancy Based property, and children prices) and restrictions per rate plan. One row per night, room type and rate plan.
+	//
+	// `property_id` must be a tiket.com property connected to this workspace (`GET /v1/channels/tiket/properties`).
+	//
+	// Corresponds with GET /v1/channels/tiket/availability (the `GetTiketAvailability` operationId).
+	GetTiketAvailability(ctx context.Context, params *GetTiketAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTiketAvailabilityWithBody Write tiket.com rates, availability or restrictions
+	//
+	// `type` selects the write:
+	//
+	// - `availability` — rooms to sell per room type (`availableRooms`). `stopSell` with a `ratePlanCode` also closes that rate plan.
+	// - `rates` — `price` on a Room Based property or `occupancyPrices` on an Occupancy Based one, per room type and rate plan. `currency` defaults to the property currency.
+	// - `restrictions` — `minStay`, `maxStay`, `stopSell`, `closedToArrival`, `closedToDeparture`, `minAdvanceDays`, `maxAdvanceDays`.
+	//
+	// Dates are inclusive and must fall between today and 500 days ahead. Every update is checked before anything is sent; a problem returns `422 invalid_params` naming each field, and nothing is written.
+	//
+	// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	//
+	// **Every write is read back.** `applied` is `verified` when tiket.com holds what was sent, `mismatch` when it holds something else (see `mismatches`), or `unverified` with `verify: false`. tiket.com's own warnings come back verbatim in `warnings`. A write tiket.com refuses returns `tiket_rejected` with tiket.com's reason and its reference (`echoToken`) in `value_received`.
+	//
+	// To write by listing instead of by room type, use `PUT /v1/channels/tiket/listings/{id}/pricing`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/channels/tiket/availability (the `UpdateTiketAvailability` operationId).
+	UpdateTiketAvailabilityWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTiketAvailability Write tiket.com rates, availability or restrictions
+	//
+	// `type` selects the write:
+	//
+	// - `availability` — rooms to sell per room type (`availableRooms`). `stopSell` with a `ratePlanCode` also closes that rate plan.
+	// - `rates` — `price` on a Room Based property or `occupancyPrices` on an Occupancy Based one, per room type and rate plan. `currency` defaults to the property currency.
+	// - `restrictions` — `minStay`, `maxStay`, `stopSell`, `closedToArrival`, `closedToDeparture`, `minAdvanceDays`, `maxAdvanceDays`.
+	//
+	// Dates are inclusive and must fall between today and 500 days ahead. Every update is checked before anything is sent; a problem returns `422 invalid_params` naming each field, and nothing is written.
+	//
+	// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	//
+	// **Every write is read back.** `applied` is `verified` when tiket.com holds what was sent, `mismatch` when it holds something else (see `mismatches`), or `unverified` with `verify: false`. tiket.com's own warnings come back verbatim in `warnings`. A write tiket.com refuses returns `tiket_rejected` with tiket.com's reason and its reference (`echoToken`) in `value_received`.
+	//
+	// To write by listing instead of by room type, use `PUT /v1/channels/tiket/listings/{id}/pricing`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/channels/tiket/availability (the `UpdateTiketAvailability` operationId).
+	UpdateTiketAvailability(ctx context.Context, body UpdateTiketAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTiketContent Read the content Repull sent tiket.com
+	//
+	// tiket.com has no API to read content back, so this is the record of what Repull sent for a property — the property, its room types and rate plans — with when each was sent and tiket.com's reference for it. Send changes with `POST /v1/listings/{id}/publish/tiket`.
+	//
+	// Name the property with `property_id`, or with `partner_hotel_code` for a property Repull created that tiket.com has not assigned an id to yet.
+	//
+	// Corresponds with GET /v1/channels/tiket/content (the `GetTiketContent` operationId).
+	GetTiketContent(ctx context.Context, params *GetTiketContentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MapTiketListingsWithBody Map tiket.com room types to listings
+	//
+	// Map each room type of a tiket.com property to a Repull listing — the API-key equivalent of the mapping step of the hosted Connect flow, and the counterpart of `POST /v1/channels/booking/listings/map`.
+	//
+	// Each mapping is `{ roomTypeCode, listingId }` (`listingId: null` unmaps the room) or `{ roomTypeCode, create: true }`, which creates a new listing from the room with tiket.com's calendar.
+	//
+	// Mapping a room to an existing listing sends that listing's calendar to tiket.com, and records any bookings tiket.com delivered while the room was unmapped (`replayedReservations`).
+	//
+	// Returns `403 listing_inactive` when a target listing is inactive; nothing is changed.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/tiket/listings/map (the `MapTiketListings` operationId).
+	MapTiketListingsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MapTiketListings Map tiket.com room types to listings
+	//
+	// Map each room type of a tiket.com property to a Repull listing — the API-key equivalent of the mapping step of the hosted Connect flow, and the counterpart of `POST /v1/channels/booking/listings/map`.
+	//
+	// Each mapping is `{ roomTypeCode, listingId }` (`listingId: null` unmaps the room) or `{ roomTypeCode, create: true }`, which creates a new listing from the room with tiket.com's calendar.
+	//
+	// Mapping a room to an existing listing sends that listing's calendar to tiket.com, and records any bookings tiket.com delivered while the room was unmapped (`replayedReservations`).
+	//
+	// Returns `403 listing_inactive` when a target listing is inactive; nothing is changed.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/tiket/listings/map (the `MapTiketListings` operationId).
+	MapTiketListings(ctx context.Context, body MapTiketListingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTiketListingPricing Read tiket.com rates, availability and restrictions for a listing
+	//
+	// Same as `GET /v1/channels/tiket/availability`, addressed by listing: the listing's tiket.com room type and every active rate plan of that room, read live from tiket.com.
+	//
+	// A listing mapped on more than one tiket.com property needs `hotel_id`; without it the call returns `409 ambiguous_tiket_mapping` listing the ids.
+	//
+	// Corresponds with GET /v1/channels/tiket/listings/{id}/pricing (the `GetTiketListingPricing` operationId).
+	GetTiketListingPricing(ctx context.Context, id int, params *GetTiketListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTiketListingPricingWithBody Write tiket.com rates, availability or restrictions for a listing
+	//
+	// Same contract as `PUT /v1/channels/tiket/availability`, addressed by listing. `roomTypeCode` is always the listing's room; `ratePlanCode` defaults to every rate plan of the room selected for pushes (`pushTarget`), so one update row is sent to each. `type` defaults to `rates`.
+	//
+	// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with PUT /v1/channels/tiket/listings/{id}/pricing (the `UpdateTiketListingPricing` operationId).
+	UpdateTiketListingPricingWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTiketListingPricing Write tiket.com rates, availability or restrictions for a listing
+	//
+	// Same contract as `PUT /v1/channels/tiket/availability`, addressed by listing. `roomTypeCode` is always the listing's room; `ratePlanCode` defaults to every rate plan of the room selected for pushes (`pushTarget`), so one update row is sent to each. `type` defaults to `rates`.
+	//
+	// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with PUT /v1/channels/tiket/listings/{id}/pricing (the `UpdateTiketListingPricing` operationId).
+	UpdateTiketListingPricing(ctx context.Context, id int, body UpdateTiketListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListTiketProperties List tiket.com properties
+	//
+	// Every tiket.com property connected to this workspace, each returned once with its room types, rate plans and the listing each room type is mapped to.
+	//
+	// A tiket.com property is a hotel or building; its room types are what guests book, and each room type maps to one Repull listing. A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"`. Properties waiting for tiket.com to activate Repull are listed with their `activationStatus`.
+	//
+	// Corresponds with GET /v1/channels/tiket/properties (the `ListTiketProperties` operationId).
+	ListTiketProperties(ctx context.Context, params *ListTiketPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTiketProperty Get a tiket.com property
+	//
+	// One tiket.com property connected to this workspace, by Hotel ID — same shape as an entry of `GET /v1/channels/tiket/properties`. A property connected to another workspace returns the same `404` as one that does not exist.
+	//
+	// Corresponds with GET /v1/channels/tiket/properties/{id} (the `GetTiketProperty` operationId).
+	GetTiketProperty(ctx context.Context, id string, params *GetTiketPropertyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListTiketPropertyRooms List a tiket.com property's room types
+	//
+	// The room types of a tiket.com property, each with its rate plans and the listing it is mapped to. `roomTypeCode` is what `POST /v1/channels/tiket/listings/map` and the rates writes take.
+	//
+	// Corresponds with GET /v1/channels/tiket/properties/{id}/rooms (the `ListTiketPropertyRooms` operationId).
+	ListTiketPropertyRooms(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListTiketReservations List tiket.com reservations as tiket.com sent them
+	//
+	// tiket.com's own record of the bookings it delivered, newest first: one row per booked room (`<id>`, `<id>-2`, …) with tiket.com's ids, rate plan, meal plan, cancellation policy, what the guest paid, the net amount tiket.com pays the property, how tiket.com pays (`paymentMethod`: `Virtual Credit Card` or `Bank Transfer`), and the Repull reservation the room became.
+	//
+	// **Cards.** Card details are never returned by the API, on this route or on `/v1/reservations`.
+	//
+	// **Date changes.** tiket.com sends a date change as a cancellation plus a new booking. Repull applies it as a change to the original reservation, so the Repull reservation keeps its id; the new tiket.com booking carries `previousTiketReservationId`.
+	//
+	// The same bookings, normalized like every other channel's (`source: tiket`), are on `GET /v1/reservations`.
+	//
+	// Corresponds with GET /v1/channels/tiket/reservations (the `ListTiketReservations` operationId).
+	ListTiketReservations(ctx context.Context, params *ListTiketReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TiketSetupWithBody Set up a tiket.com property
+	//
+	// Onboarding and maintenance actions for tiket.com properties (counterpart of `POST /v1/channels/booking/setup`). `action`:
+	//
+	// - `request-activation` — ask tiket.com to activate Repull as channel manager for one or more existing properties (`properties[]`). The usual path for a group; a single host activates Repull in the tiket.com extranet and connects through Connect instead.
+	// - `check-activation` — whether tiket.com has activated Repull for `hotel_id` yet.
+	// - `create-property` — create a new property on tiket.com from a listing (`listing_id` plus the property and company details). Then `request-registration` asks tiket.com for its ids and `set-tiket-hotel-id` records the Hotel ID tiket.com replies with.
+	// - `add-room`, `add-rate-plan` — add a room type or rate plan to a property Repull created.
+	// - `request-content-mapping` / `confirm-content-mapping` — for an existing property, ask tiket.com to link Repull's codes to it so `POST /v1/listings/{id}/publish/tiket` can send content.
+	// - `refresh` — re-read room types and rate plans from tiket.com.
+	// - `set-push-rate-plans` — choose the rate plans (`rate_plan_ids`) that receive prices and restrictions.
+	// - `set-sync` — turn automatic calendar sending on or off (`enabled`).
+	// - `disconnect` — stop syncing the property. Always available, even when its listings are inactive.
+	//
+	// tiket.com accepts incomplete content and rejects it later, so content is checked against tiket.com's requirements before it is sent; problems come back as `422 invalid_params` with each field in `value_received`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/tiket/setup (the `TiketSetup` operationId).
+	TiketSetupWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TiketSetup Set up a tiket.com property
+	//
+	// Onboarding and maintenance actions for tiket.com properties (counterpart of `POST /v1/channels/booking/setup`). `action`:
+	//
+	// - `request-activation` — ask tiket.com to activate Repull as channel manager for one or more existing properties (`properties[]`). The usual path for a group; a single host activates Repull in the tiket.com extranet and connects through Connect instead.
+	// - `check-activation` — whether tiket.com has activated Repull for `hotel_id` yet.
+	// - `create-property` — create a new property on tiket.com from a listing (`listing_id` plus the property and company details). Then `request-registration` asks tiket.com for its ids and `set-tiket-hotel-id` records the Hotel ID tiket.com replies with.
+	// - `add-room`, `add-rate-plan` — add a room type or rate plan to a property Repull created.
+	// - `request-content-mapping` / `confirm-content-mapping` — for an existing property, ask tiket.com to link Repull's codes to it so `POST /v1/listings/{id}/publish/tiket` can send content.
+	// - `refresh` — re-read room types and rate plans from tiket.com.
+	// - `set-push-rate-plans` — choose the rate plans (`rate_plan_ids`) that receive prices and restrictions.
+	// - `set-sync` — turn automatic calendar sending on or off (`enabled`).
+	// - `disconnect` — stop syncing the property. Always available, even when its listings are inactive.
+	//
+	// tiket.com accepts incomplete content and rejects it later, so content is checked against tiket.com's requirements before it is sent; problems come back as `422 invalid_params` with each field in `value_received`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/tiket/setup (the `TiketSetup` operationId).
+	TiketSetup(ctx context.Context, body TiketSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SyncTiketWithBody Send every mapped listing's calendar to tiket.com
+	//
+	// Send the full calendar (today to 500 days ahead: rooms to sell, prices, restrictions) of every mapped listing of one tiket.com property, or of every active property when `property_id` is omitted. `refresh_products: true` re-reads room types and rate plans from tiket.com first. Use it after a bulk edit or to re-baseline a property; day-to-day changes are sent automatically.
+	//
+	// Inactive listings are not sold, so they are skipped (`skipped: listing_inactive`).
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/channels/tiket/sync (the `SyncTiket` operationId).
+	SyncTiketWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SyncTiket Send every mapped listing's calendar to tiket.com
+	//
+	// Send the full calendar (today to 500 days ahead: rooms to sell, prices, restrictions) of every mapped listing of one tiket.com property, or of every active property when `property_id` is omitted. `refresh_products: true` re-reads room types and rate plans from tiket.com first. Use it after a bulk edit or to re-baseline a property; day-to-day changes are sent automatically.
+	//
+	// Inactive listings are not sold, so they are skipped (`skipped: listing_inactive`).
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/channels/tiket/sync (the `SyncTiket` operationId).
+	SyncTiket(ctx context.Context, body SyncTiketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateVrboAlterationWithBody Change a Vrbo reservation
 	//
 	// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
@@ -4397,6 +4618,63 @@ type ClientInterface interface {
 	// Corresponds with POST /v1/connect/smoobu/credentials (the `SubmitSmoobuCredentials` operationId).
 	SubmitSmoobuCredentials(ctx context.Context, body SubmitSmoobuCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MapTiketConnectRoomsWithBody Map tiket.com room types to listings in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// Submits the host's room mapping for the property claimed in the session and completes the session. Each mapping is `{ roomId, listingId }` (`listingId: null` leaves the room unmapped) or `{ roomId, create: true }`, which creates a listing from the room with tiket.com's calendar. Bookings tiket.com delivered before the rooms were mapped are recorded (`replayedReservations`). Same flow as `POST /v1/connect/booking/map-rooms`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/tiket/map-rooms (the `MapTiketConnectRooms` operationId).
+	MapTiketConnectRoomsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MapTiketConnectRooms Map tiket.com room types to listings in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// Submits the host's room mapping for the property claimed in the session and completes the session. Each mapping is `{ roomId, listingId }` (`listingId: null` leaves the room unmapped) or `{ roomId, create: true }`, which creates a listing from the room with tiket.com's calendar. Bookings tiket.com delivered before the rooms were mapped are recorded (`replayedReservations`). Same flow as `POST /v1/connect/booking/map-rooms`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/tiket/map-rooms (the `MapTiketConnectRooms` operationId).
+	MapTiketConnectRooms(ctx context.Context, body MapTiketConnectRoomsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListTiketConnectRooms List the room types of the tiket.com property in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// The room types of the property claimed in the session, for the mapping screen. Same shape as `GET /v1/connect/booking/rooms`. `425 not_ready` means the claim is still being saved; retry in a moment.
+	//
+	// Corresponds with GET /v1/connect/tiket/rooms (the `ListTiketConnectRooms` operationId).
+	ListTiketConnectRooms(ctx context.Context, params *ListTiketConnectRoomsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VerifyTiketClaimWithBody Claim a tiket.com property in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// The host activates Repull as their channel manager in the tiket.com extranet, then enters their tiket.com Hotel ID (a number). Repull checks with tiket.com, then imports the property's room types and rate plans and maps rooms to listings with the same name (`autoMapped`).
+	//
+	// `412 awaiting_activation` means tiket.com has not activated Repull for that Hotel ID yet, or the id is wrong. tiket.com does not announce activations, so the hosted page offers to try again and Repull keeps checking in the background. A property already connected to another workspace returns `409 property_already_connected`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/connect/tiket/verify (the `VerifyTiketClaim` operationId).
+	VerifyTiketClaimWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// VerifyTiketClaim Claim a tiket.com property in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// The host activates Repull as their channel manager in the tiket.com extranet, then enters their tiket.com Hotel ID (a number). Repull checks with tiket.com, then imports the property's room types and rate plans and maps rooms to listings with the same name (`autoMapped`).
+	//
+	// `412 awaiting_activation` means tiket.com has not activated Repull for that Hotel ID yet, or the id is wrong. tiket.com does not announce activations, so the hosted page offers to try again and Repull keeps checking in the background. A property already connected to another workspace returns `409 property_already_connected`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/connect/tiket/verify (the `VerifyTiketClaim` operationId).
+	VerifyTiketClaim(ctx context.Context, body VerifyTiketClaimJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SubmitTrackCredentialsWithBody Submit Track credentials for a Connect session
 	//
 	// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
@@ -5967,6 +6245,32 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
 	PublishListingToBooking(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PublishListingTiketWithBody Publish a listing's content to tiket.com
+	//
+	// Send the listing's content to tiket.com (counterpart of `POST /v1/listings/{id}/publish/booking`): room content (name, occupancy, beds, facilities, photos, description), rate-plan policies and — for a property Repull created — the property content. The result lists each section that landed (`sections`) and each that did not, with tiket.com's reason (`errors`).
+	//
+	// tiket.com only accepts content once it has linked Repull's codes to the property: true for a property Repull created, and for an existing property after `POST /v1/channels/tiket/setup` `request-content-mapping`. Until then the call returns `409 tiket_content_not_mapped`. Prices and availability are not content: they are sent automatically, or with `POST /v1/channels/tiket/sync`.
+	//
+	// A listing mapped on more than one tiket.com property takes `hotelId`.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/tiket (the `PublishListingTiket` operationId).
+	PublishListingTiketWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PublishListingTiket Publish a listing's content to tiket.com
+	//
+	// Send the listing's content to tiket.com (counterpart of `POST /v1/listings/{id}/publish/booking`): room content (name, occupancy, beds, facilities, photos, description), rate-plan policies and — for a property Repull created — the property content. The result lists each section that landed (`sections`) and each that did not, with tiket.com's reason (`errors`).
+	//
+	// tiket.com only accepts content once it has linked Repull's codes to the property: true for a property Repull created, and for an existing property after `POST /v1/channels/tiket/setup` `request-content-mapping`. Until then the call returns `409 tiket_content_not_mapped`. Prices and availability are not content: they are sent automatically, or with `POST /v1/channels/tiket/sync`.
+	//
+	// A listing mapped on more than one tiket.com property takes `hotelId`.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/tiket (the `PublishListingTiket` operationId).
+	PublishListingTiket(ctx context.Context, id int, body PublishListingTiketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetVrboPublishJob Progress of a Vrbo listing creation or update
 	//
@@ -10776,6 +11080,397 @@ func (c *Client) CreateBookingWebhook(ctx context.Context, body CreateBookingWeb
 	return c.Client.Do(req)
 }
 
+// GetTiketAvailability Read tiket.com rates, availability and restrictions
+//
+// What tiket.com holds for a property over a date window, read live from tiket.com: rooms to sell and booked per room type, prices (Room Based, or per number of guests on an Occupancy Based property, and children prices) and restrictions per rate plan. One row per night, room type and rate plan.
+//
+// `property_id` must be a tiket.com property connected to this workspace (`GET /v1/channels/tiket/properties`).
+//
+// Corresponds with GET /v1/channels/tiket/availability (the `GetTiketAvailability` operationId).
+func (c *Client) GetTiketAvailability(ctx context.Context, params *GetTiketAvailabilityParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTiketAvailabilityRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateTiketAvailabilityWithBody Write tiket.com rates, availability or restrictions
+//
+// `type` selects the write:
+//
+// - `availability` — rooms to sell per room type (`availableRooms`). `stopSell` with a `ratePlanCode` also closes that rate plan.
+// - `rates` — `price` on a Room Based property or `occupancyPrices` on an Occupancy Based one, per room type and rate plan. `currency` defaults to the property currency.
+// - `restrictions` — `minStay`, `maxStay`, `stopSell`, `closedToArrival`, `closedToDeparture`, `minAdvanceDays`, `maxAdvanceDays`.
+//
+// Dates are inclusive and must fall between today and 500 days ahead. Every update is checked before anything is sent; a problem returns `422 invalid_params` naming each field, and nothing is written.
+//
+// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+//
+// **Every write is read back.** `applied` is `verified` when tiket.com holds what was sent, `mismatch` when it holds something else (see `mismatches`), or `unverified` with `verify: false`. tiket.com's own warnings come back verbatim in `warnings`. A write tiket.com refuses returns `tiket_rejected` with tiket.com's reason and its reference (`echoToken`) in `value_received`.
+//
+// To write by listing instead of by room type, use `PUT /v1/channels/tiket/listings/{id}/pricing`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/channels/tiket/availability (the `UpdateTiketAvailability` operationId).
+func (c *Client) UpdateTiketAvailabilityWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTiketAvailabilityRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateTiketAvailability Write tiket.com rates, availability or restrictions
+//
+// `type` selects the write:
+//
+// - `availability` — rooms to sell per room type (`availableRooms`). `stopSell` with a `ratePlanCode` also closes that rate plan.
+// - `rates` — `price` on a Room Based property or `occupancyPrices` on an Occupancy Based one, per room type and rate plan. `currency` defaults to the property currency.
+// - `restrictions` — `minStay`, `maxStay`, `stopSell`, `closedToArrival`, `closedToDeparture`, `minAdvanceDays`, `maxAdvanceDays`.
+//
+// Dates are inclusive and must fall between today and 500 days ahead. Every update is checked before anything is sent; a problem returns `422 invalid_params` naming each field, and nothing is written.
+//
+// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+//
+// **Every write is read back.** `applied` is `verified` when tiket.com holds what was sent, `mismatch` when it holds something else (see `mismatches`), or `unverified` with `verify: false`. tiket.com's own warnings come back verbatim in `warnings`. A write tiket.com refuses returns `tiket_rejected` with tiket.com's reason and its reference (`echoToken`) in `value_received`.
+//
+// To write by listing instead of by room type, use `PUT /v1/channels/tiket/listings/{id}/pricing`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/channels/tiket/availability (the `UpdateTiketAvailability` operationId).
+func (c *Client) UpdateTiketAvailability(ctx context.Context, body UpdateTiketAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTiketAvailabilityRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetTiketContent Read the content Repull sent tiket.com
+//
+// tiket.com has no API to read content back, so this is the record of what Repull sent for a property — the property, its room types and rate plans — with when each was sent and tiket.com's reference for it. Send changes with `POST /v1/listings/{id}/publish/tiket`.
+//
+// Name the property with `property_id`, or with `partner_hotel_code` for a property Repull created that tiket.com has not assigned an id to yet.
+//
+// Corresponds with GET /v1/channels/tiket/content (the `GetTiketContent` operationId).
+func (c *Client) GetTiketContent(ctx context.Context, params *GetTiketContentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTiketContentRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MapTiketListingsWithBody Map tiket.com room types to listings
+//
+// Map each room type of a tiket.com property to a Repull listing — the API-key equivalent of the mapping step of the hosted Connect flow, and the counterpart of `POST /v1/channels/booking/listings/map`.
+//
+// Each mapping is `{ roomTypeCode, listingId }` (`listingId: null` unmaps the room) or `{ roomTypeCode, create: true }`, which creates a new listing from the room with tiket.com's calendar.
+//
+// Mapping a room to an existing listing sends that listing's calendar to tiket.com, and records any bookings tiket.com delivered while the room was unmapped (`replayedReservations`).
+//
+// Returns `403 listing_inactive` when a target listing is inactive; nothing is changed.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/tiket/listings/map (the `MapTiketListings` operationId).
+func (c *Client) MapTiketListingsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMapTiketListingsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MapTiketListings Map tiket.com room types to listings
+//
+// Map each room type of a tiket.com property to a Repull listing — the API-key equivalent of the mapping step of the hosted Connect flow, and the counterpart of `POST /v1/channels/booking/listings/map`.
+//
+// Each mapping is `{ roomTypeCode, listingId }` (`listingId: null` unmaps the room) or `{ roomTypeCode, create: true }`, which creates a new listing from the room with tiket.com's calendar.
+//
+// Mapping a room to an existing listing sends that listing's calendar to tiket.com, and records any bookings tiket.com delivered while the room was unmapped (`replayedReservations`).
+//
+// Returns `403 listing_inactive` when a target listing is inactive; nothing is changed.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/tiket/listings/map (the `MapTiketListings` operationId).
+func (c *Client) MapTiketListings(ctx context.Context, body MapTiketListingsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMapTiketListingsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetTiketListingPricing Read tiket.com rates, availability and restrictions for a listing
+//
+// Same as `GET /v1/channels/tiket/availability`, addressed by listing: the listing's tiket.com room type and every active rate plan of that room, read live from tiket.com.
+//
+// A listing mapped on more than one tiket.com property needs `hotel_id`; without it the call returns `409 ambiguous_tiket_mapping` listing the ids.
+//
+// Corresponds with GET /v1/channels/tiket/listings/{id}/pricing (the `GetTiketListingPricing` operationId).
+func (c *Client) GetTiketListingPricing(ctx context.Context, id int, params *GetTiketListingPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTiketListingPricingRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateTiketListingPricingWithBody Write tiket.com rates, availability or restrictions for a listing
+//
+// Same contract as `PUT /v1/channels/tiket/availability`, addressed by listing. `roomTypeCode` is always the listing's room; `ratePlanCode` defaults to every rate plan of the room selected for pushes (`pushTarget`), so one update row is sent to each. `type` defaults to `rates`.
+//
+// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with PUT /v1/channels/tiket/listings/{id}/pricing (the `UpdateTiketListingPricing` operationId).
+func (c *Client) UpdateTiketListingPricingWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTiketListingPricingRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// UpdateTiketListingPricing Write tiket.com rates, availability or restrictions for a listing
+//
+// Same contract as `PUT /v1/channels/tiket/availability`, addressed by listing. `roomTypeCode` is always the listing's room; `ratePlanCode` defaults to every rate plan of the room selected for pushes (`pushTarget`), so one update row is sent to each. `type` defaults to `rates`.
+//
+// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with PUT /v1/channels/tiket/listings/{id}/pricing (the `UpdateTiketListingPricing` operationId).
+func (c *Client) UpdateTiketListingPricing(ctx context.Context, id int, body UpdateTiketListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTiketListingPricingRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListTiketProperties List tiket.com properties
+//
+// Every tiket.com property connected to this workspace, each returned once with its room types, rate plans and the listing each room type is mapped to.
+//
+// A tiket.com property is a hotel or building; its room types are what guests book, and each room type maps to one Repull listing. A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"`. Properties waiting for tiket.com to activate Repull are listed with their `activationStatus`.
+//
+// Corresponds with GET /v1/channels/tiket/properties (the `ListTiketProperties` operationId).
+func (c *Client) ListTiketProperties(ctx context.Context, params *ListTiketPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListTiketPropertiesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetTiketProperty Get a tiket.com property
+//
+// One tiket.com property connected to this workspace, by Hotel ID — same shape as an entry of `GET /v1/channels/tiket/properties`. A property connected to another workspace returns the same `404` as one that does not exist.
+//
+// Corresponds with GET /v1/channels/tiket/properties/{id} (the `GetTiketProperty` operationId).
+func (c *Client) GetTiketProperty(ctx context.Context, id string, params *GetTiketPropertyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTiketPropertyRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListTiketPropertyRooms List a tiket.com property's room types
+//
+// The room types of a tiket.com property, each with its rate plans and the listing it is mapped to. `roomTypeCode` is what `POST /v1/channels/tiket/listings/map` and the rates writes take.
+//
+// Corresponds with GET /v1/channels/tiket/properties/{id}/rooms (the `ListTiketPropertyRooms` operationId).
+func (c *Client) ListTiketPropertyRooms(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListTiketPropertyRoomsRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListTiketReservations List tiket.com reservations as tiket.com sent them
+//
+// tiket.com's own record of the bookings it delivered, newest first: one row per booked room (`<id>`, `<id>-2`, …) with tiket.com's ids, rate plan, meal plan, cancellation policy, what the guest paid, the net amount tiket.com pays the property, how tiket.com pays (`paymentMethod`: `Virtual Credit Card` or `Bank Transfer`), and the Repull reservation the room became.
+//
+// **Cards.** Card details are never returned by the API, on this route or on `/v1/reservations`.
+//
+// **Date changes.** tiket.com sends a date change as a cancellation plus a new booking. Repull applies it as a change to the original reservation, so the Repull reservation keeps its id; the new tiket.com booking carries `previousTiketReservationId`.
+//
+// The same bookings, normalized like every other channel's (`source: tiket`), are on `GET /v1/reservations`.
+//
+// Corresponds with GET /v1/channels/tiket/reservations (the `ListTiketReservations` operationId).
+func (c *Client) ListTiketReservations(ctx context.Context, params *ListTiketReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListTiketReservationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TiketSetupWithBody Set up a tiket.com property
+//
+// Onboarding and maintenance actions for tiket.com properties (counterpart of `POST /v1/channels/booking/setup`). `action`:
+//
+// - `request-activation` — ask tiket.com to activate Repull as channel manager for one or more existing properties (`properties[]`). The usual path for a group; a single host activates Repull in the tiket.com extranet and connects through Connect instead.
+// - `check-activation` — whether tiket.com has activated Repull for `hotel_id` yet.
+// - `create-property` — create a new property on tiket.com from a listing (`listing_id` plus the property and company details). Then `request-registration` asks tiket.com for its ids and `set-tiket-hotel-id` records the Hotel ID tiket.com replies with.
+// - `add-room`, `add-rate-plan` — add a room type or rate plan to a property Repull created.
+// - `request-content-mapping` / `confirm-content-mapping` — for an existing property, ask tiket.com to link Repull's codes to it so `POST /v1/listings/{id}/publish/tiket` can send content.
+// - `refresh` — re-read room types and rate plans from tiket.com.
+// - `set-push-rate-plans` — choose the rate plans (`rate_plan_ids`) that receive prices and restrictions.
+// - `set-sync` — turn automatic calendar sending on or off (`enabled`).
+// - `disconnect` — stop syncing the property. Always available, even when its listings are inactive.
+//
+// tiket.com accepts incomplete content and rejects it later, so content is checked against tiket.com's requirements before it is sent; problems come back as `422 invalid_params` with each field in `value_received`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/tiket/setup (the `TiketSetup` operationId).
+func (c *Client) TiketSetupWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTiketSetupRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// TiketSetup Set up a tiket.com property
+//
+// Onboarding and maintenance actions for tiket.com properties (counterpart of `POST /v1/channels/booking/setup`). `action`:
+//
+// - `request-activation` — ask tiket.com to activate Repull as channel manager for one or more existing properties (`properties[]`). The usual path for a group; a single host activates Repull in the tiket.com extranet and connects through Connect instead.
+// - `check-activation` — whether tiket.com has activated Repull for `hotel_id` yet.
+// - `create-property` — create a new property on tiket.com from a listing (`listing_id` plus the property and company details). Then `request-registration` asks tiket.com for its ids and `set-tiket-hotel-id` records the Hotel ID tiket.com replies with.
+// - `add-room`, `add-rate-plan` — add a room type or rate plan to a property Repull created.
+// - `request-content-mapping` / `confirm-content-mapping` — for an existing property, ask tiket.com to link Repull's codes to it so `POST /v1/listings/{id}/publish/tiket` can send content.
+// - `refresh` — re-read room types and rate plans from tiket.com.
+// - `set-push-rate-plans` — choose the rate plans (`rate_plan_ids`) that receive prices and restrictions.
+// - `set-sync` — turn automatic calendar sending on or off (`enabled`).
+// - `disconnect` — stop syncing the property. Always available, even when its listings are inactive.
+//
+// tiket.com accepts incomplete content and rejects it later, so content is checked against tiket.com's requirements before it is sent; problems come back as `422 invalid_params` with each field in `value_received`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/tiket/setup (the `TiketSetup` operationId).
+func (c *Client) TiketSetup(ctx context.Context, body TiketSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTiketSetupRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SyncTiketWithBody Send every mapped listing's calendar to tiket.com
+//
+// Send the full calendar (today to 500 days ahead: rooms to sell, prices, restrictions) of every mapped listing of one tiket.com property, or of every active property when `property_id` is omitted. `refresh_products: true` re-reads room types and rate plans from tiket.com first. Use it after a bulk edit or to re-baseline a property; day-to-day changes are sent automatically.
+//
+// Inactive listings are not sold, so they are skipped (`skipped: listing_inactive`).
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/channels/tiket/sync (the `SyncTiket` operationId).
+func (c *Client) SyncTiketWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSyncTiketRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SyncTiket Send every mapped listing's calendar to tiket.com
+//
+// Send the full calendar (today to 500 days ahead: rooms to sell, prices, restrictions) of every mapped listing of one tiket.com property, or of every active property when `property_id` is omitted. `refresh_products: true` re-reads room types and rate plans from tiket.com first. Use it after a bulk edit or to re-baseline a property; day-to-day changes are sent automatically.
+//
+// Inactive listings are not sold, so they are skipped (`skipped: listing_inactive`).
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/channels/tiket/sync (the `SyncTiket` operationId).
+func (c *Client) SyncTiket(ctx context.Context, body SyncTiketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSyncTiketRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // CreateVrboAlterationWithBody Change a Vrbo reservation
 //
 // Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
@@ -14415,6 +15110,113 @@ func (c *Client) SubmitSmoobuCredentials(ctx context.Context, body SubmitSmoobuC
 	return c.Client.Do(req)
 }
 
+// MapTiketConnectRoomsWithBody Map tiket.com room types to listings in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// Submits the host's room mapping for the property claimed in the session and completes the session. Each mapping is `{ roomId, listingId }` (`listingId: null` leaves the room unmapped) or `{ roomId, create: true }`, which creates a listing from the room with tiket.com's calendar. Bookings tiket.com delivered before the rooms were mapped are recorded (`replayedReservations`). Same flow as `POST /v1/connect/booking/map-rooms`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/tiket/map-rooms (the `MapTiketConnectRooms` operationId).
+func (c *Client) MapTiketConnectRoomsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMapTiketConnectRoomsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// MapTiketConnectRooms Map tiket.com room types to listings in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// Submits the host's room mapping for the property claimed in the session and completes the session. Each mapping is `{ roomId, listingId }` (`listingId: null` leaves the room unmapped) or `{ roomId, create: true }`, which creates a listing from the room with tiket.com's calendar. Bookings tiket.com delivered before the rooms were mapped are recorded (`replayedReservations`). Same flow as `POST /v1/connect/booking/map-rooms`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/tiket/map-rooms (the `MapTiketConnectRooms` operationId).
+func (c *Client) MapTiketConnectRooms(ctx context.Context, body MapTiketConnectRoomsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMapTiketConnectRoomsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListTiketConnectRooms List the room types of the tiket.com property in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// The room types of the property claimed in the session, for the mapping screen. Same shape as `GET /v1/connect/booking/rooms`. `425 not_ready` means the claim is still being saved; retry in a moment.
+//
+// Corresponds with GET /v1/connect/tiket/rooms (the `ListTiketConnectRooms` operationId).
+func (c *Client) ListTiketConnectRooms(ctx context.Context, params *ListTiketConnectRoomsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListTiketConnectRoomsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VerifyTiketClaimWithBody Claim a tiket.com property in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// The host activates Repull as their channel manager in the tiket.com extranet, then enters their tiket.com Hotel ID (a number). Repull checks with tiket.com, then imports the property's room types and rate plans and maps rooms to listings with the same name (`autoMapped`).
+//
+// `412 awaiting_activation` means tiket.com has not activated Repull for that Hotel ID yet, or the id is wrong. tiket.com does not announce activations, so the hosted page offers to try again and Repull keeps checking in the background. A property already connected to another workspace returns `409 property_already_connected`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/connect/tiket/verify (the `VerifyTiketClaim` operationId).
+func (c *Client) VerifyTiketClaimWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVerifyTiketClaimRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// VerifyTiketClaim Claim a tiket.com property in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// The host activates Repull as their channel manager in the tiket.com extranet, then enters their tiket.com Hotel ID (a number). Repull checks with tiket.com, then imports the property's room types and rate plans and maps rooms to listings with the same name (`autoMapped`).
+//
+// `412 awaiting_activation` means tiket.com has not activated Repull for that Hotel ID yet, or the id is wrong. tiket.com does not announce activations, so the hosted page offers to try again and Repull keeps checking in the background. A property already connected to another workspace returns `409 property_already_connected`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/connect/tiket/verify (the `VerifyTiketClaim` operationId).
+func (c *Client) VerifyTiketClaim(ctx context.Context, body VerifyTiketClaimJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewVerifyTiketClaimRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // SubmitTrackCredentialsWithBody Submit Track credentials for a Connect session
 //
 // Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
@@ -17086,6 +17888,52 @@ func (c *Client) PublishListingToBookingWithBody(ctx context.Context, id int, pa
 // Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
 func (c *Client) PublishListingToBooking(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPublishListingToBookingRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PublishListingTiketWithBody Publish a listing's content to tiket.com
+//
+// Send the listing's content to tiket.com (counterpart of `POST /v1/listings/{id}/publish/booking`): room content (name, occupancy, beds, facilities, photos, description), rate-plan policies and — for a property Repull created — the property content. The result lists each section that landed (`sections`) and each that did not, with tiket.com's reason (`errors`).
+//
+// tiket.com only accepts content once it has linked Repull's codes to the property: true for a property Repull created, and for an existing property after `POST /v1/channels/tiket/setup` `request-content-mapping`. Until then the call returns `409 tiket_content_not_mapped`. Prices and availability are not content: they are sent automatically, or with `POST /v1/channels/tiket/sync`.
+//
+// A listing mapped on more than one tiket.com property takes `hotelId`.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /v1/listings/{id}/publish/tiket (the `PublishListingTiket` operationId).
+func (c *Client) PublishListingTiketWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingTiketRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PublishListingTiket Publish a listing's content to tiket.com
+//
+// Send the listing's content to tiket.com (counterpart of `POST /v1/listings/{id}/publish/booking`): room content (name, occupancy, beds, facilities, photos, description), rate-plan policies and — for a property Repull created — the property content. The result lists each section that landed (`sections`) and each that did not, with tiket.com's reason (`errors`).
+//
+// tiket.com only accepts content once it has linked Repull's codes to the property: true for a property Repull created, and for an existing property after `POST /v1/channels/tiket/setup` `request-content-mapping`. Until then the call returns `409 tiket_content_not_mapped`. Prices and availability are not content: they are sent automatically, or with `POST /v1/channels/tiket/sync`.
+//
+// A listing mapped on more than one tiket.com property takes `hotelId`.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /v1/listings/{id}/publish/tiket (the `PublishListingTiket` operationId).
+func (c *Client) PublishListingTiket(ctx context.Context, id int, body PublishListingTiketJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPublishListingTiketRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -24199,6 +25047,749 @@ func NewCreateBookingWebhookRequestWithBody(server string, contentType string, b
 	return req, nil
 }
 
+// NewGetTiketAvailabilityRequest constructs an http.Request for the GetTiketAvailability method
+func NewGetTiketAvailabilityRequest(server string, params *GetTiketAvailabilityParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/availability")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "property_id", params.PropertyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.NumberOfDays != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "number_of_days", *params.NumberOfDays, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.RoomTypeCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "room_type_code", *params.RoomTypeCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.RatePlanCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "rate_plan_code", *params.RatePlanCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateTiketAvailabilityRequest calls the generic UpdateTiketAvailability builder with application/json body
+func NewUpdateTiketAvailabilityRequest(server string, body UpdateTiketAvailabilityJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateTiketAvailabilityRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewUpdateTiketAvailabilityRequestWithBody constructs an http.Request for the UpdateTiketAvailability method, with any body, and a specified content type
+func NewUpdateTiketAvailabilityRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/availability")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetTiketContentRequest constructs an http.Request for the GetTiketContent method
+func NewGetTiketContentRequest(server string, params *GetTiketContentParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/content")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.PropertyId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "property_id", *params.PropertyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.PartnerHotelCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "partner_hotel_code", *params.PartnerHotelCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMapTiketListingsRequest calls the generic MapTiketListings builder with application/json body
+func NewMapTiketListingsRequest(server string, body MapTiketListingsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMapTiketListingsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMapTiketListingsRequestWithBody constructs an http.Request for the MapTiketListings method, with any body, and a specified content type
+func NewMapTiketListingsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/listings/map")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetTiketListingPricingRequest constructs an http.Request for the GetTiketListingPricing method
+func NewGetTiketListingPricingRequest(server string, id int, params *GetTiketListingPricingParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/listings/%s/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.HotelId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "hotel_id", *params.HotelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.StartDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "start_date", *params.StartDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.EndDate != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "end_date", *params.EndDate, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.NumberOfDays != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "number_of_days", *params.NumberOfDays, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateTiketListingPricingRequest calls the generic UpdateTiketListingPricing builder with application/json body
+func NewUpdateTiketListingPricingRequest(server string, id int, body UpdateTiketListingPricingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateTiketListingPricingRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateTiketListingPricingRequestWithBody constructs an http.Request for the UpdateTiketListingPricing method, with any body, and a specified content type
+func NewUpdateTiketListingPricingRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/listings/%s/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPut, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListTiketPropertiesRequest constructs an http.Request for the ListTiketProperties method
+func NewListTiketPropertiesRequest(server string, params *ListTiketPropertiesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/properties")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTiketPropertyRequest constructs an http.Request for the GetTiketProperty method
+func NewGetTiketPropertyRequest(server string, id string, params *GetTiketPropertyParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/properties/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListTiketPropertyRoomsRequest constructs an http.Request for the ListTiketPropertyRooms method
+func NewListTiketPropertyRoomsRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/properties/%s/rooms", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListTiketReservationsRequest constructs an http.Request for the ListTiketReservations method
+func NewListTiketReservationsRequest(server string, params *ListTiketReservationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/reservations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if params.PropertyId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "property_id", *params.PropertyId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "status", *params.Status, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.CheckInFrom != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "check_in_from", *params.CheckInFrom, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.CheckInTo != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "check_in_to", *params.CheckInTo, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date"}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewTiketSetupRequest calls the generic TiketSetup builder with application/json body
+func NewTiketSetupRequest(server string, body TiketSetupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewTiketSetupRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewTiketSetupRequestWithBody constructs an http.Request for the TiketSetup method, with any body, and a specified content type
+func NewTiketSetupRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/setup")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSyncTiketRequest calls the generic SyncTiket builder with application/json body
+func NewSyncTiketRequest(server string, body SyncTiketJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSyncTiketRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewSyncTiketRequestWithBody constructs an http.Request for the SyncTiket method, with any body, and a specified content type
+func NewSyncTiketRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/channels/tiket/sync")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateVrboAlterationRequest calls the generic CreateVrboAlteration builder with application/json body
 func NewCreateVrboAlterationRequest(server string, body CreateVrboAlterationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -30850,6 +32441,136 @@ func NewSubmitSmoobuCredentialsRequestWithBody(server string, contentType string
 	return req, nil
 }
 
+// NewMapTiketConnectRoomsRequest calls the generic MapTiketConnectRooms builder with application/json body
+func NewMapTiketConnectRoomsRequest(server string, body MapTiketConnectRoomsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMapTiketConnectRoomsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewMapTiketConnectRoomsRequestWithBody constructs an http.Request for the MapTiketConnectRooms method, with any body, and a specified content type
+func NewMapTiketConnectRoomsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/tiket/map-rooms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListTiketConnectRoomsRequest constructs an http.Request for the ListTiketConnectRooms method
+func NewListTiketConnectRoomsRequest(server string, params *ListTiketConnectRoomsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/tiket/rooms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		// queryValues collects non-styled parameters (passthrough, JSON)
+		// that are safe to round-trip through url.Values.Encode().
+		queryValues := queryURL.Query()
+		// rawQueryFragments collects pre-encoded query fragments from
+		// styled parameters, preserving literal commas as delimiters
+		// per the OpenAPI spec (e.g. "color=blue,black,brown").
+		var rawQueryFragments []string
+
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sessionId", params.SessionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			return nil, err
+		} else {
+			for _, qp := range strings.Split(queryFrag, "&") {
+				rawQueryFragments = append(rawQueryFragments, qp)
+			}
+		}
+
+		if encoded := queryValues.Encode(); encoded != "" {
+			rawQueryFragments = append(rawQueryFragments, encoded)
+		}
+		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewVerifyTiketClaimRequest calls the generic VerifyTiketClaim builder with application/json body
+func NewVerifyTiketClaimRequest(server string, body VerifyTiketClaimJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewVerifyTiketClaimRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewVerifyTiketClaimRequestWithBody constructs an http.Request for the VerifyTiketClaim method, with any body, and a specified content type
+func NewVerifyTiketClaimRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/connect/tiket/verify")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewSubmitTrackCredentialsRequest calls the generic SubmitTrackCredentials builder with application/json body
 func NewSubmitTrackCredentialsRequest(server string, body SubmitTrackCredentialsJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -35199,6 +36920,53 @@ func NewPublishListingToBookingRequestWithBody(server string, id int, params *Pu
 			rawQueryFragments = append(rawQueryFragments, encoded)
 		}
 		queryURL.RawQuery = strings.Join(rawQueryFragments, "&")
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPublishListingTiketRequest calls the generic PublishListingTiket builder with application/json body
+func NewPublishListingTiketRequest(server string, id int, body PublishListingTiketJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPublishListingTiketRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewPublishListingTiketRequestWithBody constructs an http.Request for the PublishListingTiket method, with any body, and a specified content type
+func NewPublishListingTiketRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "id", id, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/listings/%s/publish/tiket", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
@@ -41375,6 +43143,241 @@ type ClientWithResponsesInterface interface {
 	// Deprecated: this operation has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	CreateBookingWebhookWithResponse(ctx context.Context, body CreateBookingWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBookingWebhookClientResponse, error)
 
+	// GetTiketAvailabilityWithResponse Read tiket.com rates, availability and restrictions
+	//
+	// What tiket.com holds for a property over a date window, read live from tiket.com: rooms to sell and booked per room type, prices (Room Based, or per number of guests on an Occupancy Based property, and children prices) and restrictions per rate plan. One row per night, room type and rate plan.
+	//
+	// `property_id` must be a tiket.com property connected to this workspace (`GET /v1/channels/tiket/properties`).
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/tiket/availability (the `GetTiketAvailability` operationId).
+	GetTiketAvailabilityWithResponse(ctx context.Context, params *GetTiketAvailabilityParams, reqEditors ...RequestEditorFn) (*GetTiketAvailabilityClientResponse, error)
+
+	// UpdateTiketAvailabilityWithBodyWithResponse Write tiket.com rates, availability or restrictions
+	//
+	// `type` selects the write:
+	//
+	// - `availability` — rooms to sell per room type (`availableRooms`). `stopSell` with a `ratePlanCode` also closes that rate plan.
+	// - `rates` — `price` on a Room Based property or `occupancyPrices` on an Occupancy Based one, per room type and rate plan. `currency` defaults to the property currency.
+	// - `restrictions` — `minStay`, `maxStay`, `stopSell`, `closedToArrival`, `closedToDeparture`, `minAdvanceDays`, `maxAdvanceDays`.
+	//
+	// Dates are inclusive and must fall between today and 500 days ahead. Every update is checked before anything is sent; a problem returns `422 invalid_params` naming each field, and nothing is written.
+	//
+	// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	//
+	// **Every write is read back.** `applied` is `verified` when tiket.com holds what was sent, `mismatch` when it holds something else (see `mismatches`), or `unverified` with `verify: false`. tiket.com's own warnings come back verbatim in `warnings`. A write tiket.com refuses returns `tiket_rejected` with tiket.com's reason and its reference (`echoToken`) in `value_received`.
+	//
+	// To write by listing instead of by room type, use `PUT /v1/channels/tiket/listings/{id}/pricing`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/tiket/availability (the `UpdateTiketAvailability` operationId).
+	UpdateTiketAvailabilityWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTiketAvailabilityClientResponse, error)
+
+	// UpdateTiketAvailabilityWithResponse Write tiket.com rates, availability or restrictions
+	//
+	// `type` selects the write:
+	//
+	// - `availability` — rooms to sell per room type (`availableRooms`). `stopSell` with a `ratePlanCode` also closes that rate plan.
+	// - `rates` — `price` on a Room Based property or `occupancyPrices` on an Occupancy Based one, per room type and rate plan. `currency` defaults to the property currency.
+	// - `restrictions` — `minStay`, `maxStay`, `stopSell`, `closedToArrival`, `closedToDeparture`, `minAdvanceDays`, `maxAdvanceDays`.
+	//
+	// Dates are inclusive and must fall between today and 500 days ahead. Every update is checked before anything is sent; a problem returns `422 invalid_params` naming each field, and nothing is written.
+	//
+	// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	//
+	// **Every write is read back.** `applied` is `verified` when tiket.com holds what was sent, `mismatch` when it holds something else (see `mismatches`), or `unverified` with `verify: false`. tiket.com's own warnings come back verbatim in `warnings`. A write tiket.com refuses returns `tiket_rejected` with tiket.com's reason and its reference (`echoToken`) in `value_received`.
+	//
+	// To write by listing instead of by room type, use `PUT /v1/channels/tiket/listings/{id}/pricing`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/tiket/availability (the `UpdateTiketAvailability` operationId).
+	UpdateTiketAvailabilityWithResponse(ctx context.Context, body UpdateTiketAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTiketAvailabilityClientResponse, error)
+
+	// GetTiketContentWithResponse Read the content Repull sent tiket.com
+	//
+	// tiket.com has no API to read content back, so this is the record of what Repull sent for a property — the property, its room types and rate plans — with when each was sent and tiket.com's reference for it. Send changes with `POST /v1/listings/{id}/publish/tiket`.
+	//
+	// Name the property with `property_id`, or with `partner_hotel_code` for a property Repull created that tiket.com has not assigned an id to yet.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/tiket/content (the `GetTiketContent` operationId).
+	GetTiketContentWithResponse(ctx context.Context, params *GetTiketContentParams, reqEditors ...RequestEditorFn) (*GetTiketContentClientResponse, error)
+
+	// MapTiketListingsWithBodyWithResponse Map tiket.com room types to listings
+	//
+	// Map each room type of a tiket.com property to a Repull listing — the API-key equivalent of the mapping step of the hosted Connect flow, and the counterpart of `POST /v1/channels/booking/listings/map`.
+	//
+	// Each mapping is `{ roomTypeCode, listingId }` (`listingId: null` unmaps the room) or `{ roomTypeCode, create: true }`, which creates a new listing from the room with tiket.com's calendar.
+	//
+	// Mapping a room to an existing listing sends that listing's calendar to tiket.com, and records any bookings tiket.com delivered while the room was unmapped (`replayedReservations`).
+	//
+	// Returns `403 listing_inactive` when a target listing is inactive; nothing is changed.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/tiket/listings/map (the `MapTiketListings` operationId).
+	MapTiketListingsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MapTiketListingsClientResponse, error)
+
+	// MapTiketListingsWithResponse Map tiket.com room types to listings
+	//
+	// Map each room type of a tiket.com property to a Repull listing — the API-key equivalent of the mapping step of the hosted Connect flow, and the counterpart of `POST /v1/channels/booking/listings/map`.
+	//
+	// Each mapping is `{ roomTypeCode, listingId }` (`listingId: null` unmaps the room) or `{ roomTypeCode, create: true }`, which creates a new listing from the room with tiket.com's calendar.
+	//
+	// Mapping a room to an existing listing sends that listing's calendar to tiket.com, and records any bookings tiket.com delivered while the room was unmapped (`replayedReservations`).
+	//
+	// Returns `403 listing_inactive` when a target listing is inactive; nothing is changed.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/tiket/listings/map (the `MapTiketListings` operationId).
+	MapTiketListingsWithResponse(ctx context.Context, body MapTiketListingsJSONRequestBody, reqEditors ...RequestEditorFn) (*MapTiketListingsClientResponse, error)
+
+	// GetTiketListingPricingWithResponse Read tiket.com rates, availability and restrictions for a listing
+	//
+	// Same as `GET /v1/channels/tiket/availability`, addressed by listing: the listing's tiket.com room type and every active rate plan of that room, read live from tiket.com.
+	//
+	// A listing mapped on more than one tiket.com property needs `hotel_id`; without it the call returns `409 ambiguous_tiket_mapping` listing the ids.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/tiket/listings/{id}/pricing (the `GetTiketListingPricing` operationId).
+	GetTiketListingPricingWithResponse(ctx context.Context, id int, params *GetTiketListingPricingParams, reqEditors ...RequestEditorFn) (*GetTiketListingPricingClientResponse, error)
+
+	// UpdateTiketListingPricingWithBodyWithResponse Write tiket.com rates, availability or restrictions for a listing
+	//
+	// Same contract as `PUT /v1/channels/tiket/availability`, addressed by listing. `roomTypeCode` is always the listing's room; `ratePlanCode` defaults to every rate plan of the room selected for pushes (`pushTarget`), so one update row is sent to each. `type` defaults to `rates`.
+	//
+	// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/tiket/listings/{id}/pricing (the `UpdateTiketListingPricing` operationId).
+	UpdateTiketListingPricingWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTiketListingPricingClientResponse, error)
+
+	// UpdateTiketListingPricingWithResponse Write tiket.com rates, availability or restrictions for a listing
+	//
+	// Same contract as `PUT /v1/channels/tiket/availability`, addressed by listing. `roomTypeCode` is always the listing's room; `ratePlanCode` defaults to every rate plan of the room selected for pushes (`pushTarget`), so one update row is sent to each. `type` defaults to `rates`.
+	//
+	// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with PUT /v1/channels/tiket/listings/{id}/pricing (the `UpdateTiketListingPricing` operationId).
+	UpdateTiketListingPricingWithResponse(ctx context.Context, id int, body UpdateTiketListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTiketListingPricingClientResponse, error)
+
+	// ListTiketPropertiesWithResponse List tiket.com properties
+	//
+	// Every tiket.com property connected to this workspace, each returned once with its room types, rate plans and the listing each room type is mapped to.
+	//
+	// A tiket.com property is a hotel or building; its room types are what guests book, and each room type maps to one Repull listing. A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"`. Properties waiting for tiket.com to activate Repull are listed with their `activationStatus`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/tiket/properties (the `ListTiketProperties` operationId).
+	ListTiketPropertiesWithResponse(ctx context.Context, params *ListTiketPropertiesParams, reqEditors ...RequestEditorFn) (*ListTiketPropertiesClientResponse, error)
+
+	// GetTiketPropertyWithResponse Get a tiket.com property
+	//
+	// One tiket.com property connected to this workspace, by Hotel ID — same shape as an entry of `GET /v1/channels/tiket/properties`. A property connected to another workspace returns the same `404` as one that does not exist.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/tiket/properties/{id} (the `GetTiketProperty` operationId).
+	GetTiketPropertyWithResponse(ctx context.Context, id string, params *GetTiketPropertyParams, reqEditors ...RequestEditorFn) (*GetTiketPropertyClientResponse, error)
+
+	// ListTiketPropertyRoomsWithResponse List a tiket.com property's room types
+	//
+	// The room types of a tiket.com property, each with its rate plans and the listing it is mapped to. `roomTypeCode` is what `POST /v1/channels/tiket/listings/map` and the rates writes take.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/tiket/properties/{id}/rooms (the `ListTiketPropertyRooms` operationId).
+	ListTiketPropertyRoomsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListTiketPropertyRoomsClientResponse, error)
+
+	// ListTiketReservationsWithResponse List tiket.com reservations as tiket.com sent them
+	//
+	// tiket.com's own record of the bookings it delivered, newest first: one row per booked room (`<id>`, `<id>-2`, …) with tiket.com's ids, rate plan, meal plan, cancellation policy, what the guest paid, the net amount tiket.com pays the property, how tiket.com pays (`paymentMethod`: `Virtual Credit Card` or `Bank Transfer`), and the Repull reservation the room became.
+	//
+	// **Cards.** Card details are never returned by the API, on this route or on `/v1/reservations`.
+	//
+	// **Date changes.** tiket.com sends a date change as a cancellation plus a new booking. Repull applies it as a change to the original reservation, so the Repull reservation keeps its id; the new tiket.com booking carries `previousTiketReservationId`.
+	//
+	// The same bookings, normalized like every other channel's (`source: tiket`), are on `GET /v1/reservations`.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/channels/tiket/reservations (the `ListTiketReservations` operationId).
+	ListTiketReservationsWithResponse(ctx context.Context, params *ListTiketReservationsParams, reqEditors ...RequestEditorFn) (*ListTiketReservationsClientResponse, error)
+
+	// TiketSetupWithBodyWithResponse Set up a tiket.com property
+	//
+	// Onboarding and maintenance actions for tiket.com properties (counterpart of `POST /v1/channels/booking/setup`). `action`:
+	//
+	// - `request-activation` — ask tiket.com to activate Repull as channel manager for one or more existing properties (`properties[]`). The usual path for a group; a single host activates Repull in the tiket.com extranet and connects through Connect instead.
+	// - `check-activation` — whether tiket.com has activated Repull for `hotel_id` yet.
+	// - `create-property` — create a new property on tiket.com from a listing (`listing_id` plus the property and company details). Then `request-registration` asks tiket.com for its ids and `set-tiket-hotel-id` records the Hotel ID tiket.com replies with.
+	// - `add-room`, `add-rate-plan` — add a room type or rate plan to a property Repull created.
+	// - `request-content-mapping` / `confirm-content-mapping` — for an existing property, ask tiket.com to link Repull's codes to it so `POST /v1/listings/{id}/publish/tiket` can send content.
+	// - `refresh` — re-read room types and rate plans from tiket.com.
+	// - `set-push-rate-plans` — choose the rate plans (`rate_plan_ids`) that receive prices and restrictions.
+	// - `set-sync` — turn automatic calendar sending on or off (`enabled`).
+	// - `disconnect` — stop syncing the property. Always available, even when its listings are inactive.
+	//
+	// tiket.com accepts incomplete content and rejects it later, so content is checked against tiket.com's requirements before it is sent; problems come back as `422 invalid_params` with each field in `value_received`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/tiket/setup (the `TiketSetup` operationId).
+	TiketSetupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TiketSetupClientResponse, error)
+
+	// TiketSetupWithResponse Set up a tiket.com property
+	//
+	// Onboarding and maintenance actions for tiket.com properties (counterpart of `POST /v1/channels/booking/setup`). `action`:
+	//
+	// - `request-activation` — ask tiket.com to activate Repull as channel manager for one or more existing properties (`properties[]`). The usual path for a group; a single host activates Repull in the tiket.com extranet and connects through Connect instead.
+	// - `check-activation` — whether tiket.com has activated Repull for `hotel_id` yet.
+	// - `create-property` — create a new property on tiket.com from a listing (`listing_id` plus the property and company details). Then `request-registration` asks tiket.com for its ids and `set-tiket-hotel-id` records the Hotel ID tiket.com replies with.
+	// - `add-room`, `add-rate-plan` — add a room type or rate plan to a property Repull created.
+	// - `request-content-mapping` / `confirm-content-mapping` — for an existing property, ask tiket.com to link Repull's codes to it so `POST /v1/listings/{id}/publish/tiket` can send content.
+	// - `refresh` — re-read room types and rate plans from tiket.com.
+	// - `set-push-rate-plans` — choose the rate plans (`rate_plan_ids`) that receive prices and restrictions.
+	// - `set-sync` — turn automatic calendar sending on or off (`enabled`).
+	// - `disconnect` — stop syncing the property. Always available, even when its listings are inactive.
+	//
+	// tiket.com accepts incomplete content and rejects it later, so content is checked against tiket.com's requirements before it is sent; problems come back as `422 invalid_params` with each field in `value_received`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/tiket/setup (the `TiketSetup` operationId).
+	TiketSetupWithResponse(ctx context.Context, body TiketSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*TiketSetupClientResponse, error)
+
+	// SyncTiketWithBodyWithResponse Send every mapped listing's calendar to tiket.com
+	//
+	// Send the full calendar (today to 500 days ahead: rooms to sell, prices, restrictions) of every mapped listing of one tiket.com property, or of every active property when `property_id` is omitted. `refresh_products: true` re-reads room types and rate plans from tiket.com first. Use it after a bulk edit or to re-baseline a property; day-to-day changes are sent automatically.
+	//
+	// Inactive listings are not sold, so they are skipped (`skipped: listing_inactive`).
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/tiket/sync (the `SyncTiket` operationId).
+	SyncTiketWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SyncTiketClientResponse, error)
+
+	// SyncTiketWithResponse Send every mapped listing's calendar to tiket.com
+	//
+	// Send the full calendar (today to 500 days ahead: rooms to sell, prices, restrictions) of every mapped listing of one tiket.com property, or of every active property when `property_id` is omitted. `refresh_products: true` re-reads room types and rate plans from tiket.com first. Use it after a bulk edit or to re-baseline a property; day-to-day changes are sent automatically.
+	//
+	// Inactive listings are not sold, so they are skipped (`skipped: listing_inactive`).
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/channels/tiket/sync (the `SyncTiket` operationId).
+	SyncTiketWithResponse(ctx context.Context, body SyncTiketJSONRequestBody, reqEditors ...RequestEditorFn) (*SyncTiketClientResponse, error)
+
 	// CreateVrboAlterationWithBodyWithResponse Change a Vrbo reservation
 	//
 	// Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
@@ -43514,6 +45517,65 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /v1/connect/smoobu/credentials (the `SubmitSmoobuCredentials` operationId).
 	SubmitSmoobuCredentialsWithResponse(ctx context.Context, body SubmitSmoobuCredentialsJSONRequestBody, reqEditors ...RequestEditorFn) (*SubmitSmoobuCredentialsClientResponse, error)
 
+	// MapTiketConnectRoomsWithBodyWithResponse Map tiket.com room types to listings in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// Submits the host's room mapping for the property claimed in the session and completes the session. Each mapping is `{ roomId, listingId }` (`listingId: null` leaves the room unmapped) or `{ roomId, create: true }`, which creates a listing from the room with tiket.com's calendar. Bookings tiket.com delivered before the rooms were mapped are recorded (`replayedReservations`). Same flow as `POST /v1/connect/booking/map-rooms`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/tiket/map-rooms (the `MapTiketConnectRooms` operationId).
+	MapTiketConnectRoomsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MapTiketConnectRoomsClientResponse, error)
+
+	// MapTiketConnectRoomsWithResponse Map tiket.com room types to listings in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// Submits the host's room mapping for the property claimed in the session and completes the session. Each mapping is `{ roomId, listingId }` (`listingId: null` leaves the room unmapped) or `{ roomId, create: true }`, which creates a listing from the room with tiket.com's calendar. Bookings tiket.com delivered before the rooms were mapped are recorded (`replayedReservations`). Same flow as `POST /v1/connect/booking/map-rooms`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/tiket/map-rooms (the `MapTiketConnectRooms` operationId).
+	MapTiketConnectRoomsWithResponse(ctx context.Context, body MapTiketConnectRoomsJSONRequestBody, reqEditors ...RequestEditorFn) (*MapTiketConnectRoomsClientResponse, error)
+
+	// ListTiketConnectRoomsWithResponse List the room types of the tiket.com property in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// The room types of the property claimed in the session, for the mapping screen. Same shape as `GET /v1/connect/booking/rooms`. `425 not_ready` means the claim is still being saved; retry in a moment.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /v1/connect/tiket/rooms (the `ListTiketConnectRooms` operationId).
+	ListTiketConnectRoomsWithResponse(ctx context.Context, params *ListTiketConnectRoomsParams, reqEditors ...RequestEditorFn) (*ListTiketConnectRoomsClientResponse, error)
+
+	// VerifyTiketClaimWithBodyWithResponse Claim a tiket.com property in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// The host activates Repull as their channel manager in the tiket.com extranet, then enters their tiket.com Hotel ID (a number). Repull checks with tiket.com, then imports the property's room types and rate plans and maps rooms to listings with the same name (`autoMapped`).
+	//
+	// `412 awaiting_activation` means tiket.com has not activated Repull for that Hotel ID yet, or the id is wrong. tiket.com does not announce activations, so the hosted page offers to try again and Repull keeps checking in the background. A property already connected to another workspace returns `409 property_already_connected`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/tiket/verify (the `VerifyTiketClaim` operationId).
+	VerifyTiketClaimWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VerifyTiketClaimClientResponse, error)
+
+	// VerifyTiketClaimWithResponse Claim a tiket.com property in a Connect session
+	//
+	// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+	//
+	// The host activates Repull as their channel manager in the tiket.com extranet, then enters their tiket.com Hotel ID (a number). Repull checks with tiket.com, then imports the property's room types and rate plans and maps rooms to listings with the same name (`autoMapped`).
+	//
+	// `412 awaiting_activation` means tiket.com has not activated Repull for that Hotel ID yet, or the id is wrong. tiket.com does not announce activations, so the hosted page offers to try again and Repull keeps checking in the background. A property already connected to another workspace returns `409 property_already_connected`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/connect/tiket/verify (the `VerifyTiketClaim` operationId).
+	VerifyTiketClaimWithResponse(ctx context.Context, body VerifyTiketClaimJSONRequestBody, reqEditors ...RequestEditorFn) (*VerifyTiketClaimClientResponse, error)
+
 	// SubmitTrackCredentialsWithBodyWithResponse Submit Track credentials for a Connect session
 	//
 	// Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
@@ -45174,6 +47236,32 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /v1/listings/{id}/publish/booking (the `PublishListingToBooking` operationId).
 	PublishListingToBookingWithResponse(ctx context.Context, id int, params *PublishListingToBookingParams, body PublishListingToBookingJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingToBookingClientResponse, error)
+
+	// PublishListingTiketWithBodyWithResponse Publish a listing's content to tiket.com
+	//
+	// Send the listing's content to tiket.com (counterpart of `POST /v1/listings/{id}/publish/booking`): room content (name, occupancy, beds, facilities, photos, description), rate-plan policies and — for a property Repull created — the property content. The result lists each section that landed (`sections`) and each that did not, with tiket.com's reason (`errors`).
+	//
+	// tiket.com only accepts content once it has linked Repull's codes to the property: true for a property Repull created, and for an existing property after `POST /v1/channels/tiket/setup` `request-content-mapping`. Until then the call returns `409 tiket_content_not_mapped`. Prices and availability are not content: they are sent automatically, or with `POST /v1/channels/tiket/sync`.
+	//
+	// A listing mapped on more than one tiket.com property takes `hotelId`.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/tiket (the `PublishListingTiket` operationId).
+	PublishListingTiketWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishListingTiketClientResponse, error)
+
+	// PublishListingTiketWithResponse Publish a listing's content to tiket.com
+	//
+	// Send the listing's content to tiket.com (counterpart of `POST /v1/listings/{id}/publish/booking`): room content (name, occupancy, beds, facilities, photos, description), rate-plan policies and — for a property Repull created — the property content. The result lists each section that landed (`sections`) and each that did not, with tiket.com's reason (`errors`).
+	//
+	// tiket.com only accepts content once it has linked Repull's codes to the property: true for a property Repull created, and for an existing property after `POST /v1/channels/tiket/setup` `request-content-mapping`. Until then the call returns `409 tiket_content_not_mapped`. Prices and availability are not content: they are sent automatically, or with `POST /v1/channels/tiket/sync`.
+	//
+	// A listing mapped on more than one tiket.com property takes `hotelId`.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /v1/listings/{id}/publish/tiket (the `PublishListingTiket` operationId).
+	PublishListingTiketWithResponse(ctx context.Context, id int, body PublishListingTiketJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingTiketClientResponse, error)
 
 	// GetVrboPublishJobWithResponse Progress of a Vrbo listing creation or update
 	//
@@ -54705,6 +56793,911 @@ func (r CreateBookingWebhookClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r CreateBookingWebhookClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetTiketAvailabilityClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketAvailabilityResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetTiketAvailabilityClientResponse) GetJSON200() *TiketAvailabilityResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetTiketAvailabilityClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetTiketAvailabilityClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetTiketAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetTiketAvailabilityClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetTiketAvailabilityClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r GetTiketAvailabilityClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r GetTiketAvailabilityClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTiketAvailabilityClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTiketAvailabilityClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetTiketAvailabilityClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateTiketAvailabilityClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketAriWriteResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateTiketAvailabilityClientResponse) GetJSON200() *TiketAriWriteResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r UpdateTiketAvailabilityClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateTiketAvailabilityClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateTiketAvailabilityClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateTiketAvailabilityClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateTiketAvailabilityClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateTiketAvailabilityClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r UpdateTiketAvailabilityClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateTiketAvailabilityClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateTiketAvailabilityClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateTiketAvailabilityClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateTiketAvailabilityClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetTiketContentClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketContentResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetTiketContentClientResponse) GetJSON200() *TiketContentResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetTiketContentClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetTiketContentClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetTiketContentClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetTiketContentClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r GetTiketContentClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTiketContentClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTiketContentClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetTiketContentClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type MapTiketListingsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketMapListingsResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *UnprocessableEntity
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MapTiketListingsClientResponse) GetJSON200() *TiketMapListingsResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MapTiketListingsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r MapTiketListingsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MapTiketListingsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r MapTiketListingsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r MapTiketListingsClientResponse) GetJSON422() *UnprocessableEntity {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r MapTiketListingsClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r MapTiketListingsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MapTiketListingsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MapTiketListingsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MapTiketListingsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetTiketListingPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketListingPricingResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetTiketListingPricingClientResponse) GetJSON200() *TiketListingPricingResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetTiketListingPricingClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetTiketListingPricingClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r GetTiketListingPricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetTiketListingPricingClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r GetTiketListingPricingClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r GetTiketListingPricingClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r GetTiketListingPricingClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r GetTiketListingPricingClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTiketListingPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTiketListingPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetTiketListingPricingClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type UpdateTiketListingPricingClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketAriWriteResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON200() *TiketAriWriteResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r UpdateTiketListingPricingClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r UpdateTiketListingPricingClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateTiketListingPricingClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateTiketListingPricingClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r UpdateTiketListingPricingClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListTiketPropertiesClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketPropertyListResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *InternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListTiketPropertiesClientResponse) GetJSON200() *TiketPropertyListResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListTiketPropertiesClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListTiketPropertiesClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListTiketPropertiesClientResponse) GetJSON500() *InternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListTiketPropertiesClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListTiketPropertiesClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListTiketPropertiesClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListTiketPropertiesClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetTiketPropertyClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketProperty
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetTiketPropertyClientResponse) GetJSON200() *TiketProperty {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetTiketPropertyClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r GetTiketPropertyClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetTiketPropertyClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r GetTiketPropertyClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTiketPropertyClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTiketPropertyClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetTiketPropertyClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListTiketPropertyRoomsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketPropertyRoomsResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListTiketPropertyRoomsClientResponse) GetJSON200() *TiketPropertyRoomsResponse {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListTiketPropertyRoomsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListTiketPropertyRoomsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListTiketPropertyRoomsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r ListTiketPropertyRoomsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListTiketPropertyRoomsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListTiketPropertyRoomsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListTiketPropertyRoomsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListTiketReservationsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketReservationListResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListTiketReservationsClientResponse) GetJSON200() *TiketReservationListResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListTiketReservationsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListTiketReservationsClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ListTiketReservationsClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListTiketReservationsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r ListTiketReservationsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListTiketReservationsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListTiketReservationsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListTiketReservationsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type TiketSetupClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketSetupResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON422 the response for an HTTP 422 `application/json` response
+	JSON422 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r TiketSetupClientResponse) GetJSON200() *TiketSetupResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r TiketSetupClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r TiketSetupClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r TiketSetupClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r TiketSetupClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON422 returns the response for an HTTP 422 `application/json` response
+func (r TiketSetupClientResponse) GetJSON422() *Error {
+	return r.JSON422
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r TiketSetupClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r TiketSetupClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r TiketSetupClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TiketSetupClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r TiketSetupClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SyncTiketClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketSyncResponse
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SyncTiketClientResponse) GetJSON200() *TiketSyncResponse {
+	return r.JSON200
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SyncTiketClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SyncTiketClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r SyncTiketClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SyncTiketClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SyncTiketClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SyncTiketClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -70393,6 +73386,255 @@ func (r SubmitSmoobuCredentialsClientResponse) ContentType() string {
 	return ""
 }
 
+type MapTiketConnectRoomsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketConnectMapRoomsResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *Error
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r MapTiketConnectRoomsClientResponse) GetJSON200() *TiketConnectMapRoomsResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r MapTiketConnectRoomsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r MapTiketConnectRoomsClientResponse) GetJSON403() *Error {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r MapTiketConnectRoomsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r MapTiketConnectRoomsClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r MapTiketConnectRoomsClientResponse) GetJSON410() *Error {
+	return r.JSON410
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r MapTiketConnectRoomsClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r MapTiketConnectRoomsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r MapTiketConnectRoomsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MapTiketConnectRoomsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r MapTiketConnectRoomsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListTiketConnectRoomsClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketConnectRoomsResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Conflict
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *Error
+	// JSON425 the response for an HTTP 425 `application/json` response
+	JSON425 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListTiketConnectRoomsClientResponse) GetJSON200() *TiketConnectRoomsResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListTiketConnectRoomsClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListTiketConnectRoomsClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r ListTiketConnectRoomsClientResponse) GetJSON409() *Conflict {
+	return r.JSON409
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r ListTiketConnectRoomsClientResponse) GetJSON410() *Error {
+	return r.JSON410
+}
+
+// GetJSON425 returns the response for an HTTP 425 `application/json` response
+func (r ListTiketConnectRoomsClientResponse) GetJSON425() *Error {
+	return r.JSON425
+}
+
+// GetBody returns the raw response body bytes
+func (r ListTiketConnectRoomsClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListTiketConnectRoomsClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListTiketConnectRoomsClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListTiketConnectRoomsClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type VerifyTiketClaimClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *TiketConnectClaimResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFound
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *Error
+	// JSON412 the response for an HTTP 412 `application/json` response
+	JSON412 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r VerifyTiketClaimClientResponse) GetJSON200() *TiketConnectClaimResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r VerifyTiketClaimClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r VerifyTiketClaimClientResponse) GetJSON404() *NotFound {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r VerifyTiketClaimClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r VerifyTiketClaimClientResponse) GetJSON410() *Error {
+	return r.JSON410
+}
+
+// GetJSON412 returns the response for an HTTP 412 `application/json` response
+func (r VerifyTiketClaimClientResponse) GetJSON412() *Error {
+	return r.JSON412
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r VerifyTiketClaimClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r VerifyTiketClaimClientResponse) GetJSON503() *Error {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r VerifyTiketClaimClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r VerifyTiketClaimClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VerifyTiketClaimClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r VerifyTiketClaimClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SubmitTrackCredentialsClientResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -77065,6 +80307,89 @@ func (r PublishListingToBookingClientResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r PublishListingToBookingClientResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type PublishListingTiketClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListingPublishTiketResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *BadRequest
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *Unauthorized
+	// JSON402 the response for an HTTP 402 `application/json` response
+	JSON402 *PublishBillingRefused
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ListingInactive
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *Error
+	// JSON502 the response for an HTTP 502 `application/json` response
+	JSON502 *Error
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r PublishListingTiketClientResponse) GetJSON200() *ListingPublishTiketResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r PublishListingTiketClientResponse) GetJSON400() *BadRequest {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r PublishListingTiketClientResponse) GetJSON401() *Unauthorized {
+	return r.JSON401
+}
+
+// GetJSON402 returns the response for an HTTP 402 `application/json` response
+func (r PublishListingTiketClientResponse) GetJSON402() *PublishBillingRefused {
+	return r.JSON402
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r PublishListingTiketClientResponse) GetJSON403() *ListingInactive {
+	return r.JSON403
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r PublishListingTiketClientResponse) GetJSON409() *Error {
+	return r.JSON409
+}
+
+// GetJSON502 returns the response for an HTTP 502 `application/json` response
+func (r PublishListingTiketClientResponse) GetJSON502() *Error {
+	return r.JSON502
+}
+
+// GetBody returns the raw response body bytes
+func (r PublishListingTiketClientResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r PublishListingTiketClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PublishListingTiketClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PublishListingTiketClientResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -85994,6 +89319,343 @@ func (c *ClientWithResponses) CreateBookingWebhookWithResponse(ctx context.Conte
 	return ParseCreateBookingWebhookClientResponse(rsp)
 }
 
+// GetTiketAvailabilityWithResponse Read tiket.com rates, availability and restrictions
+//
+// What tiket.com holds for a property over a date window, read live from tiket.com: rooms to sell and booked per room type, prices (Room Based, or per number of guests on an Occupancy Based property, and children prices) and restrictions per rate plan. One row per night, room type and rate plan.
+//
+// `property_id` must be a tiket.com property connected to this workspace (`GET /v1/channels/tiket/properties`).
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/tiket/availability (the `GetTiketAvailability` operationId).
+func (c *ClientWithResponses) GetTiketAvailabilityWithResponse(ctx context.Context, params *GetTiketAvailabilityParams, reqEditors ...RequestEditorFn) (*GetTiketAvailabilityClientResponse, error) {
+	rsp, err := c.GetTiketAvailability(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTiketAvailabilityClientResponse(rsp)
+}
+
+// UpdateTiketAvailabilityWithBodyWithResponse Write tiket.com rates, availability or restrictions
+//
+// `type` selects the write:
+//
+// - `availability` — rooms to sell per room type (`availableRooms`). `stopSell` with a `ratePlanCode` also closes that rate plan.
+// - `rates` — `price` on a Room Based property or `occupancyPrices` on an Occupancy Based one, per room type and rate plan. `currency` defaults to the property currency.
+// - `restrictions` — `minStay`, `maxStay`, `stopSell`, `closedToArrival`, `closedToDeparture`, `minAdvanceDays`, `maxAdvanceDays`.
+//
+// Dates are inclusive and must fall between today and 500 days ahead. Every update is checked before anything is sent; a problem returns `422 invalid_params` naming each field, and nothing is written.
+//
+// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+//
+// **Every write is read back.** `applied` is `verified` when tiket.com holds what was sent, `mismatch` when it holds something else (see `mismatches`), or `unverified` with `verify: false`. tiket.com's own warnings come back verbatim in `warnings`. A write tiket.com refuses returns `tiket_rejected` with tiket.com's reason and its reference (`echoToken`) in `value_received`.
+//
+// To write by listing instead of by room type, use `PUT /v1/channels/tiket/listings/{id}/pricing`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/tiket/availability (the `UpdateTiketAvailability` operationId).
+func (c *ClientWithResponses) UpdateTiketAvailabilityWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTiketAvailabilityClientResponse, error) {
+	rsp, err := c.UpdateTiketAvailabilityWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTiketAvailabilityClientResponse(rsp)
+}
+
+// UpdateTiketAvailabilityWithResponse Write tiket.com rates, availability or restrictions
+//
+// `type` selects the write:
+//
+// - `availability` — rooms to sell per room type (`availableRooms`). `stopSell` with a `ratePlanCode` also closes that rate plan.
+// - `rates` — `price` on a Room Based property or `occupancyPrices` on an Occupancy Based one, per room type and rate plan. `currency` defaults to the property currency.
+// - `restrictions` — `minStay`, `maxStay`, `stopSell`, `closedToArrival`, `closedToDeparture`, `minAdvanceDays`, `maxAdvanceDays`.
+//
+// Dates are inclusive and must fall between today and 500 days ahead. Every update is checked before anything is sent; a problem returns `422 invalid_params` naming each field, and nothing is written.
+//
+// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+//
+// **Every write is read back.** `applied` is `verified` when tiket.com holds what was sent, `mismatch` when it holds something else (see `mismatches`), or `unverified` with `verify: false`. tiket.com's own warnings come back verbatim in `warnings`. A write tiket.com refuses returns `tiket_rejected` with tiket.com's reason and its reference (`echoToken`) in `value_received`.
+//
+// To write by listing instead of by room type, use `PUT /v1/channels/tiket/listings/{id}/pricing`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/tiket/availability (the `UpdateTiketAvailability` operationId).
+func (c *ClientWithResponses) UpdateTiketAvailabilityWithResponse(ctx context.Context, body UpdateTiketAvailabilityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTiketAvailabilityClientResponse, error) {
+	rsp, err := c.UpdateTiketAvailability(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTiketAvailabilityClientResponse(rsp)
+}
+
+// GetTiketContentWithResponse Read the content Repull sent tiket.com
+//
+// tiket.com has no API to read content back, so this is the record of what Repull sent for a property — the property, its room types and rate plans — with when each was sent and tiket.com's reference for it. Send changes with `POST /v1/listings/{id}/publish/tiket`.
+//
+// Name the property with `property_id`, or with `partner_hotel_code` for a property Repull created that tiket.com has not assigned an id to yet.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/tiket/content (the `GetTiketContent` operationId).
+func (c *ClientWithResponses) GetTiketContentWithResponse(ctx context.Context, params *GetTiketContentParams, reqEditors ...RequestEditorFn) (*GetTiketContentClientResponse, error) {
+	rsp, err := c.GetTiketContent(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTiketContentClientResponse(rsp)
+}
+
+// MapTiketListingsWithBodyWithResponse Map tiket.com room types to listings
+//
+// Map each room type of a tiket.com property to a Repull listing — the API-key equivalent of the mapping step of the hosted Connect flow, and the counterpart of `POST /v1/channels/booking/listings/map`.
+//
+// Each mapping is `{ roomTypeCode, listingId }` (`listingId: null` unmaps the room) or `{ roomTypeCode, create: true }`, which creates a new listing from the room with tiket.com's calendar.
+//
+// Mapping a room to an existing listing sends that listing's calendar to tiket.com, and records any bookings tiket.com delivered while the room was unmapped (`replayedReservations`).
+//
+// Returns `403 listing_inactive` when a target listing is inactive; nothing is changed.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/tiket/listings/map (the `MapTiketListings` operationId).
+func (c *ClientWithResponses) MapTiketListingsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MapTiketListingsClientResponse, error) {
+	rsp, err := c.MapTiketListingsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMapTiketListingsClientResponse(rsp)
+}
+
+// MapTiketListingsWithResponse Map tiket.com room types to listings
+//
+// Map each room type of a tiket.com property to a Repull listing — the API-key equivalent of the mapping step of the hosted Connect flow, and the counterpart of `POST /v1/channels/booking/listings/map`.
+//
+// Each mapping is `{ roomTypeCode, listingId }` (`listingId: null` unmaps the room) or `{ roomTypeCode, create: true }`, which creates a new listing from the room with tiket.com's calendar.
+//
+// Mapping a room to an existing listing sends that listing's calendar to tiket.com, and records any bookings tiket.com delivered while the room was unmapped (`replayedReservations`).
+//
+// Returns `403 listing_inactive` when a target listing is inactive; nothing is changed.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/tiket/listings/map (the `MapTiketListings` operationId).
+func (c *ClientWithResponses) MapTiketListingsWithResponse(ctx context.Context, body MapTiketListingsJSONRequestBody, reqEditors ...RequestEditorFn) (*MapTiketListingsClientResponse, error) {
+	rsp, err := c.MapTiketListings(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMapTiketListingsClientResponse(rsp)
+}
+
+// GetTiketListingPricingWithResponse Read tiket.com rates, availability and restrictions for a listing
+//
+// Same as `GET /v1/channels/tiket/availability`, addressed by listing: the listing's tiket.com room type and every active rate plan of that room, read live from tiket.com.
+//
+// A listing mapped on more than one tiket.com property needs `hotel_id`; without it the call returns `409 ambiguous_tiket_mapping` listing the ids.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/tiket/listings/{id}/pricing (the `GetTiketListingPricing` operationId).
+func (c *ClientWithResponses) GetTiketListingPricingWithResponse(ctx context.Context, id int, params *GetTiketListingPricingParams, reqEditors ...RequestEditorFn) (*GetTiketListingPricingClientResponse, error) {
+	rsp, err := c.GetTiketListingPricing(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTiketListingPricingClientResponse(rsp)
+}
+
+// UpdateTiketListingPricingWithBodyWithResponse Write tiket.com rates, availability or restrictions for a listing
+//
+// Same contract as `PUT /v1/channels/tiket/availability`, addressed by listing. `roomTypeCode` is always the listing's room; `ratePlanCode` defaults to every rate plan of the room selected for pushes (`pushTarget`), so one update row is sent to each. `type` defaults to `rates`.
+//
+// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/tiket/listings/{id}/pricing (the `UpdateTiketListingPricing` operationId).
+func (c *ClientWithResponses) UpdateTiketListingPricingWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTiketListingPricingClientResponse, error) {
+	rsp, err := c.UpdateTiketListingPricingWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTiketListingPricingClientResponse(rsp)
+}
+
+// UpdateTiketListingPricingWithResponse Write tiket.com rates, availability or restrictions for a listing
+//
+// Same contract as `PUT /v1/channels/tiket/availability`, addressed by listing. `roomTypeCode` is always the listing's room; `ratePlanCode` defaults to every rate plan of the room selected for pushes (`pushTarget`), so one update row is sent to each. `type` defaults to `rates`.
+//
+// **Children rates are paused.** tiket.com has asked every channel manager not to send children rates until it fixes an issue on its side, so a write that includes `childPrices` is refused with `422 invalid_params` and nothing is sent. Children rates set in the tiket.com extranet still apply. Send `price` or `occupancyPrices` without `childPrices`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with PUT /v1/channels/tiket/listings/{id}/pricing (the `UpdateTiketListingPricing` operationId).
+func (c *ClientWithResponses) UpdateTiketListingPricingWithResponse(ctx context.Context, id int, body UpdateTiketListingPricingJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTiketListingPricingClientResponse, error) {
+	rsp, err := c.UpdateTiketListingPricing(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTiketListingPricingClientResponse(rsp)
+}
+
+// ListTiketPropertiesWithResponse List tiket.com properties
+//
+// Every tiket.com property connected to this workspace, each returned once with its room types, rate plans and the listing each room type is mapped to.
+//
+// A tiket.com property is a hotel or building; its room types are what guests book, and each room type maps to one Repull listing. A property whose rooms are not mapped yet is still listed, with `mappingStatus: "unmapped"`. Properties waiting for tiket.com to activate Repull are listed with their `activationStatus`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/tiket/properties (the `ListTiketProperties` operationId).
+func (c *ClientWithResponses) ListTiketPropertiesWithResponse(ctx context.Context, params *ListTiketPropertiesParams, reqEditors ...RequestEditorFn) (*ListTiketPropertiesClientResponse, error) {
+	rsp, err := c.ListTiketProperties(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListTiketPropertiesClientResponse(rsp)
+}
+
+// GetTiketPropertyWithResponse Get a tiket.com property
+//
+// One tiket.com property connected to this workspace, by Hotel ID — same shape as an entry of `GET /v1/channels/tiket/properties`. A property connected to another workspace returns the same `404` as one that does not exist.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/tiket/properties/{id} (the `GetTiketProperty` operationId).
+func (c *ClientWithResponses) GetTiketPropertyWithResponse(ctx context.Context, id string, params *GetTiketPropertyParams, reqEditors ...RequestEditorFn) (*GetTiketPropertyClientResponse, error) {
+	rsp, err := c.GetTiketProperty(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTiketPropertyClientResponse(rsp)
+}
+
+// ListTiketPropertyRoomsWithResponse List a tiket.com property's room types
+//
+// The room types of a tiket.com property, each with its rate plans and the listing it is mapped to. `roomTypeCode` is what `POST /v1/channels/tiket/listings/map` and the rates writes take.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/tiket/properties/{id}/rooms (the `ListTiketPropertyRooms` operationId).
+func (c *ClientWithResponses) ListTiketPropertyRoomsWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*ListTiketPropertyRoomsClientResponse, error) {
+	rsp, err := c.ListTiketPropertyRooms(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListTiketPropertyRoomsClientResponse(rsp)
+}
+
+// ListTiketReservationsWithResponse List tiket.com reservations as tiket.com sent them
+//
+// tiket.com's own record of the bookings it delivered, newest first: one row per booked room (`<id>`, `<id>-2`, …) with tiket.com's ids, rate plan, meal plan, cancellation policy, what the guest paid, the net amount tiket.com pays the property, how tiket.com pays (`paymentMethod`: `Virtual Credit Card` or `Bank Transfer`), and the Repull reservation the room became.
+//
+// **Cards.** Card details are never returned by the API, on this route or on `/v1/reservations`.
+//
+// **Date changes.** tiket.com sends a date change as a cancellation plus a new booking. Repull applies it as a change to the original reservation, so the Repull reservation keeps its id; the new tiket.com booking carries `previousTiketReservationId`.
+//
+// The same bookings, normalized like every other channel's (`source: tiket`), are on `GET /v1/reservations`.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/channels/tiket/reservations (the `ListTiketReservations` operationId).
+func (c *ClientWithResponses) ListTiketReservationsWithResponse(ctx context.Context, params *ListTiketReservationsParams, reqEditors ...RequestEditorFn) (*ListTiketReservationsClientResponse, error) {
+	rsp, err := c.ListTiketReservations(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListTiketReservationsClientResponse(rsp)
+}
+
+// TiketSetupWithBodyWithResponse Set up a tiket.com property
+//
+// Onboarding and maintenance actions for tiket.com properties (counterpart of `POST /v1/channels/booking/setup`). `action`:
+//
+// - `request-activation` — ask tiket.com to activate Repull as channel manager for one or more existing properties (`properties[]`). The usual path for a group; a single host activates Repull in the tiket.com extranet and connects through Connect instead.
+// - `check-activation` — whether tiket.com has activated Repull for `hotel_id` yet.
+// - `create-property` — create a new property on tiket.com from a listing (`listing_id` plus the property and company details). Then `request-registration` asks tiket.com for its ids and `set-tiket-hotel-id` records the Hotel ID tiket.com replies with.
+// - `add-room`, `add-rate-plan` — add a room type or rate plan to a property Repull created.
+// - `request-content-mapping` / `confirm-content-mapping` — for an existing property, ask tiket.com to link Repull's codes to it so `POST /v1/listings/{id}/publish/tiket` can send content.
+// - `refresh` — re-read room types and rate plans from tiket.com.
+// - `set-push-rate-plans` — choose the rate plans (`rate_plan_ids`) that receive prices and restrictions.
+// - `set-sync` — turn automatic calendar sending on or off (`enabled`).
+// - `disconnect` — stop syncing the property. Always available, even when its listings are inactive.
+//
+// tiket.com accepts incomplete content and rejects it later, so content is checked against tiket.com's requirements before it is sent; problems come back as `422 invalid_params` with each field in `value_received`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/tiket/setup (the `TiketSetup` operationId).
+func (c *ClientWithResponses) TiketSetupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*TiketSetupClientResponse, error) {
+	rsp, err := c.TiketSetupWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTiketSetupClientResponse(rsp)
+}
+
+// TiketSetupWithResponse Set up a tiket.com property
+//
+// Onboarding and maintenance actions for tiket.com properties (counterpart of `POST /v1/channels/booking/setup`). `action`:
+//
+// - `request-activation` — ask tiket.com to activate Repull as channel manager for one or more existing properties (`properties[]`). The usual path for a group; a single host activates Repull in the tiket.com extranet and connects through Connect instead.
+// - `check-activation` — whether tiket.com has activated Repull for `hotel_id` yet.
+// - `create-property` — create a new property on tiket.com from a listing (`listing_id` plus the property and company details). Then `request-registration` asks tiket.com for its ids and `set-tiket-hotel-id` records the Hotel ID tiket.com replies with.
+// - `add-room`, `add-rate-plan` — add a room type or rate plan to a property Repull created.
+// - `request-content-mapping` / `confirm-content-mapping` — for an existing property, ask tiket.com to link Repull's codes to it so `POST /v1/listings/{id}/publish/tiket` can send content.
+// - `refresh` — re-read room types and rate plans from tiket.com.
+// - `set-push-rate-plans` — choose the rate plans (`rate_plan_ids`) that receive prices and restrictions.
+// - `set-sync` — turn automatic calendar sending on or off (`enabled`).
+// - `disconnect` — stop syncing the property. Always available, even when its listings are inactive.
+//
+// tiket.com accepts incomplete content and rejects it later, so content is checked against tiket.com's requirements before it is sent; problems come back as `422 invalid_params` with each field in `value_received`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/tiket/setup (the `TiketSetup` operationId).
+func (c *ClientWithResponses) TiketSetupWithResponse(ctx context.Context, body TiketSetupJSONRequestBody, reqEditors ...RequestEditorFn) (*TiketSetupClientResponse, error) {
+	rsp, err := c.TiketSetup(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTiketSetupClientResponse(rsp)
+}
+
+// SyncTiketWithBodyWithResponse Send every mapped listing's calendar to tiket.com
+//
+// Send the full calendar (today to 500 days ahead: rooms to sell, prices, restrictions) of every mapped listing of one tiket.com property, or of every active property when `property_id` is omitted. `refresh_products: true` re-reads room types and rate plans from tiket.com first. Use it after a bulk edit or to re-baseline a property; day-to-day changes are sent automatically.
+//
+// Inactive listings are not sold, so they are skipped (`skipped: listing_inactive`).
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/tiket/sync (the `SyncTiket` operationId).
+func (c *ClientWithResponses) SyncTiketWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SyncTiketClientResponse, error) {
+	rsp, err := c.SyncTiketWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSyncTiketClientResponse(rsp)
+}
+
+// SyncTiketWithResponse Send every mapped listing's calendar to tiket.com
+//
+// Send the full calendar (today to 500 days ahead: rooms to sell, prices, restrictions) of every mapped listing of one tiket.com property, or of every active property when `property_id` is omitted. `refresh_products: true` re-reads room types and rate plans from tiket.com first. Use it after a bulk edit or to re-baseline a property; day-to-day changes are sent automatically.
+//
+// Inactive listings are not sold, so they are skipped (`skipped: listing_inactive`).
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/channels/tiket/sync (the `SyncTiket` operationId).
+func (c *ClientWithResponses) SyncTiketWithResponse(ctx context.Context, body SyncTiketJSONRequestBody, reqEditors ...RequestEditorFn) (*SyncTiketClientResponse, error) {
+	rsp, err := c.SyncTiket(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSyncTiketClientResponse(rsp)
+}
+
 // CreateVrboAlterationWithBodyWithResponse Change a Vrbo reservation
 //
 // Change an existing Vrbo booking — the counterpart of `POST /v1/channels/airbnb/alterations`. Send `confirmation_code` and what changes: `check_in`, `check_out`, `check_in_time` / `check_out_time` (`HH:MM` on the hour or half hour), `number_of_adults`, `number_of_children`, `pets`; for the price, `rent_amount` (the new rent — Vrbo adds its fees and taxes) or `keep_original_price: true`. Fields you leave out keep the booking's values.
@@ -89093,6 +92755,95 @@ func (c *ClientWithResponses) SubmitSmoobuCredentialsWithResponse(ctx context.Co
 	return ParseSubmitSmoobuCredentialsClientResponse(rsp)
 }
 
+// MapTiketConnectRoomsWithBodyWithResponse Map tiket.com room types to listings in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// Submits the host's room mapping for the property claimed in the session and completes the session. Each mapping is `{ roomId, listingId }` (`listingId: null` leaves the room unmapped) or `{ roomId, create: true }`, which creates a listing from the room with tiket.com's calendar. Bookings tiket.com delivered before the rooms were mapped are recorded (`replayedReservations`). Same flow as `POST /v1/connect/booking/map-rooms`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/tiket/map-rooms (the `MapTiketConnectRooms` operationId).
+func (c *ClientWithResponses) MapTiketConnectRoomsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MapTiketConnectRoomsClientResponse, error) {
+	rsp, err := c.MapTiketConnectRoomsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMapTiketConnectRoomsClientResponse(rsp)
+}
+
+// MapTiketConnectRoomsWithResponse Map tiket.com room types to listings in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// Submits the host's room mapping for the property claimed in the session and completes the session. Each mapping is `{ roomId, listingId }` (`listingId: null` leaves the room unmapped) or `{ roomId, create: true }`, which creates a listing from the room with tiket.com's calendar. Bookings tiket.com delivered before the rooms were mapped are recorded (`replayedReservations`). Same flow as `POST /v1/connect/booking/map-rooms`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/tiket/map-rooms (the `MapTiketConnectRooms` operationId).
+func (c *ClientWithResponses) MapTiketConnectRoomsWithResponse(ctx context.Context, body MapTiketConnectRoomsJSONRequestBody, reqEditors ...RequestEditorFn) (*MapTiketConnectRoomsClientResponse, error) {
+	rsp, err := c.MapTiketConnectRooms(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMapTiketConnectRoomsClientResponse(rsp)
+}
+
+// ListTiketConnectRoomsWithResponse List the room types of the tiket.com property in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// The room types of the property claimed in the session, for the mapping screen. Same shape as `GET /v1/connect/booking/rooms`. `425 not_ready` means the claim is still being saved; retry in a moment.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /v1/connect/tiket/rooms (the `ListTiketConnectRooms` operationId).
+func (c *ClientWithResponses) ListTiketConnectRoomsWithResponse(ctx context.Context, params *ListTiketConnectRoomsParams, reqEditors ...RequestEditorFn) (*ListTiketConnectRoomsClientResponse, error) {
+	rsp, err := c.ListTiketConnectRooms(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListTiketConnectRoomsClientResponse(rsp)
+}
+
+// VerifyTiketClaimWithBodyWithResponse Claim a tiket.com property in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// The host activates Repull as their channel manager in the tiket.com extranet, then enters their tiket.com Hotel ID (a number). Repull checks with tiket.com, then imports the property's room types and rate plans and maps rooms to listings with the same name (`autoMapped`).
+//
+// `412 awaiting_activation` means tiket.com has not activated Repull for that Hotel ID yet, or the id is wrong. tiket.com does not announce activations, so the hosted page offers to try again and Repull keeps checking in the background. A property already connected to another workspace returns `409 property_already_connected`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/tiket/verify (the `VerifyTiketClaim` operationId).
+func (c *ClientWithResponses) VerifyTiketClaimWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*VerifyTiketClaimClientResponse, error) {
+	rsp, err := c.VerifyTiketClaimWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVerifyTiketClaimClientResponse(rsp)
+}
+
+// VerifyTiketClaimWithResponse Claim a tiket.com property in a Connect session
+//
+// Called by the hosted Connect page and authorized by the Connect session id, not an API key. Start the session with `POST /v1/connect` (`allowedProviders: ["tiket"]`) and send the host to its `url`.
+//
+// The host activates Repull as their channel manager in the tiket.com extranet, then enters their tiket.com Hotel ID (a number). Repull checks with tiket.com, then imports the property's room types and rate plans and maps rooms to listings with the same name (`autoMapped`).
+//
+// `412 awaiting_activation` means tiket.com has not activated Repull for that Hotel ID yet, or the id is wrong. tiket.com does not announce activations, so the hosted page offers to try again and Repull keeps checking in the background. A property already connected to another workspace returns `409 property_already_connected`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/connect/tiket/verify (the `VerifyTiketClaim` operationId).
+func (c *ClientWithResponses) VerifyTiketClaimWithResponse(ctx context.Context, body VerifyTiketClaimJSONRequestBody, reqEditors ...RequestEditorFn) (*VerifyTiketClaimClientResponse, error) {
+	rsp, err := c.VerifyTiketClaim(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVerifyTiketClaimClientResponse(rsp)
+}
+
 // SubmitTrackCredentialsWithBodyWithResponse Submit Track credentials for a Connect session
 //
 // Completes a credentials-pattern connection for Track (TRACK Hospitality Software) with the property manager's Track domain and an API key + secret.
@@ -91418,6 +95169,44 @@ func (c *ClientWithResponses) PublishListingToBookingWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParsePublishListingToBookingClientResponse(rsp)
+}
+
+// PublishListingTiketWithBodyWithResponse Publish a listing's content to tiket.com
+//
+// Send the listing's content to tiket.com (counterpart of `POST /v1/listings/{id}/publish/booking`): room content (name, occupancy, beds, facilities, photos, description), rate-plan policies and — for a property Repull created — the property content. The result lists each section that landed (`sections`) and each that did not, with tiket.com's reason (`errors`).
+//
+// tiket.com only accepts content once it has linked Repull's codes to the property: true for a property Repull created, and for an existing property after `POST /v1/channels/tiket/setup` `request-content-mapping`. Until then the call returns `409 tiket_content_not_mapped`. Prices and availability are not content: they are sent automatically, or with `POST /v1/channels/tiket/sync`.
+//
+// A listing mapped on more than one tiket.com property takes `hotelId`.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/publish/tiket (the `PublishListingTiket` operationId).
+func (c *ClientWithResponses) PublishListingTiketWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PublishListingTiketClientResponse, error) {
+	rsp, err := c.PublishListingTiketWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePublishListingTiketClientResponse(rsp)
+}
+
+// PublishListingTiketWithResponse Publish a listing's content to tiket.com
+//
+// Send the listing's content to tiket.com (counterpart of `POST /v1/listings/{id}/publish/booking`): room content (name, occupancy, beds, facilities, photos, description), rate-plan policies and — for a property Repull created — the property content. The result lists each section that landed (`sections`) and each that did not, with tiket.com's reason (`errors`).
+//
+// tiket.com only accepts content once it has linked Repull's codes to the property: true for a property Repull created, and for an existing property after `POST /v1/channels/tiket/setup` `request-content-mapping`. Until then the call returns `409 tiket_content_not_mapped`. Prices and availability are not content: they are sent automatically, or with `POST /v1/channels/tiket/sync`.
+//
+// A listing mapped on more than one tiket.com property takes `hotelId`.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /v1/listings/{id}/publish/tiket (the `PublishListingTiket` operationId).
+func (c *ClientWithResponses) PublishListingTiketWithResponse(ctx context.Context, id int, body PublishListingTiketJSONRequestBody, reqEditors ...RequestEditorFn) (*PublishListingTiketClientResponse, error) {
+	rsp, err := c.PublishListingTiket(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePublishListingTiketClientResponse(rsp)
 }
 
 // GetVrboPublishJobWithResponse Progress of a Vrbo listing creation or update
@@ -99411,6 +103200,731 @@ func ParseCreateBookingWebhookClientResponse(rsp *http.Response) (*CreateBooking
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTiketAvailabilityClientResponse parses an HTTP response from a GetTiketAvailabilityWithResponse call
+func ParseGetTiketAvailabilityClientResponse(rsp *http.Response) (*GetTiketAvailabilityClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTiketAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketAvailabilityResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateTiketAvailabilityClientResponse parses an HTTP response from a UpdateTiketAvailabilityWithResponse call
+func ParseUpdateTiketAvailabilityClientResponse(rsp *http.Response) (*UpdateTiketAvailabilityClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateTiketAvailabilityClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketAriWriteResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTiketContentClientResponse parses an HTTP response from a GetTiketContentWithResponse call
+func ParseGetTiketContentClientResponse(rsp *http.Response) (*GetTiketContentClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTiketContentClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketContentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMapTiketListingsClientResponse parses an HTTP response from a MapTiketListingsWithResponse call
+func ParseMapTiketListingsClientResponse(rsp *http.Response) (*MapTiketListingsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MapTiketListingsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketMapListingsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest UnprocessableEntity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTiketListingPricingClientResponse parses an HTTP response from a GetTiketListingPricingWithResponse call
+func ParseGetTiketListingPricingClientResponse(rsp *http.Response) (*GetTiketListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTiketListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketListingPricingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateTiketListingPricingClientResponse parses an HTTP response from a UpdateTiketListingPricingWithResponse call
+func ParseUpdateTiketListingPricingClientResponse(rsp *http.Response) (*UpdateTiketListingPricingClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateTiketListingPricingClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketAriWriteResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListTiketPropertiesClientResponse parses an HTTP response from a ListTiketPropertiesWithResponse call
+func ParseListTiketPropertiesClientResponse(rsp *http.Response) (*ListTiketPropertiesClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListTiketPropertiesClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketPropertyListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest InternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTiketPropertyClientResponse parses an HTTP response from a GetTiketPropertyWithResponse call
+func ParseGetTiketPropertyClientResponse(rsp *http.Response) (*GetTiketPropertyClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTiketPropertyClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketProperty
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListTiketPropertyRoomsClientResponse parses an HTTP response from a ListTiketPropertyRoomsWithResponse call
+func ParseListTiketPropertyRoomsClientResponse(rsp *http.Response) (*ListTiketPropertyRoomsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListTiketPropertyRoomsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketPropertyRoomsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListTiketReservationsClientResponse parses an HTTP response from a ListTiketReservationsWithResponse call
+func ParseListTiketReservationsClientResponse(rsp *http.Response) (*ListTiketReservationsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListTiketReservationsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketReservationListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTiketSetupClientResponse parses an HTTP response from a TiketSetupWithResponse call
+func ParseTiketSetupClientResponse(rsp *http.Response) (*TiketSetupClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TiketSetupClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketSetupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSyncTiketClientResponse parses an HTTP response from a SyncTiketWithResponse call
+func ParseSyncTiketClientResponse(rsp *http.Response) (*SyncTiketClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SyncTiketClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketSyncResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	}
 
@@ -110154,6 +114668,210 @@ func ParseSubmitSmoobuCredentialsClientResponse(rsp *http.Response) (*SubmitSmoo
 	return response, nil
 }
 
+// ParseMapTiketConnectRoomsClientResponse parses an HTTP response from a MapTiketConnectRoomsWithResponse call
+func ParseMapTiketConnectRoomsClientResponse(rsp *http.Response) (*MapTiketConnectRoomsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MapTiketConnectRoomsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketConnectMapRoomsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListTiketConnectRoomsClientResponse parses an HTTP response from a ListTiketConnectRoomsWithResponse call
+func ParseListTiketConnectRoomsClientResponse(rsp *http.Response) (*ListTiketConnectRoomsClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListTiketConnectRoomsClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketConnectRoomsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 425:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON425 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseVerifyTiketClaimClientResponse parses an HTTP response from a VerifyTiketClaimWithResponse call
+func ParseVerifyTiketClaimClientResponse(rsp *http.Response) (*VerifyTiketClaimClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VerifyTiketClaimClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TiketConnectClaimResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 412:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON412 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseSubmitTrackCredentialsClientResponse parses an HTTP response from a SubmitTrackCredentialsWithResponse call
 func ParseSubmitTrackCredentialsClientResponse(rsp *http.Response) (*SubmitTrackCredentialsClientResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -114931,6 +119649,74 @@ func ParsePublishListingToBookingClientResponse(rsp *http.Response) (*PublishLis
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePublishListingTiketClientResponse parses an HTTP response from a PublishListingTiketWithResponse call
+func ParsePublishListingTiketClientResponse(rsp *http.Response) (*PublishListingTiketClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PublishListingTiketClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListingPublishTiketResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest PublishBillingRefused
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ListingInactive
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
 
 	}
 

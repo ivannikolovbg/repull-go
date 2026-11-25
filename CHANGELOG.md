@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.60 — 2026-11-24
+
+- New: tiket.com channel — 16 operations: properties and room types, rates / availability / restrictions read and write (by property or by listing, read back after every write), reservations as tiket.com sent them, content, room mapping, full calendar sync and property setup; `POST /v1/listings/{id}/publish/tiket`; and the tiket.com Connect steps (claim a Hotel ID, list rooms, map rooms). Client methods: `ListTiketProperties`, `GetTiketProperty`, `ListTiketPropertyRooms`, `GetTiketAvailability`, `UpdateTiketAvailability`, `GetTiketListingPricing`, `UpdateTiketListingPricing`, `ListTiketReservations`, `GetTiketContent`, `MapTiketListings`, `SyncTiket`, `TiketSetup`, `PublishListingTiket`, `VerifyTiketClaim`, `ListTiketConnectRooms`, `MapTiketConnectRooms` (each with a `…WithResponse` variant). tiket.com amounts are `float64`.
+- `Reservation.source` / `platform` and `GET /v1/properties?channel=` accept `tiket`.
+- tiket.com children rates are paused at tiket.com's request: a rates write that includes `childPrices` returns 422 and nothing is sent.
+- Fix: the `Reservation.source` / `platform` value for Booking.com is `booking` (was `booking.com`, which the API never returns); the constants are now `ReservationSourceBooking` / `ReservationPlatformBooking` (were `…BookingCom`).
+- Docs: tiket.com room type codes (`RoomBookingId` from `ListTiketConnectRooms`) are free-form strings, kept exactly as tiket.com sends them.
+
 ## 0.2.59 — 2026-11-24
 
 - Regenerated from the live spec (automated spec refresh).
