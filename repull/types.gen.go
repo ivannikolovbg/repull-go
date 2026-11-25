@@ -24850,6 +24850,18 @@ type ListAirbnbReviewsParams struct {
 	//
 	// Note this is NOT the `X-Account-Id` header, which carries a connection id and cannot tell two Airbnb hosts apart.
 	AccountId *AirbnbAccountId `form:"account_id,omitempty" json:"account_id,omitempty"`
+
+	// Cursor Opaque cursor returned by the previous response's `pagination.nextCursor`. Omit to fetch the first page.
+	Cursor *string `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Offset First-class alias for cursor-based pagination. Mutually exclusive with `cursor` — passing both returns 422. Accepts integers in `[0, 10000]`; deeper walks must use `cursor` (constant per-page cost). The response always includes `pagination.nextCursor` so consumers can switch from offset → cursor mid-walk for deep pagination without re-keying.
+	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Limit Max items per page — max 200 per page. A larger value returns 200 per page; follow `pagination.nextCursor` for the rest.
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// ListingId Filter to one listing: its Airbnb listing id (`airbnbListingId` on each review) or its Repull listing id.
+	ListingId *string `form:"listing_id,omitempty" json:"listing_id,omitempty"`
 }
 
 // RespondAirbnbReviewJSONBody defines parameters for RespondAirbnbReview.

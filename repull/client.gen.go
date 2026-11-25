@@ -1531,6 +1531,8 @@ type ClientInterface interface {
 	//
 	// List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
 	//
+	// Newest first, with reviews not yet submitted ahead of them. Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`; `pagination.total` is the number of reviews matching the filters. The cursor is opaque — never construct or parse it client-side.
+	//
 	// Reviews of inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
 	// **Several Airbnb accounts?** A workspace can connect more than one. By default this returns every connected account's rows; pass `?account_id=<airbnb host id>` to scope to one. Every row carries `accountId` + `accountName` either way, and `dataFreshness.accounts[]` reports each account's freshness separately, so one disconnected host no longer marks the whole response stale.
@@ -9815,6 +9817,8 @@ func (c *Client) GetAirbnbResolution(ctx context.Context, id string, params *Get
 // ListAirbnbReviews List Airbnb reviews
 //
 // List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
+//
+// Newest first, with reviews not yet submitted ahead of them. Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`; `pagination.total` is the number of reviews matching the filters. The cursor is opaque — never construct or parse it client-side.
 //
 // Reviews of inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
@@ -23349,6 +23353,54 @@ func NewListAirbnbReviewsRequest(server string, params *ListAirbnbReviewsParams)
 		if params.AccountId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "account_id", *params.AccountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "cursor", *params.Cursor, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "offset", *params.Offset, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: ""}); err != nil {
+				return nil, err
+			} else {
+				for _, qp := range strings.Split(queryFrag, "&") {
+					rawQueryFragments = append(rawQueryFragments, qp)
+				}
+			}
+
+		}
+
+		if params.ListingId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "listing_id", *params.ListingId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -42283,6 +42335,8 @@ type ClientWithResponsesInterface interface {
 	// ListAirbnbReviewsWithResponse List Airbnb reviews
 	//
 	// List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
+	//
+	// Newest first, with reviews not yet submitted ahead of them. Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`; `pagination.total` is the number of reviews matching the filters. The cursor is opaque — never construct or parse it client-side.
 	//
 	// Reviews of inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 	//
@@ -84227,7 +84281,10 @@ type SubmitGuestReviewClientResponse struct {
 		Platform *string `json:"platform,omitempty"`
 
 		// Rating Vrbo: the rating as sent to Vrbo.
-		Rating    *map[string]interface{} `json:"rating,omitempty"`
+		Rating *map[string]interface{} `json:"rating,omitempty"`
+
+		// Review Airbnb: the review as stored after the submission — the same object `GET /v1/reviews/{id}` returns, with `publicReview`, `rating`, `categories` and `submittedAt` set. It can stay `hidden` until the guest reviews too.
+		Review    *map[string]interface{} `json:"review,omitempty"`
 		Submitted *bool                   `json:"submitted,omitempty"`
 	}
 	// JSON401 the response for an HTTP 401 `application/json` response
@@ -84255,7 +84312,10 @@ func (r SubmitGuestReviewClientResponse) GetJSON200() *struct {
 	Platform *string `json:"platform,omitempty"`
 
 	// Rating Vrbo: the rating as sent to Vrbo.
-	Rating    *map[string]interface{} `json:"rating,omitempty"`
+	Rating *map[string]interface{} `json:"rating,omitempty"`
+
+	// Review Airbnb: the review as stored after the submission — the same object `GET /v1/reviews/{id}` returns, with `publicReview`, `rating`, `categories` and `submittedAt` set. It can stay `hidden` until the guest reviews too.
+	Review    *map[string]interface{} `json:"review,omitempty"`
 	Submitted *bool                   `json:"submitted,omitempty"`
 } {
 	return r.JSON200
@@ -88193,6 +88253,8 @@ func (c *ClientWithResponses) GetAirbnbResolutionWithResponse(ctx context.Contex
 // ListAirbnbReviewsWithResponse List Airbnb reviews
 //
 // List reviews left by guests on Airbnb listings in this workspace. Includes both reviews of the host and reviews of the guest (where the host has not yet submitted theirs).
+//
+// Newest first, with reviews not yet submitted ahead of them. Walk pages with `?cursor=<pagination.nextCursor>` until `pagination.hasMore` is `false`; `pagination.total` is the number of reviews matching the filters. The cursor is opaque — never construct or parse it client-side.
 //
 // Reviews of inactive listings are left out; they keep syncing and reappear once the listing is activated. Filtering by an inactive listing (`listing_id`) returns `403 listing_inactive`.
 //
@@ -122422,7 +122484,10 @@ func ParseSubmitGuestReviewClientResponse(rsp *http.Response) (*SubmitGuestRevie
 			Platform *string `json:"platform,omitempty"`
 
 			// Rating Vrbo: the rating as sent to Vrbo.
-			Rating    *map[string]interface{} `json:"rating,omitempty"`
+			Rating *map[string]interface{} `json:"rating,omitempty"`
+
+			// Review Airbnb: the review as stored after the submission — the same object `GET /v1/reviews/{id}` returns, with `publicReview`, `rating`, `categories` and `submittedAt` set. It can stay `hidden` until the guest reviews too.
+			Review    *map[string]interface{} `json:"review,omitempty"`
 			Submitted *bool                   `json:"submitted,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
