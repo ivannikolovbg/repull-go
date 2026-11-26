@@ -28819,7 +28819,8 @@ type GetListingIcal200JSONResponseBodyVrboStatus string
 
 // SetListingMarkupJSONBody defines parameters for SetListingMarkup.
 type SetListingMarkupJSONBody struct {
-	// AccountId Vrbo account (`vrbo:7001234`, Vrbo's own account id) — required when the listing is linked on more than one. The old sign-in ids (`vrbo:13`) still resolve until 2027-02-12.
+	// AccountId Ignored. The Vrbo markup is per listing, so there is no account to name; accepted so existing calls keep working.
+	// Deprecated: this property has been marked as deprecated upstream, but no `x-deprecated-reason` was set
 	AccountId *string                         `json:"accountId,omitempty"`
 	Channel   SetListingMarkupJSONBodyChannel `json:"channel"`
 
