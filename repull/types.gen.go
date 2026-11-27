@@ -5083,6 +5083,54 @@ func (e TiketSyncResponseResultsStep) Valid() bool {
 	}
 }
 
+// Defines values for TransactionBookingPaymentsApiChargesCategory.
+const (
+	TransactionBookingPaymentsApiChargesCategoryCommission    TransactionBookingPaymentsApiChargesCategory = "commission"
+	TransactionBookingPaymentsApiChargesCategoryFee           TransactionBookingPaymentsApiChargesCategory = "fee"
+	TransactionBookingPaymentsApiChargesCategoryOther         TransactionBookingPaymentsApiChargesCategory = "other"
+	TransactionBookingPaymentsApiChargesCategoryPaymentCharge TransactionBookingPaymentsApiChargesCategory = "payment_charge"
+	TransactionBookingPaymentsApiChargesCategoryTax           TransactionBookingPaymentsApiChargesCategory = "tax"
+	TransactionBookingPaymentsApiChargesCategoryVat           TransactionBookingPaymentsApiChargesCategory = "vat"
+	TransactionBookingPaymentsApiChargesCategoryVatOnFees     TransactionBookingPaymentsApiChargesCategory = "vat_on_fees"
+)
+
+// Valid indicates whether the value is a known member of the TransactionBookingPaymentsApiChargesCategory enum.
+func (e TransactionBookingPaymentsApiChargesCategory) Valid() bool {
+	switch e {
+	case TransactionBookingPaymentsApiChargesCategoryCommission:
+		return true
+	case TransactionBookingPaymentsApiChargesCategoryFee:
+		return true
+	case TransactionBookingPaymentsApiChargesCategoryOther:
+		return true
+	case TransactionBookingPaymentsApiChargesCategoryPaymentCharge:
+		return true
+	case TransactionBookingPaymentsApiChargesCategoryTax:
+		return true
+	case TransactionBookingPaymentsApiChargesCategoryVat:
+		return true
+	case TransactionBookingPaymentsApiChargesCategoryVatOnFees:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TransactionBookingPaymentsApiSource.
+const (
+	PaymentsApi TransactionBookingPaymentsApiSource = "payments_api"
+)
+
+// Valid indicates whether the value is a known member of the TransactionBookingPaymentsApiSource enum.
+func (e TransactionBookingPaymentsApiSource) Valid() bool {
+	switch e {
+	case PaymentsApi:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for UsageQuotaWarningEventEvent.
 const (
 	UsageQuotaWarningEventEventUsageQuotaWarning UsageQuotaWarningEventEvent = "usage.quota.warning"
@@ -23395,6 +23443,103 @@ type Transaction struct {
 	// Example: 18597.12
 	Amount *float32 `json:"amount,omitempty"`
 
+	// BookingPaymentsApi Booking.com only: the booking's payout and price breakdown as Booking.com's Payments API reports it (read when Booking.com notifies a payout change). Null on other channels and for bookings not read yet. Money is in `currency`.
+	BookingPaymentsApi *struct {
+		// AmountToCollectAtProperty Estimated amount the property collects itself (e.g. city tax, or the whole stay when the property collects the payment).
+		//
+		// Example: 5
+		AmountToCollectAtProperty *float32 `json:"amountToCollectAtProperty,omitempty"`
+		BankTransfer              *struct {
+			// Date Example: 2026-05-04
+			Date *string `json:"date,omitempty"`
+
+			// Reference Booking.com bank-transfer reference; matches the payout on your bank statement.
+			//
+			// Example: ST-D0L8H1W4W9I5
+			Reference *string `json:"reference,omitempty"`
+
+			// Status Example: PAID
+			Status *string `json:"status,omitempty"`
+		} `json:"bankTransfer,omitempty"`
+
+		// Charges Per-room price lines as Booking.com reports them.
+		Charges *[]struct {
+			AlreadyCollectedFromGuest *bool `json:"alreadyCollectedFromGuest,omitempty"`
+
+			// Amount Example: 10
+			Amount *float32 `json:"amount,omitempty"`
+
+			// ApplicableType e.g. `PER_PERSON`, `PER_NIGHT`.
+			ApplicableType   *string                                       `json:"applicableType,omitempty"`
+			Category         *TransactionBookingPaymentsApiChargesCategory `json:"category,omitempty"`
+			Currency         *string                                       `json:"currency,omitempty"`
+			IncludedInPayout *bool                                         `json:"includedInPayout,omitempty"`
+			Rate             *struct {
+				// Type Example: PERCENTAGE
+				Type *string `json:"type,omitempty"`
+
+				// Value Example: 10
+				Value *float32 `json:"value,omitempty"`
+			} `json:"rate,omitempty"`
+
+			// Type Booking.com's label, e.g. `VAT`, `City tax`, `COMMISSION`, `PAYMENT CHARGE`.
+			//
+			// Example: VAT
+			Type *string `json:"type,omitempty"`
+		} `json:"charges,omitempty"`
+
+		// Commission Example: 18
+		Commission *float32 `json:"commission,omitempty"`
+
+		// Currency Example: EUR
+		Currency  *string    `json:"currency,omitempty"`
+		FetchedAt *time.Time `json:"fetchedAt,omitempty"`
+
+		// GrossAmount What the guest paid Booking.com.
+		//
+		// Example: 120
+		GrossAmount *float32 `json:"grossAmount,omitempty"`
+
+		// NetAmount Estimated payout to the property.
+		//
+		// Example: 96.74
+		NetAmount *float32 `json:"netAmount,omitempty"`
+
+		// PaymentCharge Payments service charge.
+		//
+		// Example: 2
+		PaymentCharge *float32 `json:"paymentCharge,omitempty"`
+
+		// PaymentTags `PAYMENTS_BY_BOOKING`, `PAYMENT_AT_PROPERTY` or `SMART_PAYMENT_AT_PROPERTY`.
+		//
+		// Example: ["PAYMENTS_BY_BOOKING"]
+		PaymentTags *[]string `json:"paymentTags,omitempty"`
+
+		// PayoutStatus `PENDING`, `PAID`, `CANCELLED` or `UNKNOWN`.
+		//
+		// Example: PAID
+		PayoutStatus *string `json:"payoutStatus,omitempty"`
+
+		// PayoutType `GROSS`, `NET` or `UNKNOWN`; null when the property collects the payment.
+		//
+		// Example: NET
+		PayoutType *string                              `json:"payoutType,omitempty"`
+		Source     *TransactionBookingPaymentsApiSource `json:"source,omitempty"`
+
+		// Taxes City tax, withheld and other taxes.
+		//
+		// Example: 6.26
+		Taxes *float32 `json:"taxes,omitempty"`
+
+		// Vat Example: 10
+		Vat *float32 `json:"vat,omitempty"`
+
+		// VatOnFees VAT on commission and on the payment charge.
+		//
+		// Example: 2
+		VatOnFees *float32 `json:"vatOnFees,omitempty"`
+	} `json:"bookingPaymentsApi,omitempty"`
+
 	// ConfirmationCode Example: 5463377687
 	ConfirmationCode *string `json:"confirmationCode,omitempty"`
 
@@ -23474,6 +23619,12 @@ type Transaction struct {
 	// Example: Payout
 	Type *string `json:"type,omitempty"`
 }
+
+// TransactionBookingPaymentsApiChargesCategory defines model for Transaction.BookingPaymentsApi.Charges.Category.
+type TransactionBookingPaymentsApiChargesCategory string
+
+// TransactionBookingPaymentsApiSource defines model for Transaction.BookingPaymentsApi.Source.
+type TransactionBookingPaymentsApiSource string
 
 // UsageQuotaWarningEvent defines model for UsageQuotaWarningEvent.
 type UsageQuotaWarningEvent struct {
