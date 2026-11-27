@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.62 — 2026-11-27
+
+- Regenerated from the live spec (automated spec refresh).
+
 ## 0.2.61 — 2026-11-26
 
 - Regenerated from the live spec (automated spec refresh).
